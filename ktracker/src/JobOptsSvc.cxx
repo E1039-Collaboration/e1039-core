@@ -58,7 +58,7 @@ JobOptsSvc::JobOptsSvc()
     m_mergeHodo = false;
     m_realization = false;
 
-    m_mySQLInputPort = 3306;
+    m_mySQLInputPort = 3310;//3306;
     m_mySQLOutputPort = 3396;
     m_nEvents = -1;
     m_firstEvent = 0;
@@ -94,9 +94,9 @@ JobOptsSvc::JobOptsSvc()
     m_fMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Fmag";
     m_kMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Kmag";
 
-    m_geomVersion = "geometry_G18_run3";
-    m_mySQLInputServer  = "e906-db1.fnal.gov";
-    m_mySQLOutputServer = "e906-db1.fnal.gov";
+    m_geomVersion = "geometry_G15_run3";//"geometry_G18_run3";
+    m_mySQLInputServer  = "seaquestdb01.fnal.gov";
+    m_mySQLOutputServer = "seaquestdb01.fnal.gov";
 }
 
 void JobOptsSvc::close()
