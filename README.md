@@ -1,1 +1,1 @@
-# SeaQuest-offline
+# seaquest-offline
