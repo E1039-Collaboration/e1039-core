@@ -5,8 +5,8 @@
  *      Author: yuhw
  */
 
-#ifndef FUN4ALL_INTERFACES_SHIT_V1_H_
-#define FUN4ALL_INTERFACES_SHIT_V1_H_
+#ifndef _H_SHit_v1_H_
+#define _H_SHit_v1_H_
 
 
 #include "SHit.h"
@@ -53,4 +53,4 @@ private:
 };
 
 
-#endif /* FUN4ALL_INTERFACES_SHIT_V1_H_ */
+#endif /* _H_SHit_v1_H_ */
