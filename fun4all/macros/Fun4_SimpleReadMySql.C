@@ -14,6 +14,7 @@ void Fun4_SimpleReadMySql(int nevent = 1) {
 
 	gSystem->Load("libmodules.so");
 	SimpleReadMySql *simple_reader = new SimpleReadMySql();
+    simple_reader->Verbosity(100);
 
 	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", "test.root");
 	se->registerOutputManager(out);
