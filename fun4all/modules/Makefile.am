@@ -24,7 +24,8 @@ pkginclude_HEADERS = \
   SimpleReadMySql.h
 
 libmodules_la_SOURCES = \
-  SimpleReadMySql.C
+  SimpleReadMySql.C \
+  SimpleReadMySql_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
