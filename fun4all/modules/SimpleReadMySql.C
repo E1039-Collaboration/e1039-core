@@ -33,7 +33,7 @@
 
 SimpleReadMySql::SimpleReadMySql(const std::string& name) :
 SubsysReco(name),
-//_server_name("seaquestdb01.fnal.gov"),
+_server_name("seaquestdb01.fnal.gov"),
 _port(3310),
 _user_name("seaguest"),
 _password("qqbar2mu+mu-"),
@@ -58,7 +58,7 @@ int SimpleReadMySql::InitRun(PHCompositeNode* topNode) {
 
     char serverUrl[200];
     sprintf(serverUrl, "mysql://%s:%d", _server_name.c_str(), _port);
-    LogDebug("");
+    LogDebug(serverUrl);
     inputServer = TSQLServer::Connect(serverUrl, _user_name.c_str(), _password.c_str());
     LogDebug("");
     if(!inputServer) {
@@ -131,8 +131,8 @@ int SimpleReadMySql::MakeNodes(PHCompositeNode* topNode) {
 
 	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "EVENT"));
 	if (!eventNode) {
-		LogInfo("No DST node, create one");
-		eventNode = new PHCompositeNode("DST");
+		LogInfo("No EVENT node, create one");
+		eventNode = new PHCompositeNode("EVENT");
 		topNode->addNode(eventNode);
 	}
 
