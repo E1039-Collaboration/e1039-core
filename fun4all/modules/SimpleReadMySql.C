@@ -26,14 +26,14 @@
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 
-#define LogInfo(exp)		std::cout<<"INFO: "   <<__FILE__<<": "<<__LINE__<<": "<< exp
-#define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp
-#define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp
-#define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp
+#define LogInfo(exp)		std::cout<<"INFO: "   <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 
 SimpleReadMySql::SimpleReadMySql(const std::string& name) :
 SubsysReco(name),
-_server_name("seaquestdb01.fnal.gov"),
+//_server_name("seaquestdb01.fnal.gov"),
 _port(3310),
 _user_name("seaguest"),
 _password("qqbar2mu+mu-"),
@@ -58,7 +58,9 @@ int SimpleReadMySql::InitRun(PHCompositeNode* topNode) {
 
     char serverUrl[200];
     sprintf(serverUrl, "mysql://%s:%d", _server_name.c_str(), _port);
+    LogDebug("");
     inputServer = TSQLServer::Connect(serverUrl, _user_name.c_str(), _password.c_str());
+    LogDebug("");
     if(!inputServer) {
     	if(Verbosity() >= Fun4AllBase::VERBOSITY_QUIET)
     		LogError("!inputServer");
