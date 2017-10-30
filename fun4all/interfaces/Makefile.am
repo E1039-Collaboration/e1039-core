@@ -26,9 +26,13 @@ pkginclude_HEADERS = \
 
 libinterfaces_la_SOURCES = \
   SHit.C \
+  SHit_Dict.C \
   SHit_v1.C \
+  SHit_v1_Dict.C \
   SHitMap.C \
-  SHitMap_v1.C
+  SHitMap_Dict.C \
+  SHitMap_v1.C \
+  SHitMap_v1_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
