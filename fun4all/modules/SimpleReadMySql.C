@@ -15,6 +15,7 @@
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
+#include <phool/getClass.h>
 
 #include <TLorentzVector.h>
 #include <TObjArray.h>
@@ -92,6 +93,9 @@ int SimpleReadMySql::InitRun(PHCompositeNode* topNode) {
 
 int SimpleReadMySql::process_event(PHCompositeNode* topNode) {
 
+	int ret = GetNodes(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
 	if(_event >= eventIDs.size()) return Fun4AllReturnCodes::ABORTRUN;
 
 	int eventID = eventIDs[_event++];
@@ -142,6 +146,16 @@ int SimpleReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
 		LogInfo("EVENT/SHitMap Added");
 
+	return Fun4AllReturnCodes::EVENT_OK;
+}
+
+
+int SimpleReadMySql::GetNodes(PHCompositeNode* topNode) {
+	_hit_map = findNode::getClass<SHitMap>(topNode, "SHitMap");
+	if (!_hit_map) {
+		LogError("!_hit_map");
+		return Fun4AllReturnCodes::ABORTEVENT;
+	}
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 

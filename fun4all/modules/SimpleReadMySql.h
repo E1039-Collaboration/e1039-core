@@ -46,6 +46,7 @@ public:
 private:
 
 	int MakeNodes(PHCompositeNode *topNode);
+	int GetNodes(PHCompositeNode *topNode);
 
 	int makeQueryInput();
 	bool nextEntry();
