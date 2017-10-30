@@ -133,10 +133,10 @@ int SimpleReadMySql::End(PHCompositeNode* topNode) {
 int SimpleReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	PHNodeIterator iter(topNode);
 
-	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "EVENT"));
+	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
 	if (!eventNode) {
-		LogInfo("No EVENT node, create one");
-		eventNode = new PHCompositeNode("EVENT");
+		LogInfo("No DST node, create one");
+		eventNode = new PHCompositeNode("DST");
 		topNode->addNode(eventNode);
 	}
 
@@ -144,7 +144,7 @@ int SimpleReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SHitMap", "PHObject");
 	eventNode->addNode(hitNode);
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-		LogInfo("EVENT/SHitMap Added");
+		LogInfo("DST/SHitMap Added");
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
