@@ -16,6 +16,7 @@ AM_LDFLAGS = \
   -L$(OFFLINE_MAIN)/lib
 
 libmodules_la_LIBADD = \
+  -lfun4all \
   -linterfaces \
   -lphool
 
