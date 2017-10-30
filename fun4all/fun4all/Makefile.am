@@ -6,8 +6,7 @@ BUILT_SOURCES = \
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
-  -I$(ROOTSYS)/include \
-  -I$(OPT_SPHENIX)/include
+  -I`root-config --incdir`
 
 pkginclude_HEADERS = \
   Fun4AllBase.h \
@@ -66,6 +65,9 @@ libfun4all_la_LIBADD = \
 libSubsysReco_la_SOURCES = \
   Fun4AllBase.cc \
   SubsysReco.cc
+  
+libTDirectoryHelper_la_LDFLAGS = \
+  `root-config --libs`
 
 nodist_libSubsysReco_la_SOURCES = SubsysReco_Dict.cc
 
