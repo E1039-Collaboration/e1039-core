@@ -7,7 +7,10 @@
 
 
 
-void Fun4_SimpleReadMySql(int nevent = 1) {
+void Fun4_SimpleReadMySql(
+const int nevent = 1, 
+const char *outfile = "out.root"
+) {
 
 	gSystem->Load("libfun4all.so");
 	Fun4AllServer* se = Fun4AllServer::instance();
@@ -16,7 +19,10 @@ void Fun4_SimpleReadMySql(int nevent = 1) {
 	SimpleReadMySql *simple_reader = new SimpleReadMySql();
     simple_reader->Verbosity(100);
 
-	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", "test.root");
+    Fun4AllInputManager *in = new Fun4AllDummyInputManager("JADE");
+	se->registerInputManager(in);
+
+	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outfile);
 	se->registerOutputManager(out);
 
 	se->registerSubsystem(simple_reader);
