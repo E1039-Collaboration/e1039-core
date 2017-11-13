@@ -26,7 +26,7 @@ SHitMap_v1::SHitMap_v1(const SHitMap_v1& hitmap)
        iter != hitmap.end();
        ++iter) {
     const SHit *hit = iter->second;
-    _map.insert(make_pair(hit->get_id(),hit->Clone()));
+    _map.insert(make_pair(hit->get_hit_id(),hit->Clone()));
   }
 }
 
@@ -36,7 +36,7 @@ SHitMap_v1& SHitMap_v1::operator=(const SHitMap_v1& hitmap) {
        iter != hitmap.end();
        ++iter) {
     const SHit *hit = iter->second;
-    _map.insert(make_pair(hit->get_id(),hit->Clone()));
+    _map.insert(make_pair(hit->get_hit_id(),hit->Clone()));
   }
   return *this;
 }
@@ -76,7 +76,7 @@ SHit* SHitMap_v1::insert(const SHit *hit) {
   unsigned int index = 0;
   if (!_map.empty()) index = _map.rbegin()->first + 1;
   _map.insert(make_pair( index , hit->Clone() ));
-  _map[index]->set_id(index);
+  _map[index]->set_hit_id(index);
   return _map[index];
 }
 

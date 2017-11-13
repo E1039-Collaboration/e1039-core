@@ -18,6 +18,8 @@ class SHit : public PHObject {
 
 public:
 
+
+
   virtual ~SHit() {}
 
   // PHObject virtual overloads
@@ -27,21 +29,43 @@ public:
   }
   virtual void         Reset() {};
   virtual int          isValid() const {return 0;}
-  virtual SHit*     Clone() const {return NULL;}
+  virtual SHit*        Clone() const {return NULL;}
 
   // digitized hit info
 
-  virtual unsigned int get_id() const                        {return UINT_MAX;}
-  virtual void         set_id(unsigned int id)               {}
+  virtual int          get_hit_id() const                               {return UINT_MAX;}
+  virtual void         set_hit_id(const int a)                          {}
 
-  virtual std::string  get_detector_name() const                     {std::string a(""); return a;}
-  virtual void         set_detector_name(const std::string& name)         {}
+  virtual short        get_detector_id() const                          {return UINT_MAX;}
+  virtual void         set_detector_id(const short a)                   {}
 
-  virtual unsigned int get_element_id() const                     {return UINT_MAX;}
-  virtual void         set_element_id(unsigned int id)         {}
+  virtual short        get_element_id() const                           {return UINT_MAX;}
+  virtual void         set_element_id(const short a)                    {}
+
+  virtual float        get_tdc_time() const                             {return UINT_MAX;}
+  virtual void         set_tdc_time(const float a)                      {}
 
   virtual float        get_drift_distance() const                       {return UINT_MAX;}
-  virtual void         set_drift_distance(const float distance)             {}
+  virtual void         set_drift_distance(const float a)                {}
+
+  virtual float        get_pos() const                                  {return UINT_MAX;}
+  virtual void         set_pos(const float a)                           {}
+
+  virtual bool         is_in_time() const = 0;
+  virtual void         set_in_time(const bool a) = 0;
+
+  virtual bool         is_hodo_mask() const = 0;
+  virtual void         set_hodo_mask(const bool a) = 0;
+
+  virtual bool         is_trigger_mask() const = 0;
+  virtual void         set_trigger_mask(const bool a) = 0;
+
+  enum HitQuality
+  {
+      InTime = 1<<0,
+      HodoMask = 1<<1,
+      TriggerMask = 1<<2
+  };
 
 protected:
   SHit() {}
