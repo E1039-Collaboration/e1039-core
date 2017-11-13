@@ -21,11 +21,14 @@ libmodules_la_LIBADD = \
   -lphool
 
 pkginclude_HEADERS = \
-  SimpleReadMySql.h
+  SimpleReadMySql.h \
+  ReadMySql.h
 
 libmodules_la_SOURCES = \
   SimpleReadMySql.C \
-  SimpleReadMySql_Dict.C
+  SimpleReadMySql_Dict.C \
+  ReadMySql.C \
+  ReadMySql_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
