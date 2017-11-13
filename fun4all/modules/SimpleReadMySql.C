@@ -111,9 +111,9 @@ int SimpleReadMySql::process_event(PHCompositeNode* topNode) {
     {
         nextEntry();
         SHit *hit = new SHit_v1();
-        hit->set_detector_name("Bla");
+        hit->set_detector_id(0);
         hit->set_element_id(0);
-        hit->set_id(getInt(0));
+        hit->set_hit_id(getInt(0));
         hit->set_drift_distance(getFloat(1));
 
         if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
