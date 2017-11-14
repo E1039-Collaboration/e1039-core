@@ -1,0 +1,11 @@
+<map id="PHNodeIOManager::selectObjectToRead" name="PHNodeIOManager::selectObjectToRead">
+<area shape="rect" id="node2" href="$d7/d0b/classFun4AllDstInputManager.html#ae18b1ca89168aab89e6a9b867951f8ce" title="Fun4AllDstInputManager\l::setBranches" alt="" coords="544,34,709,75"/>
+<area shape="rect" id="node8" href="$d7/d4d/classPHNodeIOManager.html#a5d6181baf8cf3741d062e1b50eb8c131" title="PHNodeIOManager::setFile" alt="" coords="269,129,451,156"/>
+<area shape="rect" id="node10" href="$d7/d0b/classFun4AllDstInputManager.html#a22bc575e2e8b3b72e67523a694acbf22" title="Fun4AllDstInputManager\l::setSyncBranches" alt="" coords="277,63,443,105"/>
+<area shape="rect" id="node3" href="$d7/d0b/classFun4AllDstInputManager.html#a4d32eadb9f77d41387656b87377ef14f" title="Fun4AllDstInputManager\l::fileopen" alt="" coords="803,34,968,75"/>
+<area shape="rect" id="node4" href="$d7/d0b/classFun4AllDstInputManager.html#ae4e92b95ae50ab72856d06c99b043496" title="Fun4AllDstInputManager\l::OpenNextFile" alt="" coords="1016,34,1181,75"/>
+<area shape="rect" id="node5" href="$d7/d0b/classFun4AllDstInputManager.html#ade26017b627e0e1f1ec0dec62ac7fd52" title="Fun4AllDstInputManager\l::ReadNextEventSyncObject" alt="" coords="1231,5,1417,46"/>
+<area shape="rect" id="node7" href="$d7/d0b/classFun4AllDstInputManager.html#aeafa0248f9050c13fdae1bcb93336d7a" title="Fun4AllDstInputManager::run" alt="" coords="1229,71,1419,97"/>
+<area shape="rect" id="node6" href="$d7/d0b/classFun4AllDstInputManager.html#a0244c2edbaa2350038304b09f352c2d0" title="Fun4AllDstInputManager\l::SyncIt" alt="" coords="1467,5,1632,46"/>
+<area shape="rect" id="node9" href="$d7/d4d/classPHNodeIOManager.html#a97ea7a7609bed69ee8a9ac47296172a7" title="PHNodeIOManager::PHNodeIOManager" alt="" coords="499,129,755,156"/>
+</map>

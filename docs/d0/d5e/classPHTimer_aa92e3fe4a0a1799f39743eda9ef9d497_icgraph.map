@@ -1,0 +1,7 @@
+<map id="PHTimer::get_clock_counts" name="PHTimer::get_clock_counts">
+<area shape="rect" id="node2" href="$d0/d5e/classPHTimer.html#a976738876ad978116fdc4549a3765685" title="retrieve elapsed value since last restart (in ms) " alt="" coords="189,5,315,32"/>
+<area shape="rect" id="node5" href="$d0/d5e/classPHTimer.html#adce6f9a85834e59bd154b9c624ee4e41" title="stops the counter " alt="" coords="363,56,469,83"/>
+<area shape="rect" id="node6" href="$d0/d5e/classPHTimer.html#a433d96c3401380d49ff01acfd16ac69c" title="Restart timer. " alt="" coords="193,107,311,133"/>
+<area shape="rect" id="node3" href="$d0/d5e/classPHTimer.html#a888198bd40c6e112b820d6b78406e3aa" title="Dump elapsed time to provided ostream. " alt="" coords="363,5,469,32"/>
+<area shape="rect" id="node4" href="$d0/d5e/classPHTimer.html#a01cc1f85cc7a3303d38cb5a7a2f0a749" title="test PHTimer for a given amount of time (in ms) " alt="" coords="518,56,621,83"/>
+</map>

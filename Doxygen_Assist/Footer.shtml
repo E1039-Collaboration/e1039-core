@@ -1,0 +1,33 @@
+
+
+
+<!-- start footer part -->
+<!--BEGIN GENERATE_TREEVIEW-->
+<div id="nav-path" class="navpath">
+	<!-- id is needed for treeview function! -->
+	<ul>
+		$navpath
+		<li class="footer">
+		Built by <a href="mailto:yuhw@nmsu.edu">Haiwang Yu</a></em>.
+			updated: <em>$datetime</em> using <a
+			href="http://www.doxygen.org/index.html"> <img class="footer"
+				src="$relpath$doxygen.png" alt="doxygen" /></a> $doxygenversion 
+				with <a href="https://github.com/HaiwangYu/seaquest-offline">SeaQuest GitHub integration</a>
+		</li>
+	</ul>
+</div>
+<!--END GENERATE_TREEVIEW-->
+<!--BEGIN !GENERATE_TREEVIEW-->
+<hr class="footer" />
+<address class="footer">
+	<small>
+		Built by <a href="mailto:yuhw@nmsu.edu">Haiwang Yu</a></em>.
+      updated: <em>$datetime</em> using <a
+      href="http://www.doxygen.org/index.html"> <img class="footer"
+        src="$relpath$doxygen.png" alt="doxygen" /></a> $doxygenversion 
+				with <a href="https://github.com/HaiwangYu/seaquest-offline">SeaQuest GitHub integration</a>
+	</small>
+</address>
+<!--END !GENERATE_TREEVIEW-->
+</body>
+</html>

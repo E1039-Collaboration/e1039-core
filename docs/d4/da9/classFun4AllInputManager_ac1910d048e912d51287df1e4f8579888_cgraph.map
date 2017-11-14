@@ -1,0 +1,6 @@
+<map id="Fun4AllInputManager::registerSubsystem" name="Fun4AllInputManager::registerSubsystem">
+<area shape="rect" id="node2" href="$d0/d32/classSubsysReco.html#a6670c0a093dd2c2bdd44f8fc6f9ba8e8" title="SubsysReco::Init" alt="" coords="221,5,339,32"/>
+<area shape="rect" id="node3" href="$da/d29/classFun4AllServer.html#a3e55156f91b2c94bb6c4ef33ffce587a" title="Fun4AllServer::instance" alt="" coords="201,56,359,83"/>
+<area shape="rect" id="node4" href="$d5/dec/classFun4AllBase.html#a41f9ac377743d046f590617fd6f4f0ed" title="Returns the name of this module. " alt="" coords="211,107,349,133"/>
+<area shape="rect" id="node5" href="$da/d29/classFun4AllServer.html#abcaf6825367e5db292ff795237bdcf62" title="Fun4AllServer::topNode" alt="" coords="201,157,359,184"/>
+</map>

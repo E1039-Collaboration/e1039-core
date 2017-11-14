@@ -1,0 +1,9 @@
+<map id="PHTimeServer::iterator" name="PHTimeServer::iterator">
+<area shape="rect" id="node3" title="STL class. " alt="" coords="351,99,429,125"/>
+<area shape="rect" id="node7" href="$d0/d5e/classPHTimer.html" title="high precision timer " alt="" coords="212,203,285,229"/>
+<area shape="rect" id="node4" title="STL class. " alt="" coords="329,6,452,47"/>
+<area shape="rect" id="node5" href="$d7/d41/classPHTimeServer_1_1timer.html" title="wrapper around PHTimer, for storage in a map " alt="" coords="219,400,361,427"/>
+<area shape="rect" id="node6" href="$da/d18/classboost_1_1shared__ptr.html" title="boost::shared_ptr\&lt;\l PHTimer \&gt;" alt="" coords="214,294,343,335"/>
+<area shape="rect" id="node8" href="$dc/d23/structPHTimer_1_1time__struct.html" title="used to store high precision time using two integers " alt="" coords="5,99,149,125"/>
+<area shape="rect" id="node9" href="$d2/db1/classPHTimer_1_1Frequency.html" title="internal frequency read from cpu information file " alt="" coords="174,99,313,125"/>
+</map>

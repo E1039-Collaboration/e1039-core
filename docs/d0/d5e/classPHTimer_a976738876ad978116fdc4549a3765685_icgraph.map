@@ -1,0 +1,5 @@
+<map id="PHTimer::elapsed" name="PHTimer::elapsed">
+<area shape="rect" id="node2" href="$d0/d5e/classPHTimer.html#a888198bd40c6e112b820d6b78406e3aa" title="Dump elapsed time to provided ostream. " alt="" coords="179,5,285,32"/>
+<area shape="rect" id="node4" href="$d0/d5e/classPHTimer.html#adce6f9a85834e59bd154b9c624ee4e41" title="stops the counter " alt="" coords="179,56,285,83"/>
+<area shape="rect" id="node3" href="$d0/d5e/classPHTimer.html#a01cc1f85cc7a3303d38cb5a7a2f0a749" title="test PHTimer for a given amount of time (in ms) " alt="" coords="334,5,437,32"/>
+</map>

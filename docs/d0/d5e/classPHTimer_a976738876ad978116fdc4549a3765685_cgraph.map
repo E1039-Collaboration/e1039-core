@@ -1,0 +1,5 @@
+<map id="PHTimer::elapsed" name="PHTimer::elapsed">
+<area shape="rect" id="node2" href="$d0/d5e/classPHTimer.html#aa92e3fe4a0a1799f39743eda9ef9d497" title="gets time from cpu clock counts " alt="" coords="192,5,328,46"/>
+<area shape="rect" id="node3" href="$d0/d5e/classPHTimer.html#aa75ff2c27aba40e7ef0a934f9a3355c2" title="returns difference between to time " alt="" coords="179,71,341,97"/>
+<area shape="rect" id="node4" href="$d2/db1/classPHTimer_1_1Frequency.html#a023a2d706df9a8bd303810a9ed017f61" title="period accessor " alt="" coords="390,63,530,105"/>
+</map>

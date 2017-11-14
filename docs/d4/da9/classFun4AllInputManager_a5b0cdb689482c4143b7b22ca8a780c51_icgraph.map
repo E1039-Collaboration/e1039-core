@@ -1,0 +1,7 @@
+<map id="Fun4AllInputManager::setSyncManager" name="Fun4AllInputManager::setSyncManager">
+<area shape="rect" id="node2" href="$dd/ded/classFun4AllSyncManager.html#a2a284bc4ed777ec7f39d6e5c7090067c" title="Fun4AllSyncManager\l::registerInputManager" alt="" coords="219,23,370,65"/>
+<area shape="rect" id="node6" href="$df/d43/classFun4AllDummyInputManager.html#a3863cb07576f56e8e514ae272b322679" title="Fun4AllDummyInputManager\l::setSyncManager" alt="" coords="200,89,389,130"/>
+<area shape="rect" id="node3" href="$da/d29/classFun4AllServer.html#ab2cb490790d15b865ae79eb3094caabe" title="Fun4AllServer::registerInput\lManager" alt="" coords="438,23,621,65"/>
+<area shape="rect" id="node4" href="$d0/d46/Fun4__SimpleReadMySql_8C.html#a70381893748e3445abc30632beb256ce" title="Fun4_SimpleReadMySql" alt="" coords="670,5,834,32"/>
+<area shape="rect" id="node5" href="$d9/d8c/Fun4ReadMySql_8C.html#a729b39fa627147c63772f28c9be36b62" title="Fun4ReadMySql" alt="" coords="693,56,811,83"/>
+</map>
