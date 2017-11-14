@@ -22,7 +22,9 @@ pkginclude_HEADERS = \
   SHit.h \
   SHit_v1.h \
   SHitMap.h \
-  SHitMap_v1.h
+  SHitMap_v1.h \
+  SEvent.h \
+  SEvent_v1.h
 
 libinterfaces_la_SOURCES = \
   SHit.C \
@@ -32,7 +34,11 @@ libinterfaces_la_SOURCES = \
   SHitMap.C \
   SHitMap_Dict.C \
   SHitMap_v1.C \
-  SHitMap_v1_Dict.C
+  SHitMap_v1_Dict.C \
+  SEvent.C \
+  SEvent_Dict.C \
+  SEvent_v1.C \
+  SEvent_v1_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
