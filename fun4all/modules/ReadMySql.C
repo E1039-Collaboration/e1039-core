@@ -11,6 +11,7 @@
 #include <interfaces/SHit.h>
 #include <interfaces/SHit_v1.h>
 #include <interfaces/SHitMap_v1.h>
+#include <interfaces/SEvent_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
@@ -48,6 +49,7 @@ _input_server(nullptr),
 _res(nullptr),
 _row(nullptr),
 _event(0),
+_event_header(nullptr),
 _hit_map(nullptr)
 {
 	_event_ids.clear();
@@ -100,7 +102,9 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 
 	int eventID = _event_ids[_event++];
 
-	ReadMySql::FillHitMap(_hit_map, _input_server, eventID, "Hit");
+	ReadMySql::FillSEvent(_event_header, _input_server, eventID, "Event");
+
+	ReadMySql::FillSHitMap(_hit_map, _input_server, eventID, "Hit");
 
     return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -119,6 +123,12 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 		topNode->addNode(eventNode);
 	}
 
+	_event_header = new SEvent_v1();
+	PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(_event_header,"SEvent", "PHObject");
+	eventNode->addNode(eventHeaderNode);
+	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+		LogInfo("DST/SEvent Added");
+
 	_hit_map = new SHitMap_v1();
 	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SHitMap", "PHObject");
 	eventNode->addNode(hitNode);
@@ -130,11 +140,19 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 
 
 int ReadMySql::GetNodes(PHCompositeNode* topNode) {
+
+	_event_header = findNode::getClass<SEvent>(topNode, "SEvent");
+	if (!_event_header) {
+		LogError("!_event_header");
+		return Fun4AllReturnCodes::ABORTEVENT;
+	}
+
 	_hit_map = findNode::getClass<SHitMap>(topNode, "SHitMap");
 	if (!_hit_map) {
 		LogError("!_hit_map");
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
+
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -150,7 +168,6 @@ int ReadMySql::makeQueryInput() {
     if(_res != NULL) return _res->GetRowCount();
     return 0;
 }
-
 
 bool ReadMySql::nextEntry() {
     if(_res == NULL) return false;
@@ -210,10 +227,10 @@ std::string ReadMySql::getString(TSQLRow* row, int id, std::string default_val)
     return std::string(row->GetField(id));
 }
 
-int ReadMySql::FillHitMap(SHitMap* hitmap, TSQLServer* server,
-		const int event_id, const char* source) {
+int ReadMySql::FillSHitMap(SHitMap* hit_map, TSQLServer* server,
+		const int event_id, const char* table) {
 
-	if(!hitmap) {
+	if(!hit_map) {
 		LogError("!hitmap");
 		return -1;
 	}
@@ -226,7 +243,7 @@ int ReadMySql::FillHitMap(SHitMap* hitmap, TSQLServer* server,
 	char query[1000];
 
 	//                     0      1             2          3        4       5       6          7              8           9
-	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime, masked, driftTime, driftDistance, resolution, dataQuality FROM %s WHERE eventID=%d", source, event_id);
+	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime, masked, driftTime, driftDistance, resolution, dataQuality FROM %s WHERE eventID=%d", table, event_id);
 
 	TSQLResult *res = server->Query(query);
 
@@ -252,7 +269,7 @@ int ReadMySql::FillHitMap(SHitMap* hitmap, TSQLServer* server,
 #ifdef DEBUG
         hit->identify();
 #endif
-        hitmap->insert(hit);
+        hit_map->insert(hit);
     }
 
 	delete res;
@@ -262,6 +279,57 @@ int ReadMySql::FillHitMap(SHitMap* hitmap, TSQLServer* server,
 
 
 
+int ReadMySql::FillSEvent(SEvent* event_header, TSQLServer* server,
+		const int event_id, const char* table) {
+
+
+	if(!event_header) {
+		LogError("!event_header");
+		return -1;
+	}
+
+	if(!server) {
+		LogError("!server");
+		return -1;
+	}
+
+	char query[1000];
+
+	sprintf(query,
+			//      0      1        2        3
+			"SELECT runID, spillID, eventID, codaEventID, "
+			//4     5     6     7     8
+			" NIM1, NIM2, NIM3, NIM4, NIM5 "
+
+			" FROM %s WHERE eventID=%d", table, event_id);
+
+	TSQLResult *res = server->Query(query);
+
+	int nrow = res->GetRowCount();
+
+    for(int irow = 0; irow < nrow; ++irow)
+    {
+    	TSQLRow* row = res->Next();
+
+    	event_header->set_run_id(getInt(row, 0));
+
+    	event_header->set_spill_id(getInt(row, 1));
+
+    	event_header->set_event_id(getInt(row, 2));
+
+    	event_header->set_coda_event_id(getInt(row, 3));
+
+    	event_header->set_trigger(SEvent::NIM1, getInt(row, 4));
+    	event_header->set_trigger(SEvent::NIM2, getInt(row, 5));
+    	event_header->set_trigger(SEvent::NIM3, getInt(row, 6));
+    	event_header->set_trigger(SEvent::NIM4, getInt(row, 7));
+    	event_header->set_trigger(SEvent::NIM5, getInt(row, 8));
+    }
+
+	delete res;
+
+	return 0;
+}
 
 
 
