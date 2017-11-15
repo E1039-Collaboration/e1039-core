@@ -13,6 +13,8 @@
 #include <interfaces/SQHitMap_v1.h>
 #include <interfaces/SQEvent_v1.h>
 #include <interfaces/SQRun_v1.h>
+#include <interfaces/SQSpill_v1.h>
+#include <interfaces/SQSpillMap_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
@@ -51,6 +53,7 @@ _res(nullptr),
 _row(nullptr),
 _event(0),
 _run_header(nullptr),
+_spill_map(nullptr),
 _event_header(nullptr),
 _hit_map(nullptr)
 {
@@ -90,7 +93,9 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
     makeQueryInput();
     nextEntry();
     int run_id = getInt(_row,0);
-	ReadMySql::FillSQRun(_run_header, _input_server, run_id,"Run");
+	ReadMySql::FillSQRun(_run_header, _input_server, run_id, "Run");
+
+	ReadMySql::FillSQSpill(_spill_map, _input_server, run_id, "Spill");
 
     sprintf(_query, "SELECT eventID FROM Event");
     int nrow = makeQueryInput();
@@ -137,6 +142,12 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
 		LogInfo("DST/SQRun Added");
 
+	_spill_map = new SQSpillMap_v1();
+	PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(_spill_map,"SQSpillMap", "PHObject");
+	runNode->addNode(spillNode);
+	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+		LogInfo("DST/SQSpillMap Added");
+
 	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
 	if (!eventNode) {
 		LogInfo("No DST node, create one");
@@ -165,6 +176,12 @@ int ReadMySql::GetNodes(PHCompositeNode* topNode) {
 	_run_header = findNode::getClass<SQRun>(topNode, "SQRun");
 	if (!_run_header) {
 		LogError("!_run_header");
+		return Fun4AllReturnCodes::ABORTEVENT;
+	}
+
+	_spill_map = findNode::getClass<SQSpillMap>(topNode, "SQSpillMap");
+	if (!_spill_map) {
+		LogError("!_spill_map");
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
@@ -269,8 +286,11 @@ int ReadMySql::FillSQHitMap(SQHitMap* hit_map, TSQLServer* server,
 
 	char query[1000];
 
-	//                     0      1             2          3        4       5       6          7              8           9
-	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime, masked, driftTime, driftDistance, resolution, dataQuality FROM %s WHERE eventID=%d", table, event_id);
+	//                     0      1             2          3        4
+	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime, "
+			//5       6          7              8           9
+			" masked, driftTime, driftDistance, resolution, dataQuality"
+			" FROM %s WHERE eventID=%d", table, event_id);
 
 	TSQLResult *res = server->Query(query);
 
@@ -400,6 +420,49 @@ int ReadMySql::FillSQRun(SQRun* run_header, TSQLServer* server,
 	return 0;
 }
 
+int ReadMySql::FillSQSpill(SQSpillMap* spill_map, TSQLServer* server,
+		const int run_id, const char* table) {
+
+	if(!spill_map) {
+		LogError("!spill_map");
+		return -1;
+	}
+
+	if(!server) {
+		LogError("!server");
+		return -1;
+	}
+
+	char query[1000];
+
+	//                     0      1        2
+	sprintf(query, "SELECT runID, spillID, liveProton "
+			" FROM %s WHERE runID=%d", table, run_id);
+
+	TSQLResult *res = server->Query(query);
+
+	int nrow = res->GetRowCount();
+
+    for(int irow = 0; irow < nrow; ++irow)
+    {
+    	TSQLRow* row = res->Next();
+
+        SQSpill *spill = new SQSpill_v1();
+
+        spill->set_run_id(getInt(row,0));
+        spill->set_spill_id(getInt(row,1));
+        spill->set_live_proton(getFloat(row,2));
+
+#ifdef DEBUG
+        std::cout << "liveProton: " << getFloat(row,2) << std::endl;
+        spill->identify();
+#endif
+        spill_map->insert(spill);
+    }
+
+	delete res;
+	return 0;
+}
 
 
 

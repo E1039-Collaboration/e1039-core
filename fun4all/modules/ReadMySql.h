@@ -30,6 +30,8 @@
 //#include <algorithm>
 
 class SQRun;
+class SQSpillMap;
+
 class SQEvent;
 class SQHitMap;
 
@@ -47,9 +49,9 @@ public:
 	int End(PHCompositeNode *topNode);
 
 	static int FillSQRun(SQRun* run_header, TSQLServer* server, const int run_id, const char* table = "Run");
+	static int FillSQSpill(SQSpillMap* spill_map, TSQLServer* server, const int run_id, const char* table = "Spill");
 
 	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
-
 	static int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
 
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
@@ -88,6 +90,7 @@ private:
     size_t _event;
 
     SQRun* _run_header;
+    SQSpillMap * _spill_map;
 
     SQEvent * _event_header;
     SQHitMap *_hit_map;
