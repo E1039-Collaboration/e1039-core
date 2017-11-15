@@ -11,7 +11,7 @@
 #include <phool/PHObject.h>
 
 #include <iostream>
-#include <limits.h>
+#include <limits>
 #include <string>
 
 class SQHit : public PHObject {
@@ -33,32 +33,32 @@ public:
 
   // digitized hit info
 
-  virtual int          get_hit_id() const                               {return UINT_MAX;}
+  virtual int          get_hit_id() const                               {return std::numeric_limits<int>::max();}
   virtual void         set_hit_id(const int a)                          {}
 
-  virtual short        get_detector_id() const                          {return UINT_MAX;}
+  virtual short        get_detector_id() const                          {return std::numeric_limits<short>::max();}
   virtual void         set_detector_id(const short a)                   {}
 
-  virtual short        get_element_id() const                           {return UINT_MAX;}
+  virtual short        get_element_id() const                           {return std::numeric_limits<short>::max();}
   virtual void         set_element_id(const short a)                    {}
 
-  virtual float        get_tdc_time() const                             {return UINT_MAX;}
+  virtual float        get_tdc_time() const                             {return std::numeric_limits<float>::max();}
   virtual void         set_tdc_time(const float a)                      {}
 
-  virtual float        get_drift_distance() const                       {return UINT_MAX;}
+  virtual float        get_drift_distance() const                       {return std::numeric_limits<float>::max();}
   virtual void         set_drift_distance(const float a)                {}
 
-  virtual float        get_pos() const                                  {return UINT_MAX;}
+  virtual float        get_pos() const                                  {return std::numeric_limits<float>::max();}
   virtual void         set_pos(const float a)                           {}
 
-  virtual bool         is_in_time() const = 0;
-  virtual void         set_in_time(const bool a) = 0;
+  virtual bool         is_in_time() const {return false;}
+  virtual void         set_in_time(const bool a) {}
 
-  virtual bool         is_hodo_mask() const = 0;
-  virtual void         set_hodo_mask(const bool a) = 0;
+  virtual bool         is_hodo_mask() const {return false;}
+  virtual void         set_hodo_mask(const bool a) {}
 
-  virtual bool         is_trigger_mask() const = 0;
-  virtual void         set_trigger_mask(const bool a) = 0;
+  virtual bool         is_trigger_mask() const {return false;}
+  virtual void         set_trigger_mask(const bool a) {}
 
   enum HitQuality
   {
