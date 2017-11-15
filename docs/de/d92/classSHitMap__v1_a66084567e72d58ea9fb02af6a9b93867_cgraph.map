@@ -1,6 +1,0 @@
-<map id="SHitMap_v1::SHitMap_v1" name="SHitMap_v1::SHitMap_v1">
-<area shape="rect" id="node2" href="$de/d92/classSHitMap__v1.html#aa8962de29392f9a2f1f7ba6751809bba" title="SHitMap_v1::begin" alt="" coords="227,5,357,32"/>
-<area shape="rect" id="node3" href="$d0/da1/classSHit.html#a34c44ef544bd3c7b68f33f8d255a8be5" title="SHit::Clone" alt="" coords="249,56,335,83"/>
-<area shape="rect" id="node4" href="$de/d92/classSHitMap__v1.html#a4b02d19cd3ba3cce60688cbe3dfec39c" title="SHitMap_v1::end" alt="" coords="231,107,353,133"/>
-<area shape="rect" id="node5" href="$d0/da1/classSHit.html#a80583327e744f8be37a40d5a6822b811" title="SHit::get_hit_id" alt="" coords="237,157,347,184"/>
-</map>

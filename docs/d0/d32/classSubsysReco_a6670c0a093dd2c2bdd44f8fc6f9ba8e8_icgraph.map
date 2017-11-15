@@ -1,6 +1,0 @@
-<map id="SubsysReco::Init" name="SubsysReco::Init">
-<area shape="rect" id="node2" href="$d4/da9/classFun4AllInputManager.html#ac1910d048e912d51287df1e4f8579888" title="Fun4AllInputManager\l::registerSubsystem" alt="" coords="210,5,355,46"/>
-<area shape="rect" id="node3" href="$da/d29/classFun4AllServer.html#a0a9947db0ede1e55622001eb7515f8c0" title="Fun4AllServer::registerSubsystem" alt="" coords="173,71,392,97"/>
-<area shape="rect" id="node4" href="$d0/d46/Fun4__SimpleReadMySql_8C.html#a70381893748e3445abc30632beb256ce" title="Fun4_SimpleReadMySql" alt="" coords="441,45,605,72"/>
-<area shape="rect" id="node5" href="$d9/d8c/Fun4ReadMySql_8C.html#a729b39fa627147c63772f28c9be36b62" title="Fun4ReadMySql" alt="" coords="464,96,581,123"/>
-</map>

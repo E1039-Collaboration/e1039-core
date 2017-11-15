@@ -1,7 +1,0 @@
-<map id="PHTimer::print" name="PHTimer::print">
-<area shape="rect" id="node2" href="$d0/d5e/classPHTimer.html#a976738876ad978116fdc4549a3765685" title="retrieve elapsed value since last restart (in ms) " alt="" coords="160,41,285,68"/>
-<area shape="rect" id="node6" href="$d0/d5e/classPHTimer.html#ac0fd0e47b6cd0a290f3db3ee4dae3ab5" title="print a message (formated) to a stream " alt="" coords="163,92,283,119"/>
-<area shape="rect" id="node3" href="$d0/d5e/classPHTimer.html#aa92e3fe4a0a1799f39743eda9ef9d497" title="gets time from cpu clock counts " alt="" coords="347,5,483,46"/>
-<area shape="rect" id="node4" href="$d0/d5e/classPHTimer.html#aa75ff2c27aba40e7ef0a934f9a3355c2" title="returns difference between to time " alt="" coords="334,71,495,97"/>
-<area shape="rect" id="node5" href="$d2/db1/classPHTimer_1_1Frequency.html#a023a2d706df9a8bd303810a9ed017f61" title="period accessor " alt="" coords="545,63,685,105"/>
-</map>

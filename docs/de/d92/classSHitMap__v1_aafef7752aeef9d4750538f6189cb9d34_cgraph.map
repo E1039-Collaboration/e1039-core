@@ -1,7 +1,0 @@
-<map id="SHitMap_v1::operator=" name="SHitMap_v1::operator=">
-<area shape="rect" id="node2" href="$de/d92/classSHitMap__v1.html#aa8962de29392f9a2f1f7ba6751809bba" title="SHitMap_v1::begin" alt="" coords="211,5,341,32"/>
-<area shape="rect" id="node3" href="$d0/da1/classSHit.html#a34c44ef544bd3c7b68f33f8d255a8be5" title="SHit::Clone" alt="" coords="233,56,319,83"/>
-<area shape="rect" id="node4" href="$de/d92/classSHitMap__v1.html#a4b02d19cd3ba3cce60688cbe3dfec39c" title="SHitMap_v1::end" alt="" coords="215,107,337,133"/>
-<area shape="rect" id="node5" href="$d0/da1/classSHit.html#a80583327e744f8be37a40d5a6822b811" title="SHit::get_hit_id" alt="" coords="221,157,331,184"/>
-<area shape="rect" id="node6" href="$de/d92/classSHitMap__v1.html#aa4b5f63d10448381a62ad527ad7f074c" title="Clear Event. " alt="" coords="209,208,343,235"/>
-</map>

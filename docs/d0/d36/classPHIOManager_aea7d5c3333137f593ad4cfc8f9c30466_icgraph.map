@@ -1,6 +1,0 @@
-<map id="PHIOManager::getEventNumber" name="PHIOManager::getEventNumber">
-<area shape="rect" id="node2" href="$d7/d0b/classFun4AllDstInputManager.html#a8245204030490e70ef8658cf1b6794d5" title="Fun4AllDstInputManager\l::PushBackEvents" alt="" coords="272,5,437,46"/>
-<area shape="rect" id="node5" href="$d7/d0b/classFun4AllDstInputManager.html#ade26017b627e0e1f1ec0dec62ac7fd52" title="Fun4AllDstInputManager\l::ReadNextEventSyncObject" alt="" coords="262,70,447,111"/>
-<area shape="rect" id="node3" href="$dd/df1/classFun4AllNoSyncDstInputManager.html#a1bbc8ee6a94e265a5790e2ff5c365650" title="Fun4AllNoSyncDstInputManager\l::NoSyncPushBackEvents" alt="" coords="496,5,707,46"/>
-<area shape="rect" id="node4" href="$d7/d0b/classFun4AllDstInputManager.html#a0244c2edbaa2350038304b09f352c2d0" title="Fun4AllDstInputManager\l::SyncIt" alt="" coords="519,70,684,111"/>
-</map>

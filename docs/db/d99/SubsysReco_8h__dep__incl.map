@@ -1,9 +1,0 @@
-<map id="fun4all/fun4all/SubsysReco.h" name="fun4all/fun4all/SubsysReco.h">
-<area shape="rect" id="node2" href="$d0/d56/Fun4AllInputManager_8cc.html" title="fun4all/fun4all/Fun4AllInput\lManager.cc" alt="" coords="5,81,184,122"/>
-<area shape="rect" id="node3" href="$d8/d7a/Fun4AllServer_8cc.html" title="fun4all/fun4all/Fun4AllServer.cc" alt="" coords="208,88,413,115"/>
-<area shape="rect" id="node4" href="$de/d98/SubsysReco_8cc.html" title="fun4all/fun4all/SubsysReco.cc" alt="" coords="438,88,633,115"/>
-<area shape="rect" id="node5" href="$d9/d40/ReadMySql_8h.html" title="fun4all/modules/ReadMySql.h" alt="" coords="658,88,851,115"/>
-<area shape="rect" id="node7" href="$d4/dcb/SimpleReadMySql_8h.html" title="fun4all/modules/SimpleRead\lMySql.h" alt="" coords="876,81,1063,122"/>
-<area shape="rect" id="node6" href="$dd/d12/ReadMySql_8C.html" title="fun4all/modules/ReadMySql.C" alt="" coords="657,179,852,205"/>
-<area shape="rect" id="node8" href="$dd/d2f/SimpleReadMySql_8C.html" title="fun4all/modules/SimpleRead\lMySql.C" alt="" coords="876,171,1063,213"/>
-</map>
