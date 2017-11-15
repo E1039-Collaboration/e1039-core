@@ -26,7 +26,11 @@ pkginclude_HEADERS = \
   SQEvent.h \
   SQEvent_v1.h \
   SQRun.h \
-  SQRun_v1.h
+  SQRun_v1.h \
+  SQSpill.h \
+  SQSpill_v1.h \
+  SQSpillMap.h \
+  SQSpillMap_v1.h
 
 libinterfaces_la_SOURCES = \
   SQHit.C \
@@ -44,7 +48,15 @@ libinterfaces_la_SOURCES = \
   SQRun.C \
   SQRun_Dict.C \
   SQRun_v1.C \
-  SQRun_v1_Dict.C
+  SQRun_v1_Dict.C \
+  SQSpill.C \
+  SQSpill_Dict.C \
+  SQSpill_v1.C \
+  SQSpill_v1_Dict.C \
+  SQSpillMap.C \
+  SQSpillMap_Dict.C \
+  SQSpillMap_v1.C \
+  SQSpillMap_v1_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
