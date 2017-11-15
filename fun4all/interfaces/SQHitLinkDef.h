@@ -1,5 +1,5 @@
 #ifdef __CINT__
 
-#pragma link C++ class SHitMap_v1+;
+#pragma link C++ class SQHit+;
 
 #endif /* __CINT__ */

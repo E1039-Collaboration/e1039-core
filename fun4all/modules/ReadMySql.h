@@ -29,8 +29,8 @@
 #include <map>
 //#include <algorithm>
 
-class SEvent;
-class SHitMap;
+class SQEvent;
+class SQHitMap;
 
 class ReadMySql: public SubsysReco {
 
@@ -46,9 +46,9 @@ public:
 	int End(PHCompositeNode *topNode);
 
 
-	static int FillSEvent(SEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
+	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
 
-	static int FillSHitMap(SHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
+	static int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
 
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
 	static float getFloat(TSQLRow* row, int id, float default_val = 0.);
@@ -85,8 +85,8 @@ private:
     std::vector<int> _event_ids;
     size_t _event;
 
-    SEvent * _event_header;
-    SHitMap *_hit_map;
+    SQEvent * _event_header;
+    SQHitMap *_hit_map;
 
     typedef std::map<std::string, short> _m_detector_name_to_id;
 

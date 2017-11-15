@@ -1,21 +1,19 @@
 /*
- * SEvent.h
+ * SQEvent.h
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
 
-#ifndef _H_SEvent_H_
-#define _H_SEvent_H_
-
-#include "SHitMap.h"
+#ifndef _H_SQEvent_H_
+#define _H_SQEvent_H_
 
 #include <phool/PHObject.h>
 
 #include <map>
 #include <iostream>
 
-class SEvent: public PHObject {
+class SQEvent: public PHObject {
 
 public:
 
@@ -32,13 +30,13 @@ public:
 		MATRIX5 = 9
 	};
 
-	virtual ~SEvent() {}
+	virtual ~SQEvent() {}
 
 	void Reset() {}
 
 	virtual void identify(std::ostream& os = std::cout) const {
 		std::cout
-		<< "---SEvent::identify: abstract base-------------------"
+		<< "---SQEvent::identify: abstract base-------------------"
 		<< std::endl;
 	}
 
@@ -61,8 +59,8 @@ public:
 	virtual int get_vme_time() const = 0;
 	virtual void set_vme_time(const int a) = 0;
 
-	virtual bool get_trigger(const SEvent::TriggerMask i) const = 0;
-	virtual void set_trigger(const SEvent::TriggerMask i, const bool a) = 0;
+	virtual bool get_trigger(const SQEvent::TriggerMask i) const = 0;
+	virtual void set_trigger(const SQEvent::TriggerMask i, const bool a) = 0;
 
 	virtual int get_raw_matrix(const unsigned short i) const = 0;
 	virtual void set_raw_matrix(const unsigned short i, const bool a) = 0;
@@ -74,9 +72,9 @@ public:
 
 protected:
 
-	SEvent(){};
+	SQEvent(){};
 
-ClassDef(SEvent, 1);
+ClassDef(SQEvent, 1);
 };
 
-#endif /* _H_SEvent_H_ */
+#endif /* _H_SQEvent_H_ */

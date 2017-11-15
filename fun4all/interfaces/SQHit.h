@@ -1,12 +1,12 @@
 /*
- * SHit.h
+ * SQHit.h
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
 
-#ifndef _H_SHit_H_
-#define _H_SHit_H_
+#ifndef _H_SQHit_H_
+#define _H_SQHit_H_
 
 #include <phool/PHObject.h>
 
@@ -14,22 +14,22 @@
 #include <limits.h>
 #include <string>
 
-class SHit : public PHObject {
+class SQHit : public PHObject {
 
 public:
 
 
 
-  virtual ~SHit() {}
+  virtual ~SQHit() {}
 
   // PHObject virtual overloads
 
   virtual void         identify(std::ostream& os = std::cout) const {
-    os << "---SHit base class------------" << std::endl;
+    os << "---SQHit base class------------" << std::endl;
   }
   virtual void         Reset() {};
   virtual int          isValid() const {return 0;}
-  virtual SHit*        Clone() const {return NULL;}
+  virtual SQHit*        Clone() const {return NULL;}
 
   // digitized hit info
 
@@ -68,14 +68,14 @@ public:
   };
 
 protected:
-  SHit() {}
+  SQHit() {}
 
 private:
 
-  ClassDef(SHit, 1);
+  ClassDef(SQHit, 1);
 };
 
 
 
 
-#endif /* _H_SHit_H_ */
+#endif /* _H_SQHit_H_ */

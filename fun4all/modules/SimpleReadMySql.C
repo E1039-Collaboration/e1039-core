@@ -8,9 +8,9 @@
 
 #include "SimpleReadMySql.h"
 
-#include <interfaces/SHit.h>
-#include <interfaces/SHit_v1.h>
-#include <interfaces/SHitMap_v1.h>
+#include <interfaces/SQHit.h>
+#include <interfaces/SQHit_v1.h>
+#include <interfaces/SQHitMap_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
@@ -110,7 +110,7 @@ int SimpleReadMySql::process_event(PHCompositeNode* topNode) {
     for(int i = 0; i < nHits; ++i)
     {
         nextEntry();
-        SHit *hit = new SHit_v1();
+        SQHit *hit = new SQHit_v1();
         hit->set_detector_id(0);
         hit->set_element_id(0);
         hit->set_hit_id(getInt(0));
@@ -140,18 +140,18 @@ int SimpleReadMySql::MakeNodes(PHCompositeNode* topNode) {
 		topNode->addNode(eventNode);
 	}
 
-	_hit_map = new SHitMap_v1();
-	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SHitMap", "PHObject");
+	_hit_map = new SQHitMap_v1();
+	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SQHitMap", "PHObject");
 	eventNode->addNode(hitNode);
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-		LogInfo("DST/SHitMap Added");
+		LogInfo("DST/SQHitMap Added");
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 
 
 int SimpleReadMySql::GetNodes(PHCompositeNode* topNode) {
-	_hit_map = findNode::getClass<SHitMap>(topNode, "SHitMap");
+	_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
 	if (!_hit_map) {
 		LogError("!_hit_map");
 		return Fun4AllReturnCodes::ABORTEVENT;

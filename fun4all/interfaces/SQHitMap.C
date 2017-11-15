@@ -1,5 +1,5 @@
 /*
- * SEvent.C
+ * SQHitMap.C
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
@@ -7,8 +7,10 @@
 
 
 
-#include "SEvent.h"
+#include "SQHitMap.h"
+
+#include "SQHit.h"
 
 using namespace std;
 
-ClassImp(SEvent)
+ClassImp(SQHitMap)

@@ -19,26 +19,26 @@ libinterfaces_la_LIBADD = \
   -lphool
 
 pkginclude_HEADERS = \
-  SHit.h \
-  SHit_v1.h \
-  SHitMap.h \
-  SHitMap_v1.h \
-  SEvent.h \
-  SEvent_v1.h
+  SQHit.h \
+  SQHit_v1.h \
+  SQHitMap.h \
+  SQHitMap_v1.h \
+  SQEvent.h \
+  SQEvent_v1.h
 
 libinterfaces_la_SOURCES = \
-  SHit.C \
-  SHit_Dict.C \
-  SHit_v1.C \
-  SHit_v1_Dict.C \
-  SHitMap.C \
-  SHitMap_Dict.C \
-  SHitMap_v1.C \
-  SHitMap_v1_Dict.C \
-  SEvent.C \
-  SEvent_Dict.C \
-  SEvent_v1.C \
-  SEvent_v1_Dict.C
+  SQHit.C \
+  SQHit_Dict.C \
+  SQHit_v1.C \
+  SQHit_v1_Dict.C \
+  SQHitMap.C \
+  SQHitMap_Dict.C \
+  SQHitMap_v1.C \
+  SQHitMap_v1_Dict.C \
+  SQEvent.C \
+  SQEvent_Dict.C \
+  SQEvent_v1.C \
+  SQEvent_v1_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h

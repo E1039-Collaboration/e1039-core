@@ -1,28 +1,29 @@
 /*
- * SEvent_v1.h
+ * SQEvent_v1.h
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
 
-#ifndef _H_SEvent_v1_H_
-#define _H_SEvent_v1_H_
+#ifndef _H_SQEvent_v1_H_
+#define _H_SQEvent_v1_H_
 
-#include "SEvent.h"
+#include "SQEvent.h"
 
 #include <phool/PHObject.h>
 
 #include <map>
 #include <iostream>
 #include <limits>
+#include <climits>
 
-class SEvent_v1: public SEvent {
+class SQEvent_v1: public SQEvent {
 
 public:
 
-	SEvent_v1();
+	SQEvent_v1();
 
-	virtual ~SEvent_v1();
+	virtual ~SQEvent_v1();
 
 	void Reset();
 
@@ -47,8 +48,8 @@ public:
 	virtual int get_vme_time() const {return _vme_time;}
 	virtual void set_vme_time(const int a) {_vme_time = a;}
 
-	virtual bool get_trigger(const SEvent::TriggerMask i) const {return (_trigger&(1<<i)) > 0 ;}
-	virtual void set_trigger(const SEvent::TriggerMask i, const bool a) {a ? (_trigger |= (1<<i)) : (_trigger &= ~(1<<i)) ;}
+	virtual bool get_trigger(const SQEvent::TriggerMask i) const {return (_trigger&(1<<i)) > 0 ;}
+	virtual void set_trigger(const SQEvent::TriggerMask i, const bool a) {a ? (_trigger |= (1<<i)) : (_trigger &= ~(1<<i)) ;}
 
 	virtual int get_raw_matrix(const unsigned short i) const {
 		if(i<5) return _raw_matrix[i];
@@ -56,7 +57,7 @@ public:
 	}
 	virtual void set_raw_matrix(const unsigned short i, const bool a) {
 		if(i<5) _raw_matrix[i] = a;
-		else std::cout<<"SEvent_v1::set_raw_matrix: i>=5";
+		else std::cout<<"SQEvent_v1::set_raw_matrix: i>=5";
 	}
 
 	virtual int get_after_inh_matrix(const unsigned short i) const {
@@ -65,7 +66,7 @@ public:
 	}
 	virtual void set_after_inh_matrix(const unsigned short i, const bool a) {
 		if(i<5) _after_inh_matrix[i] = a;
-		else std::cout<<"SEvent_v1::set_after_inh_matrix: i>=5";
+		else std::cout<<"SQEvent_v1::set_after_inh_matrix: i>=5";
 	}
 
 protected:
@@ -84,7 +85,7 @@ protected:
 
 	int _vme_time;
 
-ClassDef(SEvent_v1, 1);
+ClassDef(SQEvent_v1, 1);
 };
 
-#endif /* _H_SEvent_v1_H_ */
+#endif /* _H_SQEvent_v1_H_ */

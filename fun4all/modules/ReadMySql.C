@@ -8,10 +8,10 @@
 
 #include "ReadMySql.h"
 
-#include <interfaces/SHit.h>
-#include <interfaces/SHit_v1.h>
-#include <interfaces/SHitMap_v1.h>
-#include <interfaces/SEvent_v1.h>
+#include <interfaces/SQHit.h>
+#include <interfaces/SQHit_v1.h>
+#include <interfaces/SQHitMap_v1.h>
+#include <interfaces/SQEvent_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
@@ -102,9 +102,9 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 
 	int eventID = _event_ids[_event++];
 
-	ReadMySql::FillSEvent(_event_header, _input_server, eventID, "Event");
+	ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
 
-	ReadMySql::FillSHitMap(_hit_map, _input_server, eventID, "Hit");
+	ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
 
     return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -123,17 +123,17 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 		topNode->addNode(eventNode);
 	}
 
-	_event_header = new SEvent_v1();
-	PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(_event_header,"SEvent", "PHObject");
+	_event_header = new SQEvent_v1();
+	PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(_event_header,"SQEvent", "PHObject");
 	eventNode->addNode(eventHeaderNode);
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-		LogInfo("DST/SEvent Added");
+		LogInfo("DST/SQEvent Added");
 
-	_hit_map = new SHitMap_v1();
-	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SHitMap", "PHObject");
+	_hit_map = new SQHitMap_v1();
+	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SQHitMap", "PHObject");
 	eventNode->addNode(hitNode);
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-		LogInfo("DST/SHitMap Added");
+		LogInfo("DST/SQHitMap Added");
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -141,13 +141,13 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 
 int ReadMySql::GetNodes(PHCompositeNode* topNode) {
 
-	_event_header = findNode::getClass<SEvent>(topNode, "SEvent");
+	_event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
 	if (!_event_header) {
 		LogError("!_event_header");
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
-	_hit_map = findNode::getClass<SHitMap>(topNode, "SHitMap");
+	_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
 	if (!_hit_map) {
 		LogError("!_hit_map");
 		return Fun4AllReturnCodes::ABORTEVENT;
@@ -227,7 +227,7 @@ std::string ReadMySql::getString(TSQLRow* row, int id, std::string default_val)
     return std::string(row->GetField(id));
 }
 
-int ReadMySql::FillSHitMap(SHitMap* hit_map, TSQLServer* server,
+int ReadMySql::FillSQHitMap(SQHitMap* hit_map, TSQLServer* server,
 		const int event_id, const char* table) {
 
 	if(!hit_map) {
@@ -253,7 +253,7 @@ int ReadMySql::FillSHitMap(SHitMap* hit_map, TSQLServer* server,
     {
     	TSQLRow* row = res->Next();
 
-        SHit *hit = new SHit_v1();
+        SQHit *hit = new SQHit_v1();
 
         hit->set_hit_id(getInt(row,0));
 
@@ -279,7 +279,7 @@ int ReadMySql::FillSHitMap(SHitMap* hit_map, TSQLServer* server,
 
 
 
-int ReadMySql::FillSEvent(SEvent* event_header, TSQLServer* server,
+int ReadMySql::FillSQEvent(SQEvent* event_header, TSQLServer* server,
 		const int event_id, const char* table) {
 
 
@@ -319,11 +319,11 @@ int ReadMySql::FillSEvent(SEvent* event_header, TSQLServer* server,
 
     	event_header->set_coda_event_id(getInt(row, 3));
 
-    	event_header->set_trigger(SEvent::NIM1, getInt(row, 4));
-    	event_header->set_trigger(SEvent::NIM2, getInt(row, 5));
-    	event_header->set_trigger(SEvent::NIM3, getInt(row, 6));
-    	event_header->set_trigger(SEvent::NIM4, getInt(row, 7));
-    	event_header->set_trigger(SEvent::NIM5, getInt(row, 8));
+    	event_header->set_trigger(SQEvent::NIM1, getInt(row, 4));
+    	event_header->set_trigger(SQEvent::NIM2, getInt(row, 5));
+    	event_header->set_trigger(SQEvent::NIM3, getInt(row, 6));
+    	event_header->set_trigger(SQEvent::NIM4, getInt(row, 7));
+    	event_header->set_trigger(SQEvent::NIM5, getInt(row, 8));
     }
 
 	delete res;

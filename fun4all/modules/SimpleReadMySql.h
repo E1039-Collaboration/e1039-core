@@ -28,7 +28,7 @@
 #include <list>
 //#include <algorithm>
 
-class SHitMap;
+class SQHitMap;
 
 class SimpleReadMySql: public SubsysReco {
 
@@ -77,7 +77,7 @@ private:
     std::vector<int> eventIDs;
     size_t _event;
 
-    SHitMap *_hit_map;
+    SQHitMap *_hit_map;
 
 };
 

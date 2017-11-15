@@ -1,32 +1,32 @@
 /*
- * SHit_v1.h
+ * SQHit_v1.h
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
 
-#ifndef _H_SHit_v1_H_
-#define _H_SHit_v1_H_
+#ifndef _H_SQHit_v1_H_
+#define _H_SQHit_v1_H_
 
 
-#include "SHit.h"
+#include "SQHit.h"
 
 #include <phool/PHObject.h>
 #include <iostream>
 
-class SHit_v1 : public SHit {
+class SQHit_v1 : public SQHit {
 
 public:
 
-  SHit_v1();
-  virtual ~SHit_v1() {}
+  SQHit_v1();
+  virtual ~SQHit_v1() {}
 
   // PHObject virtual overloads
 
   void         identify(std::ostream& os = std::cout) const;
-  void         Reset() {*this = SHit_v1();}
+  void         Reset() {*this = SQHit_v1();}
   int          isValid() const;
-  SHit*        Clone() const {return (new SHit_v1(*this));}
+  SQHit*        Clone() const {return (new SQHit_v1(*this));}
 
   // digitized hit info
 
@@ -48,14 +48,14 @@ public:
   virtual float        get_pos() const                           {return _pos;}
   virtual void         set_pos(const float a)                    {_pos=a;}
 
-  virtual bool         is_in_time() const                        {return (_flag&(SHit::InTime)) != 0;}
-  virtual void         set_in_time(const bool a)                 {a? (_flag |= SHit::InTime) : (_flag &= ~SHit::InTime);}
+  virtual bool         is_in_time() const                        {return (_flag&(SQHit::InTime)) != 0;}
+  virtual void         set_in_time(const bool a)                 {a? (_flag |= SQHit::InTime) : (_flag &= ~SQHit::InTime);}
 
-  virtual bool         is_hodo_mask() const                      {return (_flag&(SHit::HodoMask)) != 0;}
-  virtual void         set_hodo_mask(const bool a)               {a? (_flag |= SHit::HodoMask) : (_flag &= ~SHit::HodoMask);}
+  virtual bool         is_hodo_mask() const                      {return (_flag&(SQHit::HodoMask)) != 0;}
+  virtual void         set_hodo_mask(const bool a)               {a? (_flag |= SQHit::HodoMask) : (_flag &= ~SQHit::HodoMask);}
 
-  virtual bool         is_trigger_mask() const                   {return (_flag&(SHit::TriggerMask)) != 0;}
-  virtual void         set_trigger_mask(const bool a)            {a? (_flag |= SHit::TriggerMask) : (_flag &= ~SHit::TriggerMask);}
+  virtual bool         is_trigger_mask() const                   {return (_flag&(SQHit::TriggerMask)) != 0;}
+  virtual void         set_trigger_mask(const bool a)            {a? (_flag |= SQHit::TriggerMask) : (_flag &= ~SQHit::TriggerMask);}
 
 private:
 
@@ -69,8 +69,8 @@ private:
 
   unsigned short _flag;           //<
 
-  ClassDef(SHit_v1, 1);
+  ClassDef(SQHit_v1, 1);
 };
 
 
-#endif /* _H_SHit_v1_H_ */
+#endif /* _H_SQHit_v1_H_ */

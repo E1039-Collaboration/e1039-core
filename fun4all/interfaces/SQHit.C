@@ -1,14 +1,14 @@
 /*
- * SHit.C
+ * SQHit.C
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
 
-#include "SHit.h"
+#include "SQHit.h"
 
 using namespace std;
 
-ClassImp(SHit);
+ClassImp(SQHit);
 
 

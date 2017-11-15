@@ -1,10 +1,10 @@
 /*
- * SHit_v1.C
+ * SQHit_v1.C
  *
  *  Created on: Oct 29, 2017
  *      Author: yuhw
  */
-#include "SHit_v1.h"
+#include "SQHit_v1.h"
 
 #include <limits>
 #include <cmath>
@@ -13,9 +13,9 @@
 
 using namespace std;
 
-ClassImp(SHit_v1);
+ClassImp(SQHit_v1);
 
-SHit_v1::SHit_v1()
+SQHit_v1::SQHit_v1()
   : _hit_id(INT_MAX),
 	_detector_id(std::numeric_limits<short>::max()),
 	_element_id(std::numeric_limits<short>::max()),
@@ -25,8 +25,8 @@ SHit_v1::SHit_v1()
 	_flag(0)
 {}
 
-void SHit_v1::identify(ostream& os) const {
-  os << "---SHit_v1--------------------" << endl;
+void SQHit_v1::identify(ostream& os) const {
+  os << "---SQHit_v1--------------------" << endl;
   os << " hitID: " << get_hit_id() << endl;
   os << " detectorID: " << get_detector_id() << " elementID: "<< get_element_id() << endl;
   os
@@ -44,7 +44,7 @@ void SHit_v1::identify(ostream& os) const {
   return;
 }
 
-int SHit_v1::isValid() const {
+int SQHit_v1::isValid() const {
   if (_hit_id == INT_MAX) return 0;
   if (_detector_id == INT_MAX) return 0;
   if (_element_id == INT_MAX) return 0;
