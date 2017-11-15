@@ -29,6 +29,7 @@
 #include <map>
 //#include <algorithm>
 
+class SQRun;
 class SQEvent;
 class SQHitMap;
 
@@ -45,6 +46,7 @@ public:
 	int process_event(PHCompositeNode *topNode);
 	int End(PHCompositeNode *topNode);
 
+	static int FillSQRun(SQRun* run_header, TSQLServer* server, const int run_id, const char* table = "Run");
 
 	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
 
@@ -84,6 +86,8 @@ private:
 
     std::vector<int> _event_ids;
     size_t _event;
+
+    SQRun* _run_header;
 
     SQEvent * _event_header;
     SQHitMap *_hit_map;

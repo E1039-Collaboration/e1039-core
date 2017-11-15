@@ -12,6 +12,7 @@
 #include <interfaces/SQHit_v1.h>
 #include <interfaces/SQHitMap_v1.h>
 #include <interfaces/SQEvent_v1.h>
+#include <interfaces/SQRun_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
@@ -49,6 +50,7 @@ _input_server(nullptr),
 _res(nullptr),
 _row(nullptr),
 _event(0),
+_run_header(nullptr),
 _event_header(nullptr),
 _hit_map(nullptr)
 {
@@ -81,10 +83,19 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
     int ret = MakeNodes(topNode);
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
+	ret = GetNodes(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
+    sprintf(_query, "SELECT runID FROM Run LIMIT 1");
+    makeQueryInput();
+    nextEntry();
+    int run_id = getInt(_row,0);
+	ReadMySql::FillSQRun(_run_header, _input_server, run_id,"Run");
+
     sprintf(_query, "SELECT eventID FROM Event");
+    int nrow = makeQueryInput();
     _event_ids.clear();
-    int nTotal = makeQueryInput();
-    for(int i = 0; i < nTotal; ++i)
+    for(int i = 0; i < nrow; ++i)
     {
         nextEntry();
         _event_ids.push_back(getInt(_row, 0));
@@ -94,9 +105,6 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
 }
 
 int ReadMySql::process_event(PHCompositeNode* topNode) {
-
-	int ret = GetNodes(topNode);
-	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
 	if(_event >= _event_ids.size()) return Fun4AllReturnCodes::ABORTRUN;
 
@@ -115,6 +123,19 @@ int ReadMySql::End(PHCompositeNode* topNode) {
 
 int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	PHNodeIterator iter(topNode);
+
+	PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+	if (!runNode) {
+		LogInfo("No RUN node, create one");
+		runNode = new PHCompositeNode("RUN");
+		topNode->addNode(runNode);
+	}
+
+	_run_header = new SQRun_v1();
+	PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(_run_header,"SQRun", "PHObject");
+	runNode->addNode(runHeaderNode);
+	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+		LogInfo("DST/SQRun Added");
 
 	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
 	if (!eventNode) {
@@ -140,6 +161,12 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 
 
 int ReadMySql::GetNodes(PHCompositeNode* topNode) {
+
+	_run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+	if (!_run_header) {
+		LogError("!_run_header");
+		return Fun4AllReturnCodes::ABORTEVENT;
+	}
 
 	_event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
 	if (!_event_header) {
@@ -332,6 +359,46 @@ int ReadMySql::FillSQEvent(SQEvent* event_header, TSQLServer* server,
 }
 
 
+int ReadMySql::FillSQRun(SQRun* run_header, TSQLServer* server,
+		const int run_id, const char* table) {
+
+
+	if(!run_header) {
+		LogError("!run_header");
+		return -1;
+	}
+
+	run_header->set_run_id(run_id);
+
+	if(!server) {
+		LogError("!server");
+		return -1;
+	}
+
+	char query[1000];
+
+	sprintf(query,
+			//      0      1        2
+			"SELECT runID, name, value"
+			" FROM %s WHERE runID=%d", table, run_id);
+
+	TSQLResult *res = server->Query(query);
+
+	int nrow = res->GetRowCount();
+
+    for(int irow = 0; irow < nrow; ++irow)
+    {
+    	TSQLRow* row = res->Next();
+
+    	std::string name = getString(row, 1);
+    	if(name.compare("spillCount")==0) {
+    		run_header->set_spill_count(getInt(row,2));
+    	}
+    }
+
+	delete res;
+	return 0;
+}
 
 
 
