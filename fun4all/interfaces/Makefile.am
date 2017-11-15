@@ -24,7 +24,9 @@ pkginclude_HEADERS = \
   SQHitMap.h \
   SQHitMap_v1.h \
   SQEvent.h \
-  SQEvent_v1.h
+  SQEvent_v1.h \
+  SQRun.h \
+  SQRun_v1.h
 
 libinterfaces_la_SOURCES = \
   SQHit.C \
@@ -38,7 +40,11 @@ libinterfaces_la_SOURCES = \
   SQEvent.C \
   SQEvent_Dict.C \
   SQEvent_v1.C \
-  SQEvent_v1_Dict.C
+  SQEvent_v1_Dict.C \
+  SQRun.C \
+  SQRun_Dict.C \
+  SQRun_v1.C \
+  SQRun_v1_Dict.C
 
 # Rule for generating table CINT dictionaries.
 %_Dict.C: %.h %LinkDef.h
