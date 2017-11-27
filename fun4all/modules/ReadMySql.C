@@ -10,6 +10,7 @@
 
 #include <interfaces/SQHit.h>
 #include <interfaces/SQHit_v1.h>
+#include <interfaces/SQMCHit_v1.h>
 #include <interfaces/SQHitMap_v1.h>
 #include <interfaces/SQHitVector_v1.h>
 #include <interfaces/SQEvent_v1.h>
@@ -39,7 +40,8 @@
 
 ReadMySql::ReadMySql(const std::string& name) :
 SubsysReco(name),
-_hit_container_choice("Vector"),
+_hit_type("SQHit_v1"),
+_hit_container_type("Vector"),
 _server_name("seaquestdb01.fnal.gov"),
 _port(3310),
 _user_name("seaguest"),
@@ -121,11 +123,11 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 
 	ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
 
-	if(_hit_container_choice.find("Map") != std::string::npos)
+	if(_hit_container_type.find("Map") != std::string::npos)
 		ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
 
-	if(_hit_container_choice.find("Vector") != std::string::npos)
-		ReadMySql::FillSQHitVector(_hit_vector, _input_server, eventID, "Hit");
+	if(_hit_container_type.find("Vector") != std::string::npos)
+		ReadMySql::FillSQHitVector(_hit_vector, _hit_type, _input_server, eventID, "Hit");
 
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
 		std::cout << "Leaving ReadMySql::process_event: " << _event-1 << std::endl;
@@ -174,7 +176,7 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
 		LogInfo("DST/SQEvent Added");
 
-	if(_hit_container_choice.find("Map") != std::string::npos) {
+	if(_hit_container_type.find("Map") != std::string::npos) {
 		_hit_map = new SQHitMap_v1();
 		PHIODataNode<PHObject>* hitNodeMap = new PHIODataNode<PHObject>(_hit_map,"SQHitMap", "PHObject");
 		eventNode->addNode(hitNodeMap);
@@ -182,7 +184,7 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 			LogInfo("DST/SQHitMap Added");
 	}
 
-	if(_hit_container_choice.find("Vector") != std::string::npos) {
+	if(_hit_container_type.find("Vector") != std::string::npos) {
 		_hit_vector = new SQHitVector_v1();
 		PHIODataNode<PHObject>* hitNodeVector = new PHIODataNode<PHObject>(_hit_vector,"SQHitVector", "PHObject");
 		eventNode->addNode(hitNodeVector);
@@ -214,7 +216,7 @@ int ReadMySql::GetNodes(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
-	if(_hit_container_choice.find("Map") != std::string::npos) {
+	if(_hit_container_type.find("Map") != std::string::npos) {
 		_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
 		if (!_hit_map) {
 			LogError("!_hit_map");
@@ -222,7 +224,7 @@ int ReadMySql::GetNodes(PHCompositeNode* topNode) {
 		}
 	}
 
-	if(_hit_container_choice.find("Vector") != std::string::npos) {
+	if(_hit_container_type.find("Vector") != std::string::npos) {
 		_hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
 		if (!_hit_vector) {
 			LogError("!_hit_vector");
@@ -356,8 +358,12 @@ int ReadMySql::FillSQHitMap(SQHitMap* hit_map, TSQLServer* server,
 }
 
 
-int ReadMySql::FillSQHitVector(SQHitVector* hit_vector, TSQLServer* server,
-		const int event_id, const char* table) {
+int ReadMySql::FillSQHitVector(
+		SQHitVector* hit_vector,
+		const std::string hit_type,
+		TSQLServer* server,
+		const int event_id,
+		const char* table) {
 
 
 	if(!hit_vector) {
@@ -386,7 +392,15 @@ int ReadMySql::FillSQHitVector(SQHitVector* hit_vector, TSQLServer* server,
     {
     	TSQLRow* row = res->Next();
 
-        SQHit *hit = new SQHit_v1();
+        SQHit *hit = nullptr;
+
+        if(hit_type.find("SQHit_v1")!=std::string::npos) {
+        	hit = new SQHit_v1();
+        }
+        else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
+        	hit = new SQMCHit_v1();
+        	hit->set_g4hit_id(getInt(row,0));
+        }
 
         hit->set_hit_id(getInt(row,0));
 

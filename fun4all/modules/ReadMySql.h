@@ -54,19 +54,27 @@ public:
 
 	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
 	static int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
-	static int FillSQHitVector(SQHitVector* hit_vector, TSQLServer* server, const int event_id, const char* table = "Hit");
+	static int FillSQHitVector(SQHitVector* hit_vector, const std::string hit_type, TSQLServer* server, const int event_id, const char* table = "Hit");
 
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
 	static float getFloat(TSQLRow* row, int id, float default_val = 0.);
 	static double getDouble(TSQLRow* row, int id, double default_val = 0.);
 	static std::string getString(TSQLRow* row, int id, std::string default_val = "");
 
-	const std::string& get_hit_container_choice() const {
-		return _hit_container_choice;
+	const std::string& get_hit_container_type() const {
+		return _hit_container_type;
 	}
 
-	void set_hit_container_choice(const std::string& hitContainerChoice) {
-		_hit_container_choice = hitContainerChoice;
+	void set_hit_container_type(const std::string& hitContainerChoice) {
+		_hit_container_type = hitContainerChoice;
+	}
+
+	const std::string& get_hit_type() const {
+		return _hit_type;
+	}
+
+	void set_hit_type(const std::string& hitType) {
+		_hit_type = hitType;
 	}
 
 private:
@@ -77,7 +85,8 @@ private:
 	int makeQueryInput();
 	bool nextEntry();
 
-	std::string _hit_container_choice;
+	std::string _hit_type;
+	std::string _hit_container_type;
 
 	std::string _server_name;
 	int _port;
