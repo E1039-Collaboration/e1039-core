@@ -12,6 +12,7 @@
 #include "SQHit.h"
 
 #include <phool/PHObject.h>
+
 #include <map>
 #include <iostream>
 
