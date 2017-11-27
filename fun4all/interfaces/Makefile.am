@@ -21,6 +21,7 @@ libinterfaces_la_LIBADD = \
 pkginclude_HEADERS = \
   SQHit.h \
   SQHit_v1.h \
+  SQMCHit_v1.h \
   SQHitMap.h \
   SQHitMap_v1.h \
   SQHitVector.h \
@@ -39,6 +40,8 @@ libinterfaces_la_SOURCES = \
   SQHit_Dict.C \
   SQHit_v1.C \
   SQHit_v1_Dict.C \
+  SQMCHit_v1.C \
+  SQMCHit_v1_Dict.C \
   SQHitMap.C \
   SQHitMap_Dict.C \
   SQHitMap_v1.C \
