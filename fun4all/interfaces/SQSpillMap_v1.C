@@ -72,10 +72,9 @@ SQSpill* SQSpillMap_v1::get(unsigned int id) {
   return iter->second;
 }
 
-SQSpill* SQSpillMap_v1::insert(const SQSpill *hit) {
-  unsigned int index = 0;
-  if (!_map.empty()) index = _map.rbegin()->first + 1;
-  _map.insert(make_pair( index , hit->Clone() ));
+SQSpill* SQSpillMap_v1::insert(const SQSpill *spill) {
+	int index = spill->get_spill_id();
+  _map.insert(make_pair( index , spill->Clone() ));
   return _map[index];
 }
 
