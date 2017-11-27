@@ -9,7 +9,7 @@
 
 void Fun4ReadMySql(
 		const int nevent = 2, 
-		const char *outfile = "out.root"
+		const char *outfile = "dst.root"
 		) {
 
 	int verbosity = 0;
