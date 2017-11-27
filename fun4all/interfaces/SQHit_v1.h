@@ -59,15 +59,15 @@ public:
 
 private:
 
-  int _hit_id;                   //< unique identifier within container
-  short _detector_id;            //<
-  short _element_id;             //< element id
+  int _hit_id;                   ///< hitID
+  short _detector_id;            ///< mapping from detector name to ID
+  short _element_id;             ///< elementID
 
-  float _tdc_time;               //<
-  float _drift_distance;         //<
-  float _pos;                    //<
+  float _tdc_time;               ///< tdcTime
+  float _drift_distance;         ///< driftDistance
+  float _pos;                    ///< pos?
 
-  unsigned short _flag;           //<
+  unsigned short _flag;          ///< bits collection
 
   ClassDef(SQHit_v1, 1);
 };
