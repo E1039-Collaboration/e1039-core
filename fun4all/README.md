@@ -1,4 +1,4 @@
-# Fun4All
+# Prototype in Fun4All framework
 
 ## Build
 Use [automake](https://www.gnu.org/software/automake/), [autoconf](https://www.gnu.org/software/autoconf/autoconf.html) and [libtool](https://www.gnu.org/software/libtool/) to build the code. Each package should contain 3 files: 'autogen.sh', 'configure.ac' and 'MakeFile.am'
