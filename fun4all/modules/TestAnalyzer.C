@@ -74,15 +74,30 @@ int TestAnalyzer::process_event(PHCompositeNode* topNode) {
 
 	ResetEvalVars();
 
-	if(_event_header) {
-		_b_event_id = _event_header->get_event_id();
-		_b_spill_id = _event_header->get_spill_id();
-		_b_run_id = _event_header->get_run_id();
+	if(!_event_header) {
+		LogDebug("!_event_header");
+		return Fun4AllReturnCodes::ABORTRUN;
+	}
+
+	if(!_spill_map) {
+		LogDebug("!_spill_map");
+		return Fun4AllReturnCodes::ABORTRUN;
+	}
+
+	_b_event_id = _event_header->get_event_id();
+	_b_spill_id = _event_header->get_spill_id();
+	_b_run_id = _event_header->get_run_id();
+
+	auto spill_info = _spill_map->get(_b_spill_id);
+	if(spill_info) {
+		_b_live_proton = spill_info->get_live_proton();
+	} else {
+		LogWarning("");
 	}
 
 	if(_hit_vector) {
 		_b_n_hits = 0;
-		for(SQHitVector::Iter iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
+		for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
 			++_b_n_hits;
 			_b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
 		}
@@ -113,6 +128,7 @@ int TestAnalyzer::InitEvalTree() {
 	_tout = new TTree("T", "TestAnalyzer");
 	_tout->Branch("runID",&_b_run_id,"runID/I");
 	_tout->Branch("spillID",&_b_spill_id,"spillID/I");
+	_tout->Branch("liveProton",&_b_live_proton,"liveProton/F");
 	_tout->Branch("eventID",&_b_event_id,"eventID/I");
 	_tout->Branch("nHits",&_b_n_hits,"nHits/I");
 	_tout->Branch("driftDistance",_b_drift_distance,"driftDistance[nHits]/F");
@@ -123,6 +139,7 @@ int TestAnalyzer::InitEvalTree() {
 int TestAnalyzer::ResetEvalVars() {
 	_b_run_id = std::numeric_limits<int>::max();
 	_b_spill_id = std::numeric_limits<int>::max();
+	_b_live_proton = std::numeric_limits<float>::max();
 	_b_event_id = std::numeric_limits<int>::max();
 	_b_n_hits = 0;
 	for(int i=0; i<10000; ++i) {
