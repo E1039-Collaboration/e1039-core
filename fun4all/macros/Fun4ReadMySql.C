@@ -19,9 +19,12 @@ void Fun4ReadMySql(
 	se->Verbosity(verbosity);
 
 	gSystem->Load("libmodules.so");
-	ReadMySql *simple_reader = new ReadMySql();
-	simple_reader->Verbosity(verbosity);
-	simple_reader->set_hit_container_choice("Vector");
+	ReadMySql *reader = new ReadMySql();
+	reader->Verbosity(verbosity);
+	reader->set_hit_type("SQHit_v1");
+	reader->set_hit_container_type("Vector");
+	se->registerSubsystem(reader);
+
 
 	Fun4AllInputManager *in = new Fun4AllDummyInputManager("JADE");
 	se->registerInputManager(in);
@@ -29,7 +32,6 @@ void Fun4ReadMySql(
 	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outfile);
 	se->registerOutputManager(out);
 
-	se->registerSubsystem(simple_reader);
 
 	se->run(nevent);
 	se->End();
