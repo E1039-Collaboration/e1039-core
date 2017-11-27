@@ -24,12 +24,11 @@ void Fun4TestAnalyzer(
 	analyzer->Verbosity(verbosity);
 	analyzer->set_hit_container_choice("Vector");
 	analyzer->set_out_name(outfile);
+	se->registerSubsystem(analyzer);
 
 	Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTIN");
 	in->fileopen(infile);
 	se->registerInputManager(in);
-
-	se->registerSubsystem(analyzer);
 
 	se->run(nevent);
 	se->End();
