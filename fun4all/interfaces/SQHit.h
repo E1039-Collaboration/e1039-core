@@ -19,7 +19,7 @@ class SQHit : public PHObject {
 public:
 
 
-
+	SQHit() {}
   virtual ~SQHit() {}
 
   // PHObject virtual overloads
@@ -70,8 +70,8 @@ public:
       TriggerMask = 1<<2
   };
 
-protected:
-  SQHit() {}
+//protected:
+//  SQHit() {}
 
 private:
 
