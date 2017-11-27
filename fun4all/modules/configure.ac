@@ -2,14 +2,14 @@ AC_INIT(modules, [1.00])
 AC_CONFIG_SRCDIR([configure.ac])
 
 AM_INIT_AUTOMAKE
-
 AC_PROG_CXX(CC g++)
 LT_INIT([disable-static])
 
 dnl   no point in suppressing warnings people should 
 dnl   at least see them, so here we go for g++: -Wall
+dnl   treat warnings as errors: -Werror
 if test $ac_cv_prog_gxx = yes; then
-   CXXFLAGS="$CXXFLAGS -Wall"
+  CXXFLAGS="$CXXFLAGS -Wall -Werror -std=c++0x"
 fi
 
 dnl test for root 6
