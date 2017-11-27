@@ -21,8 +21,8 @@ class SQHitVector : public PHObject {
 public:
 
   typedef std::vector<SQHit*>       HitVector;
-  typedef HitVector::const_iterator ConstIter;
-  typedef HitVector::iterator            Iter;
+  typedef std::vector<SQHit*>::const_iterator ConstIter;
+  typedef std::vector<SQHit*>::iterator            Iter;
 
   virtual ~SQHitVector() {}
 

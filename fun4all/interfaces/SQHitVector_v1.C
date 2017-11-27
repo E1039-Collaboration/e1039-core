@@ -10,7 +10,7 @@
 
 #include "SQHit.h"
 
-#include <map>
+#include <vector>
 
 using namespace std;
 
@@ -23,8 +23,8 @@ SQHitVector_v1::SQHitVector_v1()
 SQHitVector_v1::SQHitVector_v1(const SQHitVector_v1& hitvector)
   : _vector() {
   for (ConstIter iter = hitvector.begin();
-       iter != hitvector.end();
-       ++iter) {
+      iter != hitvector.end();
+      ++iter) {
     const SQHit *hit = *iter;
     _vector.push_back(hit->Clone());
   }
@@ -33,8 +33,8 @@ SQHitVector_v1::SQHitVector_v1(const SQHitVector_v1& hitvector)
 SQHitVector_v1& SQHitVector_v1::operator=(const SQHitVector_v1& hitvector) {
   Reset();
   for (ConstIter iter = hitvector.begin();
-       iter != hitvector.end();
-       ++iter) {
+      iter != hitvector.end();
+      ++iter) {
     const SQHit *hit = *iter;
     _vector.push_back(hit->Clone());
   }
@@ -46,12 +46,7 @@ SQHitVector_v1::~SQHitVector_v1() {
 }
 
 void SQHitVector_v1::Reset() {
-  for (Iter iter = _vector.begin();
-       iter != _vector.end();
-       ++iter) {
-    SQHit *hit = *iter;
-    delete hit;
-  }
+	for(auto hit : _vector) delete hit;
   _vector.clear();
 }
 
@@ -66,7 +61,7 @@ const SQHit* SQHitVector_v1::at(const size_t id) const {
 }
 
 SQHit* SQHitVector_v1::at(const size_t id) {
-  if(id>= size()) return nullptr;
+  if(id>= _vector.size()) return nullptr;
   return _vector[id];
 }
 

@@ -11,6 +11,10 @@
 #include "SQHitVector.h"
 #include "SQHit.h"
 
+#include <phool/PHObject.h>
+#include <map>
+#include <iostream>
+
 class SQHitVector_v1 : public SQHitVector {
 
 public:
