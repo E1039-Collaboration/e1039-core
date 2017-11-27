@@ -51,11 +51,11 @@ public:
 	int ResetEvalVars();
 
 	const std::string& get_hit_container_choice() const {
-		return _hit_container_choice;
+		return _hit_container_type;
 	}
 
 	void set_hit_container_choice(const std::string& hitContainerChoice) {
-		_hit_container_choice = hitContainerChoice;
+		_hit_container_type = hitContainerChoice;
 	}
 
 	const std::string& get_out_name() const {
@@ -70,7 +70,7 @@ private:
 
 	int GetNodes(PHCompositeNode *topNode);
 
-	std::string _hit_container_choice;
+	std::string _hit_container_type;
 
 	size_t _event;
 

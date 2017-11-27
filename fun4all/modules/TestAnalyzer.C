@@ -41,7 +41,7 @@
 
 TestAnalyzer::TestAnalyzer(const std::string& name) :
 SubsysReco(name),
-_hit_container_choice("Vector"),
+_hit_container_type("Vector"),
 _event(0),
 _run_header(nullptr),
 _spill_map(nullptr),
@@ -169,7 +169,7 @@ int TestAnalyzer::GetNodes(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
-	if(_hit_container_choice.find("Map") != std::string::npos) {
+	if(_hit_container_type.find("Map") != std::string::npos) {
 		_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
 		if (!_hit_map) {
 			LogError("!_hit_map");
@@ -177,7 +177,7 @@ int TestAnalyzer::GetNodes(PHCompositeNode* topNode) {
 		}
 	}
 
-	if(_hit_container_choice.find("Vector") != std::string::npos) {
+	if(_hit_container_type.find("Vector") != std::string::npos) {
 		_hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
 		if (!_hit_vector) {
 			LogError("!_hit_vector");
