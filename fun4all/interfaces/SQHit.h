@@ -51,6 +51,9 @@ public:
   virtual float        get_pos() const                                  {return std::numeric_limits<float>::max();}
   virtual void         set_pos(const float a)                           {}
 
+  virtual int          get_g4hit_id() const                             {return std::numeric_limits<int>::max();}
+  virtual void         set_g4hit_id(const int a)                        {}
+
   virtual bool         is_in_time() const {return false;}
   virtual void         set_in_time(const bool a) {}
 
