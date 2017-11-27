@@ -2,7 +2,7 @@
  * SQHitMap.C
  *
  *  Created on: Oct 29, 2017
- *      Author: yuhw
+ *      Author: yuhw@nmsu.edu
  */
 
 

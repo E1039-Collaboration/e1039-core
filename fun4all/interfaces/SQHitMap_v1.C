@@ -73,8 +73,7 @@ SQHit* SQHitMap_v1::get(unsigned int id) {
 }
 
 SQHit* SQHitMap_v1::insert(const SQHit *hit) {
-  unsigned int index = 0;
-  if (!_map.empty()) index = _map.rbegin()->first + 1;
+	int index = hit->get_hit_id();
   _map.insert(make_pair( index , hit->Clone() ));
   return _map[index];
 }
