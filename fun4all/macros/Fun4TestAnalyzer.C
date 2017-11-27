@@ -9,8 +9,8 @@
 
 void Fun4TestAnalyzer(
 		const int nevent = 2,
-		const char *infile = "dst.root",
-		const char *outfile = "eval.root"
+		const char *indst = "dst.root",
+		const char *outeval = "eval.root"
 		) {
 
 	int verbosity = 0;
@@ -23,11 +23,11 @@ void Fun4TestAnalyzer(
 	TestAnalyzer *analyzer = new TestAnalyzer();
 	analyzer->Verbosity(verbosity);
 	analyzer->set_hit_container_choice("Vector");
-	analyzer->set_out_name(outfile);
+	analyzer->set_out_name(outeval);
 	se->registerSubsystem(analyzer);
 
 	Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTIN");
-	in->fileopen(infile);
+	in->fileopen(indst);
 	se->registerInputManager(in);
 
 	se->run(nevent);

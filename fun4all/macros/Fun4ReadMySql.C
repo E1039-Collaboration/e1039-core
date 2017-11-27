@@ -9,7 +9,7 @@
 
 void Fun4ReadMySql(
 		const int nevent = 2, 
-		const char *outfile = "dst.root"
+		const char *outdst = "dst.root"
 		) {
 
 	int verbosity = 0;
@@ -26,10 +26,10 @@ void Fun4ReadMySql(
 	se->registerSubsystem(reader);
 
 
-	Fun4AllInputManager *in = new Fun4AllDummyInputManager("JADE");
+	Fun4AllInputManager *in = new Fun4AllDummyInputManager("DUMMY");
 	se->registerInputManager(in);
 
-	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outfile);
+	Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outdst);
 	se->registerOutputManager(out);
 
 
