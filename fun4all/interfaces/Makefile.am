@@ -23,6 +23,8 @@ pkginclude_HEADERS = \
   SQHit_v1.h \
   SQHitMap.h \
   SQHitMap_v1.h \
+  SQHitVector.h \
+  SQHitVector_v1.h \
   SQEvent.h \
   SQEvent_v1.h \
   SQRun.h \
@@ -41,6 +43,10 @@ libinterfaces_la_SOURCES = \
   SQHitMap_Dict.C \
   SQHitMap_v1.C \
   SQHitMap_v1_Dict.C \
+  SQHitVector.C \
+  SQHitVector_Dict.C \
+  SQHitVector_v1.C \
+  SQHitVector_v1_Dict.C \
   SQEvent.C \
   SQEvent_Dict.C \
   SQEvent_v1.C \
