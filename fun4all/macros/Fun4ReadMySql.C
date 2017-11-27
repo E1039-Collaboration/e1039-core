@@ -21,7 +21,7 @@ void Fun4ReadMySql(
 	gSystem->Load("libmodules.so");
 	ReadMySql *simple_reader = new ReadMySql();
 	simple_reader->Verbosity(verbosity);
-	simple_reader->set_hit_container_choice("Map");
+	simple_reader->set_hit_container_choice("Vector");
 
 	Fun4AllInputManager *in = new Fun4AllDummyInputManager("JADE");
 	se->registerInputManager(in);
@@ -35,4 +35,6 @@ void Fun4ReadMySql(
 	se->End();
 
 	delete se;
+
+	cout << "Fun4ReadMySql Done!" << endl;
 }
