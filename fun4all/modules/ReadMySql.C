@@ -11,6 +11,7 @@
 #include <interfaces/SQHit.h>
 #include <interfaces/SQHit_v1.h>
 #include <interfaces/SQHitMap_v1.h>
+#include <interfaces/SQHitVector_v1.h>
 #include <interfaces/SQEvent_v1.h>
 #include <interfaces/SQRun_v1.h>
 #include <interfaces/SQSpill_v1.h>
@@ -36,10 +37,9 @@
 #define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 
-#define DEBUG
-
 ReadMySql::ReadMySql(const std::string& name) :
 SubsysReco(name),
+_hit_container_choice("Vector"),
 _server_name("seaquestdb01.fnal.gov"),
 _port(3310),
 _user_name("seaguest"),
@@ -55,7 +55,8 @@ _event(0),
 _run_header(nullptr),
 _spill_map(nullptr),
 _event_header(nullptr),
-_hit_map(nullptr)
+_hit_map(nullptr),
+_hit_vector(nullptr)
 {
 	_event_ids.clear();
 }
@@ -111,18 +112,30 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
 
 int ReadMySql::process_event(PHCompositeNode* topNode) {
 
+	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
+		std::cout << "Entering ReadMySql::process_event: " << _event << std::endl;
+
 	if(_event >= _event_ids.size()) return Fun4AllReturnCodes::ABORTRUN;
 
 	int eventID = _event_ids[_event++];
 
 	ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
 
-	ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
+	if(_hit_container_choice.find("Map") != std::string::npos)
+		ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
 
-    return Fun4AllReturnCodes::EVENT_OK;
+	if(_hit_container_choice.find("Vector") != std::string::npos)
+		ReadMySql::FillSQHitVector(_hit_vector, _input_server, eventID, "Hit");
+
+	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
+		std::cout << "Leaving ReadMySql::process_event: " << _event-1 << std::endl;
+
+	return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int ReadMySql::End(PHCompositeNode* topNode) {
+	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
+		std::cout << "ReadMySql::End" << std::endl;
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -161,11 +174,21 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
 		LogInfo("DST/SQEvent Added");
 
-	_hit_map = new SQHitMap_v1();
-	PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(_hit_map,"SQHitMap", "PHObject");
-	eventNode->addNode(hitNode);
-	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-		LogInfo("DST/SQHitMap Added");
+	if(_hit_container_choice.find("Map") != std::string::npos) {
+		_hit_map = new SQHitMap_v1();
+		PHIODataNode<PHObject>* hitNodeMap = new PHIODataNode<PHObject>(_hit_map,"SQHitMap", "PHObject");
+		eventNode->addNode(hitNodeMap);
+		if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+			LogInfo("DST/SQHitMap Added");
+	}
+
+	if(_hit_container_choice.find("Vector") != std::string::npos) {
+		_hit_vector = new SQHitVector_v1();
+		PHIODataNode<PHObject>* hitNodeVector = new PHIODataNode<PHObject>(_hit_vector,"SQHitVector", "PHObject");
+		eventNode->addNode(hitNodeVector);
+		if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+			LogInfo("DST/SQHitVector Added");
+	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -191,10 +214,20 @@ int ReadMySql::GetNodes(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
-	_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
-	if (!_hit_map) {
-		LogError("!_hit_map");
-		return Fun4AllReturnCodes::ABORTEVENT;
+	if(_hit_container_choice.find("Map") != std::string::npos) {
+		_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
+		if (!_hit_map) {
+			LogError("!_hit_map");
+			return Fun4AllReturnCodes::ABORTEVENT;
+		}
+	}
+
+	if(_hit_container_choice.find("Vector") != std::string::npos) {
+		_hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+		if (!_hit_vector) {
+			LogError("!_hit_vector");
+			return Fun4AllReturnCodes::ABORTEVENT;
+		}
 	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
@@ -313,9 +346,7 @@ int ReadMySql::FillSQHitMap(SQHitMap* hit_map, TSQLServer* server,
 
         hit->set_in_time(getInt(row,4));
         hit->set_hodo_mask(getInt(row,5));
-#ifdef DEBUG
-        hit->identify();
-#endif
+
         hit_map->insert(hit);
     }
 
@@ -325,6 +356,57 @@ int ReadMySql::FillSQHitMap(SQHitMap* hit_map, TSQLServer* server,
 }
 
 
+int ReadMySql::FillSQHitVector(SQHitVector* hit_vector, TSQLServer* server,
+		const int event_id, const char* table) {
+
+
+	if(!hit_vector) {
+		LogError("!hit_vector");
+		return -1;
+	}
+
+	if(!server) {
+		LogError("!server");
+		return -1;
+	}
+
+	char query[1000];
+
+	//                     0      1             2          3        4
+	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime, "
+			//5       6          7              8           9
+			" masked, driftTime, driftDistance, resolution, dataQuality"
+			" FROM %s WHERE eventID=%d", table, event_id);
+
+	TSQLResult *res = server->Query(query);
+
+	int nrow = res->GetRowCount();
+
+    for(int irow = 0; irow < nrow; ++irow)
+    {
+    	TSQLRow* row = res->Next();
+
+        SQHit *hit = new SQHit_v1();
+
+        hit->set_hit_id(getInt(row,0));
+
+        hit->set_detector_id(0);
+        hit->set_element_id(getInt(row,2));
+
+        hit->set_tdc_time(getFloat(row,3));
+        hit->set_drift_distance(getFloat(row,7));
+        hit->set_pos(0);
+
+        hit->set_in_time(getInt(row,4));
+        hit->set_hodo_mask(getInt(row,5));
+
+        hit_vector->push_back(hit);
+    }
+
+	delete res;
+
+	return 0;
+}
 
 int ReadMySql::FillSQEvent(SQEvent* event_header, TSQLServer* server,
 		const int event_id, const char* table) {
@@ -453,10 +535,6 @@ int ReadMySql::FillSQSpill(SQSpillMap* spill_map, TSQLServer* server,
         spill->set_spill_id(getInt(row,1));
         spill->set_live_proton(getFloat(row,2));
 
-#ifdef DEBUG
-        std::cout << "liveProton: " << getFloat(row,2) << std::endl;
-        spill->identify();
-#endif
         spill_map->insert(spill);
     }
 

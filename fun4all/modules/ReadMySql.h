@@ -34,6 +34,7 @@ class SQSpillMap;
 
 class SQEvent;
 class SQHitMap;
+class SQHitVector;
 
 class ReadMySql: public SubsysReco {
 
@@ -53,11 +54,20 @@ public:
 
 	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
 	static int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
+	static int FillSQHitVector(SQHitVector* hit_vector, TSQLServer* server, const int event_id, const char* table = "Hit");
 
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
 	static float getFloat(TSQLRow* row, int id, float default_val = 0.);
 	static double getDouble(TSQLRow* row, int id, double default_val = 0.);
 	static std::string getString(TSQLRow* row, int id, std::string default_val = "");
+
+	const std::string& get_hit_container_choice() const {
+		return _hit_container_choice;
+	}
+
+	void set_hit_container_choice(const std::string& hitContainerChoice) {
+		_hit_container_choice = hitContainerChoice;
+	}
 
 private:
 
@@ -67,7 +77,7 @@ private:
 	int makeQueryInput();
 	bool nextEntry();
 
-
+	std::string _hit_container_choice;
 
 	std::string _server_name;
 	int _port;
@@ -78,24 +88,25 @@ private:
 	int _run_id;
 	int _spill_id;
 
-    //Query string used in all clause
-    char _query[2000];
+	//Query string used in all clause
+	char _query[2000];
 
-    //SQL server
-    TSQLServer* _input_server;  //< Fetch input from this server
-    TSQLResult* _res;
-    TSQLRow* _row;
+	//SQL server
+	TSQLServer* _input_server;  //< Fetch input from this server
+	TSQLResult* _res;
+	TSQLRow* _row;
 
-    std::vector<int> _event_ids;
-    size_t _event;
+	std::vector<int> _event_ids;
+	size_t _event;
 
-    SQRun* _run_header;
-    SQSpillMap * _spill_map;
+	SQRun* _run_header;
+	SQSpillMap * _spill_map;
 
-    SQEvent * _event_header;
-    SQHitMap *_hit_map;
+	SQEvent * _event_header;
+	SQHitMap *_hit_map;
+	SQHitVector *_hit_vector;
 
-    typedef std::map<std::string, short> _m_detector_name_to_id;
+	typedef std::map<std::string, short> _m_detector_name_to_id;
 
 };
 
