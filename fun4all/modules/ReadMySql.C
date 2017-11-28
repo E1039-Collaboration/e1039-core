@@ -23,9 +23,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 
-#include <TLorentzVector.h>
-#include <TObjArray.h>
-#include <TLeaf.h>
+#include <TRandom3.h>
 
 #include <cstring>
 #include <cmath>
@@ -388,34 +386,36 @@ int ReadMySql::FillSQHitVector(
 
 	int nrow = res->GetRowCount();
 
-    for(int irow = 0; irow < nrow; ++irow)
-    {
-    	TSQLRow* row = res->Next();
+	TRandom3 rand;
 
-        SQHit *hit = nullptr;
+	for(int irow = 0; irow < nrow; ++irow)
+	{
+		TSQLRow* row = res->Next();
 
-        if(hit_type.find("SQHit_v1")!=std::string::npos) {
-        	hit = new SQHit_v1();
-        }
-        else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
-        	hit = new SQMCHit_v1();
-        	hit->set_g4hit_id(getInt(row,0));
-        }
+			SQHit *hit = nullptr;
 
-        hit->set_hit_id(getInt(row,0));
+			if(hit_type.find("SQHit_v1")!=std::string::npos) {
+				hit = new SQHit_v1();
+			}
+			else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
+				hit = new SQMCHit_v1();
+				hit->set_g4hit_id(getInt(row,0));
+			}
 
-        hit->set_detector_id(0);
-        hit->set_element_id(getInt(row,2));
+			hit->set_hit_id(getInt(row,0));
 
-        hit->set_tdc_time(getFloat(row,3));
-        hit->set_drift_distance(getFloat(row,7));
-        hit->set_pos(0);
+			hit->set_detector_id(static_cast<short>(1000*rand.Rndm()));
+			hit->set_element_id(getInt(row,2));
 
-        hit->set_in_time(getInt(row,4));
-        hit->set_hodo_mask(getInt(row,5));
+			hit->set_tdc_time(getFloat(row,3));
+			hit->set_drift_distance(getFloat(row,7));
 
-        hit_vector->push_back(hit);
-    }
+			hit->set_in_time(getInt(row,4));
+			hit->set_hodo_mask(getInt(row,5));
+			hit->set_trigger_mask(rand.Rndm()>0.5);
+
+			hit_vector->push_back(hit);
+	}
 
 	delete res;
 
