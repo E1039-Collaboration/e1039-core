@@ -46,7 +46,7 @@ SQHitVector_v1::~SQHitVector_v1() {
 }
 
 void SQHitVector_v1::Reset() {
-	for(auto hit : _vector) delete hit;
+	for(auto iter = _vector.begin(); iter!=_vector.end(); ++iter) delete (*iter);
   _vector.clear();
 }
 
