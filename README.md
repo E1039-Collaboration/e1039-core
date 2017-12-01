@@ -14,13 +14,15 @@ make install
 ```
 
 Need to build using the the following order
-- **phool**: Fun4All IO interface 'NodeTree' and IO manager 
-- **ffaobjects**: Sync multiple input streams.
-- **fun4all**: framework related classes
-	- `Fun4AllBase`: verbosity control
-	- `Fun4AllServer`: the interface of the Fun4All framework
-	- `Fun4AllInputManage` 
-	- `Fun4AllOutputManage`
-	- `SubsystemReco`
-- **interfaces**: user interface objects
-- **modules**: user modules
+
+- **framework**:
+  - **phool**: Fun4All IO interface 'NodeTree' and IO manager 
+  - **ffaobjects**: Sync multiple input streams.
+  - **fun4all**: framework related classes
+    - `Fun4AllBase`: verbosity control
+    - `Fun4AllServer`: the interface of the Fun4All framework
+    - `Fun4AllInputManage` 
+    - `Fun4AllOutputManage`
+    - `SubsystemReco`
+  - **interface_main**: main interface objects
+  - **module_example**: example modules
