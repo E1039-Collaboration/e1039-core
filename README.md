@@ -1,4 +1,4 @@
-# Fun4All
+# Fun4All based E1039 offline software
 
 A doxygen page of the seaquest-offline is [here](https://haiwangyu.github.io/seaquest-offline-doc/) hosted by GitHub Pages.
 
@@ -24,5 +24,5 @@ Need to build using the the following order
     - `Fun4AllInputManage` 
     - `Fun4AllOutputManage`
     - `SubsystemReco`
-  - **interface_main**: main interface objects
-  - **module_example**: example modules
+- **interface_main**: main interface objects
+- **module_example**: example modules
