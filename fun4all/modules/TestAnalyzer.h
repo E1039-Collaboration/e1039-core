@@ -91,7 +91,8 @@ private:
 	int _b_hit_id;
 
 	int _b_n_hits;
-	float _b_drift_distance[10000];
+	float _b_detector_id[10000];
+	short _b_drift_distance[10000];
 };
 
 

@@ -100,6 +100,7 @@ int TestAnalyzer::process_event(PHCompositeNode* topNode) {
 		for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
 			++_b_n_hits;
 			_b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
+			_b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
 		}
 	}
 
@@ -126,12 +127,13 @@ int TestAnalyzer::InitEvalTree() {
 	PHTFileServer::get().open(_out_name.c_str(), "RECREATE");
 
 	_tout = new TTree("T", "TestAnalyzer");
-	_tout->Branch("runID",&_b_run_id,"runID/I");
-	_tout->Branch("spillID",&_b_spill_id,"spillID/I");
-	_tout->Branch("liveProton",&_b_live_proton,"liveProton/F");
-	_tout->Branch("eventID",&_b_event_id,"eventID/I");
-	_tout->Branch("nHits",&_b_n_hits,"nHits/I");
-	_tout->Branch("driftDistance",_b_drift_distance,"driftDistance[nHits]/F");
+	_tout->Branch("runID",         &_b_run_id,          "runID/I");
+	_tout->Branch("spillID",       &_b_spill_id,        "spillID/I");
+	_tout->Branch("liveProton",    &_b_live_proton,     "liveProton/F");
+	_tout->Branch("eventID",       &_b_event_id,        "eventID/I");
+	_tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
+	_tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
+	_tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
 
 	return 0;
 }
@@ -144,6 +146,7 @@ int TestAnalyzer::ResetEvalVars() {
 	_b_n_hits = 0;
 	for(int i=0; i<10000; ++i) {
 		_b_drift_distance[i] = std::numeric_limits<float>::max();
+		_b_detector_id[i]    = std::numeric_limits<short>::max();
 	}
 
 	return 0;
