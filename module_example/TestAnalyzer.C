@@ -99,6 +99,7 @@ int TestAnalyzer::process_event(PHCompositeNode* topNode) {
 		_b_n_hits = 0;
 		for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
 			++_b_n_hits;
+			_b_hit_id[_b_n_hits]         = (*iter)->get_hit_id();
 			_b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
 			_b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
 		}
@@ -132,8 +133,9 @@ int TestAnalyzer::InitEvalTree() {
 	_tout->Branch("liveProton",    &_b_live_proton,     "liveProton/F");
 	_tout->Branch("eventID",       &_b_event_id,        "eventID/I");
 	_tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
-	_tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
+	_tout->Branch("hitID",         _b_hit_id,           "hitID/I");
 	_tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
+	_tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
 
 	return 0;
 }
@@ -145,8 +147,8 @@ int TestAnalyzer::ResetEvalVars() {
 	_b_event_id = std::numeric_limits<int>::max();
 	_b_n_hits = 0;
 	for(int i=0; i<10000; ++i) {
-		_b_drift_distance[i] = std::numeric_limits<float>::max();
 		_b_detector_id[i]    = std::numeric_limits<short>::max();
+		_b_drift_distance[i] = std::numeric_limits<float>::max();
 	}
 
 	return 0;

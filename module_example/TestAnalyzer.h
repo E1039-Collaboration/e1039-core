@@ -88,11 +88,10 @@ private:
 	int _b_spill_id;
 	float _b_live_proton;
 	int _b_event_id;
-	int _b_hit_id;
-
 	int _b_n_hits;
-	float _b_detector_id[10000];
-	short _b_drift_distance[10000];
+	int _b_hit_id[10000];
+	short _b_detector_id[10000];
+	float _b_drift_distance[10000];
 };
 
 
