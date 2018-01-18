@@ -2,15 +2,11 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phool CXX C)
 
-# Put executables into a bin
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{OFFLINE_MAIN}/lib)
-#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY $ENV{OFFLINE_MAIN}/lib)
-
 # ROOT dict generation
 add_custom_command (
-  OUTPUT ${PROJECT_SOURCE_DIR}/PHBase_dict.cc
+  OUTPUT PHBase_dict.cc
   COMMAND rootcint
-  ARGS -f ${PROJECT_SOURCE_DIR}/PHBase_dict.cc -c
+  ARGS -f PHBase_dict.cc -c
 	${PROJECT_SOURCE_DIR}/PHFlag.h
 	${PROJECT_SOURCE_DIR}/phool.h
 	${PROJECT_SOURCE_DIR}/PHObject.h
@@ -25,9 +21,6 @@ include_directories(${PROJECT_SOURCE_DIR}/)
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
-file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-list(REMOVE_ITEM dist_headers "${PROJECT_SOURCE_DIR}/PHBase_LinkDef.h")
-
 # ROOT
 find_program(ROOTCONF "root-config")
 if(ROOTCONF)
@@ -41,9 +34,14 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ROOT_LINK}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include ${ROOT_CFLAGS}")
-add_library(phool SHARED ${sources} ${headers} ${PROJECT_SOURCE_DIR}/PHBase_dict.cc)
+add_library(phool SHARED ${sources} PHBase_dict.cc)
 target_link_libraries(phool ${ROOT_LINK})
 
+message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
-#install(TARGETS phool DESTINATION $ENV{OFFLINE_MAIN}/lib)
-install(FILES ${dist_headers} DESTINATION $ENV{OFFLINE_MAIN}/include/phool/)
+install(TARGETS phool DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
+file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+list(REMOVE_ITEM dist_headers ${non_dist_headers})
+install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)

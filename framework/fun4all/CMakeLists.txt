@@ -2,13 +2,11 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(fun4all CXX C)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{OFFLINE_MAIN}/lib)
-
 # ROOT dict generation
 add_custom_command (
-  OUTPUT ${PROJECT_SOURCE_DIR}/Fun4All_Dict.cc
+  OUTPUT Fun4All_Dict.cc
   COMMAND rootcint
-  ARGS -f ${PROJECT_SOURCE_DIR}/Fun4All_Dict.cc -c
+  ARGS -f Fun4All_Dict.cc -c
 	-I$ENV{OFFLINE_MAIN}/include
 	${PROJECT_SOURCE_DIR}/Fun4AllDstInputManager.h
   ${PROJECT_SOURCE_DIR}/Fun4AllDstOutputManager.h
@@ -23,9 +21,9 @@ add_custom_command (
 	)
 
 add_custom_command (
-  OUTPUT ${PROJECT_SOURCE_DIR}/SubsysReco_Dict.cc
+  OUTPUT SubsysReco_Dict.cc
   COMMAND rootcint
-  ARGS -f ${PROJECT_SOURCE_DIR}/SubsysReco_Dict.cc -c
+  ARGS -f SubsysReco_Dict.cc -c
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/Fun4AllBase.h
   ${PROJECT_SOURCE_DIR}/SubsysReco.h
@@ -54,7 +52,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFL
 add_library(SubsysReco SHARED
 	${PROJECT_SOURCE_DIR}/Fun4AllBase.cc
 	${PROJECT_SOURCE_DIR}/SubsysReco.cc
-	${PROJECT_SOURCE_DIR}/SubsysReco_Dict.cc
+	SubsysReco_Dict.cc
 )
 target_link_libraries(SubsysReco ${ROOT_LINK})
 
@@ -75,12 +73,20 @@ add_library(fun4all SHARED
   ${PROJECT_SOURCE_DIR}/Fun4AllServer.cc
   ${PROJECT_SOURCE_DIR}/Fun4AllUtils.cc
   ${PROJECT_SOURCE_DIR}/PHTFileServer.cxx
-  ${PROJECT_SOURCE_DIR}/Fun4All_Dict.cc
+  Fun4All_Dict.cc
 )
 target_link_libraries(fun4all -L$ENV{OFFLINE_MAIN}/lib -lSubsysReco -lTDirectoryHelper -lboost_filesystem -lffaobjects -lphool)
 
+message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+
+install(TARGETS SubsysReco 				DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS TDirectoryHelper	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS fun4all 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-list(REMOVE_ITEM dist_headers "${PROJECT_SOURCE_DIR}/Fun4AllLinkDef.cc")
-list(REMOVE_ITEM dist_headers "${PROJECT_SOURCE_DIR}/SubsysRecoLinkDef.cc")
-install(FILES ${dist_headers} DESTINATION $ENV{OFFLINE_MAIN}/include/fun4all/)
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+list(REMOVE_ITEM dist_headers ${non_dist_headers})
+install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
+
+
+

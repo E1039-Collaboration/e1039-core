@@ -2,13 +2,11 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(ffaobjects CXX C)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $ENV{OFFLINE_MAIN}/lib)
-
 # ROOT dict generation
 add_custom_command (
-  OUTPUT ${PROJECT_SOURCE_DIR}/libffaobjects_Dict.cc
+  OUTPUT libffaobjects_Dict.cc
   COMMAND rootcint
-  ARGS -f ${PROJECT_SOURCE_DIR}/libffaobjects_Dict.cc -c
+  ARGS -f libffaobjects_Dict.cc -c
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/FlagSave.h
   ${PROJECT_SOURCE_DIR}/FlagSavev1.h
@@ -26,9 +24,6 @@ include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
-file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-list(REMOVE_ITEM dist_headers "${PROJECT_SOURCE_DIR}/libffaobjects_Dict.cc")
-
 # ROOT
 find_program(ROOTCONF "root-config")
 if(ROOTCONF)
@@ -42,8 +37,14 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool")
-add_library(ffaobjects SHARED ${sources} ${headers} ${PROJECT_SOURCE_DIR}/libffaobjects_Dict.cc)
+add_library(ffaobjects SHARED ${sources} libffaobjects_Dict.cc)
 target_link_libraries(ffaobjects -L$ENV{OFFLINE_MAIN}/lib -lphool)
 
+message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
-install(FILES ${dist_headers} DESTINATION $ENV{OFFLINE_MAIN}/include/ffaobjects/)
+install(TARGETS ffaobjects DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
+file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+list(REMOVE_ITEM dist_headers ${non_dist_headers})
+install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
