@@ -9,6 +9,7 @@ declare -a packages=(
 		framework/ffaobjects
 		framework/fun4all
 		interface_main
+		module_example
 		)
 
 for package in "${packages[@]}"
