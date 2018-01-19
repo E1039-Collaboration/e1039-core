@@ -45,8 +45,8 @@ public:
   virtual float        get_drift_distance() const                {return _drift_distance;}
   virtual void         set_drift_distance(const float a)         {_drift_distance=a;}
 
-  //virtual float        get_pos() const                           {return _pos;}
-  //virtual void         set_pos(const float a)                    {_pos=a;}
+  virtual float        get_pos() const                           {return _pos;}
+  virtual void         set_pos(const float a)                    {_pos=a;}
 
   virtual bool         is_in_time() const                        {return (_flag&(SQHit::InTime)) != 0;}
   virtual void         set_in_time(const bool a)                 {a? (_flag |= SQHit::InTime) : (_flag &= ~SQHit::InTime);}
@@ -65,7 +65,7 @@ private:
 
   float _tdc_time;               ///< tdcTime
   float _drift_distance;         ///< driftDistance
-  //float _pos;                    ///< pos?
+  float _pos;                    ///< pos?
 
   unsigned short _flag;          ///< bits collection
 

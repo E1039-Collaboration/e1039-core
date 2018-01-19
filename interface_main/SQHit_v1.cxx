@@ -19,7 +19,7 @@ SQHit_v1::SQHit_v1()
 	_element_id(std::numeric_limits<short>::max()),
 	_tdc_time(NAN),
 	_drift_distance(NAN),
-	//_pos(NAN),
+	_pos(NAN),
 	_flag(0)
 {}
 
@@ -30,7 +30,7 @@ void SQHit_v1::identify(ostream& os) const {
   os
   << " tdcTime: " << get_tdc_time()
   << " driftDistance: " << get_drift_distance()
-  //<< " pos: " << get_pos()
+  << " pos: " << get_pos()
   << endl;
   os
   << " inTime: " << is_in_time()
