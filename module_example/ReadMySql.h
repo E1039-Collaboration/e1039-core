@@ -12,11 +12,6 @@
 #include <TSQLServer.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
-//#include <TRandom.h>
-//#include <TClonesArray.h>
-//#include <TVector3.h>
-//#include <TLorentzVector.h>
-//#include <TTree.h>
 
 // Fun4All includes
 #include <fun4all/SubsysReco.h>
@@ -27,7 +22,8 @@
 #include <iostream>
 #include <list>
 #include <map>
-//#include <algorithm>
+
+class GeomSvc;
 
 class SQRun;
 class SQSpillMap;
@@ -49,12 +45,12 @@ public:
 	int process_event(PHCompositeNode *topNode);
 	int End(PHCompositeNode *topNode);
 
-	static int FillSQRun(SQRun* run_header, TSQLServer* server, const int run_id, const char* table = "Run");
-	static int FillSQSpill(SQSpillMap* spill_map, TSQLServer* server, const int run_id, const char* table = "Spill");
+	int FillSQRun(SQRun* run_header, TSQLServer* server, const int run_id, const char* table = "Run");
+	int FillSQSpill(SQSpillMap* spill_map, TSQLServer* server, const int run_id, const char* table = "Spill");
 
-	static int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
-	static int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
-	static int FillSQHitVector(SQHitVector* hit_vector, const std::string hit_type, TSQLServer* server, const int event_id, const char* table = "Hit");
+	int FillSQEvent(SQEvent* event_header, TSQLServer* server, const int event_id, const char* table = "Event");
+	int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
+	int FillSQHitVector(SQHitVector* hit_vector, const std::string hit_type, TSQLServer* server, const int event_id, const char* table = "Hit");
 
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
 	static float getFloat(TSQLRow* row, int id, float default_val = 0.);
@@ -104,6 +100,9 @@ private:
 	TSQLServer* _input_server;  //< Fetch input from this server
 	TSQLResult* _res;
 	TSQLRow* _row;
+
+	//GeomSvc
+	GeomSvc *p_geomSvc;
 
 	std::vector<int> _event_ids;
 	size_t _event;

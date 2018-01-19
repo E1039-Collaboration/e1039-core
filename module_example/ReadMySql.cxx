@@ -18,6 +18,8 @@
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
 
+#include <geom_svc/GeomSvc.h>
+
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
@@ -31,7 +33,7 @@
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 
-#define LogInfo(exp)		std::cout<<"INFO: "   <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+//#define LogInfo(exp)		std::cout<<"INFO: "   <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
@@ -51,6 +53,7 @@ _spill_id(-1),
 _input_server(nullptr),
 _res(nullptr),
 _row(nullptr),
+p_geomSvc(nullptr),
 _event(0),
 _run_header(nullptr),
 _spill_map(nullptr),
@@ -106,6 +109,8 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
         nextEntry();
         _event_ids.push_back(getInt(_row, 0));
     }
+
+    p_geomSvc = GeomSvc::instance();
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -404,15 +409,42 @@ int ReadMySql::FillSQHitVector(
 
 			hit->set_hit_id(getInt(row,0));
 
-			hit->set_detector_id(static_cast<short>(1000*rand.Rndm()));
-			hit->set_element_id(getInt(row,2));
+			//hit->set_detector_id(static_cast<short>(1000*rand.Rndm()));
+			//hit->set_element_id(getInt(row,2));
+
+			std::string detectorName(row->GetField(1));
+			int elementID = getInt(row,2);
+			std::cout
+			<< "DEBUG: " << __LINE__
+			<< " detectorName: " << detectorName.c_str()
+			<< " elementID: " << elementID
+			<<std::endl;
+			p_geomSvc->toLocalDetectorName(detectorName, elementID);
+
+			hit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
+			hit->set_element_id(elementID);
+
+			std::cout
+			<< "DEBUG: " << __LINE__
+			<< " detectorName: " << detectorName.c_str()
+			<< " elementID: " << elementID
+			<< " detectorID: " << hit->get_detector_id()
+			<<std::endl;
 
 			hit->set_tdc_time(getFloat(row,3));
 			hit->set_drift_distance(getFloat(row,7));
 
 			hit->set_in_time(getInt(row,4));
 			hit->set_hodo_mask(getInt(row,5));
+
 			hit->set_trigger_mask(rand.Rndm()>0.5);
+
+			hit->set_pos(p_geomSvc->getMeasurement(hit->get_detector_id(), hit->get_element_id()));
+
+			std::cout
+			<< "DEBUG: " << __LINE__
+			<< " pos: " << hit->get_pos()
+			<<std::endl;
 
 			hit_vector->push_back(hit);
 	}
