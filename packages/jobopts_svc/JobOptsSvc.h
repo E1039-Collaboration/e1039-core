@@ -9,7 +9,7 @@
 #include <TFile.h>
 #include <TString.h>
 
-#include <GlobalConsts.h>
+#include "GlobalConsts.h"
 
 class JobOptsSvc
 {
