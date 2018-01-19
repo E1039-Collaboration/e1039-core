@@ -19,8 +19,6 @@ and then prop. tubes
 #ifndef _GEOMSVC_H
 #define _GEOMSVC_H
 
-#include "GlobalConsts.h"
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -30,6 +28,7 @@ and then prop. tubes
 #include <TSpline.h>
 
 #include <jobopts_svc/JobOptsSvc.h>
+#include "GlobalConsts.h"
 
 class Plane
 {
