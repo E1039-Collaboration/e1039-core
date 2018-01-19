@@ -15,7 +15,7 @@ endforeach(LinkDefh)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.C)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 # ROOT
