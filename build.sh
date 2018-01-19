@@ -9,8 +9,15 @@ declare -a packages=(
 		framework/ffaobjects
 		framework/fun4all
 		interface_main
+		packages/global_consts
+		packages/jobopts_svc
+		packages/geom_svc
 		module_example
 		)
+
+
+#declare -a packages=( packages/geom_svc )
+
 
 for package in "${packages[@]}"
 do
