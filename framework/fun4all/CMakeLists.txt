@@ -74,7 +74,7 @@ add_library(fun4all SHARED
   ${PROJECT_SOURCE_DIR}/PHTFileServer.cxx
   Fun4All_Dict.cc
 )
-target_link_libraries(fun4all -L -lSubsysReco -L -lTDirectoryHelper -L -lboost_filesystem -L$ENV{OFFLINE_MAIN}/lib -lffaobjects -lphool)
+target_link_libraries(fun4all -L./ -L$ENV{OFFLINE_MAIN}/lib -lSubsysReco -lTDirectoryHelper -lboost_filesystem -lffaobjects -lphool)
 
 install(TARGETS SubsysReco 				DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS TDirectoryHelper	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
