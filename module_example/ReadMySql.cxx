@@ -126,6 +126,8 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 
 	ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
 
+	_event_header->identify();
+
 	if(_hit_container_type.find("Map") != std::string::npos)
 		ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
 
@@ -414,22 +416,22 @@ int ReadMySql::FillSQHitVector(
 
 			std::string detectorName(row->GetField(1));
 			int elementID = getInt(row,2);
-			std::cout
-			<< "DEBUG: " << __LINE__
-			<< " detectorName: " << detectorName.c_str()
-			<< " elementID: " << elementID
-			<<std::endl;
+//			std::cout
+//			<< "DEBUG: " << __LINE__
+//			<< " detectorName: " << detectorName.c_str()
+//			<< " elementID: " << elementID
+//			<<std::endl;
 			p_geomSvc->toLocalDetectorName(detectorName, elementID);
 
 			hit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
 			hit->set_element_id(elementID);
 
-			std::cout
-			<< "DEBUG: " << __LINE__
-			<< " detectorName: " << detectorName.c_str()
-			<< " elementID: " << elementID
-			<< " detectorID: " << hit->get_detector_id()
-			<<std::endl;
+//			std::cout
+//			<< "DEBUG: " << __LINE__
+//			<< " detectorName: " << detectorName.c_str()
+//			<< " elementID: " << elementID
+//			<< " detectorID: " << hit->get_detector_id()
+//			<<std::endl;
 
 			hit->set_tdc_time(getFloat(row,3));
 			hit->set_drift_distance(getFloat(row,7));
@@ -441,10 +443,10 @@ int ReadMySql::FillSQHitVector(
 
 			hit->set_pos(p_geomSvc->getMeasurement(hit->get_detector_id(), hit->get_element_id()));
 
-			std::cout
-			<< "DEBUG: " << __LINE__
-			<< " pos: " << hit->get_pos()
-			<<std::endl;
+//			std::cout
+//			<< "DEBUG: " << __LINE__
+//			<< " pos: " << hit->get_pos()
+//			<<std::endl;
 
 			hit_vector->push_back(hit);
 	}
@@ -474,7 +476,9 @@ int ReadMySql::FillSQEvent(SQEvent* event_header, TSQLServer* server,
 			//      0      1        2        3
 			"SELECT runID, spillID, eventID, codaEventID, "
 			//4     5     6     7     8
-			" NIM1, NIM2, NIM3, NIM4, NIM5 "
+			" NIM1, NIM2, NIM3, NIM4, NIM5, "
+			//9        10       11       12       13
+			" MATRIX1, MATRIX2, MATRIX3, MATRIX4, MATRIX5"
 
 			" FROM %s WHERE eventID=%d", table, event_id);
 
@@ -499,6 +503,12 @@ int ReadMySql::FillSQEvent(SQEvent* event_header, TSQLServer* server,
     	event_header->set_trigger(SQEvent::NIM3, getInt(row, 6));
     	event_header->set_trigger(SQEvent::NIM4, getInt(row, 7));
     	event_header->set_trigger(SQEvent::NIM5, getInt(row, 8));
+
+    	event_header->set_trigger(SQEvent::MATRIX1, getInt(row, 9));
+    	event_header->set_trigger(SQEvent::MATRIX2, getInt(row, 10));
+    	event_header->set_trigger(SQEvent::MATRIX3, getInt(row, 11));
+    	event_header->set_trigger(SQEvent::MATRIX4, getInt(row, 12));
+    	event_header->set_trigger(SQEvent::MATRIX5, getInt(row, 13));
     }
 
 	delete res;

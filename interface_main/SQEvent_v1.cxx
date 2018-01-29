@@ -38,16 +38,18 @@ void SQEvent_v1::identify(std::ostream& os) const {
 	  cout << "---SQEvent_v1::identify:--------------------------" << endl;
 	  cout
 	  << "runID: " << _run_id
-	  << "spillID: " << _spill_id
-	  << "eventID: " << _event_id
-	  << "codaEventID: " << _coda_event_id
+	  << " spillID: " << _spill_id
+	  << " eventID: " << _event_id
+	  << " codaEventID: " << _coda_event_id
 	  << endl;
 	  for(int i = SQEvent::NIM1; i<=SQEvent::NIM5; ++i) {
-		  cout <<"NIM"<<i<<": " << get_trigger(static_cast<SQEvent::TriggerMask>(i)) << "; ";
+	  	int name = i - SQEvent::NIM1 + 1;
+		  cout <<"NIM"<<name<<": " << get_trigger(static_cast<SQEvent::TriggerMask>(i)) << "; ";
 	  }
 	  cout <<endl;
 	  for(int i = SQEvent::MATRIX1; i<=SQEvent::MATRIX5; ++i){
-		  cout <<"MATRIX"<<i<<": " << get_trigger(static_cast<SQEvent::TriggerMask>(i)) << "; ";
+	  	int name = i - SQEvent::MATRIX1 + 1;
+		  cout <<"MATRIX"<<name<<": " << get_trigger(static_cast<SQEvent::TriggerMask>(i)) << "; ";
 	  }
 	  cout <<endl;
 	  return;
