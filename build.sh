@@ -13,6 +13,7 @@ declare -a packages=(
 		packages/jobopts_svc
 		packages/geom_svc
 		module_example
+		packages/ktracker
 		)
 
 
