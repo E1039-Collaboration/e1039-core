@@ -1,5 +1,5 @@
 /*
- * Fun4TestAnalyzer.C
+ * Fun4kTracker.C
  *
  *  Created on: Oct 30, 2017
  *      Author: yuhw@nmsu.edu
@@ -7,7 +7,7 @@
 
 
 
-void Fun4TestAnalyzer(
+void Fun4kTracker(
 		const int nevent = 2,
 		const char *indst = "dst.root",
 		const char *outeval = "eval.root"
@@ -20,8 +20,8 @@ void Fun4TestAnalyzer(
 	se->Verbosity(verbosity);
 
 	gSystem->Load("libktracker.so");
-	KalmanFastTrackingWrapper *analyzer = new KalmanFastTrackingWrapper();
-	se->registerSubsystem(analyzer);
+	KalmanFastTrackingWrapper *ktracker = new KalmanFastTrackingWrapper();
+	se->registerSubsystem(ktracker);
 
 	Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTIN");
 	in->fileopen(indst);
