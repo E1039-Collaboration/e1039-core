@@ -34,9 +34,11 @@
 #include <limits>
 #include <boost/lexical_cast.hpp>
 
-#define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
-#define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
-#define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogDebug(exp)		    std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
+#define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
+
+#define _LOCAL_DEBUG
 
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
@@ -76,7 +78,9 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 	SRawEvent* sraw_event = new SRawEvent();
 
-
+#ifdef _LOCAL_DEBUG
+	LogDebug("Start: ");
+#endif
 	int run_id   = _event_header->get_run_id();
 	int spill_id = _event_header->get_spill_id();
 	int event_id = _event_header->get_event_id();
@@ -128,6 +132,12 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 	}
 
 	sraw_event->reIndex(true);
+
+#ifdef _LOCAL_DEBUG
+	LogDebug("End: ");
+#endif
+
+	return sraw_event;
 }
 
 int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
