@@ -51,11 +51,16 @@ _hit_vector(nullptr),
 _out_name("eval.root")
 {
 
-	fastfinder = new KalmanFastTracking();
-
+	LogInfo("");
 	p_jobOptsSvc = new JobOptsSvc;
 	//p_jobOptsSvc = JobOptsSvc::instance();
+
+	LogInfo("");
 	p_jobOptsSvc->init("default.opts");
+
+	LogInfo(p_jobOptsSvc->m_configFile.c_str());
+
+	fastfinder = new KalmanFastTracking();
 
 	ResetEvalVars();
 	InitEvalTree();
