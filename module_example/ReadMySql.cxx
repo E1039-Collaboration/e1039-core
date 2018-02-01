@@ -436,8 +436,8 @@ int ReadMySql::FillSQHitVector(
 			hit->set_tdc_time(getFloat(row,3));
 			hit->set_drift_distance(getFloat(row,7));
 
-			hit->set_in_time(getInt(row,4));
-			hit->set_hodo_mask(getInt(row,5));
+			if(getInt(row,4)>0) hit->set_in_time(true);
+			if(getInt(row,5)>0) hit->set_hodo_mask(true);
 
 			hit->set_trigger_mask(rand.Rndm()>0.5);
 

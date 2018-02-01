@@ -112,11 +112,10 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
     h.driftDistance = sq_hit->get_drift_distance();
     h.pos = sq_hit->get_pos();
 
-    //TODO Hit:InTime
-    //if(getInt(5, 0) > 0) h.setInTime();
+    if(sq_hit->is_in_time()) h.setInTime();
 
     //TODO Hit:masked
-    //if(getInt(6, 0) > 0) h.setHodoMask();
+    if(sq_hit->is_hodo_mask()) h.setHodoMask();
 
     // TODO calibration
 //    if(p_geomSvc->isCalibrationLoaded())
