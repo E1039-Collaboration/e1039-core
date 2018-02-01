@@ -121,6 +121,10 @@ public:
     //Basic quality cut
     bool isValid();
 
+    //Debuggin output
+    void print();
+
+#ifndef __CINT__
     //Sort hit list
     void sortHits() { hits.sort(); }
 
@@ -185,11 +189,9 @@ public:
     //For adding two tracklets together to form a global track
     Tracklet operator*(const Tracklet& elem) const;
 
-    //Debuggin output
-    void print();
-
     //Convert to a SRecTrack
     SRecTrack getSRecTrack();
+#endif
 
     //Station ID, ranging from 1 to nStation, nStation-1 means back partial track, nStation means global track
     int stationID;
@@ -228,11 +230,15 @@ public:
     //Residuals of all pos
     double residual[nChamberPlanes];
 
+#ifndef __CINT__
     //static pointer to geomtry service
-    static const GeomSvc* p_geomSvc;
+    //static const GeomSvc* p_geomSvc;
+    GeomSvc* p_geomSvc;
 
     //static flag of kmag on/off
-    static const bool kmag_on;
+    //static const bool kmag_on;
+    bool kmag_on;
+#endif
 
     ClassDef(Tracklet, 4)
 };

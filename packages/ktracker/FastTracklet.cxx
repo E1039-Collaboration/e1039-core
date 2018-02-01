@@ -410,12 +410,15 @@ void PropSegment::linearFit_iterative()
 }
 
 //General tracklet part
-const GeomSvc* Tracklet::p_geomSvc = GeomSvc::instance();
-const bool Tracklet::kmag_on = JobOptsSvc::instance()->m_enableKMag;
+//const GeomSvc* Tracklet::p_geomSvc = GeomSvc::instance();
+//const bool Tracklet::kmag_on = JobOptsSvc::instance()->m_enableKMag;
 
 Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(9999.), chisq_vtx(9999.), tx(0.), ty(0.), x0(0.), y0(0.), invP(0.1), err_tx(-1.), err_ty(-1.), err_x0(-1.), err_y0(-1.), err_invP(-1.)
 {
     for(int i = 0; i < nChamberPlanes; i++) residual[i] = 999.;
+
+    p_geomSvc = GeomSvc::instance();
+    kmag_on = JobOptsSvc::instance()->m_enableKMag;
 }
 
 bool Tracklet::isValid()
