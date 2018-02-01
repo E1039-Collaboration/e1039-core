@@ -92,6 +92,8 @@ private:
 
 	SRawEvent* _rawEvent;
 	SRecEvent* _recEvent;
+
+	JobOptsSvc* p_jobOptsSvc;
 };
 
 

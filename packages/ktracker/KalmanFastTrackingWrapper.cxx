@@ -53,6 +53,10 @@ _out_name("eval.root")
 
 	fastfinder = new KalmanFastTracking();
 
+	//p_jobOptsSvc = new JobOptsSvc;
+	p_jobOptsSvc = JobOptsSvc::instance();
+	p_jobOptsSvc->init("default.opts");
+
 	ResetEvalVars();
 	InitEvalTree();
 
