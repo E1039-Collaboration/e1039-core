@@ -55,6 +55,10 @@ public:
     //Quality cut
     bool isValid();
 
+    //Debugging output
+    void print();
+
+#ifndef __CINT__
     //Get expected position at a given Z
     double getExpPosition(double z) { return a*z + b; }
 
@@ -82,6 +86,7 @@ public:
     //resolve left/right
     void resolveLR();
     void resolveLR(int setting);
+#endif
 
     //track slope the interception
     double a;
@@ -99,11 +104,11 @@ public:
     //Hit list -- only 4 hits at most
     SignedHit hits[4];
 
-    //Debugging output
-    void print();
-
+#ifndef __CINT__
     //static pointer to geometry
-    static const GeomSvc* p_geomSvc;
+    //static const GeomSvc* p_geomSvc;
+    GeomSvc* p_geomSvc;
+#endif
 
     ClassDef(PropSegment, 4)
 };
