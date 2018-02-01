@@ -23,8 +23,6 @@ Created: 10-13-2011
 
 #include "GlobalConsts.h"
 
-#define LogDebug(message) std::cout << "DEBUG: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
-
 class GenFitExtrapolator
 {
 public:
