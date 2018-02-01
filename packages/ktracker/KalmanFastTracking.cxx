@@ -21,6 +21,7 @@ Created: 05-28-2013
 #include "TriggerRoad.h"
 
 #define _DEV_
+#define _DEBUG_ON
 
 KalmanFastTracking::KalmanFastTracking(bool flag) : enable_KF(flag)
 {
