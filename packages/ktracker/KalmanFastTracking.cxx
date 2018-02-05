@@ -1636,6 +1636,9 @@ void KalmanFastTracking::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_
     {
         int detectorID = (st1ID-1)*6 + 2*i + 2;
         int idx = p_geomSvc->getPlaneType(detectorID) - 1;
+
+        if(!(idx >= 0 && idx <3)) continue;
+
         double pos_st3 = p_geomSvc->getUinStereoPlane(s_detectorID[idx], x_st3, y_st3);
 
         double z_st1 = z_plane[detectorID];
