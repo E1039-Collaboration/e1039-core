@@ -71,11 +71,13 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 add_library(db2g4 SHARED ${sources} ${dicts})
-target_link_libraries(db2g4 -L$ENV{OFFLINE_MAIN}/lib -lgeom_svc ${GEANT4_LINK} ${ROOT_LINK} ${MYSQL_LINK})
+target_link_libraries(db2g4 -L$ENV{OFFLINE_MAIN}/lib -lfun4all -lgeom_svc ${GEANT4_LINK} ${ROOT_LINK} ${MYSQL_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS db2g4 DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.hh)
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+list(REMOVE_ITEM dist_headers ${non_dist_headers})
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
