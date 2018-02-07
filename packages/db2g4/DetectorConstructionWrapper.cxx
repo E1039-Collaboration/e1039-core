@@ -6,7 +6,7 @@
  */
 
 
-#include "DetectorConstructionWrapper.h"
+#include "DetectorConstruction.hh"
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/PHTFileServer.h>

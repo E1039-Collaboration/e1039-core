@@ -8,26 +8,11 @@
 #ifndef _H_DetectorConstructionWrapper_H_
 #define _H_DetectorConstructionWrapper_H_
 
-#include "DetectorConstruction.hh"
 #include <jobopts_svc/JobOptsSvc.h>
 
-// ROOT
-#include <TSQLServer.h>
-#include <TSQLResult.h>
-#include <TSQLRow.h>
-
-// Fun4All includes
 #include <fun4all/SubsysReco.h>
 
-// STL includes
-#include <vector>
 #include <string>
-#include <iostream>
-#include <list>
-#include <map>
-
-class TFile;
-class TTree;
 
 class DetectorConstructionWrapper: public SubsysReco {
 
