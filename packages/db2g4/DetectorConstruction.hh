@@ -36,8 +36,8 @@
 #include <G4PVPlacement.hh>
 #include <G4ios.hh>
 #include <G4RunManager.hh>
-#include <G4SystemOfUnits.hh>
 #include <globals.hh>
+#include <G4SystemOfUnits.hh>
 
 #include <mysql.h>
 

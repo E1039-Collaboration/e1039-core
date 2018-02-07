@@ -68,7 +68,7 @@ else()
   message(FATAL_ERROR "-- Detecting BOOST:   not found")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x ${GEANT4_CFLAGS} ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 add_library(db2g4 SHARED ${sources} ${dicts})
 target_link_libraries(db2g4 -L$ENV{OFFLINE_MAIN}/lib -lfun4all -lgeom_svc ${GEANT4_LINK} ${ROOT_LINK} ${MYSQL_LINK})

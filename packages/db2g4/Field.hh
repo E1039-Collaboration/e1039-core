@@ -2,6 +2,7 @@
 #define Field_H 1
 
 #include <globals.hh>
+#include <G4SystemOfUnits.hh>
 #include <G4MagneticField.hh>
 #include <fstream>
 #include <cstdlib>

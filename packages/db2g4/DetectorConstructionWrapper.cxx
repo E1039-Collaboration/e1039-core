@@ -6,6 +6,9 @@
  */
 
 
+
+#include "DetectorConstructionWrapper.h"
+
 #include "DetectorConstruction.hh"
 
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -46,7 +49,7 @@ int DetectorConstructionWrapper::Init(PHCompositeNode* topNode) {
   if(fabs(_fMagStr) < 10.) mySettings->fMagMultiplier = _fMagStr;
   if(fabs(_kMagStr) < 10.) mySettings->kMagMultiplier = _kMagStr;
 
-  auto detector = new DetectorConstruction(mySettings);
+  DetectorConstruction* detector = new DetectorConstruction(mySettings);
 
 	G4GDMLParser parser;
 
@@ -59,3 +62,4 @@ int DetectorConstructionWrapper::End(PHCompositeNode* topNode) {
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
+

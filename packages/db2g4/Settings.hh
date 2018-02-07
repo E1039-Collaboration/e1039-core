@@ -15,6 +15,7 @@
 #include <G4ParticleTypes.hh>
 #include <G4ThreeVector.hh>
 #include <globals.hh>
+#include <G4SystemOfUnits.hh>
 
 class Settings
 {
