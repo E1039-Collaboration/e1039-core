@@ -25,6 +25,7 @@ class PHFieldConfig_v1 : public PHFieldConfig
       double magfield_rescale = 1.);
 
   //! default constructor for ROOT file IO
+  //PHFieldConfig_v1() : PHFieldConfig_v1(kFieldInvalid, "INVALID FILE"){}
   PHFieldConfig_v1() {PHFieldConfig_v1(kFieldInvalid, "INVALID FILE");}
 
   virtual ~PHFieldConfig_v1();

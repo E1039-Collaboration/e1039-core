@@ -27,7 +27,8 @@ class PHFieldConfig_v2 : public PHFieldConfig
       );
 
   //! default constructor for ROOT file IO
-  PHFieldConfig_v2(): PHFieldConfig_v2(0,0,0) {}
+  //PHFieldConfig_v2() : PHFieldConfig_v2(0,0,0){}
+  PHFieldConfig_v2() {PHFieldConfig_v2(0,0,0);}
 
   virtual ~PHFieldConfig_v2();
 
