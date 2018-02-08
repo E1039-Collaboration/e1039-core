@@ -13,12 +13,12 @@ declare -a packages=(
 		packages/jobopts_svc
 		packages/geom_svc
 		module_example
+		packages/db2g4
+		packages/PHField
+		packages/PHGenFitPkg/GenFitExp
+		packages/PHGenFitPkg/PHGenFit
 		packages/ktracker
 		)
-
-
-#declare -a packages=( packages/geom_svc )
-
 
 for package in "${packages[@]}"
 do
