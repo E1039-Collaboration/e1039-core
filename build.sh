@@ -15,6 +15,7 @@ declare -a packages=(
 		module_example
 		packages/db2g4
 		packages/PHField
+		packages/PHGeometry
 		packages/PHGenFitPkg/GenFitExp
 		packages/PHGenFitPkg/PHGenFit
 		packages/ktracker
