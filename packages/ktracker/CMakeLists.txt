@@ -41,7 +41,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
-target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
+target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lphfield -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

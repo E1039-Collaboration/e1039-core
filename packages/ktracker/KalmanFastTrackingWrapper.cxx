@@ -8,6 +8,9 @@
 
 #include "KalmanFastTrackingWrapper.h"
 
+#include <phfield/PHFieldConfig_v3.h>
+#include <phfield/PHFieldUtility.h>
+
 #include <interface_main/SQHit.h>
 #include <interface_main/SQHit_v1.h>
 #include <interface_main/SQHitMap_v1.h>
@@ -40,6 +43,8 @@
 
 #define _LOCAL_DEBUG
 
+using namespace std;
+
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
 _hit_container_type("Vector"),
@@ -51,12 +56,11 @@ _hit_map(nullptr),
 _hit_vector(nullptr),
 _out_name("eval.root")
 {
-	p_jobOptsSvc = new JobOptsSvc;
-	//p_jobOptsSvc = JobOptsSvc::instance();
-
+	//p_jobOptsSvc = new JobOptsSvc();
+	p_jobOptsSvc = JobOptsSvc::instance();
 	p_jobOptsSvc->init("default.opts");
 
-	fastfinder = new KalmanFastTracking();
+	//fastfinder = new KalmanFastTracking();
 
 	ResetEvalVars();
 	InitEvalTree();
@@ -73,6 +77,22 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
 	return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
+{
+  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
+
+  unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
+
+  default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+
+  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
+
+  PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, Verbosity()+1);
+  assert(phfield);
+
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {

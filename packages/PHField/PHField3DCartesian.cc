@@ -8,15 +8,18 @@
 
 #include <iostream>
 #include <cassert>
+#include <fstream>
 
 using namespace std;
 using namespace CLHEP;  // units
 
-typedef boost::tuple<double, double, double> trio;
-std::map<boost::tuple<double, double, double>, boost::tuple<double, double, double> > fieldmap;
-std::set<double> xvals;
-std::set<double> yvals;
-std::set<double> zvals;
+namespace {
+	typedef boost::tuple<double, double, double> trio;
+	std::map<boost::tuple<double, double, double>, boost::tuple<double, double, double> > fieldmap;
+	std::set<double> xvals;
+	std::set<double> yvals;
+	std::set<double> zvals;
+}
 
 PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield_rescale)
   : filename(fname)
@@ -54,39 +57,66 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
          << "\n      Magnetic field Module - Verbosity:"
          << "\n-----------------------------------------------------------";
 
-  // open file
-  TFile *rootinput = TFile::Open(filename.c_str());
-  if (!rootinput)
-  {
-    cout << "\n could not open " << filename << " exiting now" << endl;
-    exit(1);
-  }
-  cout << "\n ---> "
-            "Reading the field grid from "
-         << filename << " ... " << endl;
-  rootinput->cd();
+  bool root_input = false;
+  if(root_input) {
+		// open file
+		TFile *rootinput = TFile::Open(filename.c_str());
+		if (!rootinput)
+		{
+			cout << "\n could not open " << filename << " exiting now" << endl;
+			exit(1);
+		}
+		cout << "\n ---> "
+							"Reading the field grid from "
+					 << filename << " ... " << endl;
+		rootinput->cd();
 
-  //  get root NTuple objects
-  TNtuple *field_map = (TNtuple *) gDirectory->Get("ntuple");
-  Float_t ROOT_X, ROOT_Y, ROOT_Z;
-  Float_t ROOT_BX, ROOT_BY, ROOT_BZ;
-  field_map->SetBranchAddress("x", &ROOT_X);
-  field_map->SetBranchAddress("y", &ROOT_Y);
-  field_map->SetBranchAddress("z", &ROOT_Z);
-  field_map->SetBranchAddress("Bx", &ROOT_BX);
-  field_map->SetBranchAddress("By", &ROOT_BY);
-  field_map->SetBranchAddress("Bz", &ROOT_BZ);
+		//  get root NTuple objects
+		TNtuple *field_map = (TNtuple *) gDirectory->Get("ntuple");
+		Float_t ROOT_X, ROOT_Y, ROOT_Z;
+		Float_t ROOT_BX, ROOT_BY, ROOT_BZ;
+		field_map->SetBranchAddress("x", &ROOT_X);
+		field_map->SetBranchAddress("y", &ROOT_Y);
+		field_map->SetBranchAddress("z", &ROOT_Z);
+		field_map->SetBranchAddress("Bx", &ROOT_BX);
+		field_map->SetBranchAddress("By", &ROOT_BY);
+		field_map->SetBranchAddress("Bz", &ROOT_BZ);
 
-  for (int i = 0; i < field_map->GetEntries(); i++)
-  {
-    field_map->GetEntry(i);
-    trio coord_key(ROOT_X * m, ROOT_Y * m, ROOT_Z * m);
-    trio field_val(ROOT_BX * tesla, ROOT_BY * tesla, ROOT_BZ * tesla);
-    xvals.insert(ROOT_X * m);
-    yvals.insert(ROOT_Y * m);
-    zvals.insert(ROOT_Z * m);
-    fieldmap[coord_key] = field_val;
+		for (int i = 0; i < field_map->GetEntries(); i++)
+		{
+			field_map->GetEntry(i);
+			trio coord_key(ROOT_X * m, ROOT_Y * m, ROOT_Z * m);
+			trio field_val(ROOT_BX * tesla, ROOT_BY * tesla, ROOT_BZ * tesla);
+			xvals.insert(ROOT_X * m);
+			yvals.insert(ROOT_Y * m);
+			zvals.insert(ROOT_Z * m);
+			fieldmap[coord_key] = field_val;
+
+			if (rootinput) rootinput->Close();
+		}
+  } else {
+    ifstream file( filename.c_str() );
+    if (!file.good())
+      cout << "Field map input file error." << endl;
+
+    char buffer[256];
+    file.getline(buffer,256);
+
+    float ROOT_X, ROOT_Y, ROOT_Z;
+    float ROOT_BX, ROOT_BY, ROOT_BZ;
+    while (file >> ROOT_X >> ROOT_Y >> ROOT_Z >> ROOT_BX >> ROOT_BY >> ROOT_BZ) {
+      trio coord_key(ROOT_X * cm, ROOT_Y * cm, ROOT_Z * cm);
+      trio field_val(ROOT_BX * tesla, ROOT_BY * tesla, ROOT_BZ * tesla);
+    	cout << ROOT_X << " " << ROOT_Y << " " << ROOT_Z << endl;
+    	cout << ROOT_BX << " " << ROOT_BY << " " << ROOT_BZ << endl;
+      xvals.insert(ROOT_X * m);
+      yvals.insert(ROOT_Y * m);
+      zvals.insert(ROOT_Z * m);
+      fieldmap[coord_key] = field_val;
+    }
+    file.close();
   }
+
   xmin = *(xvals.begin());
   xmax = *(xvals.rbegin());
 
@@ -112,7 +142,6 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
   ystepsize = (ymax - ymin) / (yvals.size() - 1);
   zstepsize = (zmax - zmin) / (zvals.size() - 1);
 
-  if (rootinput) rootinput->Close();
 
   cout << "\n================= End Construct Mag Field ======================\n"
        << endl;

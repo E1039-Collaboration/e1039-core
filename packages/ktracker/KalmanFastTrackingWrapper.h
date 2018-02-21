@@ -70,6 +70,8 @@ public:
 
 private:
 
+	int InitField(PHCompositeNode *topNode);
+
 	int GetNodes(PHCompositeNode *topNode);
 
 	SRawEvent* BuildSRawEvent();

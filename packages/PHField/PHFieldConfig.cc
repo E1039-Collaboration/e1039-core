@@ -40,8 +40,11 @@ string PHFieldConfig::get_field_config_description() const
   case kField3DCylindrical:
     return "3D field map expressed in cylindrical coordinates";
     break;
-  case Field3DCartesian:
+  case kField3DCartesian:
     return "3D field map expressed in Cartesian coordinates";
+    break;
+  case kFieldSeaQuest:
+    return "SeaQuest Field: 2 3D Cartesian";
     break;
   default:
     return "Invalid Field";

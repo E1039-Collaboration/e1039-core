@@ -6,6 +6,7 @@
 #include "PHField3DCartesian.h"
 #include "PHField3DCylindrical.h"
 #include "PHFieldUniform.h"
+#include "PHFieldSeaQuest.h"
 
 // PHENIX includes
 #include <fun4all/Fun4AllServer.h>
@@ -76,11 +77,16 @@ PHFieldUtility::BuildFieldMap(const PHFieldConfig *field_config, const int verbo
         field_config->get_magfield_rescale());
 
     break;
-  case PHFieldConfig::Field3DCartesian:
+  case PHFieldConfig::kField3DCartesian:
     //    return "3D field map expressed in Cartesian coordinates";
     field = new PHField3DCartesian(
         field_config->get_filename(),
         field_config->get_magfield_rescale());
+  case PHFieldConfig::kFieldSeaQuest:
+  	field = new PHFieldSeaQuest(
+        field_config->get_filename1(),
+				field_config->get_filename2()
+  			);
 
     break;
   default:

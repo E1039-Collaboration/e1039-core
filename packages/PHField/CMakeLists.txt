@@ -52,7 +52,9 @@ add_library(phfield_io SHARED
   PHFieldConfig_v1_Dict.C
   ${PROJECT_SOURCE_DIR}/PHFieldConfig_v1.cc
   PHFieldConfig_v2_Dict.C
-  ${PROJECT_SOURCE_DIR}/PHFieldConfig_v2.cc 
+  ${PROJECT_SOURCE_DIR}/PHFieldConfig_v2.cc
+  PHFieldConfig_v3_Dict.C
+  ${PROJECT_SOURCE_DIR}/PHFieldConfig_v3.cc 
 )
 target_link_libraries(phfield_io -L$ENV{OFFLINE_MAIN}/lib -lphool)
 
@@ -62,6 +64,7 @@ add_library(phfield SHARED
   ${PROJECT_SOURCE_DIR}/PHField2D.cc
   ${PROJECT_SOURCE_DIR}/PHField3DCylindrical.cc
   ${PROJECT_SOURCE_DIR}/PHField3DCartesian.cc
+  ${PROJECT_SOURCE_DIR}/PHFieldSeaQuest.cc
   PHFieldUtility_Dict.C
   ${PROJECT_SOURCE_DIR}/PHFieldUtility.cc 
 )
@@ -76,6 +79,7 @@ file(GLOB dist_headers
   ${PROJECT_SOURCE_DIR}/PHFieldConfig.h
   ${PROJECT_SOURCE_DIR}/PHFieldConfig_v1.h
   ${PROJECT_SOURCE_DIR}/PHFieldConfig_v2.h
+  ${PROJECT_SOURCE_DIR}/PHFieldConfig_v3.h
   ${PROJECT_SOURCE_DIR}/PHFieldUtility.h
   ${PROJECT_SOURCE_DIR}/PHField.h
 )

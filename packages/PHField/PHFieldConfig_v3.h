@@ -1,0 +1,77 @@
+// $Id: $
+
+/*!
+ * \file PHFieldConfig_v3.h
+ * \brief 
+ * \author Jin Huang <jhuang@bnl.gov>
+ * \version $Revision:   $
+ * \date $Date: $
+ */
+
+#ifndef PHFieldConfig_v3_H_
+#define PHFieldConfig_v3_H_
+
+#include "PHFieldConfig.h"
+
+
+/*!
+ * \brief PHFieldConfig_v3 implements field configuration information for input a field map file */
+class PHFieldConfig_v3 : public PHFieldConfig
+{
+ public:
+  PHFieldConfig_v3(
+      const std::string& filename1,
+			const std::string& filename2);
+
+  //! default constructor for ROOT file IO
+  PHFieldConfig_v3() {PHFieldConfig_v3("INVALID FILE1", "INVALID FILE2");}
+
+  virtual ~PHFieldConfig_v3();
+
+  /// Virtual copy constructor.
+  virtual PHObject*
+  clone() const;
+
+  /** identify Function from PHObject
+   @param os Output Stream
+   */
+  virtual void
+  identify(std::ostream& os = std::cout) const;
+
+  /// Clear Event
+  virtual void
+  Reset();
+
+  /// isValid returns non zero if object contains vailid data
+  virtual int
+  isValid() const;
+
+  const std::string& get_filename1() const
+  {
+    return filename1_;
+  }
+
+  void set_filename1(const std::string& filename)
+  {
+    filename1_ = filename;
+  }
+
+  const std::string& get_filename2() const
+  {
+    return filename2_;
+  }
+
+  void set_filename2(const std::string& filename)
+  {
+    filename2_ = filename;
+  }
+
+ protected:
+  FieldConfigTypes field_config_;
+  std::string filename1_;
+  std::string filename2_;
+
+  ClassDef(PHFieldConfig_v3, 3)
+};
+
+#endif /* PHFieldConfig_v3_H_ */
