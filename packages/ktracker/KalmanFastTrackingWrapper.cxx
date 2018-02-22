@@ -90,6 +90,7 @@ int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
   unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
 
   default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+  default_field_cfg->identify();
 
   if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
 
