@@ -7,6 +7,7 @@
 
 
 #include "KalmanFastTrackingWrapper.h"
+#include "KalmanFastTracking.h"
 
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHFieldUtility.h>

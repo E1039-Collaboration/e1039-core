@@ -10,8 +10,6 @@ Author: Kun Liu, liuk@fnal.gov
 Created: 10-18-2012
 */
 
-#include <phfield/PHField.h>
-
 #include <list>
 #include <vector>
 
@@ -20,6 +18,8 @@ Created: 10-18-2012
 #include "KalmanUtil.h"
 #include "KalmanTrack.h"
 #include "KalmanFilter.h"
+
+class PHField;
 
 class KalmanFitter
 {

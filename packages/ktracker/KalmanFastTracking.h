@@ -12,8 +12,6 @@ Created: 05-24-2013
 
 #include "GlobalConsts.h"
 
-#include <phfield/PHField.h>
-
 #include <list>
 #include <vector>
 
@@ -27,6 +25,8 @@ Created: 05-24-2013
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
+
+class PHField;
 
 class KalmanFastTracking
 {

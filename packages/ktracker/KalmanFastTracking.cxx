@@ -7,6 +7,8 @@ Author: Kun Liu, liuk@fnal.gov
 Created: 05-28-2013
 */
 
+#include <phfield/PHField.h>
+
 #include <iostream>
 #include <algorithm>
 #include <cmath>

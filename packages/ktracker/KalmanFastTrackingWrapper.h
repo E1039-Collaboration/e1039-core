@@ -24,7 +24,10 @@
 #include <map>
 //#include <algorithm>
 
-#include "KalmanFastTracking.h"
+class KalmanFastTracking;
+class SRawEvent;
+class SRecEvent;
+class JobOptsSvc;
 
 class SQRun;
 class SQSpillMap;
