@@ -35,6 +35,7 @@ class SQHitVector;
 
 class TFile;
 class TTree;
+class TGeoManager;
 
 class KalmanFastTrackingWrapper: public SubsysReco {
 
@@ -68,9 +69,19 @@ public:
 		_out_name = outName;
 	}
 
+	const std::string& get_geom_file_name() const {
+		return _geom_file_name;
+	}
+
+	void set_geom_file_name(const std::string& geomFileName) {
+		_geom_file_name = geomFileName;
+	}
+
 private:
 
 	int InitField(PHCompositeNode *topNode);
+
+	int InitGeom(PHCompositeNode *topNode);
 
 	int GetNodes(PHCompositeNode *topNode);
 
@@ -96,6 +107,8 @@ private:
 	SRecEvent* _recEvent;
 
 	JobOptsSvc* p_jobOptsSvc;
+	std::string _geom_file_name;
+	TGeoManager* _t_geo_manager;
 };
 
 

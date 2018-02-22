@@ -11,6 +11,8 @@
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHFieldUtility.h>
 
+#include <phgeom/PHGeomUtility.h>
+
 #include <interface_main/SQHit.h>
 #include <interface_main/SQHit_v1.h>
 #include <interface_main/SQHitMap_v1.h>
@@ -61,8 +63,6 @@ _out_name("eval.root")
 	//p_jobOptsSvc = JobOptsSvc::instance();
 	p_jobOptsSvc->init("default.opts");
 
-	fastfinder = new KalmanFastTracking();
-
 	ResetEvalVars();
 	InitEvalTree();
 
@@ -80,6 +80,12 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	ret = InitField(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
+	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
+	assert(field);
+
+	/// init KalmanFastTracking
+	fastfinder = new KalmanFastTracking(field);
+
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -90,12 +96,19 @@ int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
   unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
 
   default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
-  default_field_cfg->identify();
 
   if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
 
   PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, Verbosity()+1);
   assert(phfield);
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
+{
+	PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
+	_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
