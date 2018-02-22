@@ -56,7 +56,7 @@ string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
-target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
+target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lgenfitexp -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
