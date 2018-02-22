@@ -48,9 +48,9 @@ void PHFieldConfig_v3::identify(std::ostream& os) const
   os << "PHFieldConfig_v3::identify -";
   if (isValid())
   {
-    os << " Field type of [" << "Sea Quest";
-    os << "] from file1 [" << get_filename1();
-    os << "] from file2 [" << get_filename2();
+    os << " Field type of [" << "Sea Quest: " << get_field_config_description().c_str() << "]" << endl;
+    os << " from file1 [" << get_filename1() << "]" << endl;
+    os << "  and file2 [" << get_filename2() << "]" << endl;
   }
   else
     os << "Empty";
