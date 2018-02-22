@@ -38,10 +38,25 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
+# Geant4
+find_program(G4CONF "geant4-config")
+if(G4CONF)
+  message("-- Detecting Geant4:  found at ${G4CONF}")
+else()
+  message(FATAL_ERROR "-- Detecting Geant4:  not found")
+endif()
+find_package(Geant4 REQUIRED vis_all)
+execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Warning suppression
+string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
+string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
-target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lphfield -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
+target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

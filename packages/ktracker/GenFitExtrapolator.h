@@ -19,9 +19,13 @@ Created: 10-13-2011
 
 #include <string>
 #include <TMatrixD.h>
+#include <TMatrixDSym.h>
 #include <TVector3.h>
 
 #include "GlobalConsts.h"
+
+class TGeoManager;
+class PHField;
 
 class GenFitExtrapolator
 {
@@ -30,7 +34,8 @@ public:
     ~GenFitExtrapolator();
 
     ///Initialize geometry and physics
-    bool init(std::string geometrySchema, double fMagStr = FMAGSTR, double kMagStr = KMAGSTR);
+    //bool init(std::string geometrySchema, double fMagStr = FMAGSTR, double kMagStr = KMAGSTR);
+    bool init(const PHField* field);
 
     ///Set input initial state parameters
     void setInitialStateWithCov(double z_in, TMatrixD& state_in, TMatrixD& cov_in);
@@ -49,19 +54,20 @@ public:
 
     ///Extrapolate to a new surface z_out
     bool extrapolateTo(double z_out);
-    int propagate();
+    //int propagate();
 
     ///Extrapolate to the primary vertex
     double extrapolateToIP();
 
     ///Transformation between the state vector and the mom/pos
-//    void convertSVtoMP(double z, TMatrixD& state, G4ThreeVector& mom, G4ThreeVector& pos);
-//    void convertMPtoSV(G4ThreeVector& mom, G4ThreeVector& pos, TMatrixD& state);
+    void convertSVtoMP(double z, TMatrixD& state, TVector3& mom, TVector3& pos);
+    void convertMPtoSV(TVector3& mom, TVector3& pos, TMatrixD& state);
 
     ///Transformation between the SC and SD parameters and error matrix
     ///Transplanted from GEANT3 fortran code
-//    void TRSDSC(int charge, G4ThreeVector mom_input, G4ThreeVector pos_input);
-//    void TRSCSD(int charge, G4ThreeVector mom_input, G4ThreeVector pos_input);
+    void TRSDSC(int charge, TVector3 mom_input, TVector3 pos_input);
+    void TRSCSD(int charge, TVector3 mom_input, TVector3 pos_input);
+
     TMatrixD& getJacSD2SC() { return jac_sd2sc; }
     TMatrixD& getJacSC2SD() { return jac_sc2sd; }
 
@@ -79,6 +85,9 @@ private:
 
     ///Particle type, for now only mu+/- is implemented
     int iParType;
+    enum PropDirection {Forward, Backward};
+    PropDirection direction;
+
 //    G4String parType;
 //
 //    ///Geant4 stuff
@@ -98,6 +107,16 @@ private:
 //    G4ThreeVector pos_f;
 //    G4ThreeVector mom_f;
 //    G4ErrorTrajErr cov_f;
+
+    ///Initial state
+    TVector3 pos_i;
+    TVector3 mom_i;
+    TMatrixDSym cov_i;
+
+    ///Final state
+    TVector3 pos_f;
+    TVector3 mom_f;
+    TMatrixDSym cov_f;
 
     ///Jacobians
     TMatrixD jac_sd2sc;
