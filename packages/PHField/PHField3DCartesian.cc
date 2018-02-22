@@ -157,10 +157,11 @@ PHField3DCartesian::~PHField3DCartesian()
 
 void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) const
 {
-  cout << "untested code - I don't know if this is being used, drop me a line (with the field) and I test this"
-       << endl
-       << "   Chris P." << endl;
-  assert(0);
+	//TODO Test!
+//  cout << "untested code - I don't know if this is being used, drop me a line (with the field) and I test this"
+//       << endl
+//       << "   Chris P." << endl;
+//  assert(0);
 
   static double xsav = -1000000.;
   static double ysav = -1000000.;
