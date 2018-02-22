@@ -61,6 +61,7 @@ bool GenFitExtrapolator::init(const PHField* field)
 		TVector3 H = f->get(TVector3(0,0,0));
 		H.Print();
   }
+  LogInfo("");
 #endif
 
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
