@@ -176,7 +176,11 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 	currentState->setPosMom(pos_i, mom_i);
 	currentState->setCov(cov_i);
 
-	travelLength = rep->extrapolateToPlane(*currentState, destPlane);
+	try {
+		travelLength = rep->extrapolateToPlane(*currentState, destPlane);
+	} catch (...) {
+		return false;
+	}
 
 	currentState->getPosMomCov(pos_f, mom_i, cov_i);
 
