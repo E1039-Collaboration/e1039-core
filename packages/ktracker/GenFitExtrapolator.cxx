@@ -55,6 +55,9 @@ void GenFitExtrapolator::setInitialStateWithCov(
 		TMatrixD& state_in, /// 5D state defined on (0, 0, z)
 		TMatrixD& cov_in) /// 5D cov
 {
+	LogInfo("z_in: ") << z_in << endl;
+	state_in.Print();
+	cov_in.Print();
 
   convertSVtoMP(z_in, state_in, mom_i, pos_i);
 
