@@ -47,6 +47,13 @@ bool GenFitExtrapolator::init(const PHField* field)
 	genfit::Field *fieldMap = new genfit::Field(field);
 	genfit::FieldManager::getInstance()->init(fieldMap);
 
+#ifdef _DEBUG_ON
+  LogInfo("");
+  genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
+  TVector3 H = f->get(TVector3(0,0,0));
+  H.Print();
+#endif
+
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
 
 	return true;
@@ -336,6 +343,7 @@ void GenFitExtrapolator::TRSDSC(int charge, TVector3 mom_input, TVector3 pos_inp
         TVector3 H = field->get(pos);
 #ifdef _DEBUG_ON
         LogInfo("");
+        pos.Print();
         H.Print();
 #endif
         double HA = H.Mag();
