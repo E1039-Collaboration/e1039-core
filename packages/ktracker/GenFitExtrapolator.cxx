@@ -23,6 +23,8 @@
 #include <memory>
 #include <cassert>
 
+#define _DEBUG_ON
+
 static const double c_light   = 2.99792458e+8 * m/s;
 
 using namespace std;
@@ -55,11 +57,13 @@ void GenFitExtrapolator::setInitialStateWithCov(
 		TMatrixD& state_in, /// 5D state defined on (0, 0, z)
 		TMatrixD& cov_in) /// 5D cov
 {
+#ifdef _DEBUG_ON
 	LogInfo("z_in: ") << z_in << endl;
 	state_in.Print();
 	cov_in.Print();
+#endif
 
-  convertSVtoMP(z_in, state_in, mom_i, pos_i);
+	convertSVtoMP(z_in, state_in, mom_i, pos_i);
 
   if(state_in[0][0] > 0)
   {
@@ -330,7 +334,10 @@ void GenFitExtrapolator::TRSDSC(int charge, TVector3 mom_input, TVector3 pos_inp
     if(charge != 0 && field)
     {
         TVector3 H = field->get(pos);
-
+#ifdef _DEBUG_ON
+        LogInfo("");
+        H.Print();
+#endif
         double HA = H.Mag();
         double HAM = HA*p_inv*tesla*GeV;
         double HM;
