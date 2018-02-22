@@ -22,6 +22,7 @@ void Fun4kTracker(
 	gSystem->Load("libktracker.so");
 	std::cout<<"DEBUG: "<<__LINE__<<std::endl;
 	KalmanFastTrackingWrapper *ktracker = new KalmanFastTrackingWrapper();
+  ktracker->set_geom_file_name("geom.gdml");
 	std::cout<<"DEBUG: "<<__LINE__<<std::endl;
 	se->registerSubsystem(ktracker);
 	std::cout<<"DEBUG: "<<__LINE__<<std::endl;
