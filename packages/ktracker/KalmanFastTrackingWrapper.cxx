@@ -56,11 +56,11 @@ _hit_map(nullptr),
 _hit_vector(nullptr),
 _out_name("eval.root")
 {
-	//p_jobOptsSvc = new JobOptsSvc();
-	p_jobOptsSvc = JobOptsSvc::instance();
+	p_jobOptsSvc = new JobOptsSvc();
+	//p_jobOptsSvc = JobOptsSvc::instance();
 	p_jobOptsSvc->init("default.opts");
 
-	//fastfinder = new KalmanFastTracking();
+	fastfinder = new KalmanFastTracking();
 
 	ResetEvalVars();
 	InitEvalTree();
@@ -74,6 +74,9 @@ int KalmanFastTrackingWrapper::Init(PHCompositeNode* topNode) {
 int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 	int ret = GetNodes(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
+	ret = InitField(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
 	return Fun4AllReturnCodes::EVENT_OK;
