@@ -54,7 +54,7 @@ bool GenFitExtrapolator::init(const PHField* field)
 		double p[4] = {0, 0, 0, 0};
 		double B[3] = {0, 0, 0};
 		field->GetFieldValue(p, B);
-		LogInfo("B: ") << B[0] << endl;
+		LogInfo("B: " << B[0] << ", " << B[1] << ", " << B[2]);
   }
   {
 		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
