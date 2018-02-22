@@ -3,6 +3,7 @@
 
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHFieldConfig_v3.h>
+#include <phfield/PHField.h>
 
 #include <genfitexp/Field.h>
 
@@ -49,9 +50,17 @@ bool GenFitExtrapolator::init(const PHField* field)
 
 #ifdef _DEBUG_ON
   LogInfo("");
-  genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
-  TVector3 H = f->get(TVector3(0,0,0));
-  H.Print();
+  {
+		double p[4] = {0, 0, 0, 0};
+		double B[3] = {0, 0, 0};
+		field->GetFieldValue(p, B);
+		LogInfo("B: ") << B[0] << endl;
+  }
+  {
+		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
+		TVector3 H = f->get(TVector3(0,0,0));
+		H.Print();
+  }
 #endif
 
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
