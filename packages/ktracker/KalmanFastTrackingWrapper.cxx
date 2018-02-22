@@ -33,6 +33,7 @@
 #include <cstring>
 #include <cmath>
 #include <cfloat>
+#include <cassert>
 #include <stdexcept>
 #include <limits>
 #include <boost/lexical_cast.hpp>
