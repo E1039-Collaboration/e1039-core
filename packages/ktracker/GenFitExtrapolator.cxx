@@ -27,11 +27,15 @@ static const double c_light   = 2.99792458e+8 * m/s;
 
 using namespace std;
 
-GenFitExtrapolator::GenFitExtrapolator() {
+GenFitExtrapolator::GenFitExtrapolator():
+	pos_i(TVector3()), mom_i(TVector3()), cov_i(TMatrixDSym(5)),
+	pos_f(TVector3()), mom_f(TVector3()), cov_f(TMatrixDSym(5)),
+	jac_sd2sc(TMatrixD(5,5)), jac_sc2sd(TMatrixD(5,5))
+{
 }
 
-GenFitExtrapolator::~GenFitExtrapolator() {
-}
+GenFitExtrapolator::~GenFitExtrapolator()
+	{}
 
 bool GenFitExtrapolator::init(const PHField* field)
 {
