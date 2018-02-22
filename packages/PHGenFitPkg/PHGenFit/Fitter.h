@@ -62,7 +62,7 @@ public:
 			const bool doEventDisplay = false);
 
 	//! Default destructor
-	~Fitter();
+	virtual ~Fitter();
 
 	static Fitter* getInstance(const std::string &tgeo_file_name,
       const PHField * field,

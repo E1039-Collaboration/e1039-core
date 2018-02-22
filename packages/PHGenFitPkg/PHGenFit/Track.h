@@ -43,7 +43,7 @@ public:
 	Track(const PHGenFit::Track &t);
 
 	//! Default dtor
-	~Track();
+	virtual ~Track();
 
 	//! Add measurement
 	int addMeasurement(PHGenFit::Measurement* measurement);

@@ -35,7 +35,7 @@ public:
 	void init(const TVector3& pos, const TMatrixDSym& cov);
 
 	//!dtor
-	~SpacepointMeasurement();
+	virtual ~SpacepointMeasurement();
 
 protected:
 

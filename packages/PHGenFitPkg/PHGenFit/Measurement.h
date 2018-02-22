@@ -24,7 +24,7 @@ public:
 	;
 
 	//!dtor
-	~Measurement();
+	virtual ~Measurement();
 
 	//!
 	genfit::AbsMeasurement* getMeasurement() {

@@ -25,7 +25,7 @@ public:
 	void init(const TVector3& pos, const TVector3& u, const TVector3& v, const double du, const double dv);
 
 	//!dtor
-	~PlanarMeasurement();
+	virtual ~PlanarMeasurement();
 
 protected:
 
