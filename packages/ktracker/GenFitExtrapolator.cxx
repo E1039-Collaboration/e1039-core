@@ -25,6 +25,8 @@
 
 static const double c_light   = 2.99792458e+8 * m/s;
 
+using namespace std;
+
 GenFitExtrapolator::GenFitExtrapolator() {
 }
 
@@ -420,4 +422,34 @@ void GenFitExtrapolator::TRSCSD(int charge, TVector3 mom_input, TVector3 pos_inp
 }
 
 void GenFitExtrapolator::print() {
+  cout << "Propagating " << iParType << ":" << endl;
+  cout << "From "
+  		<< "(" << pos_i.X() << ", " << pos_i.Y() << ", "<< pos_i.Z() << ") "
+			<< "(" << pos_f.X() << ", " << pos_f.Y() << ", "<< pos_f.Z() << ") "
+			<< endl;
+
+  cout << "Momentum change: "
+  		<< "(" << mom_i.X() << ", " << mom_i.Y() << ", "<< mom_i.Z() << ") "
+			<< "(" << mom_f.X() << ", " << mom_f.Y() << ", "<< mom_f.Z() << ") "
+			<< endl;
+
+  cout << "Initial error matrix: " << endl;
+  for(int i = 0; i < 5; i++)
+  {
+      for(int j = 0; j < 5; j++)
+      {
+          cout << cov_i[i][j] << "  ";
+      }
+      cout << endl;
+  }
+
+  cout << "Final error matrix: " << endl;
+  for(int i = 0; i < 5; i++)
+  {
+      for(int j = 0; j < 5; j++)
+      {
+          cout << cov_f[i][j] << "  ";
+      }
+      cout << endl;
+  }
 }
