@@ -46,6 +46,15 @@ class PHFieldConfig_v3 : public PHFieldConfig
   virtual int
   isValid() const;
 
+  FieldConfigTypes get_field_config() const
+  {
+    return field_config_;
+  }
+  void set_field_config(FieldConfigTypes fieldConfig)
+  {
+    field_config_ = fieldConfig;
+  }
+
   const std::string& get_filename1() const
   {
     return filename1_;
