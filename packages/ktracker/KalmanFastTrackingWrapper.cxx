@@ -103,7 +103,7 @@ int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 
   if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
 
-  PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, Verbosity()+1);
+  PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
   assert(phfield);
 
   return Fun4AllReturnCodes::EVENT_OK;
