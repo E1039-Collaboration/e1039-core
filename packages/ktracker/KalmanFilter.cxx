@@ -37,8 +37,13 @@ void KalmanFilter::close()
 
 KalmanFilter::KalmanFilter(bool limitedStep)
 {
-    JobOptsSvc* p_jobOptsSvc = JobOptsSvc::instance();
-    _extrapolator.init(p_jobOptsSvc->m_geomVersion);
+//    JobOptsSvc* p_jobOptsSvc = JobOptsSvc::instance();
+//    _extrapolator.init(p_jobOptsSvc);
+}
+
+bool KalmanFilter::initExtrapolator(const PHField *field)
+{
+	_extrapolator.init(field);
 }
 
 bool KalmanFilter::fit_node(Node& _node)

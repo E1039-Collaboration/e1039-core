@@ -23,7 +23,7 @@ Created: 05-28-2013
 #define _DEV_
 #define _DEBUG_ON
 
-KalmanFastTracking::KalmanFastTracking(bool flag) : enable_KF(flag)
+KalmanFastTracking::KalmanFastTracking(const PHField* field, bool flag) : enable_KF(flag)
 {
     using namespace std;
 #ifdef _DEBUG_ON
@@ -37,7 +37,7 @@ KalmanFastTracking::KalmanFastTracking(bool flag) : enable_KF(flag)
     //Initialize Kalman fitter
     if(enable_KF)
     {
-        kmfitter = new KalmanFitter();
+        kmfitter = new KalmanFitter(field);
         kmfitter->setControlParameter(50, 0.001);
     }
 

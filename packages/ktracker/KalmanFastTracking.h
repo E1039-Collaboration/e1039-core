@@ -12,6 +12,8 @@ Created: 05-24-2013
 
 #include "GlobalConsts.h"
 
+#include <phfield/PHField.h>
+
 #include <list>
 #include <vector>
 
@@ -29,7 +31,7 @@ Created: 05-24-2013
 class KalmanFastTracking
 {
 public:
-    explicit KalmanFastTracking(bool flag = true);
+    explicit KalmanFastTracking(const PHField* field, bool flag = true);
     ~KalmanFastTracking();
 
     //Set the input event

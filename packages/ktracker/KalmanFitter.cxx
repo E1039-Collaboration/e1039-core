@@ -15,9 +15,10 @@ Created: 10-18-2012
 #include "geom_svc/GeomSvc.h"
 #include "KalmanFitter.h"
 
-KalmanFitter::KalmanFitter()
+KalmanFitter::KalmanFitter(const PHField* field)
 {
     _kmfit = KalmanFilter::instance();
+    _kmfit->initExtrapolator(field);
 
     _max_iteration = 100;
     _tolerance = 1E-3;

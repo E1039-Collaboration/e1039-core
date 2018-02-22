@@ -16,6 +16,8 @@ Created: 10-14-2011
 
 #include "GlobalConsts.h"
 
+#include <phfield/PHField.h>
+
 #include <list>
 #include <vector>
 
@@ -32,6 +34,7 @@ public:
 
     ///Real constructor
     KalmanFilter(bool limitedStep = true);
+    bool initExtrapolator(const PHField* field);
 
     ///Kalman filter steps
     bool predict(Node& _node);

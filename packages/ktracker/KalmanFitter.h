@@ -10,6 +10,8 @@ Author: Kun Liu, liuk@fnal.gov
 Created: 10-18-2012
 */
 
+#include <phfield/PHField.h>
+
 #include <list>
 #include <vector>
 
@@ -22,7 +24,7 @@ Created: 10-18-2012
 class KalmanFitter
 {
 public:
-    KalmanFitter();
+    KalmanFitter(const PHField* field);
     //~KalmanFitter();
 
     ///Set the convergence control parameters
