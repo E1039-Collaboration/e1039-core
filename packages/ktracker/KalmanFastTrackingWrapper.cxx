@@ -81,6 +81,9 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	ret = InitField(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
+	ret = InitGeom(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
 	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 	assert(field);
 
