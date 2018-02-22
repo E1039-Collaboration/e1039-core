@@ -107,8 +107,8 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
     while (file >> ROOT_X >> ROOT_Y >> ROOT_Z >> ROOT_BX >> ROOT_BY >> ROOT_BZ) {
       trio coord_key(ROOT_X * cm, ROOT_Y * cm, ROOT_Z * cm);
       trio field_val(ROOT_BX * tesla, ROOT_BY * tesla, ROOT_BZ * tesla);
-    	cout << ROOT_X << " " << ROOT_Y << " " << ROOT_Z << endl;
-    	cout << ROOT_BX << " " << ROOT_BY << " " << ROOT_BZ << endl;
+    	//cout << ROOT_X << " " << ROOT_Y << " " << ROOT_Z << endl;
+    	//cout << ROOT_BX << " " << ROOT_BY << " " << ROOT_BZ << endl;
       xvals.insert(ROOT_X * m);
       yvals.insert(ROOT_Y * m);
       zvals.insert(ROOT_Z * m);
