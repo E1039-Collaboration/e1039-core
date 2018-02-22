@@ -172,7 +172,9 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 	genfit::SharedPlanePtr destPlane(new genfit::DetPlane(TVector3(0, 0, z_out), TVector3(0, 0, 1)));
 
 	std::unique_ptr<genfit::MeasuredStateOnPlane> currentState = std::unique_ptr < genfit::MeasuredStateOnPlane > (new genfit::MeasuredStateOnPlane(rep));
-	rep->setPosMomCov(*currentState, pos_i, mom_i, cov_i);
+	//rep->setPosMomCov(*currentState, pos_i, mom_i, cov_i);
+	currentState->setPosMom(pos_i, mom_i);
+	currentState->setCov(cov_i);
 
 	travelLength = rep->extrapolateToPlane(*currentState, destPlane);
 
