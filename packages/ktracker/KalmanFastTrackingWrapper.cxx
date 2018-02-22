@@ -60,9 +60,10 @@ _hit_map(nullptr),
 _hit_vector(nullptr),
 _out_name("eval.root")
 {
-	p_jobOptsSvc = new JobOptsSvc();
-	//p_jobOptsSvc = JobOptsSvc::instance();
+	//p_jobOptsSvc = new JobOptsSvc();
+	p_jobOptsSvc = JobOptsSvc::instance();
 	p_jobOptsSvc->init("default.opts");
+	LogDebug(p_jobOptsSvc->m_geomVersion);
 
 	ResetEvalVars();
 	InitEvalTree();
