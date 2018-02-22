@@ -5,6 +5,7 @@
 #include <TNtuple.h>
 
 #include <set>
+#include <algorithm>
 
 using namespace std;
 using namespace CLHEP;  // units

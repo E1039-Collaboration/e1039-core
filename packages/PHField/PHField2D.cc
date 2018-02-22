@@ -7,6 +7,7 @@
 
 #include <set>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 using namespace CLHEP;// units
