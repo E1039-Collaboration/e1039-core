@@ -122,12 +122,13 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
 
   ymin = *(yvals.begin());
   ymax = *(yvals.rbegin());
-  if (ymin != xmin || ymax != xmax)
-  {
-    cout << "PHField3DCartesian: Compiler bug!!!!!!!! Do not use inlining!!!!!!" << endl;
-    cout << "exiting now - recompile with -fno-inline" << endl;
-    exit(1);
-  }
+  //TODO comment out for now, figure out why
+//  if (ymin != xmin || ymax != xmax)
+//  {
+//    cout << "PHField3DCartesian: Compiler bug!!!!!!!! Do not use inlining!!!!!!" << endl;
+//    cout << "exiting now - recompile with -fno-inline" << endl;
+//    exit(1);
+//  }
 
   if (magfield_rescale != 1.0)
   {
