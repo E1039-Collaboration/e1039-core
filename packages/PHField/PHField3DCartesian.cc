@@ -314,9 +314,9 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
   //V110 x y (1 - z) +
   //V111 x y z
 
-  double xinblock = point[0] - xkey[1];
-  double yinblock = point[1] - ykey[1];
-  double zinblock = point[2] - zkey[1];
+  double xinblock = point[0] - xkey[0];
+  double yinblock = point[1] - ykey[0];
+  double zinblock = point[2] - zkey[0];
   //   cout << "x/y/z stepsize: " << xstepsize << "/" << ystepsize << "/" << zstepsize << endl;
   //   cout << "x/y/z inblock: " << xinblock << "/" << yinblock << "/" << zinblock << endl;
   for (int i = 0; i < 3; i++)
