@@ -57,7 +57,7 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
   cout << "\n================ Begin Construct Mag Field =====================" << endl;
   cout << "\n-----------------------------------------------------------"
          << "\n      Magnetic field Module - Verbosity:"
-         << "\n-----------------------------------------------------------";
+         << "\n-----------------------------------------------------------\n";
 
   bool root_input = false;
   if(root_input) {
