@@ -13,8 +13,8 @@
 using namespace std;
 using namespace CLHEP;  // units
 
-#define UNIT_LENGTH cm;
-#define UNIT_FIELD tesla;
+#define UNIT_LENGTH cm
+#define UNIT_FIELD tesla
 
 namespace {
 	typedef boost::tuple<double, double, double> trio;
