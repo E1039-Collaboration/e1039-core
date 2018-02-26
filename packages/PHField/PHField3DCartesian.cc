@@ -276,11 +276,11 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
           cout << "read x/y/z: "
           		 << xyz[i][j][k][0]/cm << "/"
                << xyz[i][j][k][1]/cm << "/"
-               << xyz[i][j][k][2]/cm << "cm"
+               << xyz[i][j][k][2]/cm << " cm"
 							 << " bx/by/bz: "
                << bf[i][j][k][0]/tesla << "/"
                << bf[i][j][k][1]/tesla << "/"
-               << bf[i][j][k][2]/tesla << "tesla"
+               << bf[i][j][k][2]/tesla << " tesla"
 							 << endl;
         }
       }
