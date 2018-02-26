@@ -28,6 +28,8 @@ PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string
   zValues[1] = 403.74*cm;  // front of kmag field map
   zValues[2] = 712.0*cm;   // end of fmag field map
   zValues[3] = 1572.26*cm; // end of kmag field map
+
+  kmagZOffset = 1064.26*cm;
 }
 
 PHFieldSeaQuest::~PHFieldSeaQuest()
@@ -38,6 +40,9 @@ PHFieldSeaQuest::~PHFieldSeaQuest()
 }
 
 void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const {
+
+	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
+
   if (point[2]>zValues[0] && point[2]<zValues[1])
   {
     fmag.GetFieldValue( point, Bfield );
@@ -45,7 +50,7 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
 
   if ((point[2]>zValues[2])&&(point[2]<zValues[3]))
   {
-    kmag.GetFieldValue( point, Bfield );
+    kmag.GetFieldValue( kmag_point, Bfield );
   }
 
   if ((point[2]>zValues[1])&&(point[2]<zValues[2]))
@@ -54,7 +59,7 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
     double xTemp = Bfield[0];
     double yTemp = Bfield[1];
     double zTemp = Bfield[2];
-    kmag.GetFieldValue( point, Bfield );
+    kmag.GetFieldValue( kmag_point, Bfield );
     Bfield[0] = Bfield[0] + xTemp;
     Bfield[1] = Bfield[1] + yTemp;
     Bfield[2] = Bfield[2] + zTemp;

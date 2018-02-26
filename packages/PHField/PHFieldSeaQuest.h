@@ -22,6 +22,7 @@ class PHFieldSeaQuest : public PHField
 
  protected:
   float zValues[4];
+  float kmagZOffset;
 
   PHField3DCartesian fmag;
   PHField3DCartesian kmag;

@@ -21,6 +21,9 @@ class PHField3DCartesian : public PHField
 
  protected:
   std::string filename;
+	std::set<double> xvals;
+	std::set<double> yvals;
+	std::set<double> zvals;
   double xmin;
   double xmax;
   double ymin;
