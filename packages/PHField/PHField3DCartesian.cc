@@ -273,12 +273,15 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
           bf[i][j][k][0] = (magval->second).get<0>();
           bf[i][j][k][1] = (magval->second).get<1>();
           bf[i][j][k][2] = (magval->second).get<2>();
-          cout << "read x/y/z: " << xyz[i][j][k][0] << "/"
-               << xyz[i][j][k][1] << "/"
-               << xyz[i][j][k][2] << " bx/by/bz: "
-               << bf[i][j][k][0] << "/"
-               << bf[i][j][k][1] << "/"
-               << bf[i][j][k][2] << endl;
+          cout << "read x/y/z: "
+          		 << xyz[i][j][k][0]/cm << "/"
+               << xyz[i][j][k][1]/cm << "/"
+               << xyz[i][j][k][2]/cm << "cm"
+							 << " bx/by/bz: "
+               << bf[i][j][k][0]/tesla << "/"
+               << bf[i][j][k][1]/tesla << "/"
+               << bf[i][j][k][2]/tesla << "tesla"
+							 << endl;
         }
       }
     }
