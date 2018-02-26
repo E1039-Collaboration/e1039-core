@@ -108,7 +108,7 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
     float ROOT_X, ROOT_Y, ROOT_Z;
     float ROOT_BX, ROOT_BY, ROOT_BZ;
     while (file >> ROOT_X >> ROOT_Y >> ROOT_Z >> ROOT_BX >> ROOT_BY >> ROOT_BZ) {
-      trio coord_key(ROOT_X * cm, ROOT_Y * cm, ROOT_Z * cm);
+      trio coord_key(ROOT_X * UNIT_LENGTH, ROOT_Y * UNIT_LENGTH, ROOT_Z * UNIT_LENGTH);
       trio field_val(ROOT_BX * UNIT_FIELD, ROOT_BY * UNIT_FIELD, ROOT_BZ * UNIT_FIELD);
     	//cout << ROOT_X << " " << ROOT_Y << " " << ROOT_Z << endl;
     	//cout << ROOT_BX << " " << ROOT_BY << " " << ROOT_BZ << endl;
@@ -315,6 +315,7 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
                 bf[0][1][1][i] * (xstepsize - xinblock) * yinblock * zinblock +
                 bf[1][1][0][i] * xinblock * yinblock * (zstepsize - zinblock) +
                 bf[1][1][1][i] * xinblock * yinblock * zinblock;
+    Bfield[i] /= (xstepsize*ystepsize*zstepsize);
   }
 
   return;
