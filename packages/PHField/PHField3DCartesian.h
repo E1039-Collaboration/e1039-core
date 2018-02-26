@@ -3,6 +3,8 @@
 
 #include "PHField.h"
 
+#include <boost/tuple/tuple.hpp>
+
 #include <map>
 #include <set>
 
@@ -24,6 +26,7 @@ class PHField3DCartesian : public PHField
 	std::set<double> xvals;
 	std::set<double> yvals;
 	std::set<double> zvals;
+	std::map<boost::tuple<double, double, double>, boost::tuple<double, double, double> > fieldmap;
   double xmin;
   double xmax;
   double ymin;

@@ -18,7 +18,6 @@ using namespace CLHEP;  // units
 
 namespace {
 	typedef boost::tuple<double, double, double> trio;
-	std::map<boost::tuple<double, double, double>, boost::tuple<double, double, double> > fieldmap;
 }
 
 PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield_rescale)

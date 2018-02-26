@@ -13,12 +13,6 @@
 using namespace std;
 using namespace CLHEP;  // units
 
-typedef boost::tuple<double, double, double> trio;
-std::map<boost::tuple<double, double, double>, boost::tuple<double, double, double> > fieldmap;
-std::set<double> xvals;
-std::set<double> yvals;
-std::set<double> zvals;
-
 PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name):
 		fmag(fmag_name),
 		kmag(kmag_name)
