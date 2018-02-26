@@ -41,10 +41,6 @@ PHFieldSeaQuest::~PHFieldSeaQuest()
 
 void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const {
 
-	for(int i=0; i<4; ++i) {
-		point[i] /= cm;
-	}
-
 	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
   if (point[2]>zValues[0] && point[2]<zValues[1])
@@ -68,8 +64,4 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
     Bfield[1] = Bfield[1] + yTemp;
     Bfield[2] = Bfield[2] + zTemp;
   }
-
-	for(int i=0; i<3; ++i) {
-		Bfield[i] /= tesla;
-	}
 }
