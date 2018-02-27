@@ -35,24 +35,14 @@ PHFieldSeaQuest::~PHFieldSeaQuest()
 
 void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const {
 
-	Bfield[0] = 0;
-	Bfield[1] = 0;
-	Bfield[2] = 0;
-
 	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
   if (point[2]>zValues[0] && point[2]<zValues[1])
   {
     fmag.GetFieldValue( point, Bfield );
-  }
-
-  if ((point[2]>zValues[2])&&(point[2]<zValues[3]))
-  {
+  } else if ((point[2]>zValues[2])&&(point[2]<zValues[3])) {
     kmag.GetFieldValue( kmag_point, Bfield );
-  }
-
-  if ((point[2]>zValues[1])&&(point[2]<zValues[2]))
-  {
+  } else if ((point[2]>zValues[1])&&(point[2]<zValues[2])) {
   	fmag.GetFieldValue( point, Bfield );
     double xTemp = Bfield[0];
     double yTemp = Bfield[1];
@@ -61,5 +51,9 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
     Bfield[0] = Bfield[0] + xTemp;
     Bfield[1] = Bfield[1] + yTemp;
     Bfield[2] = Bfield[2] + zTemp;
+  } else {
+  	Bfield[0] = 0;
+  	Bfield[1] = 0;
+  	Bfield[2] = 0;
   }
 }
