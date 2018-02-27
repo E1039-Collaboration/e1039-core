@@ -467,11 +467,13 @@ void GenFitExtrapolator::print() {
   cout << "Propagating " << iParType << ":" << endl;
   cout << "From "
   		<< "(" << pos_i.X() << ", " << pos_i.Y() << ", "<< pos_i.Z() << ") "
+			<< " To "
 			<< "(" << pos_f.X() << ", " << pos_f.Y() << ", "<< pos_f.Z() << ") "
 			<< endl;
 
-  cout << "Momentum change: "
+  cout << "Momentum change: From "
   		<< "(" << mom_i.X() << ", " << mom_i.Y() << ", "<< mom_i.Z() << ") "
+			<< " To "
 			<< "(" << mom_f.X() << ", " << mom_f.Y() << ", "<< mom_f.Z() << ") "
 			<< endl;
 
