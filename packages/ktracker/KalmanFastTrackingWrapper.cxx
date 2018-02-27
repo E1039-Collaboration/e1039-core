@@ -190,7 +190,11 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 		std::cout << "Entering KalmanFastTrackingWrapper::process_event: " << _event << std::endl;
 
 #ifdef _DEBUG_ON
-		cout << "eventID: " << _event_header->get_event_id() << endl;
+  cout
+	<< "runID: " << _event_header->get_run_id()
+	<< " | spillID: " << _event_header->get_spill_id()
+	<< " | eventID: " << _event_header->get_event_id()
+	<< endl;
 #endif
 
 		ResetEvalVars();
