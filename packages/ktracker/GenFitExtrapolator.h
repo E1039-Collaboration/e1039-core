@@ -52,9 +52,11 @@ public:
     //void getNumericalPropagator(TMatrixD& prop);
     void getPropagator(TMatrixD& prop);
 
-    ///Extrapolate to a new surface z_out
+    /*
+     * Extrapolate to a new surface z_out
+     * \param z_out target position, in cm
+     */
     bool extrapolateTo(double z_out);
-    //int propagate();
 
     ///Extrapolate to the primary vertex
     double extrapolateToIP();
@@ -108,6 +110,7 @@ private:
 //    G4ThreeVector mom_f;
 //    G4ErrorTrajErr cov_f;
 
+    /// GenFit uses cm, GeV and kilogauss
     ///Initial state
     TVector3 pos_i;
     TVector3 mom_i;
