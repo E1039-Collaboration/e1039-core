@@ -59,6 +59,7 @@ bool GenFitExtrapolator::init(const PHField* field)
   {
 		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
 		TVector3 H = f->get(TVector3(0,0,0));
+		H *= kilogauss/tesla;
 		H.Print();
   }
   {
@@ -362,11 +363,13 @@ void GenFitExtrapolator::TRSDSC(int charge, TVector3 mom_input, TVector3 pos_inp
     jac_sd2sc[4][3] = VJ;
     jac_sd2sc[4][4] = VK;
 
+    //Takes cm output kGauss (0.1*tesla)
     genfit::AbsBField *field = genfit::FieldManager::getInstance()->getField();
 
     if(charge != 0 && field)
     {
         TVector3 H = field->get(pos);
+        H *= kilogauss/tesla;
 #ifdef _DEBUG_ON
         LogInfo("");
         pos.Print();
@@ -450,6 +453,7 @@ void GenFitExtrapolator::TRSCSD(int charge, TVector3 mom_input, TVector3 pos_inp
     if(charge != 0 && field)
     {
     		TVector3 H = field->get(pos);
+    		H *= kilogauss/tesla;
 
         double HA = H.Mag();
         double HAM = HA*p_inv;
