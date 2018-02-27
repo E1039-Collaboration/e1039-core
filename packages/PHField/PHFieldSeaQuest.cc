@@ -35,6 +35,10 @@ PHFieldSeaQuest::~PHFieldSeaQuest()
 
 void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const {
 
+	Bfield[0] = 0;
+	Bfield[1] = 0;
+	Bfield[2] = 0;
+
 	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
   if (point[2]>zValues[0] && point[2]<zValues[1])
