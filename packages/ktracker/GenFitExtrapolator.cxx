@@ -210,7 +210,7 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 		return false;
 	}
 
-	currentState->getPosMomCov(pos_f, mom_i, cov_i);
+	currentState->getPosMomCov(pos_f, mom_f, cov_f);
 
 	return true;
 }
