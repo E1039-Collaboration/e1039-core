@@ -223,6 +223,7 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 #endif
 
       SRecTrack recTrack = iter->getSRecTrack();
+      recTrack.print();
       _recEvent->insertTrack(recTrack);
   }
 
