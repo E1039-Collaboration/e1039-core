@@ -55,7 +55,7 @@ bool GenFitExtrapolator::init(const PHField* field)
 		double B[3] = {0, 0, 0};
 		field->GetFieldValue(p, B);
 		cout << "PHField (CLHEP): " << endl;
-		cout << B[0] << ", " << B[1] << ", " << B[2];
+		cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
   }
   {
 		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
