@@ -194,6 +194,13 @@ void GenFitExtrapolator::getPropagator(TMatrixD& prop) {
 bool GenFitExtrapolator::extrapolateTo(double z_out) {
 
 	int pid = iParType > 0 ? -13 : 13;
+#ifdef _DEBUG_ON
+		cout
+		<< "extrapolateToPlane: "
+		<< "From: " << pos_i.Z()
+		<< " -> " << z_out
+		<< endl;
+#endif
 
 	genfit::AbsTrackRep* rep = new genfit::RKTrackRep(pid);
 
@@ -207,10 +214,15 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 	try {
 		travelLength = rep->extrapolateToPlane(*currentState, destPlane);
 	} catch (...) {
+#ifdef _DEBUG_ON
+		cout << "extrapolateToPlane failed!" << endl;
+#endif
 		return false;
 	}
 
-	currentState->getPosMomCov(pos_f, mom_f, cov_f);
+	currentState->getPosMom(pos_f, mom_f);
+	cov_f = currentState->getCov();
+
 
 	return true;
 }
