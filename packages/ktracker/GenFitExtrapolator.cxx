@@ -24,7 +24,7 @@
 #include <memory>
 #include <cassert>
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 static const double c_light   = 2.99792458e+8 * m/s;
 
@@ -190,6 +190,22 @@ void GenFitExtrapolator::getPropagator(TMatrixD& prop) {
 }
 
 bool GenFitExtrapolator::extrapolateTo(double z_out) {
+
+  ///If the initial or final position is out of the reasonable world
+  if(pos_i[2] > 2400 || pos_i[2] < -600 || z_out > 2400 || z_out < -600)
+  {
+      return false;
+  }
+
+  ///if the initial and final z position is the same, don't make the transportation
+  if(fabs(pos_i[2] - z_out) < 1E-3)
+  {
+      mom_f = mom_i;
+      pos_f = pos_i;
+      cov_f = cov_i;
+
+      return true;
+  }
 
 	int pid = iParType > 0 ? -13 : 13;
 #ifdef _DEBUG_ON

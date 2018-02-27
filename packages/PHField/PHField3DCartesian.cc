@@ -16,7 +16,7 @@ using namespace CLHEP;  // units
 #define UNIT_LENGTH cm
 #define UNIT_FIELD tesla
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 namespace {
 	typedef boost::tuple<double, double, double> trio;
