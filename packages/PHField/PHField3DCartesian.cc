@@ -16,7 +16,7 @@ using namespace CLHEP;  // units
 #define UNIT_LENGTH cm
 #define UNIT_FIELD tesla
 
-#define _DEBUG_ON_
+#define _DEBUG_ON
 
 namespace {
 	typedef boost::tuple<double, double, double> trio;
@@ -147,7 +147,7 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
   ystepsize = (ymax - ymin) / (yvals.size() - 1);
   zstepsize = (zmax - zmin) / (zvals.size() - 1);
 
-#ifdef _DEBUG_ON_
+#ifdef _DEBUG_ON
   auto key = boost::make_tuple(0, 0, 0);
   auto magval = fieldmap.find(key);
   if(magval!=fieldmap.end()) {
@@ -287,6 +287,7 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
           bf[i][j][k][0] = (magval->second).get<0>();
           bf[i][j][k][1] = (magval->second).get<1>();
           bf[i][j][k][2] = (magval->second).get<2>();
+#ifdef _DEBUG_ON
           cout << "read x/y/z: "
           		 << xyz[i][j][k][0]/cm << "/"
                << xyz[i][j][k][1]/cm << "/"
@@ -296,6 +297,7 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
                << bf[i][j][k][1]/tesla << "/"
                << bf[i][j][k][2]/tesla << " tesla"
 							 << endl;
+#endif
         }
       }
     }
