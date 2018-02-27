@@ -54,19 +54,16 @@ bool GenFitExtrapolator::init(const PHField* field)
 		double p[4] = {0, 0, 0, 0};
 		double B[3] = {0, 0, 0};
 		field->GetFieldValue(p, B);
-		LogInfo("B: " << B[0] << ", " << B[1] << ", " << B[2]);
+		cout << "PHField (CLHEP): " << endl;
+		cout << B[0] << ", " << B[1] << ", " << B[2];
   }
   {
 		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
 		TVector3 H = f->get(TVector3(0,0,0));
 		H *= kilogauss/tesla;
+		cout << "genfit::AbsBField (tesla): " << endl;
 		H.Print();
   }
-  {
-		TVector3 H = fieldMap->get(TVector3(0,0,0));
-		H.Print();
-  }
-  LogInfo("");
 #endif
 
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
