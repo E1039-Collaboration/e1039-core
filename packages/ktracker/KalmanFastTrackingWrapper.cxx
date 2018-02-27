@@ -45,6 +45,8 @@
 #define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
+#define _ENABLE_KF
+
 #define _DEBUG_ON
 
 using namespace std;
@@ -217,17 +219,30 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
   for(std::list<Tracklet>::iterator iter = rec_tracklets.begin(); iter != rec_tracklets.end(); ++iter)
   {
-      iter->calcChisq();
+		iter->calcChisq();
 #ifdef _DEBUG_ON
-      iter->print();
+		iter->print();
 #endif
 
-      SRecTrack recTrack = iter->getSRecTrack();
+#ifndef _ENABLE_KF
+		SRecTrack recTrack = iter->getSRecTrack();
 #ifdef _DEBUG_ON
-      recTrack.print();
+		recTrack.print();
 #endif
-      _recEvent->insertTrack(recTrack);
+		_recEvent->insertTrack(recTrack);
+#endif
   }
+
+#ifdef _ENABLE_KF
+	std::list<SRecTrack>& rec_tracks = fastfinder->getSRecTracks();
+	for(std::list<SRecTrack>::iterator iter = rec_tracks.begin(); iter != rec_tracks.end(); ++iter)
+	{
+#ifdef _DEBUG_ON
+		iter->print();
+#endif
+		_recEvent->insertTrack(*iter);
+	}
+#endif
 
 
 	_tout->Fill();
