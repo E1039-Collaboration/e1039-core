@@ -189,7 +189,11 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
 		std::cout << "Entering KalmanFastTrackingWrapper::process_event: " << _event << std::endl;
 
-	ResetEvalVars();
+#ifdef _DEBUG_ON
+		cout << "eventID: " << _event_header->get_event_id() << endl;
+#endif
+
+		ResetEvalVars();
 
 	if(!_event_header) {
 		LogDebug("!_event_header");
