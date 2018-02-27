@@ -45,7 +45,7 @@
 #define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
-#define _LOCAL_DEBUG
+#define _DEBUG_ON
 
 using namespace std;
 
@@ -121,7 +121,7 @@ int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 	SRawEvent* sraw_event = new SRawEvent();
 
-#ifdef _LOCAL_DEBUG
+#ifdef _DEBUG_ON
 	LogDebug("Start: ");
 #endif
 	int run_id   = _event_header->get_run_id();
@@ -175,7 +175,7 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 
 	sraw_event->reIndex(true);
 
-#ifdef _LOCAL_DEBUG
+#ifdef _DEBUG_ON
 	LogDebug("End: ");
 #endif
 
@@ -218,7 +218,9 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
   for(std::list<Tracklet>::iterator iter = rec_tracklets.begin(); iter != rec_tracklets.end(); ++iter)
   {
       iter->calcChisq();
+#ifdef _DEBUG_ON
       iter->print();
+#endif
 
       SRecTrack recTrack = iter->getSRecTrack();
       _recEvent->insertTrack(recTrack);
