@@ -61,6 +61,7 @@ _spill_map(nullptr),
 _event_header(nullptr),
 _hit_map(nullptr),
 _hit_vector(nullptr),
+_triggerhit_vector(nullptr),
 _out_name("eval.root")
 {
 	//p_jobOptsSvc = new JobOptsSvc();
@@ -150,11 +151,31 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
   sraw_event->setTriggerBits(triggers);
 
   //Get target position
-  //sprintf(query, "SELECT targetPos FROM Spill WHERE spillID=%d", spillID);
+
+  SQSpill *spill = _spill_map->get(spill_id);
+  if(!spill) {
+  	if(verbosity >= 2) LogError("No Spill Info for ID: ") << spill_id << endl;
+  }
+  sraw_event->setTargetPos(spill->get_target_pos());
 
   //Get beam information - QIE
 
   //Get trigger hits - TriggerHit
+	for(auto iter = _triggerhit_vector->begin(); iter!= _triggerhit_vector->end();++iter) {
+    SQHit *sq_hit = (*iter);
+
+    Hit h;
+    h.index = sq_hit->get_hit_id();
+    h.detectorID = sq_hit->get_detector_id();
+    h.elementID = sq_hit->get_element_id();
+    h.tdcTime = sq_hit->get_tdc_time();
+    h.driftDistance = 0;
+    h.pos = sq_hit->get_pos();
+
+    if(sq_hit->is_in_time()) h.setInTime();
+
+    sraw_event->insertTriggerHit(h);
+	}
 
 	for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
     SQHit *sq_hit = (*iter);

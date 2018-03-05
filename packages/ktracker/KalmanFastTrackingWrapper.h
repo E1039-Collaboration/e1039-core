@@ -104,6 +104,7 @@ private:
 	SQEvent * _event_header;
 	SQHitMap *_hit_map;
 	SQHitVector *_hit_vector;
+	SQHitVector *_triggerhit_vector;
 
 	std::string _out_name;
 	TTree* _tout;
