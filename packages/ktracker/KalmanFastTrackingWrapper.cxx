@@ -358,6 +358,12 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 			LogError("!_hit_vector");
 			return Fun4AllReturnCodes::ABORTEVENT;
 		}
+
+		_triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+		if (!_triggerhit_vector) {
+			LogError("!_triggerhit_vector");
+			return Fun4AllReturnCodes::ABORTEVENT;
+		}
 	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
