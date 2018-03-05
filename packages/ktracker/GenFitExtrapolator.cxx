@@ -48,7 +48,7 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 	genfit::Field *fieldMap = new genfit::Field(field);
 	genfit::FieldManager::getInstance()->init(fieldMap);
 
-	_tgeo_manager = geom;
+	_tgeo_manager = const_cast<TGeoManager*>(geom);
 
 #ifdef _DEBUG_ON
   LogInfo("");
@@ -67,6 +67,8 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 		H.Print();
   }
 #endif
+
+  _tgeo_manager->Export("test.root");
 
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
 

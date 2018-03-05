@@ -132,7 +132,7 @@ private:
     bool calcLength;
     double travelLength;
 
-    const TGeoManager* _tgeo_manager;
+    TGeoManager* _tgeo_manager;
 };
 
 #endif
