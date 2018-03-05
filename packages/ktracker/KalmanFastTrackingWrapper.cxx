@@ -8,6 +8,7 @@
 
 #include "KalmanFastTrackingWrapper.h"
 #include "KalmanFastTracking.h"
+#include "EventReducer.h"
 
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHFieldUtility.h>
@@ -92,6 +93,15 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 	/// init KalmanFastTracking
 	fastfinder = new KalmanFastTracking(field);
+
+  TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
+  if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
+  if(p_jobOptsSvc->m_sagittaReducer) opt = opt + "s";
+  if(p_jobOptsSvc->m_updateAlignment) opt = opt + "e";
+  if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
+  if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
+  if(p_jobOptsSvc->m_realization) opt = opt + "r";
+  EventReducer* eventReducer = new EventReducer(opt);
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -215,6 +225,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	}
 
 	SRawEvent* sraw_event = BuildSRawEvent();
+	eventReducer->reduceEvent(sraw_event);
+
 	_rawEvent = sraw_event;
 
 	_recEvent = new SRecEvent();

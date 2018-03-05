@@ -25,6 +25,7 @@
 //#include <algorithm>
 
 class KalmanFastTracking;
+class EventReducer;
 class SRawEvent;
 class SRecEvent;
 class JobOptsSvc;
@@ -91,6 +92,7 @@ private:
 	SRawEvent* BuildSRawEvent();
 
 	KalmanFastTracking* fastfinder;
+	EventReducer* eventReducer;
 
 	std::string _hit_container_type;
 
