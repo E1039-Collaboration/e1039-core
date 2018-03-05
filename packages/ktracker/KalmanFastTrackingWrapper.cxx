@@ -102,7 +102,8 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
   if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
   if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
   if(p_jobOptsSvc->m_realization) opt = opt + "r";
-  EventReducer* eventReducer = new EventReducer(opt);
+
+  eventReducer = new EventReducer(opt);
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
