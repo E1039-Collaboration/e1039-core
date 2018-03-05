@@ -34,15 +34,15 @@ public:
   virtual int          get_spill_id() const                               {return _spill_id;}
   virtual void         set_spill_id(const int a)                          {_spill_id = a;}
 
-  virtual float        get_live_proton() const                               {return _live_proton;}
-  virtual void         set_live_proton(const float a)                          {_live_proton = a;}
+  virtual short        get_target_pos() const                               {return _target_pos;}
+  virtual void         set_target_pos(const short a)                          {_target_pos = a;}
 
 
 private:
 
   int _run_id;
   int _spill_id;
-  float _live_proton;
+  short _target_pos;
 
   ClassDef(SQSpill_v1, 1);
 };
