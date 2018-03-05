@@ -90,7 +90,7 @@ int TestAnalyzer::process_event(PHCompositeNode* topNode) {
 
 	auto spill_info = _spill_map->get(_b_spill_id);
 	if(spill_info) {
-		_b_live_proton = spill_info->get_live_proton();
+		_b_target_pos = spill_info->get_target_pos();
 	} else {
 		LogWarning("");
 	}
@@ -131,7 +131,7 @@ int TestAnalyzer::InitEvalTree() {
 	_tout = new TTree("T", "TestAnalyzer");
 	_tout->Branch("runID",         &_b_run_id,          "runID/I");
 	_tout->Branch("spillID",       &_b_spill_id,        "spillID/I");
-	_tout->Branch("liveProton",    &_b_live_proton,     "liveProton/F");
+	_tout->Branch("liveProton",    &_b_target_pos,     "liveProton/F");
 	_tout->Branch("eventID",       &_b_event_id,        "eventID/I");
 	_tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
 	_tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
@@ -145,7 +145,7 @@ int TestAnalyzer::InitEvalTree() {
 int TestAnalyzer::ResetEvalVars() {
 	_b_run_id = std::numeric_limits<int>::max();
 	_b_spill_id = std::numeric_limits<int>::max();
-	_b_live_proton = std::numeric_limits<float>::max();
+	_b_target_pos = std::numeric_limits<float>::max();
 	_b_event_id = std::numeric_limits<int>::max();
 	_b_n_hits = 0;
 	for(int i=0; i<10000; ++i) {

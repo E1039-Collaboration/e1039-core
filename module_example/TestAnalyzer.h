@@ -86,7 +86,7 @@ private:
 
 	int _b_run_id;
 	int _b_spill_id;
-	float _b_live_proton;
+	float _b_target_pos;
 	int _b_event_id;
 	int _b_n_hits;
 	int _b_hit_id[10000];

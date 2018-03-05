@@ -654,7 +654,7 @@ int ReadMySql::FillSQSpill(SQSpillMap* spill_map, TSQLServer* server,
 	char query[1000];
 
 	//                     0      1        2
-	sprintf(query, "SELECT runID, spillID, liveProton "
+	sprintf(query, "SELECT runID, spillID, targetPos "
 			" FROM %s WHERE runID=%d", table, run_id);
 
 	TSQLResult *res = server->Query(query);
@@ -669,7 +669,7 @@ int ReadMySql::FillSQSpill(SQSpillMap* spill_map, TSQLServer* server,
 
         spill->set_run_id(getInt(row,0));
         spill->set_spill_id(getInt(row,1));
-        spill->set_live_proton(getFloat(row,2));
+        spill->set_target_pos(getInt(row,2));
 
         spill_map->insert(spill);
     }
