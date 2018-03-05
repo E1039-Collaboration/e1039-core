@@ -52,6 +52,8 @@ public:
 	int FillSQHitMap(SQHitMap* hit_map, TSQLServer* server, const int event_id, const char* table = "Hit");
 	int FillSQHitVector(SQHitVector* hit_vector, const std::string hit_type, TSQLServer* server, const int event_id, const char* table = "Hit");
 
+	int FillSQTriggerHitVector(SQHitVector* hit_vector, const std::string hit_type, TSQLServer* server, const int event_id, const char* table = "TriggerHit");
+
 	static int getInt(TSQLRow* row, int id, int default_val = 0);
 	static float getFloat(TSQLRow* row, int id, float default_val = 0.);
 	static double getDouble(TSQLRow* row, int id, double default_val = 0.);
@@ -113,6 +115,7 @@ private:
 	SQEvent * _event_header;
 	SQHitMap *_hit_map;
 	SQHitVector *_hit_vector;
+	SQHitVector *_triggerhit_vector;
 
 	typedef std::map<std::string, short> _m_detector_name_to_id;
 

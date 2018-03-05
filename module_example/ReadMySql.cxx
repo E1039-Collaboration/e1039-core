@@ -131,8 +131,10 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 	if(_hit_container_type.find("Map") != std::string::npos)
 		ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
 
-	if(_hit_container_type.find("Vector") != std::string::npos)
+	if(_hit_container_type.find("Vector") != std::string::npos) {
 		ReadMySql::FillSQHitVector(_hit_vector, _hit_type, _input_server, eventID, "Hit");
+		ReadMySql::FillSQTriggerHitVector(_triggerhit_vector, _hit_type, _input_server, eventID, "TriggerHit");
+	}
 
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
 		std::cout << "Leaving ReadMySql::process_event: " << _event-1 << std::endl;
@@ -195,6 +197,12 @@ int ReadMySql::MakeNodes(PHCompositeNode* topNode) {
 		eventNode->addNode(hitNodeVector);
 		if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
 			LogInfo("DST/SQHitVector Added");
+
+		_triggerhit_vector = new SQHitVector_v1();
+		PHIODataNode<PHObject>* triggerhitNodeVector = new PHIODataNode<PHObject>(_triggerhit_vector,"SQTriggerHitVector", "PHObject");
+		eventNode->addNode(triggerhitNodeVector);
+		if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+			LogInfo("DST/SQTriggerHitVector Added");
 	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
@@ -447,6 +455,78 @@ int ReadMySql::FillSQHitVector(
 //			<< "DEBUG: " << __LINE__
 //			<< " pos: " << hit->get_pos()
 //			<<std::endl;
+
+			hit_vector->push_back(hit);
+	}
+
+	delete res;
+
+	return 0;
+}
+
+int ReadMySql::FillSQTriggerHitVector(
+		SQHitVector* hit_vector,
+		const std::string hit_type,
+		TSQLServer* server,
+		const int event_id,
+		const char* table) {
+
+
+	if(!hit_vector) {
+		LogError("!hit_vector");
+		return -1;
+	}
+
+	if(!server) {
+		LogError("!server");
+		return -1;
+	}
+
+	char query[1000];
+
+	//                     0      1             2          3        4
+	sprintf(query, "SELECT hitID, detectorName, elementID, tdcTime, inTime"
+			" FROM %s WHERE eventID=%d", table, event_id);
+
+	TSQLResult *res = server->Query(query);
+
+	int nrow = res->GetRowCount();
+
+	TRandom3 rand;
+
+	for(int irow = 0; irow < nrow; ++irow)
+	{
+		TSQLRow* row = res->Next();
+
+			SQHit *hit = nullptr;
+
+			if(hit_type.find("SQHit_v1")!=std::string::npos) {
+				hit = new SQHit_v1();
+			}
+			else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
+				hit = new SQMCHit_v1();
+				hit->set_g4hit_id(getInt(row,0));
+			}
+
+			hit->set_hit_id(getInt(row,0));
+
+			int elementID = getInt(row,2);
+			hit->set_element_id(elementID);
+
+
+			std::string detectorName(row->GetField(1));
+      if(detectorName.find("H4T") != std::string::npos || detectorName.find("H4B") != std::string::npos)
+      {
+          detectorName.replace(3, detectorName.length(), "");
+      }
+			hit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
+
+			hit->set_tdc_time(getFloat(row,3));
+			hit->set_drift_distance(0);
+
+			if(getInt(row,4)>0) hit->set_in_time(true);
+
+			hit->set_pos(p_geomSvc->getMeasurement(hit->get_detector_id(), hit->get_element_id()));
 
 			hit_vector->push_back(hit);
 	}
