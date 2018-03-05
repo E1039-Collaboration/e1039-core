@@ -40,13 +40,15 @@ GenFitExtrapolator::GenFitExtrapolator():
 GenFitExtrapolator::~GenFitExtrapolator()
 	{}
 
-bool GenFitExtrapolator::init(const PHField* field)
+bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 {
 	iParType = 1;
 
 	assert(field);
 	genfit::Field *fieldMap = new genfit::Field(field);
 	genfit::FieldManager::getInstance()->init(fieldMap);
+
+	_tgeo_manager = geom;
 
 #ifdef _DEBUG_ON
   LogInfo("");

@@ -41,9 +41,9 @@ KalmanFilter::KalmanFilter(bool limitedStep)
 //    _extrapolator.init(p_jobOptsSvc);
 }
 
-bool KalmanFilter::initExtrapolator(const PHField *field)
+bool KalmanFilter::initExtrapolator(const PHField *field,  const TGeoManager *geom)
 {
-	_extrapolator.init(field);
+	_extrapolator.init(field, geom);
 }
 
 bool KalmanFilter::fit_node(Node& _node)

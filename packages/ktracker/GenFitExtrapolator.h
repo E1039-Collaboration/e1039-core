@@ -35,7 +35,7 @@ public:
 
     ///Initialize geometry and physics
     //bool init(std::string geometrySchema, double fMagStr = FMAGSTR, double kMagStr = KMAGSTR);
-    bool init(const PHField* field);
+    bool init(const PHField* field, const TGeoManager *geom);
 
     ///Set input initial state parameters
     void setInitialStateWithCov(double z_in, TMatrixD& state_in, TMatrixD& cov_in);
@@ -131,6 +131,8 @@ private:
     ///Control on calculation of travel length
     bool calcLength;
     double travelLength;
+
+    const TGeoManager* _tgeo_manager;
 };
 
 #endif

@@ -26,12 +26,14 @@ Created: 05-24-2013
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
 
+class TGeoManager;
+
 class PHField;
 
 class KalmanFastTracking
 {
 public:
-    explicit KalmanFastTracking(const PHField* field, bool flag = true);
+    explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
     ~KalmanFastTracking();
 
     //Set the input event

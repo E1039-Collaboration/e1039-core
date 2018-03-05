@@ -46,8 +46,6 @@
 #define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
-#define _ENABLE_KF
-
 #define _DEBUG_ON
 
 using namespace std;
@@ -93,7 +91,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	assert(field);
 
 	/// init KalmanFastTracking
-	fastfinder = new KalmanFastTracking(field);
+	fastfinder = new KalmanFastTracking(field, _t_geo_manager);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
   if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";

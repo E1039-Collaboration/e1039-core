@@ -24,7 +24,7 @@ class PHField;
 class KalmanFitter
 {
 public:
-    KalmanFitter(const PHField* field);
+    KalmanFitter(const PHField* field, const TGeoManager *geom);
     //~KalmanFitter();
 
     ///Set the convergence control parameters

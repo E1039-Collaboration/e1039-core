@@ -34,7 +34,7 @@ public:
 
     ///Real constructor
     KalmanFilter(bool limitedStep = true);
-    bool initExtrapolator(const PHField* field);
+    bool initExtrapolator(const PHField* field, const TGeoManager *geom);
 
     ///Kalman filter steps
     bool predict(Node& _node);
