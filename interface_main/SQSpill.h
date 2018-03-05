@@ -39,8 +39,8 @@ public:
   virtual int          get_spill_id() const                               {return std::numeric_limits<int>::max();}
   virtual void         set_spill_id(const int a)                          {}
 
-  virtual float        get_live_proton() const                               {return std::numeric_limits<float>::max();}
-  virtual void         set_live_proton(const float a)                          {}
+  virtual short        get_target_pos() const                               {return std::numeric_limits<short>::max();}
+  virtual void         set_target_pos(const short a)                          {}
 
 protected:
   SQSpill() {}
