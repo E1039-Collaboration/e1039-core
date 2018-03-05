@@ -11,6 +11,14 @@ else()
   add_definitions(-DKMAG_ON=0)
 endif()
 
+# command line option to turn off KF
+option(KFENABLE "Enable Kalman filter fitting in track fitting" ON)
+if(KFENABLE)
+  add_definitions(-D_ENABLE_KF)
+else()
+  message("-- IMPORTANT! Kalman filter fitting is disabled")
+endif()
+
 # ROOT dict generation
 file(GLOB dicts "")
 file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
