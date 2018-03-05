@@ -43,60 +43,61 @@ JobOptsSvc* JobOptsSvc::instance()
 JobOptsSvc::JobOptsSvc()
 {
     //Default values of all options
-//    m_configFile = "$KTRACKER_ROOT/opts/default.opts"; ///< Name of the config file loaded
-//
-//    m_mcMode = false;
-//    m_alignmentMode = false;
-//    m_enableTriggerMask = true;
-//    m_enableKMag = true;
-//    m_enableOnlineAlignment = false;
-//    m_enableEvaluation = false;
-//    m_attachRawEvent = false;
-//    m_sagittaReducer = true;
-//    m_updateAlignment = true;
-//    m_hodomask = true;
-//    m_mergeHodo = false;
-//    m_realization = false;
-//
-//    m_mySQLInputPort = 3306;
-//    m_mySQLOutputPort = 3396;
-//    m_nEvents = -1;
-//    m_firstEvent = 0;
-//    m_triggerL1 = 67;
-//
-//    m_timingOffset = 0;
-//
-//    m_st0_reject = 0.13;
-//    m_st1_reject = 0.25;
-//    m_st2_reject = 0.18;
-//    m_st3p_reject = 0.16;
-//    m_st3m_reject = 0.16;
-//
-//    m_x_vtx = 0.;
-//    m_y_vtx = 0.;
-//    m_x_spot_size = 0.5;
-//    m_y_spot_size = 0.5;
-//
-//    m_inputFile = "";
-//    m_outputFile = "";
-//    m_inputSchema = "";
-//    m_outputSchema = "";
-//
-//    m_alignmentFileHodo    = "$KTRACKER_ROOT/alignment/run2/alignment_hodo.txt";
-//    m_alignmentFileChamber = "$KTRACKER_ROOT/alignment/run2/alignment_cham.txt";
-//    m_alignmentFileProp    = "$KTRACKER_ROOT/alignment/run2/alignment_prop.txt";
-//    m_alignmentFileMille   = "$KTRACKER_ROOT/alignment/run2/align_mille.txt";
-//
-//    m_triggerRepo = "$TRIGGER_ROOT";
-//
-//    m_calibrationsFile;
-//
-//    m_fMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Fmag";
-//    m_kMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Kmag";
-//
-//    m_geomVersion = "geometry_G18_run3";
-//    m_mySQLInputServer  = "e906-db1.fnal.gov";
-//    m_mySQLOutputServer = "e906-db1.fnal.gov";
+    //m_configFile = "$KTRACKER_ROOT/opts/default.opts"; ///< Name of the config file loaded
+		m_configFile = "";
+
+    m_mcMode = false;
+    m_alignmentMode = false;
+    m_enableTriggerMask = true;
+    m_enableKMag = true;
+    m_enableOnlineAlignment = false;
+    m_enableEvaluation = false;
+    m_attachRawEvent = false;
+    m_sagittaReducer = true;
+    m_updateAlignment = true;
+    m_hodomask = true;
+    m_mergeHodo = false;
+    m_realization = false;
+
+    m_mySQLInputPort = 3306;
+    m_mySQLOutputPort = 3396;
+    m_nEvents = -1;
+    m_firstEvent = 0;
+    m_triggerL1 = 67;
+
+    m_timingOffset = 0;
+
+    m_st0_reject = 0.13;
+    m_st1_reject = 0.25;
+    m_st2_reject = 0.18;
+    m_st3p_reject = 0.16;
+    m_st3m_reject = 0.16;
+
+    m_x_vtx = 0.;
+    m_y_vtx = 0.;
+    m_x_spot_size = 0.5;
+    m_y_spot_size = 0.5;
+
+    m_inputFile = "";
+    m_outputFile = "";
+    m_inputSchema = "";
+    m_outputSchema = "";
+
+    m_alignmentFileHodo    = "$KTRACKER_ROOT/alignment/run2/alignment_hodo.txt";
+    m_alignmentFileChamber = "$KTRACKER_ROOT/alignment/run2/alignment_cham.txt";
+    m_alignmentFileProp    = "$KTRACKER_ROOT/alignment/run2/alignment_prop.txt";
+    m_alignmentFileMille   = "$KTRACKER_ROOT/alignment/run2/align_mille.txt";
+
+    m_triggerRepo = "$TRIGGER_ROOT";
+
+    m_calibrationsFile;
+
+    m_fMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Fmag";
+    m_kMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Kmag";
+
+    m_geomVersion = "geometry_G18_run3";
+    m_mySQLInputServer  = "e906-db1.fnal.gov";
+    m_mySQLOutputServer = "e906-db1.fnal.gov";
 }
 
 void JobOptsSvc::close()
