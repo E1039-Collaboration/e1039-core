@@ -19,10 +19,11 @@ Created: 06-17-2015
 #include <TString.h>
 #include <TRandom.h>
 
-#include "GeomSvc.h"
 #include "SRawEvent.h"
 #include "TriggerAnalyzer.h"
-#include "JobOptsSvc.h"
+
+#include <geom_svc/GeomSvc.h>
+#include <jobopts_svc/JobOptsSvc.h>
 
 class EventReducer
 {
