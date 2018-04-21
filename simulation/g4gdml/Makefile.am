@@ -3,9 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CXXFLAGS = -DG4INTY_USE_XT -DG4VIS_USE_OPENGL -DG4UI_USE_TCSH -DG4UI_USE_XM -DG4VIS_USE_OPENGLXM -DG4VIS_USE_RAYTRACERX -DG4VIS_USE_OPENGLX
 
 # set in configure.in to check if gcc version >= 4.8
-#if GCC_GE_48
-#  AM_CXXFLAGS += -std=c++11
-#endif
+AM_CXXFLAGS += -std=c++11
 
 # List of shared libraries to produce
 lib_LTLIBRARIES = \
@@ -17,6 +15,7 @@ AM_CPPFLAGS = \
     -isystem $(OFFLINE_MAIN)/include \
     -isystem $(ROOTSYS)/include \
     -isystem ${G4_MAIN}/include \
+    -isystem ${G4_MAIN}/include/Geant4 \
     -I$(OPT_SPHENIX)/include
 
 libphg4gdml_la_LDFLAGS = \
