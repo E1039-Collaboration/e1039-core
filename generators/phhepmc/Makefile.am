@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
+AM_CXXFLAGS = -std=c++11
+
 AM_CPPFLAGS = \
   -I$(includedir) \
   -I$(OFFLINE_MAIN)/include \
@@ -15,10 +17,6 @@ lib_LTLIBRARIES = \
   libphhepmc.la
 
 pkginclude_HEADERS = \
-  Fun4AllHepMCInputManager.h \
-  Fun4AllHepMCPileupInputManager.h \
-  Fun4AllHepMCOutputManager.h \
-  Fun4AllOscarInputManager.h \
   PHGenEvent.h \
   PHGenEventv1.h \
   PHGenEventList.h \
@@ -43,14 +41,6 @@ libphhepmc_la_LIBADD = \
   -lgslcblas
 
 libphhepmc_la_SOURCES = \
-  Fun4AllHepMCInputManager.cc \
-  Fun4AllHepMCInputManager_Dict.C \
-  Fun4AllHepMCPileupInputManager.cc \
-  Fun4AllHepMCPileupInputManager_Dict.C \
-  Fun4AllHepMCOutputManager.cc \
-  Fun4AllHepMCOutputManager_Dict.C \
-  Fun4AllOscarInputManager.cc \
-  Fun4AllOscarInputManager_Dict.C \
   PHHepMCGenHelper.cc \
   PHHepMCGenHelper_Dict.C \
   PHHepMCParticleSelectorDecayProductChain.cc \
