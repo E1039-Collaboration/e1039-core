@@ -18,6 +18,7 @@
 
 #ifndef __CINT__
 #include<boost/smart_ptr.hpp>
+#include<memory>
 #endif
 /*!
 \class	 PHTimeServer
@@ -50,7 +51,8 @@ class PHTimeServer
 
         private:
 #ifndef __CINT__
-        boost::shared_ptr<PHTimer> _timer;
+        //boost::shared_ptr<PHTimer> _timer;
+        std::shared_ptr<PHTimer> _timer;
 #endif
         unsigned short _uid;
     };
