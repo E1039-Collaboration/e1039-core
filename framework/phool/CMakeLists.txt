@@ -10,6 +10,7 @@ add_custom_command (
 	${PROJECT_SOURCE_DIR}/PHFlag.h
 	${PROJECT_SOURCE_DIR}/phool.h
 	${PROJECT_SOURCE_DIR}/PHObject.h
+	${PROJECT_SOURCE_DIR}/PHRandomSeed.h
 	${PROJECT_SOURCE_DIR}/PHTimeServer.h
 	${PROJECT_SOURCE_DIR}/PHTimeStamp.h
 	${PROJECT_SOURCE_DIR}/recoConsts.h
