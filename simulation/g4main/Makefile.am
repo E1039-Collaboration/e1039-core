@@ -13,9 +13,10 @@ lib_LTLIBRARIES = \
 AM_CPPFLAGS = \
     -I$(includedir) \
     -I$(XERCESCROOT)/include \
-    -isystem $(OFFLINE_MAIN)/include \
-    -isystem $(ROOTSYS)/include \
-    -isystem ${G4_MAIN}/include \
+    -I$(OFFLINE_MAIN)/include \
+    -I$(ROOTSYS)/include \
+    -I${G4_MAIN}/include \
+    -I${G4_MAIN}/include/Geant4 \
     -I$(OPT_SPHENIX)/include
 
 # rootcint barfs on isystem
@@ -25,6 +26,7 @@ RINCLUDES = \
     -I$(OFFLINE_MAIN)/include \
     -I$(ROOTSYS)/include \
     -I${G4_MAIN}/include \
+    -I${G4_MAIN}/include/Geant4 \
     -I$(OPT_SPHENIX)/include
 
 
