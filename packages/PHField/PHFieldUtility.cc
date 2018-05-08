@@ -6,6 +6,7 @@
 #include "PHField3DCartesian.h"
 #include "PHField3DCylindrical.h"
 #include "PHFieldUniform.h"
+#include "PHFieldRegionalConst.h"
 #include "PHFieldSeaQuest.h"
 
 // PHENIX includes
