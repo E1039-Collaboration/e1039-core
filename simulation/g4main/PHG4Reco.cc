@@ -92,8 +92,8 @@
 #include <Geant4/QGSP_BERT_HP.hh>
 #endif
 
-#include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
+//#include <boost/filesystem.hpp>
+//#include <boost/foreach.hpp>
 
 #include <memory>
 #include <cassert>
@@ -256,7 +256,8 @@ int PHG4Reco::Init(PHCompositeNode *topNode)
   }
 #endif
   // initialize registered subsystems
-  BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  //BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  for (SubsysReco *reco : subsystems_)
   {
     reco->Init(topNode);
   }
@@ -325,7 +326,8 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
   }
 
   // initialize registered subsystems
-  BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  //BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  for (SubsysReco *reco : subsystems_)
   {
     reco->InitRun(topNode);
   }
@@ -344,7 +346,8 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
   rc->set_FloatFlag("WorldSizey", WorldSize[1]);
   rc->set_FloatFlag("WorldSizez", WorldSize[2]);
 
-  BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  for (PHG4Subsystem *g4sub : subsystems_)
   {
     detector_->AddDetector(g4sub->GetDetector());
   }
@@ -354,7 +357,8 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
   // create main event action, add subsystemts and register to GEANT
   eventAction_ = new PHG4PhenixEventAction();
 
-  BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  for (PHG4Subsystem *g4sub : subsystems_)
   {
     PHG4EventAction *evtact = g4sub->GetEventAction();
     if (evtact)
@@ -366,7 +370,8 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
 
   // create main stepping action, add subsystems and register to GEANT
   steppingAction_ = new PHG4PhenixSteppingAction();
-  BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  for (PHG4Subsystem *g4sub : subsystems_)
   {
     PHG4SteppingAction *action = g4sub->GetSteppingAction();
     if (action)
@@ -382,7 +387,8 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
 
   // create main tracking action, add subsystems and register to GEANT
   trackingAction_ = new PHG4PhenixTrackingAction();
-  BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  for (PHG4Subsystem *g4sub : subsystems_)
   {
     trackingAction_->AddAction(g4sub->GetTrackingAction());
 
@@ -545,7 +551,8 @@ int PHG4Reco::process_event(PHCompositeNode *topNode)
   PHG4InEvent *ineve = findNode::getClass<PHG4InEvent>(topNode, "PHG4INEVENT");
   generatorAction_->SetInEvent(ineve);
 
-  BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  //BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  for (SubsysReco *reco : subsystems_)
   {
     if (Verbosity() >= 2)
       cout << "PHG4Reco::process_event - " << reco->Name() << "->process_event" << endl;
@@ -576,7 +583,8 @@ int PHG4Reco::process_event(PHCompositeNode *topNode)
   runManager_->BeamOn(1);
   _timer.get()->stop();
 
-  BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
+  for (PHG4Subsystem *g4sub : subsystems_)
   {
     if (Verbosity() >= 2)
       cout << " PHG4Reco::process_event - " << g4sub->Name() << "->process_after_geant" << endl;
@@ -599,7 +607,8 @@ int PHG4Reco::process_event(PHCompositeNode *topNode)
 
 int PHG4Reco::ResetEvent(PHCompositeNode *topNode)
 {
-  BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  //BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  for (SubsysReco *reco : subsystems_)
   {
     reco->ResetEvent(topNode);
   }
@@ -614,7 +623,8 @@ int PHG4Reco::End(PHCompositeNode *)
 
 void PHG4Reco::Print(const std::string &what) const
 {
-  BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  //BOOST_FOREACH (SubsysReco *reco, subsystems_)
+  for (SubsysReco *reco : subsystems_)
   {
     if (what.empty() || what == "ALL" || (reco->Name()).find(what) != string::npos)
     {
@@ -669,7 +679,9 @@ void g4guithread(void *ptr)
 {
   TThread::Lock();
   G4UIExecutive *ui = new G4UIExecutive(0, nullptr, "Xm");
-  if (ui->IsGUI() && boost::filesystem::exists("gui.mac"))
+  //FIXME test file exist
+  //if (ui->IsGUI() && boost::filesystem::exists("gui.mac"))
+  if (ui->IsGUI() && true)
   {
     UImanager->ApplyCommand("/control/execute gui.mac");
   }
@@ -1281,7 +1293,8 @@ PHG4Reco::DefineRegions()
 PHG4Subsystem *
 PHG4Reco::getSubsystem(const string &name)
 {
-  BOOST_FOREACH (PHG4Subsystem *subsys, subsystems_)
+  //BOOST_FOREACH (PHG4Subsystem *subsys, subsystems_)
+  for (PHG4Subsystem *subsys : subsystems_)
   {
     if (subsys->Name() == name)
     {

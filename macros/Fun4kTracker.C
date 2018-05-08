@@ -6,7 +6,7 @@
  */
 
 void Fun4kTracker(
-		const int nevent = 2,
+		const int nevent = 0,
 		const char *indst = "dst.root",
 		const char *outeval = "eval.root"
 		) {

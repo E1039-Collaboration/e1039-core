@@ -102,7 +102,7 @@ PHG4SteppingAction::GetVisibleEnergyDeposition(const G4Step* step)
 	{
 	  emSaturation->SetVerbose(verbosity);
 	}
-      double visen = emSaturation->VisibleEnergyDepositionAtAStep(step) / GeV;
+      double visen = emSaturation->VisibleEnergyDeposition(step) / GeV;
       return visen;
     }
   else
