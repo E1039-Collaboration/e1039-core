@@ -111,64 +111,64 @@ bool PlaceHollowPolycone(
   return true;
 }
 
-bool PlaceHollowTube(
-		G4LogicalVolume *mother,
-		double place,
-		G4UserLimits *g4userlimits,
-		bool overlapcheck,
-		const std::string& name,
-		G4Material *Mouter,
-		double in,
-		double out,
-		double half,
-		double t,
-		double phi0 = 0,
-		double phi = twopi
-		)
-{
-  G4VSolid *all_solid = new G4Tubs((name+"_all").c_str(),
-  		in,
-			out,
-			half,
-			phi0,
-			phi);
-
-  G4VSolid *inner_solid = new G4Tubs((name+"_inner").c_str(),
-  		in+t,
-			out-t,
-			half-t,
-			phi0,
-			phi);
-
-  G4VSolid * outer_solid = new G4SubtractionSolid((name+"_outer").c_str(),
-  		all_solid,
-			inner_solid,
-			0,
-			G4ThreeVector(0,0,0)
-  		);
-
-
-  G4VisAttributes *vis_outer = new G4VisAttributes();
-	PHG4Utils::SetColour(vis_outer, Mouter->GetName());
-	vis_outer->SetVisibility(true);
-	vis_outer->SetForceSolid(true);
-
-  G4LogicalVolume *outer_logic = new G4LogicalVolume(outer_solid,
-  		Mouter,
-			(name+"_outer").c_str(),
-			nullptr, nullptr, g4userlimits);
-
-  outer_logic->SetVisAttributes(vis_outer);
-
-  new G4PVPlacement(
-  		0,
-			G4ThreeVector(0, 0, place),
-			outer_logic,
-			(name+"_outer").c_str(),
-			mother, 0, false, overlapcheck);
-
-  return true;
-}
+//bool PlaceHollowTube(
+//		G4LogicalVolume *mother,
+//		double place,
+//		G4UserLimits *g4userlimits,
+//		bool overlapcheck,
+//		const std::string& name,
+//		G4Material *Mouter,
+//		double in,
+//		double out,
+//		double half,
+//		double t,
+//		double phi0 = 0,
+//		double phi = twopi
+//		)
+//{
+//  G4VSolid *all_solid = new G4Tubs((name+"_all").c_str(),
+//  		in,
+//			out,
+//			half,
+//			phi0,
+//			phi);
+//
+//  G4VSolid *inner_solid = new G4Tubs((name+"_inner").c_str(),
+//  		in+t,
+//			out-t,
+//			half-t,
+//			phi0,
+//			phi);
+//
+//  G4VSolid * outer_solid = new G4SubtractionSolid((name+"_outer").c_str(),
+//  		all_solid,
+//			inner_solid,
+//			0,
+//			G4ThreeVector(0,0,0)
+//  		);
+//
+//
+//  G4VisAttributes *vis_outer = new G4VisAttributes();
+//	PHG4Utils::SetColour(vis_outer, Mouter->GetName());
+//	vis_outer->SetVisibility(true);
+//	vis_outer->SetForceSolid(true);
+//
+//  G4LogicalVolume *outer_logic = new G4LogicalVolume(outer_solid,
+//  		Mouter,
+//			(name+"_outer").c_str(),
+//			nullptr, nullptr, g4userlimits);
+//
+//  outer_logic->SetVisAttributes(vis_outer);
+//
+//  new G4PVPlacement(
+//  		0,
+//			G4ThreeVector(0, 0, place),
+//			outer_logic,
+//			(name+"_outer").c_str(),
+//			mother, 0, false, overlapcheck);
+//
+//  return true;
+//}
 
 bool PlaceLayeredTube(
 		G4LogicalVolume *mother,

@@ -24,7 +24,7 @@ class PHG4Cell: public TObject
   typedef std::pair<ShowerEdepIterator, ShowerEdepIterator> ShowerEdepRange;
   typedef std::pair<ShowerEdepConstIterator, ShowerEdepConstIterator> ShowerEdepConstRange;
 
-  typedef std::pair<unsigned short,std::map<int,int>> tpccompress;
+  typedef std::pair<unsigned short,std::map<int,int> > tpccompress;
   typedef std::map<unsigned short,tpccompress> tpctod;
 
 

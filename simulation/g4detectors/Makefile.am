@@ -13,10 +13,7 @@ AM_CPPFLAGS = \
     -I$(G4_MAIN)/include \
     -I$(OPT_SPHENIX)/include
 
-# set in configure.in to check if gcc version >= 4.8
-#if GCC_GE_48
-#  AM_CXXFLAGS = -std=c++11
-#endif
+AM_CXXFLAGS = -std=c++11
 
 AM_LDFLAGS = \
     -L$(libdir) \
@@ -24,7 +21,6 @@ AM_LDFLAGS = \
 
 libg4detectors_io_la_LIBADD = \
   -L$(ROOTSYS)/lib \
-  -lCLHEP \
   -lphool \
   -lboost_filesystem \
   -lboost_system \
