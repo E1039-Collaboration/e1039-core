@@ -82,12 +82,18 @@ PHFieldUtility::BuildFieldMap(const PHFieldConfig *field_config, const int verbo
     field = new PHField3DCartesian(
         field_config->get_filename(),
         field_config->get_magfield_rescale());
+		break;
+  case PHFieldConfig::RegionalConst:
+    //    return "3D field map expressed in Cartesian coordinates";
+    field = new PHFieldRegionalConst(
+        field_config->get_filename(),
+        field_config->get_magfield_rescale());
+		break;
   case PHFieldConfig::kFieldSeaQuest:
   	field = new PHFieldSeaQuest(
         field_config->get_filename1(),
 				field_config->get_filename2()
   			);
-
     break;
   default:
     cout << "PHFieldUtility::BuildFieldMap - Invalid Field Configuration" << endl;
