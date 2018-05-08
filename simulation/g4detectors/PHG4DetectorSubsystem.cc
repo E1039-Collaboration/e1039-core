@@ -103,7 +103,8 @@ PHG4DetectorSubsystem::InitRun( PHCompositeNode* topNode )
 	}
       if (get_filetype() != PHG4DetectorSubsystem::none)
 	{
-	  ReadParamsFromFile(calibdetname, get_filetype(),isSuperDetector );
+      	std::cout << PHWHERE << "FIXME!" << std::endl;
+	  //ReadParamsFromFile(calibdetname, get_filetype(),isSuperDetector );
 	}
     }
   else
