@@ -20,13 +20,14 @@ AM_LDFLAGS = \
 
 libg4detectors_io_la_LIBADD = \
   -L$(ROOTSYS)/lib \
-  -lG4clhep \
   -lphool \
   -lboost_filesystem \
   -lboost_system \
   -lpdbcalBase \
   -lXMLIO \
-  -lphparameter
+  -lphparameter \
+  -lg4testbench 
+
 
 libg4detectors_la_LIBADD = \
   libg4detectors_io.la \
