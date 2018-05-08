@@ -46,7 +46,9 @@ class PHFieldConfig : public PHObject
     //! 3D field map expressed in Cartesian coordinates
     kField3DCartesian = 1,
 		//!
-		kFieldSeaQuest = 4,
+		RegionalConst = 4,
+		//!
+		kFieldSeaQuest = 5,
 
     //! invalid value
     kFieldInvalid = 9999
@@ -60,9 +62,9 @@ class PHFieldConfig : public PHObject
 
   virtual const std::string & get_filename() const;
 
-  virtual const std::string & get_filename1() const {};
+  virtual const std::string & get_filename1() const {return kInvalid_FileName;}
 
-  virtual const std::string & get_filename2() const {};
+  virtual const std::string & get_filename2() const {return kInvalid_FileName;};
 
   virtual void set_filename(const std::string& filename);
 
