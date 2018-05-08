@@ -64,8 +64,8 @@ class PHG4Parameters: public PHObject
   int WriteToDB();
   int ReadFromDB();
   int ReadFromDB(const std::string &name, const int layer);
-  int WriteToFile(const std::string &extension, const std::string &dir = ".");
-  int ReadFromFile(const std::string &name, const std::string &extension, const int layer, const int issuper, const std::string &dir = ".");
+//  int WriteToFile(const std::string &extension, const std::string &dir = ".");
+//  int ReadFromFile(const std::string &name, const std::string &extension, const int layer, const int issuper, const std::string &dir = ".");
   void CopyToPdbParameterMap(PdbParameterMap *myparm);
 
   void printint() const;

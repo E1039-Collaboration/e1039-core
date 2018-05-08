@@ -17,7 +17,7 @@
 #include <TSystem.h>
 #include <TBufferFile.h>
 
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/functional/hash.hpp>
@@ -467,137 +467,137 @@ PHG4Parameters::ReadFromDB()
   return 0;
 }
 
-int
-PHG4Parameters::WriteToFile(const string &extension, const string &dir)
-{
-  ostringstream fullpath;
-  ostringstream fnamestream;
-  PdbBankID bankID(0); // lets start at zero
-  PHTimeStamp TStart(0);
-  PHTimeStamp TStop(0xffffffff);
-  fullpath << dir;
-  // add / if directory lacks ending /
-  if (*(dir.rbegin()) != '/')
-    {
-      fullpath << "/";
-    }
-  fnamestream << detname << "_geoparams" << "-" << bankID.getInternalValue()
-      << "-" << TStart.getTics() << "-" << TStop.getTics() << "-" << time(0)
-      << "." << extension;
-  string fname = fnamestream.str();
-  std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
-  fullpath << fname;
-
-  cout <<"PHG4Parameters::WriteToFile - save to "<<fullpath.str()<<endl;
-
-  PdbParameterMap *myparm = new PdbParameterMap();
-  CopyToPdbParameterMap(myparm);
-  TFile *f = TFile::Open(fullpath.str().c_str(), "recreate");
-  // force xml file writing to use extended precision shown experimentally
-  // to not modify input parameters (.17g)
-  string floatformat = TBufferXML::GetFloatFormat();
-  TBufferXML::SetFloatFormat("%.17g"); // for IEEE 754 double
-  myparm->Write();
-  delete f;
-  // restore previous xml float format
-  TBufferXML::SetFloatFormat(floatformat.c_str());
-  cout << "sleeping 1 second to prevent duplicate inserttimes" << endl;
-  sleep(1);
-  return 0;
-}
-
-int
-PHG4Parameters::ReadFromFile(const string &name, const string &extension, const int layer, const int issuper, const string &dir)
-{
-  PHTimeStamp TSearch(10);
-  PdbBankID bankID(0);
-  ostringstream fnamestream;
-  fnamestream << name << "_geoparams" << "-" << bankID.getInternalValue();
-  string fileprefix = fnamestream.str();
-  std::transform(fileprefix.begin(), fileprefix.end(), fileprefix.begin(),
-      ::tolower);
-  boost::filesystem::path targetDir(dir);
-
-  boost::filesystem::recursive_directory_iterator iter(targetDir), eod;
-  boost::char_separator<char> sep("-.");
-  map<unsigned int, string> calibfiles;
-  BOOST_FOREACH(boost::filesystem::path const& i, make_pair(iter, eod))
-    {
-      if (is_regular_file(i))
-        {
-          // boost leaf() gives the filename without path,
-          // this checks if the filename starts with fileprefix
-          // (start pos of substring=0), if not coninue
-          string basename = i.filename().string();
-          if (basename.find(fileprefix) != 0)
-            {
-              continue;
-            }
-          // extension() contains the . - like .xml, so we
-          // just compare the extensions instead of !=
-          // and check that the size makes sense
-          if (i.extension().string().find(extension) == string::npos
-              || i.extension().string().size() != extension.size() + 1)
-            {
-              continue;
-            }
-          boost::tokenizer<boost::char_separator<char> > tok(basename, sep);
-          boost::tokenizer<boost::char_separator<char> >::iterator iter =
-              tok.begin();
-          ++iter; // that skips the file prefix excluding bank id
-          ++iter; // that skips the bank id we checked already as part of the filename
-          PHTimeStamp TStart(ConvertStringToUint(*iter));
-          if (TSearch < TStart)
-            {
-              continue;
-            }
-          ++iter;
-          PHTimeStamp TStop(ConvertStringToUint(*iter));
-          if (TSearch >= TStop)
-            {
-              continue;
-            }
-          ++iter;
-          calibfiles[ConvertStringToUint(*iter)] = i.string();
-
-        }
-    }
-  if (calibfiles.empty())
-    {
-      cout << "No calibration file like " << dir << "/" << fileprefix << " found" << endl;
-      gSystem->Exit(1);
-    }
-  cout << "PHG4Parameters::ReadFromFile - Reading from File: " << (calibfiles.rbegin())->second << " ... ";
-  string fname = (calibfiles.rbegin())->second;
-  TFile *f = TFile::Open(fname.c_str());
-  if (issuper)
-    {
-      PdbParameterMapContainer *myparm = static_cast<PdbParameterMapContainer *> (f->Get("PdbParameterMapContainer"));
-      assert (myparm);
-
-      if (myparm->GetParameters(layer) == nullptr)
-        cout << "Missing PdbParameterMapContainer layer #"<< layer  << endl;
-      assert (myparm->GetParameters(layer));
-
-      cout << "Received PdbParameterMapContainer layer #"<< layer <<" with (Hash = 0x"<< std::hex << myparm->GetParameters(layer)->get_hash() << std::dec <<")" << endl;
-
-      FillFrom(myparm, layer);
-      delete myparm;
-    }
-  else
-    {
-      PdbParameterMap *myparm = static_cast<PdbParameterMap *> (f->Get("PdbParameterMap"));
-      assert (myparm);
-      cout << "Received PdbParameterMap with (Hash = 0x"<< std::hex << myparm->get_hash() << std::dec <<")" << endl;
-
-      FillFrom(myparm);
-      delete myparm;
-    }
-  delete f;
-
-
-  return 0;
-}
+//int
+//PHG4Parameters::WriteToFile(const string &extension, const string &dir)
+//{
+//  ostringstream fullpath;
+//  ostringstream fnamestream;
+//  PdbBankID bankID(0); // lets start at zero
+//  PHTimeStamp TStart(0);
+//  PHTimeStamp TStop(0xffffffff);
+//  fullpath << dir;
+//  // add / if directory lacks ending /
+//  if (*(dir.rbegin()) != '/')
+//    {
+//      fullpath << "/";
+//    }
+//  fnamestream << detname << "_geoparams" << "-" << bankID.getInternalValue()
+//      << "-" << TStart.getTics() << "-" << TStop.getTics() << "-" << time(0)
+//      << "." << extension;
+//  string fname = fnamestream.str();
+//  std::transform(fname.begin(), fname.end(), fname.begin(), ::tolower);
+//  fullpath << fname;
+//
+//  cout <<"PHG4Parameters::WriteToFile - save to "<<fullpath.str()<<endl;
+//
+//  PdbParameterMap *myparm = new PdbParameterMap();
+//  CopyToPdbParameterMap(myparm);
+//  TFile *f = TFile::Open(fullpath.str().c_str(), "recreate");
+//  // force xml file writing to use extended precision shown experimentally
+//  // to not modify input parameters (.17g)
+//  string floatformat = TBufferXML::GetFloatFormat();
+//  TBufferXML::SetFloatFormat("%.17g"); // for IEEE 754 double
+//  myparm->Write();
+//  delete f;
+//  // restore previous xml float format
+//  TBufferXML::SetFloatFormat(floatformat.c_str());
+//  cout << "sleeping 1 second to prevent duplicate inserttimes" << endl;
+//  sleep(1);
+//  return 0;
+//}
+//
+//int
+//PHG4Parameters::ReadFromFile(const string &name, const string &extension, const int layer, const int issuper, const string &dir)
+//{
+//  PHTimeStamp TSearch(10);
+//  PdbBankID bankID(0);
+//  ostringstream fnamestream;
+//  fnamestream << name << "_geoparams" << "-" << bankID.getInternalValue();
+//  string fileprefix = fnamestream.str();
+//  std::transform(fileprefix.begin(), fileprefix.end(), fileprefix.begin(),
+//      ::tolower);
+//  boost::filesystem::path targetDir(dir);
+//
+//  boost::filesystem::recursive_directory_iterator iter(targetDir), eod;
+//  boost::char_separator<char> sep("-.");
+//  map<unsigned int, string> calibfiles;
+//  BOOST_FOREACH(boost::filesystem::path const& i, make_pair(iter, eod))
+//    {
+//      if (is_regular_file(i))
+//        {
+//          // boost leaf() gives the filename without path,
+//          // this checks if the filename starts with fileprefix
+//          // (start pos of substring=0), if not coninue
+//          string basename = i.filename().string();
+//          if (basename.find(fileprefix) != 0)
+//            {
+//              continue;
+//            }
+//          // extension() contains the . - like .xml, so we
+//          // just compare the extensions instead of !=
+//          // and check that the size makes sense
+//          if (i.extension().string().find(extension) == string::npos
+//              || i.extension().string().size() != extension.size() + 1)
+//            {
+//              continue;
+//            }
+//          boost::tokenizer<boost::char_separator<char> > tok(basename, sep);
+//          boost::tokenizer<boost::char_separator<char> >::iterator iter =
+//              tok.begin();
+//          ++iter; // that skips the file prefix excluding bank id
+//          ++iter; // that skips the bank id we checked already as part of the filename
+//          PHTimeStamp TStart(ConvertStringToUint(*iter));
+//          if (TSearch < TStart)
+//            {
+//              continue;
+//            }
+//          ++iter;
+//          PHTimeStamp TStop(ConvertStringToUint(*iter));
+//          if (TSearch >= TStop)
+//            {
+//              continue;
+//            }
+//          ++iter;
+//          calibfiles[ConvertStringToUint(*iter)] = i.string();
+//
+//        }
+//    }
+//  if (calibfiles.empty())
+//    {
+//      cout << "No calibration file like " << dir << "/" << fileprefix << " found" << endl;
+//      gSystem->Exit(1);
+//    }
+//  cout << "PHG4Parameters::ReadFromFile - Reading from File: " << (calibfiles.rbegin())->second << " ... ";
+//  string fname = (calibfiles.rbegin())->second;
+//  TFile *f = TFile::Open(fname.c_str());
+//  if (issuper)
+//    {
+//      PdbParameterMapContainer *myparm = static_cast<PdbParameterMapContainer *> (f->Get("PdbParameterMapContainer"));
+//      assert (myparm);
+//
+//      if (myparm->GetParameters(layer) == nullptr)
+//        cout << "Missing PdbParameterMapContainer layer #"<< layer  << endl;
+//      assert (myparm->GetParameters(layer));
+//
+//      cout << "Received PdbParameterMapContainer layer #"<< layer <<" with (Hash = 0x"<< std::hex << myparm->GetParameters(layer)->get_hash() << std::dec <<")" << endl;
+//
+//      FillFrom(myparm, layer);
+//      delete myparm;
+//    }
+//  else
+//    {
+//      PdbParameterMap *myparm = static_cast<PdbParameterMap *> (f->Get("PdbParameterMap"));
+//      assert (myparm);
+//      cout << "Received PdbParameterMap with (Hash = 0x"<< std::hex << myparm->get_hash() << std::dec <<")" << endl;
+//
+//      FillFrom(myparm);
+//      delete myparm;
+//    }
+//  delete f;
+//
+//
+//  return 0;
+//}
 
 void
 PHG4Parameters::CopyToPdbParameterMap(PdbParameterMap *myparm)
