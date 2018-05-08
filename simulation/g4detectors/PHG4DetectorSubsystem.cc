@@ -401,61 +401,61 @@ PHG4DetectorSubsystem::ReadParamsFromDB(const string &name, const int issuper)
   return iret;
 }
 
-int
-PHG4DetectorSubsystem::SaveParamsToFile(const PHG4DetectorSubsystem::FILE_TYPE ftyp)
-{
-  string extension;
-  switch(ftyp)
-    {
-    case xml:
-      extension = "xml";
-      break;
-    case root:
-      extension = "root";
-      break;
-    default:
-      cout << PHWHERE << "filetype " << ftyp << " not implemented" << endl;
-      exit(1);
-    }
-  int iret = 0;
-  if (paramscontainer)
-    {
-      iret = paramscontainer->WriteToFile(extension,calibfiledir);
-    }
-  else
-    {
-      iret = params->WriteToFile(extension,calibfiledir);
-    }
-  if (iret)
-    {
-      cout << "problem saving to " << extension << " file " << endl;
-    }
-  return iret;
-}
-
-int
-PHG4DetectorSubsystem::ReadParamsFromFile(const string &name, const PHG4DetectorSubsystem::FILE_TYPE ftyp, const int issuper)
-{
-  string extension;
-  switch(ftyp)
-    {
-    case xml:
-      extension = "xml";
-      break;
-    case root:
-      extension = "root";
-      break;
-    default:
-      cout << PHWHERE << "filetype " << ftyp << " not implemented" << endl;
-      exit(1);
-    }
-  int iret = params->ReadFromFile(name, extension, layer, issuper, calibfiledir);
-  if (iret)
-    {
-      cout << "problem reading from " << extension << " file " << endl;
-    }
-  return iret;
-}
+//int
+//PHG4DetectorSubsystem::SaveParamsToFile(const PHG4DetectorSubsystem::FILE_TYPE ftyp)
+//{
+//  string extension;
+//  switch(ftyp)
+//    {
+//    case xml:
+//      extension = "xml";
+//      break;
+//    case root:
+//      extension = "root";
+//      break;
+//    default:
+//      cout << PHWHERE << "filetype " << ftyp << " not implemented" << endl;
+//      exit(1);
+//    }
+//  int iret = 0;
+//  if (paramscontainer)
+//    {
+//      iret = paramscontainer->WriteToFile(extension,calibfiledir);
+//    }
+//  else
+//    {
+//      iret = params->WriteToFile(extension,calibfiledir);
+//    }
+//  if (iret)
+//    {
+//      cout << "problem saving to " << extension << " file " << endl;
+//    }
+//  return iret;
+//}
+//
+//int
+//PHG4DetectorSubsystem::ReadParamsFromFile(const string &name, const PHG4DetectorSubsystem::FILE_TYPE ftyp, const int issuper)
+//{
+//  string extension;
+//  switch(ftyp)
+//    {
+//    case xml:
+//      extension = "xml";
+//      break;
+//    case root:
+//      extension = "root";
+//      break;
+//    default:
+//      cout << PHWHERE << "filetype " << ftyp << " not implemented" << endl;
+//      exit(1);
+//    }
+//  int iret = params->ReadFromFile(name, extension, layer, issuper, calibfiledir);
+//  if (iret)
+//    {
+//      cout << "problem reading from " << extension << " file " << endl;
+//    }
+//  return iret;
+//}
 
 void
 PHG4DetectorSubsystem::SetActive(const int i)
