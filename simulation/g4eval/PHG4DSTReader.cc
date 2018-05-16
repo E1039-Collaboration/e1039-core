@@ -13,17 +13,11 @@
 #include <g4main/PHG4HitContainer.h>
 #include <g4main/PHG4TruthInfoContainer.h>
 
-#include <calobase/RawTowerv1.h>
-#include <calobase/RawTowerContainer.h>
-
 #include <g4main/PHG4InEvent.h>
 //#include <g4main/PHG4Particle.h>
 #include <g4main/PHG4HitEval.h>
 #include <g4main/PHG4Particlev2.h>
 #include <g4main/PHG4VtxPointv1.h>
-
-#include <g4jets/JetV1.h>
-#include <g4jets/JetMap.h>
 
 #include <fun4all/PHTFileServer.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -46,14 +40,12 @@ using namespace std;
 typedef PHG4Particlev2 part_type;
 typedef PHG4HitEval hit_type;
 typedef PHG4VtxPointv1 vertex_type;
-typedef RawTowerv1 RawTower_type;
-typedef JetV1 PHPyJet_type;
 
 PHG4DSTReader::PHG4DSTReader(const string &filename) :
     SubsysReco("PHG4DSTReader"), nblocks(0), _event(0), //
     _out_file_name(filename), /*_file(nullptr), */_T(nullptr), //
     _save_particle(true), _load_all_particle(false), _load_active_particle(
-        true), _save_vertex(true), _tower_zero_sup(.0)
+        true), _save_vertex(true)
 {
   // TODO Auto-generated constructor stub
 
@@ -96,57 +88,6 @@ PHG4DSTReader::Init(PHCompositeNode*)
       rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
       rec._arr_ptr = rec._arr.get();
       rec._type = record::typ_hit;
-
-      _records.push_back(rec);
-
-      nblocks++;
-    }
-
-  if (_tower_postfix.size())
-    {
-      cout << "PHG4DSTReader::Init - zero suppression for calorimeter towers = "
-          << _tower_zero_sup << " GeV" << endl;
-    }
-  for (vector<string>::const_iterator it = _tower_postfix.begin();
-      it != _tower_postfix.end(); ++it)
-    {
-      const char * class_name = RawTower_type::Class()->GetName();
-
-      const string & nodenam = *it;
-
-      string hname = Form("TOWER_%s", nodenam.c_str());
-//      _node_name.push_back(hname);
-      cout << "PHG4DSTReader::Init - saving raw tower info from node: " << hname
-          << " - " << class_name << endl;
-
-      record rec;
-      rec._cnt = 0;
-      rec._name = hname;
-      rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
-      rec._arr_ptr = rec._arr.get();
-      rec._type = record::typ_tower;
-
-      _records.push_back(rec);
-
-      nblocks++;
-    }
-
-  for (vector<string>::const_iterator it = _jet_postfix.begin();
-      it != _jet_postfix.end(); ++it)
-    {
-      const char * class_name = PHPyJet_type::Class()->GetName();
-
-      const string & hname = *it;
-
-      cout << "PHG4DSTReader::Init - saving jets from node: " << hname << " - "
-          << class_name << endl;
-
-      record rec;
-      rec._cnt = 0;
-      rec._name = hname;
-      rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
-      rec._arr_ptr = rec._arr.get();
-      rec._type = record::typ_jets;
 
       _records.push_back(rec);
 
@@ -334,147 +275,7 @@ PHG4DSTReader::process_event(PHCompositeNode* topNode)
                   rec._cnt++;
                 }
             } // if (!hits)
-        } //      if (rec._type == record::typ_hit)
-      else if (rec._type == record::typ_tower)
-        {
-          if (Verbosity() >= 2)
-            cout << "PHG4DSTReader::process_event - processing tower "
-                << rec._name << endl;
-
-          RawTowerContainer *hits = findNode::getClass<RawTowerContainer>(
-              topNode, rec._name);
-          if (!hits)
-            {
-              if (_event < 2)
-                cout
-                    << "PHG4DSTReader::process_event - Error - can not find node "
-                    << rec._name << endl;
-
-            }
-          else
-            {
-              RawTowerContainer::ConstRange hit_range = hits->getTowers();
-
-              if (Verbosity() >= 2)
-                cout << "PHG4DSTReader::process_event - processing "
-                    << rec._name << " and received " << hits->size()
-                    << " tower hits" << endl;
-
-              for (RawTowerContainer::ConstIterator hit_iter = hit_range.first;
-                  hit_iter != hit_range.second; hit_iter++)
-                {
-                  RawTower * hit_raw = hit_iter->second;
-
-                  RawTower_type * hit = dynamic_cast<RawTower_type *>(hit_raw);
-//                  RawTower * hit = hit_iter->second;
-
-                  assert(hit);
-
-                  if (hit->get_energy() < _tower_zero_sup)
-                    {
-
-                      if (Verbosity() >= 2)
-                        cout
-                            << "PHG4DSTReader::process_event - suppress low energy tower hit "
-                            << rec._name << " @ ("
-//                            << hit->get_thetaMin()
-//                            << ", " << hit->get_phiMin()
-                            << "), Energy = " << hit->get_energy() << endl;
-
-                      continue;
-                    }
-
-                  new ((*(rec._arr.get()))[rec._cnt]) RawTower_type();
-
-                  if (Verbosity() >= 2)
-                    cout
-                        << "PHG4DSTReader::process_event - processing Tower hit "
-                        << rec._name << " @ ("
-//                        << hit->get_thetaMin() << ", "
-//                        << hit->get_phiMin()
-                        << "), Energy = " << hit->get_energy() << " - "
-                        << rec._arr.get()->At(rec._cnt)->ClassName() << endl;
-
-//                  rec._arr->Print();
-
-                  RawTower_type * new_hit =
-                      dynamic_cast<RawTower_type *>(rec._arr.get()->At(rec._cnt));
-                  assert(new_hit);
-
-//                  //v1 copy
-//                  new_hit->get_bineta(hit->get_bineta());
-//                  new_hit->get_binphi(hit->get_binphi());
-//
-//                  //v2 copy
-//                  new_hit->set_thetaMin(hit->get_thetaMin());
-//                  new_hit->set_thetaSize(hit->get_thetaSize());
-//                  new_hit->set_phiMin(hit->get_phiMin());
-//                  new_hit->set_phiSize(hit->get_phiSize());
-//                  new_hit->set_zMin(hit->get_zMin());
-//                  new_hit->set_zSize(hit->get_zSize());
-
-                  *new_hit = (*hit);
-
-                  rec._cnt++;
-                }
-            } // if (!hits)
-        } //      if (rec._type == record::typ_hit)
-      else if (rec._type == record::typ_jets)
-        {
-
-//          std::cout
-//              << "PHG4DSTReader::AddJet - Error - temp. disabled until jet added back to sPHENIX software"
-//              << std::endl;
-//
-          if (Verbosity() >= 2)
-            cout << "PHG4DSTReader::process_event - processing jets "
-                << rec._name << endl;
-
-          JetMap *hits = findNode::getClass<JetMap>(topNode, rec._name);
-          if (!hits)
-            {
-              if (_event < 2)
-                cout
-                    << "PHG4DSTReader::process_event - Error - can not find node "
-                    << rec._name << endl;
-
-            }
-          else
-            {
-
-              if (Verbosity() >= 2)
-                cout << "PHG4DSTReader::process_event - processing "
-                    << rec._name << " and received " << hits->size() << " jets"
-                    << endl;
-
-              // for every recojet
-              for (JetMap::Iter iter = hits->begin(); iter != hits->end();
-                  ++iter)
-                {
-                  Jet* hit_raw = iter->second;
-
-                  if (Verbosity() >= 2)
-                    cout << "PHG4DSTReader::process_event - processing jet "
-                        << rec._name << " @ (" << hit_raw->get_eta() << ", "
-                        << hit_raw->get_phi() << "), pT = " << hit_raw->get_pt()
-                        << " - with raw type " << hit_raw->ClassName() << endl;
-
-                  PHPyJet_type * hit = dynamic_cast<PHPyJet_type *>(hit_raw);
-
-                  assert(hit);
-
-                  new ((*(rec._arr.get()))[rec._cnt]) PHPyJet_type();
-
-                  PHPyJet_type * new_hit =
-                      dynamic_cast<PHPyJet_type *>(rec._arr.get()->At(rec._cnt));
-                  assert(new_hit);
-
-                  *new_hit = (*hit);
-
-                  rec._cnt++;
-                }
-            } // if (!hits)
-        } //      if (rec._type == record::typ_hit)
+        }
       else if (rec._type == record::typ_part)
         {
 

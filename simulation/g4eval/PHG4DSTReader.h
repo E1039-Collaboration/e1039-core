@@ -67,18 +67,6 @@ public:
     _node_postfix.push_back(name);
   }
 
-  void
-  AddTower(const std::string &name)
-  {
-    _tower_postfix.push_back(name);
-  }
-
-  void
-  AddJet(const std::string &name)
-  {
-    _jet_postfix.push_back(name);
-  }
-
   //! load all particle in truth info module?
   //! size could be very large, e.g. showers
   void
@@ -108,25 +96,9 @@ public:
     _save_vertex = b;
   }
 
-  //! zero suppression for all calorimeters
-  double
-  get_tower_zero_sup()
-  {
-    return _save_particle;
-  }
-
-  //! zero suppression for all calorimeters
-  void
-  set_tower_zero_sup(double b)
-  {
-    _tower_zero_sup = b;
-  }
-
 protected:
 
   std::vector<std::string> _node_postfix;
-  std::vector<std::string> _tower_postfix;
-  std::vector<std::string> _jet_postfix;
 //  std::vector<std::string> _node_name;
   int nblocks;
 
@@ -143,7 +115,7 @@ protected:
 
     enum enu_type
     {
-      typ_hit, typ_part, typ_vertex, typ_tower, typ_jets
+      typ_hit, typ_part, typ_vertex
     };
     enu_type _type;
   };
@@ -180,9 +152,6 @@ protected:
 
   //! save vertex for particles?
   bool _save_vertex;
-
-  //! zero suppression for all calorimeters
-  double _tower_zero_sup;
 
 #ifndef __CINT__
 
