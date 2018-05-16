@@ -34,6 +34,8 @@
 
 #include<sstream>
 
+#include <memory>
+
 
 using namespace std;
 
@@ -85,7 +87,7 @@ PHG4DSTReader::Init(PHCompositeNode*)
       record rec;
       rec._cnt = 0;
       rec._name = hname;
-      rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
+      rec._arr = std::shared_ptr<TClonesArray>(class_name, arr_size);
       rec._arr_ptr = rec._arr.get();
       rec._type = record::typ_hit;
 
@@ -106,7 +108,7 @@ PHG4DSTReader::Init(PHCompositeNode*)
       record rec;
       rec._cnt = 0;
       rec._name = "PHG4Particle";
-      rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
+      rec._arr = std::shared_ptr<TClonesArray>(class_name, arr_size);
       rec._arr_ptr = rec._arr.get();
       rec._type = record::typ_part;
 
@@ -127,7 +129,7 @@ PHG4DSTReader::Init(PHCompositeNode*)
       record rec;
       rec._cnt = 0;
       rec._name = "PHG4VtxPoint";
-      rec._arr = boost::make_shared<TClonesArray>(class_name, arr_size);
+      rec._arr = std::shared_ptr<TClonesArray>(class_name, arr_size);
       rec._arr_ptr = rec._arr.get();
       rec._type = record::typ_vertex;
 

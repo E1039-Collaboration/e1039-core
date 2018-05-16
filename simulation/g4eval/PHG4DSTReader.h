@@ -15,7 +15,7 @@
 
 #ifndef __CINT__
 
-#include <boost/smart_ptr.hpp>
+#include <memory>
 
 #endif
 
@@ -104,7 +104,7 @@ protected:
 
 #ifndef __CINT__
 
-  typedef boost::shared_ptr<TClonesArray> arr_ptr;
+  typedef std::shared_ptr<TClonesArray> arr_ptr;
 
   struct record
   {
