@@ -68,6 +68,7 @@ pkginclude_HEADERS = \
   PHG4TargetCoilSubsystem.h \
   PHG4BNLTargetCoilSubsystem.h \
   PHG4CollimatorSubsystem.h \
+  PHG4E1039InsensSubsystem.h \
   PHG4DetectorSubsystem.h \
   PHG4DetectorGroupSubsystem.h \
   PHG4ParameterContainerInterface.h \
@@ -192,6 +193,10 @@ libg4detectors_la_SOURCES = \
   PHG4CollimatorSubsystem.cc \
   PHG4CollimatorSubsystem_Dict.cc \
   PHG4CollimatorSteppingAction.cc \
+  PHG4E1039InsensDetector.cc \
+  PHG4E1039InsensSubsystem.cc \
+  PHG4E1039InsensSubsystem_Dict.cc \
+  PHG4E1039InsensSteppingAction.cc \
   PHG4DetectorGroupSubsystem.cc \
   PHG4DetectorGroupSubsystem_Dict.cc \
   PHG4DetectorSubsystem.cc \
