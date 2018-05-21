@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int Fun4AllSim(const int nEvents = 1)
+int Fun4Sim(const int nEvents = 1)
 {
 	const int use_g4steps = 1;
 	const double target_l = 7.9; //cm
@@ -19,7 +19,7 @@ int Fun4AllSim(const int nEvents = 1)
 	// Make the Server
 	//////////////////////////////////////////
 	Fun4AllServer *se = Fun4AllServer::instance();
-	se->Verbosity(1);
+	se->Verbosity(100);
 
 	// particle gun
 	PHG4ParticleGun *gun = new PHG4ParticleGun("PGUN");
@@ -39,9 +39,9 @@ int Fun4AllSim(const int nEvents = 1)
 	//g4Reco->set_field(5.);
 	g4Reco->set_field_map("target.field.root",4);
 	// size of the world - every detector has to fit in here
-	g4Reco->SetWorldSizeX(100);
-	g4Reco->SetWorldSizeY(100);
-	g4Reco->SetWorldSizeZ(800);
+	g4Reco->SetWorldSizeX(1000);
+	g4Reco->SetWorldSizeY(1000);
+	g4Reco->SetWorldSizeZ(5000);
 	// shape of our world - it is a tube
 	g4Reco->SetWorldShape("G4BOX");
 	// this is what our world is filled with
@@ -49,64 +49,21 @@ int Fun4AllSim(const int nEvents = 1)
 	// Geant4 Physics list to use
 	g4Reco->SetPhysicsList("FTFP_BERT");
 
-	PHG4CollimatorSubsystem* collimator = new PHG4CollimatorSubsystem("Collimator",0);
-	collimator->SuperDetector("Collimator");
-	collimator->set_double_param("place_z",-302.36);//-302.36 cm
-	collimator->set_double_param("size_z",121.92);
-	collimator->SetActive(1);
-	g4Reco->registerSubsystem(collimator);
+  gROOT->LoadMacro("G4_Target.C");
+  SetupTarget(g4Reco, use_g4steps, target_l, target_z);
 
-	PHG4TargetCoilSubsystem* coil_0 = new PHG4TargetCoilSubsystem("Coil", 0);
-	coil_0->SuperDetector("Coil");
-	coil_0->set_double_param("rot_x", 90.);
-	coil_0->set_double_param("rot_y", 0.);
-	coil_0->set_double_param("rot_z", 0.);
-	coil_0->set_double_param("place_x", 0.);
-	coil_0->set_double_param("place_y", (22.7+4.)/2);
-	coil_0->set_double_param("place_z", 0.);
-	coil_0->set_int_param("use_g4steps", use_g4steps);
-	coil_0->SetActive(1);                                   // it is an active volume - save G4Hits
-	g4Reco->registerSubsystem(coil_0);
-
-	PHG4TargetCoilSubsystem* coil_1 = new PHG4TargetCoilSubsystem("Coil", 1);
-	coil_1->SuperDetector("Coil");
-	coil_1->set_double_param("rot_x", -90.);
-	coil_1->set_double_param("rot_y", 0.);
-	coil_1->set_double_param("rot_z", 0.);
-	coil_1->set_double_param("place_x", 0.);
-	coil_1->set_double_param("place_y", -(22.7+4.)/2);
-	coil_1->set_double_param("place_z", 0.);
-	coil_1->set_int_param("use_g4steps", use_g4steps);
-	coil_1->SetActive(1);                                   // it is an active volume - save G4Hits
-	g4Reco->registerSubsystem(coil_1);
-
-	PHG4CylinderSubsystem* target = new PHG4CylinderSubsystem("Target", 0);
-	target->SuperDetector("Target");
-	target->set_double_param("length", target_l);
-	target->set_double_param("rot_x", 0.);
-	target->set_double_param("rot_y", 0.);
-	target->set_double_param("rot_z", 0.);
-	target->set_double_param("place_x", 0.);
-	target->set_double_param("place_y", 0.);
-	target->set_double_param("place_z", target_z);
-	target->set_double_param("radius", 0.);
-	target->set_double_param("thickness", (2.)/2);
-	target->set_string_param("material", "Target");          // material of target
-	target->set_int_param("lengthviarapidity", 0);
-	target->set_int_param("use_g4steps", use_g4steps);
-	target->SetActive(1);                                   // it is an active volume - save G4Hits
-	g4Reco->registerSubsystem(target);
-
+  gROOT->LoadMacro("G4_DriftChamber.C");
+  SetupDriftChamber(g4Reco);
 
 	PHG4TruthSubsystem *truth = new PHG4TruthSubsystem();
 	g4Reco->registerSubsystem(truth);
 
 	se->registerSubsystem(g4Reco);
 
-	TruthEval* eval = new TruthEval("TruthEval","eval.root");
-	eval->target_l = target_l;
-	eval->target_z = target_z;
-	se->registerSubsystem(eval);
+	//TruthEval* eval = new TruthEval("TruthEval","eval.root");
+	//eval->target_l = target_l;
+	//eval->target_z = target_z;
+	//se->registerSubsystem(eval);
 
 	///////////////////////////////////////////
 	// Output
