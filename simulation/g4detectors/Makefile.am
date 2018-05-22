@@ -16,7 +16,8 @@ AM_CXXFLAGS = -std=c++11
 
 AM_LDFLAGS = \
     -L$(libdir) \
-    -L$(OFFLINE_MAIN)/lib
+    -L$(OFFLINE_MAIN)/lib \
+    `mysql_config --libs`
 
 libg4detectors_io_la_LIBADD = \
   -L$(ROOTSYS)/lib \
@@ -26,7 +27,7 @@ libg4detectors_io_la_LIBADD = \
   -lpdbcalBase \
   -lXMLIO \
   -lphparameter \
-  -lg4testbench 
+  -lg4testbench
 
 
 libg4detectors_la_LIBADD = \
@@ -34,7 +35,7 @@ libg4detectors_la_LIBADD = \
   -lphg4gdml \
   -lphool  \
   -lSubsysReco \
-  -lg4testbench 
+  -lg4testbench
 
 pkginclude_HEADERS = \
   PHG4BlockCellGeom.h \
