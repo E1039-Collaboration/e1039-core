@@ -3,9 +3,10 @@
 
 #include <g4main/PHG4Detector.h>
 
+#include <Geant4/G4RotationMatrix.hh>
 #include <Geant4/G4SystemOfUnits.hh>
 
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 #include <vector>
 
@@ -21,7 +22,6 @@ class G4VPhysicalVolume;
 class G4Material;
 class G4Element;
 class G4VSolid;
-class G4RotationMatrix;
 
 
 class PHG4E1039InsensDetector: public PHG4Detector
