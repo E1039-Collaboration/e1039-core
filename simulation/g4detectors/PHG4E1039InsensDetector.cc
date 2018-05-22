@@ -239,7 +239,10 @@ void PHG4E1039InsensDetector::Construct( G4LogicalVolume* logicWorld )
     if (id >= (int)logicalVolumeVec.size())
       logicalVolumeVec.resize(id+10);
     name = row[1];
-    if(name.find("helium_bag_pipe") != std::string::npos) continue;
+    if(name.find("helium_bag") != std::string::npos) {
+      cout << __LINE__ << ": " <<  name << endl;
+      continue;
+    }
     sID = atoi(row[2]);
     mID = atoi(row[3]);
     sensitiveDetector = atoi(row[4]);
