@@ -49,6 +49,10 @@ int Fun4Sim(const int nEvents = 1)
 	// Geant4 Physics list to use
 	g4Reco->SetPhysicsList("FTFP_BERT");
 
+
+  PHG4E1039InsensSubsystem* insens = new PHG4E1039InsensSubsystem("Insens");
+  g4Reco->registerSubsystem(insens);
+
   gROOT->LoadMacro("G4_Target.C");
   SetupTarget(g4Reco, use_g4steps, target_l, target_z);
 

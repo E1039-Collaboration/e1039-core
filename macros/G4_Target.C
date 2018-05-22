@@ -7,6 +7,9 @@ void SetupTarget(
 	const double target_z
 ) {
 
+  const double target_coil_pos_z = -130;
+  const double collimator_pos_z = target_coil_pos_z - 302.36;
+
   //gSystem->Load("libfun4all.so");
 	//gSystem->Load("libg4detectors");
 	//gSystem->Load("libg4testbench");
@@ -16,7 +19,7 @@ void SetupTarget(
 
 	PHG4CollimatorSubsystem* collimator = new PHG4CollimatorSubsystem("Collimator",0);
 	collimator->SuperDetector("Collimator");
-	collimator->set_double_param("place_z",-302.36);//-302.36 cm
+	collimator->set_double_param("place_z", collimator_pos_z);//-302.36 cm
 	collimator->set_double_param("size_z",121.92);
 	collimator->SetActive(1);
 	g4Reco->registerSubsystem(collimator);
@@ -28,7 +31,7 @@ void SetupTarget(
 	coil_0->set_double_param("rot_z", 0.);
 	coil_0->set_double_param("place_x", 0.);
 	coil_0->set_double_param("place_y", (22.7+4.)/2);
-	coil_0->set_double_param("place_z", 0.);
+	coil_0->set_double_param("place_z", target_coil_pos_z);
 	coil_0->set_int_param("use_g4steps", use_g4steps);
 	coil_0->SetActive(1);                                   // it is an active volume - save G4Hits
 	g4Reco->registerSubsystem(coil_0);
@@ -40,7 +43,7 @@ void SetupTarget(
 	coil_1->set_double_param("rot_z", 0.);
 	coil_1->set_double_param("place_x", 0.);
 	coil_1->set_double_param("place_y", -(22.7+4.)/2);
-	coil_1->set_double_param("place_z", 0.);
+	coil_1->set_double_param("place_z", target_coil_pos_z);
 	coil_1->set_int_param("use_g4steps", use_g4steps);
 	coil_1->SetActive(1);                                   // it is an active volume - save G4Hits
 	g4Reco->registerSubsystem(coil_1);
@@ -53,7 +56,7 @@ void SetupTarget(
 	target->set_double_param("rot_z", 0.);
 	target->set_double_param("place_x", 0.);
 	target->set_double_param("place_y", 0.);
-	target->set_double_param("place_z", target_z);
+	target->set_double_param("place_z", target_coil_pos_z + target_z);
 	target->set_double_param("radius", 0.);
 	target->set_double_param("thickness", (2.)/2);
 	target->set_string_param("material", "Target");          // material of target
