@@ -179,7 +179,7 @@ void SetupDriftChamber(
     box->set_double_param("place_x", place[0]);
     box->set_double_param("place_y", place[1]);
     box->set_double_param("place_z", place[2]);
-    box->set_string_param("material", "G4_AIR");
+    box->set_string_param("material", "G4_Si");
     box->SetActive(1);
     g4Reco->registerSubsystem(box);
   }
