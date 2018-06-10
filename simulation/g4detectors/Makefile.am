@@ -76,9 +76,6 @@ pkginclude_HEADERS = \
   PHG4ParameterInterface.h \
   PHG4Parameters.h \
   PHG4ParametersContainer.h \
-  PHG4ScintillatorSlat.h \
-  PHG4ScintillatorSlatContainer.h \
-  PHG4ScintillatorSlatDefs.h \
   PHG4StepStatusDecode.h
 
 libg4detectors_io_la_SOURCES = \
@@ -140,38 +137,20 @@ libg4detectors_io_la_SOURCES = \
   PHG4CylinderCellGeom.cc \
   PHG4CylinderCellGeom_Dict.cc \
   PHG4CylinderCellGeomContainer.cc \
-  PHG4CylinderCellGeomContainer_Dict.cc \
-  PHG4ScintillatorSlat_Dict.cc \
-  PHG4ScintillatorSlatDefs.cc \
-  PHG4ScintillatorSlatDefs_Dict.cc \
-  PHG4ScintillatorSlatv1.cc \
-  PHG4ScintillatorSlatv1_Dict.cc \
-  PHG4ScintillatorSlatContainer.cc \
-  PHG4ScintillatorSlatContainer_Dict.cc
+  PHG4CylinderCellGeomContainer_Dict.cc
 
 libg4detectors_la_SOURCES = \
-  PHG4BeamlineMagnetDetector.cc \
-  PHG4BeamlineMagnetSubsystem.cc \
-  PHG4BeamlineMagnetSubsystem_Dict.cc \
   PHG4BlockCellReco.cc \
   PHG4BlockCellReco_Dict.cc \
   PHG4BlockDetector.cc \
   PHG4BlockSteppingAction.cc \
   PHG4BlockSubsystem.cc \
   PHG4BlockSubsystem_Dict.cc \
-  PHG4CEmcTestBeamDetector.cc \
-  PHG4CEmcTestBeamSteppingAction.cc \
-  PHG4CEmcTestBeamSubsystem.cc \
-  PHG4CEmcTestBeamSubsystem_Dict.cc \
   PHG4ConeDetector.cc \
   PHG4ConeRegionSteppingAction.cc \
   PHG4ConeSteppingAction.cc \
   PHG4ConeSubsystem.cc \
   PHG4ConeSubsystem_Dict.cc \
-  PHG4CrystalCalorimeterDetector.cc \
-  PHG4CrystalCalorimeterSteppingAction.cc \
-  PHG4CrystalCalorimeterSubsystem.cc \
-  PHG4CrystalCalorimeterSubsystem_Dict.cc \
   PHG4CylinderDetector.cc \
   PHG4CylinderSubsystem.cc \
   PHG4CylinderSubsystem_Dict.cc \
@@ -202,36 +181,9 @@ libg4detectors_la_SOURCES = \
   PHG4DetectorGroupSubsystem_Dict.cc \
   PHG4DetectorSubsystem.cc \
   PHG4DetectorSubsystem_Dict.cc \
-  PHG4EnvelopeDetector.cc \
-  PHG4EnvelopeSteppingAction.cc \
-  PHG4EnvelopeSubsystem.cc \
-  PHG4EnvelopeSubsystem_Dict.cc \
   PHG4EventActionClearZeroEdep.cc \
-  PHG4FCalDetector.cc \
-  PHG4FCalSteppingAction.cc \
-  PHG4FCalSubsystem.cc \
-  PHG4FCalSubsystem_Dict.cc \
-  PHG4ForwardEcalDetector.cc \
-  PHG4EICForwardEcalDetector.cc \
-  PHG4ForwardEcalSteppingAction.cc \
-  PHG4ForwardEcalSubsystem.cc \
-  PHG4ForwardEcalSubsystem_Dict.cc \
-  PHG4ForwardCalCellReco.cc \
-  PHG4ForwardCalCellReco_Dict.cc \
-  PHG4FPbScDetector.cc \
-  PHG4FPbScSteppingAction.cc \
-  PHG4FPbScRegionSteppingAction.cc \
-  PHG4FPbScSubsystem.cc \
-  PHG4FPbScSubsystem_Dict.cc \
   PHG4GenHit.cc \
   PHG4GenHit_Dict.cc \
-  PHG4ProjCrystalCalorimeterDetector.cc \
-  PHG4SectorConstructor.cc \
-  PHG4SectorConstructor_Dict.cc \
-  PHG4SectorDetector.cc \
-  PHG4SectorSteppingAction.cc \
-  PHG4SectorSubsystem.cc \
-  PHG4SectorSubsystem_Dict.cc \
   PHG4StepStatusDecode.cc \
   PHG4TrackStatusDecode.cc
 
