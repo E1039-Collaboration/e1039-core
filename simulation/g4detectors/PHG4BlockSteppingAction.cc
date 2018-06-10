@@ -118,6 +118,11 @@ bool PHG4BlockSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
       hit->set_x(0, prePoint->GetPosition().x() / cm);
       hit->set_y(0, prePoint->GetPosition().y() / cm);
       hit->set_z(0, prePoint->GetPosition().z() / cm);
+      //
+      G4ThreeVector track_mom = aTrack->GetMomentum();
+      hit->set_px(0, track_mom.x());
+      hit->set_py(0, track_mom.y());
+      hit->set_pz(0, track_mom.z());
       // time in ns
       hit->set_t(0, prePoint->GetGlobalTime() / nanosecond);
       //set the track ID
