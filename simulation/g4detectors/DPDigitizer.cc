@@ -26,6 +26,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#define LogDebug(exp)       std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
+
 using namespace std;
 
 void DPDigiPlane::preCalculation()
@@ -257,6 +259,11 @@ DPDigitizer::~DPDigitizer() {
 
 void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 {
+    if(Verbosity() > 2){
+      LogDebug("DPDigitizer::digitize");
+      g4hit.identify();
+    }
+
     // calculate the central position in each detector group, then linearly extrapolate the hits
     // to each individual plane, this is assuming there is no magnetic field in the detector, or
     // the bending is negligible
@@ -318,6 +325,9 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 }
 
 int DPDigitizer::InitRun(PHCompositeNode* topNode) {
+  if(Verbosity() > 2){
+    LogDebug("DPDigitizer::InitRun");
+  }
 
   PHNodeIterator iter(topNode);
 
@@ -356,10 +366,20 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 }
 
 int DPDigitizer::process_event(PHCompositeNode* topNode) {
-	for(auto detector_iter = map_g4name_hits.begin();
-			detector_iter != map_g4name_hits.end(); ++detector_iter) {
+  if(Verbosity() > 2){
+    LogDebug("DPDigitizer::process_event");
+  }
+
+	for(auto detector_iter = map_g4name_reconame.begin();
+			detector_iter != map_g4name_reconame.end(); ++detector_iter) {
 		string g4name = detector_iter->first;
 		string hitnodename = "G4HIT_" + g4name;
+
+    if(Verbosity() > 2) {
+      LogDebug(g4name);
+      LogDebug(hitnodename);
+    }
+
 		PHG4HitContainer *hits = findNode::getClass<PHG4HitContainer>(topNode, hitnodename.c_str());
 	  if (!hits)
 	  {
@@ -367,10 +387,19 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
 	    exit(1);
 	  }
 
+    if(Verbosity() > 2) {
+      LogDebug(g4name);
+    }
+
 	  for(PHG4HitContainer::ConstIterator hit_iter = hits->getHits().first;
 	  		hit_iter != hits->getHits().second; ++ hit_iter){
 	  	PHG4Hit* hit = hit_iter->second;
 	  	string group = map_g4name_reconame[g4name];
+      if(Verbosity() > 2) {
+        hit->identify();
+        LogDebug(g4name);
+        LogDebug(group);
+      }
 	  	try{
 	  		digitize(group, *hit);
 	  	}catch(...) {

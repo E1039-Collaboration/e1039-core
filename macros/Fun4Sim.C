@@ -58,13 +58,15 @@ int Fun4Sim(const int nEvents = 1)
 
   gROOT->LoadMacro("G4_DriftChamber.C");
   SetupDriftChamber(g4Reco);
-  DPDigitizer *digitizer = new DPDigitizer();
-  se->registerSubsystem(digitizer);
 
 	PHG4TruthSubsystem *truth = new PHG4TruthSubsystem();
 	g4Reco->registerSubsystem(truth);
 
 	se->registerSubsystem(g4Reco);
+
+  DPDigitizer *digitizer = new DPDigitizer();
+  digitizer->Verbosity(100);
+  se->registerSubsystem(digitizer);
 
 	//TruthEval* eval = new TruthEval("TruthEval","eval.root");
 	//eval->target_l = target_l;
