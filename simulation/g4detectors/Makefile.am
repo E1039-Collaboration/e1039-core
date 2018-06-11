@@ -33,6 +33,7 @@ libg4detectors_io_la_LIBADD = \
 libg4detectors_la_LIBADD = \
   libg4detectors_io.la \
   -linterface_main \
+  -lgeom_svc \
   -lphg4gdml \
   -lphool  \
   -lSubsysReco \
