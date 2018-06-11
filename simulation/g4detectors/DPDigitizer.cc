@@ -3,7 +3,7 @@
 #include <interface_main/SQMCHit_v1.h>
 #include <interface_main/SQHitVector_v1.h>
 #include <g4main/PHG4Hitv1.h>
-
+#include <g4main/PHG4HitContainer.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHCompositeNode.h>
@@ -364,8 +364,8 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
 	    exit(1);
 	  }
 
-	  for(PHG4HitContainer::ConstIterator hit_iter = hits->getHits()->first;
-	  		hit_iter != hits->getHits()->second; ++ hit_iter){
+	  for(PHG4HitContainer::ConstIterator hit_iter = hits->getHits().first;
+	  		hit_iter != hits->getHits().second; ++ hit_iter){
 	  	PHG4Hit* hit = hit_iter->second;
 	  	string group = map_g4name_reconame[g4name];
 	  	try{
