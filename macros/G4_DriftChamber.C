@@ -172,7 +172,8 @@ void SetupDriftChamber(
     << " {" << size[0] << ", " << size[1] << ", " << size[2] << "} "
     << endl;
 
-    PHG4BlockSubsystem *box = new PHG4BlockSubsystem(name.c_str());
+    PHG4BlockSubsystem *box = new PHG4BlockSubsystem(name.c_str(), 0);
+    box->SuperDetector(name.c_str());
     box->set_double_param("size_x", size[0]);
     box->set_double_param("size_y", size[1]);
     box->set_double_param("size_z", size[2]);

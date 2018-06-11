@@ -58,6 +58,8 @@ int Fun4Sim(const int nEvents = 1)
 
   gROOT->LoadMacro("G4_DriftChamber.C");
   SetupDriftChamber(g4Reco);
+  DPDigitizer *digitizer = new DPDigitizer();
+  se->registerSubsystem(digitizer);
 
 	PHG4TruthSubsystem *truth = new PHG4TruthSubsystem();
 	g4Reco->registerSubsystem(truth);
@@ -83,8 +85,8 @@ int Fun4Sim(const int nEvents = 1)
 	ana->AddNode("Coil");
 	ana->AddNode("Target");
 	//ana->AddNode("Collimator");
-	ana->AddNode("C1X_0");
-	ana->AddNode("C2X_0");
+	ana->AddNode("C1X");
+	ana->AddNode("C2X");
 	se->registerSubsystem(ana);
 
 	// input - we need a dummy to drive the event loop
