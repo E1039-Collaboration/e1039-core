@@ -140,10 +140,7 @@ private:
 	std::map<G4String, int> map_detectorID;
 
 	//!
-	std::map<std::string, std::string> map_g4name_reconame;
-
-	//!
-	std::map<std::string, PHG4HitContainer*> map_g4name_hits;
+	std::map<std::string, std::string> map_g4name_group;
 
 	//!
 	SQHitVector *digits;

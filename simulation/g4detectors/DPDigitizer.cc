@@ -201,32 +201,32 @@ DPDigitizer::DPDigitizer(const std::string &name)
         delete row;
     }
 
-    map_g4name_reconame["C1X"] = "D1";
-    map_g4name_reconame["C1V"] = "D1";
-    map_g4name_reconame["C1U"] = "D1";
-    map_g4name_reconame["C2U"] = "D2";
-    map_g4name_reconame["C2X"] = "D2";
-    map_g4name_reconame["C2V"] = "D2";
-    map_g4name_reconame["C3T"] = "D3p";
-    map_g4name_reconame["C3B"] = "D3m";
+    map_g4name_group["C1X"] = "D1";
+    map_g4name_group["C1V"] = "D1";
+    map_g4name_group["C1U"] = "D1";
+    map_g4name_group["C2U"] = "D2";
+    map_g4name_group["C2X"] = "D2";
+    map_g4name_group["C2V"] = "D2";
+    map_g4name_group["C3T"] = "D3p";
+    map_g4name_group["C3B"] = "D3m";
 
-    map_g4name_reconame["H1y"] = "H1Y";
-    map_g4name_reconame["H1x"] = "H1X";
-    map_g4name_reconame["H2y"] = "H2Y";
-    map_g4name_reconame["H2x"] = "H2X";
-    map_g4name_reconame["H3x"] = "H3X";
+    map_g4name_group["H1y"] = "H1Y";
+    map_g4name_group["H1x"] = "H1X";
+    map_g4name_group["H2y"] = "H2Y";
+    map_g4name_group["H2x"] = "H2X";
+    map_g4name_group["H3x"] = "H3X";
 
-    map_g4name_reconame["P1V"] = "P1Y";
-    map_g4name_reconame["P2H"] = "P1X";
-    map_g4name_reconame["P2V"] = "P2Y";
-    map_g4name_reconame["P1H"] = "P2X";
+    map_g4name_group["P1V"] = "P1Y";
+    map_g4name_group["P2H"] = "P1X";
+    map_g4name_group["P2V"] = "P2Y";
+    map_g4name_group["P1H"] = "P2X";
 
-    map_g4name_reconame["H4y1L"] = "H4Y1";
-    map_g4name_reconame["H4y1R"] = "H4Y1";
-    map_g4name_reconame["H4y2L"] = "H4Y2";
-    map_g4name_reconame["H4y2R"] = "H4Y2";
-    map_g4name_reconame["H4xT"] = "H4X";
-    map_g4name_reconame["H4xB"] = "H4X";
+    map_g4name_group["H4y1L"] = "H4Y1";
+    map_g4name_group["H4y1R"] = "H4Y1";
+    map_g4name_group["H4y2L"] = "H4Y2";
+    map_g4name_group["H4y2R"] = "H4Y2";
+    map_g4name_group["H4xT"] = "H4X";
+    map_g4name_group["H4xB"] = "H4X";
 
 
     delete res;
@@ -341,19 +341,6 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
     }
   PHNodeIterator dstiter(dstNode);
 
-//	for(auto detector_iter = map_g4name_reconame.begin();
-//			detector_iter!=map_g4name_reconame.end();
-//			++detector_iter) {
-//		string hitnodename = "G4HIT_" + detector_iter->first;
-//		PHG4HitContainer *hits = findNode::getClass<PHG4HitContainer>(topNode, hitnodename.c_str());
-//	  if (!hits)
-//	  {
-//	    cout << Name() << " Could not locate g4 hit node " << hitnodename << endl;
-//	    exit(1);
-//	  }
-//		map_g4name_hits[hitnodename] = hits;
-//	}
-
   string digit_name = "SQHitVector";
   digits = findNode::getClass<SQHitVector>(topNode , digit_name);
 	if (!digits){
@@ -370,8 +357,8 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
     LogDebug("DPDigitizer::process_event");
   }
 
-	for(auto detector_iter = map_g4name_reconame.begin();
-			detector_iter != map_g4name_reconame.end(); ++detector_iter) {
+	for(auto detector_iter = map_g4name_group.begin();
+			detector_iter != map_g4name_group.end(); ++detector_iter) {
 		string g4name = detector_iter->first;
 		string hitnodename = "G4HIT_" + g4name;
 
@@ -394,7 +381,7 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
 	  for(PHG4HitContainer::ConstIterator hit_iter = hits->getHits().first;
 	  		hit_iter != hits->getHits().second; ++ hit_iter){
 	  	PHG4Hit* hit = hit_iter->second;
-	  	string group = map_g4name_reconame[g4name];
+	  	string group = map_g4name_group[g4name];
       if(Verbosity() > 2) {
         hit->identify();
         LogDebug(g4name);
