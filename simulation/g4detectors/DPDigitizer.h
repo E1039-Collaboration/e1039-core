@@ -10,8 +10,8 @@
 
 #include <TSpline.h>
 
-#include <G4String.hh>
-#include <G4ThreeVector.hh>
+#include <Geant4/G4String.hh>
+#include <Geant4/G4ThreeVector.hh>
 
 //#include "DPMCRawEvent.h"
 //#include "DPVirtualHit.h"

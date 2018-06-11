@@ -32,6 +32,7 @@ libg4detectors_io_la_LIBADD = \
 
 libg4detectors_la_LIBADD = \
   libg4detectors_io.la \
+  -linterface_main \
   -lphg4gdml \
   -lphool  \
   -lSubsysReco \
@@ -146,8 +147,8 @@ libg4detectors_la_SOURCES = \
   PHG4BlockSteppingAction.cc \
   PHG4BlockSubsystem.cc \
   PHG4BlockSubsystem_Dict.cc \
-	DPDigitizer.cc
-	DPDigitizer_Dict.cc
+  DPDigitizer.cc \
+  DPDigitizer_Dict.cc \
   PHG4ConeDetector.cc \
   PHG4ConeRegionSteppingAction.cc \
   PHG4ConeSteppingAction.cc \

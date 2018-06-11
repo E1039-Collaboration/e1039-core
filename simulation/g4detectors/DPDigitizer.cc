@@ -16,8 +16,8 @@
 #include <sstream>
 #include <string>
 
-#include "G4SystemOfUnits.hh"
-#include "Randomize.hh"
+#include <Geant4/G4SystemOfUnits.hh>
+#include <Geant4/Randomize.hh>
 
 #include <TMath.h>
 #include <TSQLServer.h>
@@ -249,7 +249,7 @@ DPDigitizer::DPDigitizer(const std::string &name)
     }
 }
 
-virtual DPDigitizer::~DPDigitizer() {
+DPDigitizer::~DPDigitizer() {
 }
 
 void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
@@ -344,7 +344,7 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   string digit_name = "SQHitVector";
   digits = findNode::getClass<SQHitVector>(topNode , digit_name);
 	if (!digits){
-		digits = new SQHitVector();
+		digits = new SQHitVector_v1();
 		PHIODataNode<PHObject> *newNode = new PHIODataNode<PHObject>(digits, digit_name.c_str() , "PHObject");
 		dstNode->addNode(newNode);
 	}
