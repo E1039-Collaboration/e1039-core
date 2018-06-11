@@ -22,22 +22,41 @@ int Fun4Sim(const int nEvents = 1)
   se->Verbosity(100);
 
   // particle gun
-  PHG4ParticleGun *gun = new PHG4ParticleGun("PGUN");
-  gun->set_name("mu+");//proton
-  gun->set_vtx(0, 0, -400); //-363.32 cm
-  gun->set_mom(0, 0, 120);
+  PHG4ParticleGun *gun_beam = new PHG4ParticleGun("GUN_beam");
+  gun_beam->set_name("proton");//proton
+  gun_beam->set_vtx(0, 0, -400); //-363.32 cm
+  gun_beam->set_mom(0, 0, 120);
   TF2 *beam_profile = new TF2("beam_profile",
       //"(((x**2+y**2)<=0.81)*exp(-(x**2+y**2)/0.18))+(((x**2+y**2)>0.81&&(x**2+y**2)<=25&&abs(y)<1.)*0.9*exp(-4.5)/(sqrt(x**2+y**2)))",
       "(((x**2+y**2)<=0.81)*exp(-(x**2+y**2)/0.18))+(((x**2+y**2)>0.81&&(x**2+y**2)<=25)*0.9*exp(-4.5)/(sqrt(x**2+y**2)))",
       -5,5,-5,5);
-  //gun->set_beam_profile(beam_profile);
-  se->registerSubsystem(gun);
+  //gun_beam->set_beam_profile(beam_profile);
+  //se->registerSubsystem(gun_beam);
+
+  double mass = 7;
+  double cot = 7.4;
+  PHG4ParticleGun *gun_mup = new PHG4ParticleGun("GUN_mup");
+  gun_mup->set_name("mu+");
+  gun_mup->set_vtx(0, 0, 0);
+  gun_mup->set_mom(mass/2., 0, mass/2.*cot);
+  //gun_mup->set_vtx(0, 0, 500);
+  //gun_mup->set_mom(0, 0, 2);
+  se->registerSubsystem(gun_mup);
+
+  PHG4ParticleGun *gun_mum = new PHG4ParticleGun("GUN_mum");
+  gun_mum->set_name("mu-");
+  gun_mum->set_vtx(0, 0, 0);
+  gun_mum->set_mom(mass/-2., 0, mass/2.*cot);
+  se->registerSubsystem(gun_mum);
 
   // Fun4All G4 module
   PHG4Reco *g4Reco = new PHG4Reco();
   //g4Reco->G4Seed(123);
   //g4Reco->set_field(5.);
-  g4Reco->set_field_map("target.field.root",4);
+  g4Reco->set_field_map(
+  "/e906/app/users/liuk/seaquest/seaquest/geometry/magnetic_fields/tab.Fmag "
+  "/e906/app/users/liuk/seaquest/seaquest/geometry/magnetic_fields/tab.Kmag",
+  4);
   // size of the world - every detector has to fit in here
   g4Reco->SetWorldSizeX(1000);
   g4Reco->SetWorldSizeY(1000);
