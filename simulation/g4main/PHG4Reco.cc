@@ -22,6 +22,7 @@
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHFieldConfig_v1.h>
 #include <phfield/PHFieldConfig_v2.h>
+#include <phfield/PHFieldConfig_v3.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 
@@ -99,6 +100,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <sstream>
+#include <iterator>
 
 using namespace std;
 
@@ -126,7 +129,7 @@ PHG4Reco::PHG4Reco(const string &name)
   , visManager(nullptr)
   , _eta_coverage(1.0)
   , mapdim(PHFieldConfig::kFieldUniform)
-  , fieldmapfile("NONE")
+  , fieldmapfile("")
   , worldshape("G4Tubs")
   , worldmaterial("G4_AIR")
 #if  G4VERSION_NUMBER >= 1033
@@ -275,13 +278,21 @@ int PHG4Reco::InitField(PHCompositeNode *topNode)
 
   unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
 
-  if (fieldmapfile != "NONE")
+  std::istringstream ssfieldmapfile(fieldmapfile);
+  std::vector<std::string> fieldmapfiles(std::istream_iterator<std::string>{ssfieldmapfile},
+                                   std::istream_iterator<std::string>());
+
+  if (fieldmapfiles.size() == 1)
   {
     default_field_cfg.reset(new PHFieldConfig_v1(mapdim, fieldmapfile, magfield_rescale));
   }
-  else
+  else if (fieldmapfiles.size() == 0)
   {
     default_field_cfg.reset(new PHFieldConfig_v2(0, magfield * magfield_rescale, 0));
+  }
+  else if (fieldmapfiles.size() == 2)
+  {
+  	default_field_cfg.reset(new PHFieldConfig_v3(fieldmapfiles[0], fieldmapfiles[1]));
   }
 
   if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
