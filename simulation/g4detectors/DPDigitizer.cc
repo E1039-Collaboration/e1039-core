@@ -290,6 +290,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         if(elementID < 1 || elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
         SQMCHit_v1 *digiHit = new SQMCHit_v1();
+        int track_id = g4hit.get_trkid();
+        digiHit->set_track_id(track_id);
         //digiHit.fPDGCode = vHit.particlePDG;
         digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
         digiHit->set_element_id(elementID);
