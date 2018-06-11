@@ -134,7 +134,7 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
 
 DPDigitizer::DPDigitizer(const std::string &name)
 {
-    const char* mysqlServer = "e906db1.fnal.gov";
+    const char* mysqlServer = "e906-db1.fnal.gov";
     const char* geometrySchema = "user_liuk_geometry_DPTrigger";
     const char* login = "seaguest";
     const char* password = "qqbar2mu+mu-";
@@ -161,7 +161,10 @@ DPDigitizer::DPDigitizer(const std::string &name)
         TSQLRow* row = res->Next();
         int index = boost::lexical_cast<int>(row->GetField(15));
 
-        assert(index <= NDETPLANES && "detectorID from database exceeds upper limit!");
+        //assert(index <= NDETPLANES && "detectorID from database exceeds upper limit!");
+        if(index > NDETPLANES) {
+          continue;
+        }
 
         digiPlanes[index].detectorID = index;
         digiPlanes[index].detectorName = row->GetField(0);
@@ -276,7 +279,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         double driftDistance = w - digiPlanes[*dpid].spacing*(elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
         if(elementID < 1 || elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
-        SQMCHit_v1 *digiHit;
+        SQMCHit_v1 *digiHit = new SQMCHit_v1();
         //digiHit.fPDGCode = vHit.particlePDG;
         digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
         digiHit->set_element_id(elementID);
