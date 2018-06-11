@@ -21,6 +21,8 @@ class SQHit;
 class SQHitVector;
 class PHG4HitContainer;
 
+class GeomSvc;
+
 #define NDETPLANES 48
 
 class DPDigiPlane
@@ -141,6 +143,9 @@ private:
 
 	//!
 	std::map<std::string, std::string> map_g4name_group;
+
+	//!GeomSvc
+	GeomSvc *p_geomSvc;
 
 	//!
 	SQHitVector *digits;

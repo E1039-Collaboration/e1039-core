@@ -10,6 +10,8 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 
+#include <geom_svc/GeomSvc.h>
+
 #include <iomanip>
 #include <cmath>
 #include <fstream>
@@ -134,7 +136,8 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
     return os;
 }
 
-DPDigitizer::DPDigitizer(const std::string &name)
+DPDigitizer::DPDigitizer(const std::string &name) :
+		p_geomSvc(nullptr)
 {
     const char* mysqlServer = "e906-db1.fnal.gov";
     const char* geometrySchema = "user_liuk_geometry_DPTrigger";
@@ -314,6 +317,10 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
             }
         }
 
+        p_geomSvc->toLocalDetectorName(digiPlanes[*dpid].detectorName, elementID);
+        //digiHit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
+        digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+
         digits->push_back(digiHit);
     }
 
@@ -348,6 +355,8 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 		PHIODataNode<PHObject> *newNode = new PHIODataNode<PHObject>(digits, digit_name.c_str() , "PHObject");
 		dstNode->addNode(newNode);
 	}
+
+	p_geomSvc = GeomSvc::instance();
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
