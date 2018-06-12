@@ -22,7 +22,7 @@ Created: 05-28-2013
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 
-//#define _DEBUG_ON
+#define _DEBUG_ON
 
 KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag) : enable_KF(flag)
 {

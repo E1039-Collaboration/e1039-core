@@ -326,6 +326,12 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         //digiHit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
         digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
 
+        // FIXME figure this out
+        digiHit->set_in_time(1);
+        digiHit->set_hodo_mask(1);
+
+        digiHit->set_hit_id(digits->size());
+
         digits->push_back(digiHit);
     }
 

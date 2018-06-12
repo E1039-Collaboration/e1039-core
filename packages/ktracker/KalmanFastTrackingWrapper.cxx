@@ -268,7 +268,11 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	}
 
 	SRawEvent* sraw_event = BuildSRawEvent();
-	eventReducer->reduceEvent(sraw_event);
+
+  // TODO temp solution
+  if(_event_header) {
+	  eventReducer->reduceEvent(sraw_event);
+  }
 
 	_rawEvent = sraw_event;
 

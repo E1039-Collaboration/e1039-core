@@ -37,7 +37,7 @@ int Fun4Sim(const int nEvents = 1)
   double cot = 7.4;
   PHG4ParticleGun *gun_mup = new PHG4ParticleGun("GUN_mup");
   gun_mup->set_name("mu+");
-  gun_mup->set_vtx(0, 0, 0);
+  gun_mup->set_vtx(0, 0, -130);
   gun_mup->set_mom(mass/2., 0, mass/2.*cot);
   //gun_mup->set_vtx(0, 0, 500);
   //gun_mup->set_mom(0, 0, 2);
@@ -45,9 +45,9 @@ int Fun4Sim(const int nEvents = 1)
 
   PHG4ParticleGun *gun_mum = new PHG4ParticleGun("GUN_mum");
   gun_mum->set_name("mu-");
-  gun_mum->set_vtx(0, 0, 0);
+  gun_mum->set_vtx(0, 0, -130);
   gun_mum->set_mom(mass/-2., 0, mass/2.*cot);
-  se->registerSubsystem(gun_mum);
+  //se->registerSubsystem(gun_mum);
 
   // Fun4All G4 module
   PHG4Reco *g4Reco = new PHG4Reco();
