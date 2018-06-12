@@ -218,6 +218,11 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 //    }
 
     sraw_event->insertHit(h);
+
+    // FIXME just for the meeting, figure this out fast!
+    if(!_triggerhit_vector and h.detectorID >= 31) {
+    	sraw_event->insertTriggerHit(h);
+    }
 	}
 
 	sraw_event->reIndex(true);

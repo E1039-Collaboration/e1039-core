@@ -267,6 +267,10 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
       g4hit.identify();
     }
 
+    int track_id = g4hit.get_trkid();
+    //FIXME only keep primary hit only for now
+    if(track_id < 0) return;
+
     // calculate the central position in each detector group, then linearly extrapolate the hits
     // to each individual plane, this is assuming there is no magnetic field in the detector, or
     // the bending is negligible
@@ -290,7 +294,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         if(elementID < 1 || elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
         SQMCHit_v1 *digiHit = new SQMCHit_v1();
-        int track_id = g4hit.get_trkid();
         digiHit->set_track_id(track_id);
         //digiHit.fPDGCode = vHit.particlePDG;
         digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
