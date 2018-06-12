@@ -84,15 +84,21 @@ int Fun4Sim(const int nEvents = 1)
   se->registerSubsystem(g4Reco);
 
   DPDigitizer *digitizer = new DPDigitizer();
-  digitizer->Verbosity(100);
+  digitizer->Verbosity(0);
   se->registerSubsystem(digitizer);
 
   gSystem->Load("libmodule_example.so");
   TestAnalyzer *analyzer = new TestAnalyzer();
-  analyzer->Verbosity(100);
+  analyzer->Verbosity(0);
   analyzer->set_hit_container_choice("Vector");
   analyzer->set_out_name("test_analyzer.root");
   se->registerSubsystem(analyzer);
+
+	gSystem->Load("libktracker.so");
+	KalmanFastTrackingWrapper *ktracker = new KalmanFastTrackingWrapper();
+  ktracker->set_geom_file_name("geom.root");
+  ktracker->Verbosity(100);
+	se->registerSubsystem(ktracker);
 
   //TruthEval* eval = new TruthEval("TruthEval","eval.root");
   //eval->target_l = target_l;

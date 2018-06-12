@@ -29,7 +29,7 @@ void get_phys_param(
       " FROM PhysicalVolumes WHERE pvName LIKE '%s_%%'",
       pvName.c_str()
       );
-  LogDebug(query);
+  //LogDebug(query);
   TSQLResult *res = server->Query(query);
   int nrow = res->GetRowCount();
   if (nrow!=1) {
@@ -57,7 +57,7 @@ void get_logi_param(
       " FROM LogicalVolumes WHERE lvID = %i",
       lvID
       );
-  LogDebug(query);
+  //LogDebug(query);
   TSQLResult *res = server->Query(query);
   int nrow = res->GetRowCount();
   if (nrow!=1) {
@@ -79,7 +79,7 @@ void get_soli_param(
       " FROM SolidBoxes WHERE sID = %i",
       sID
       );
-  LogDebug(query);
+  //LogDebug(query);
   TSQLResult *res = server->Query(query);
   int nrow = res->GetRowCount();
   if (nrow!=1) {
@@ -154,23 +154,23 @@ void SetupDriftChamber(
     int lvID;
     int sID;
 
-    LogDebug("");
+    //LogDebug("");
     get_phys_param(server, name, lvID, place, rot);
-    cout
-    << "lvID: " << lvID
-    << " {" << place[0] << ", " << place[1] << ", " << place[2] << "} "
-    << " {" << rot[0] << ", " << rot[1] << ", " << rot[2] << "} "
-    << endl;
+    //cout
+    //<< "lvID: " << lvID
+    //<< " {" << place[0] << ", " << place[1] << ", " << place[2] << "} "
+    //<< " {" << rot[0] << ", " << rot[1] << ", " << rot[2] << "} "
+    //<< endl;
 
-    LogDebug("");
+    //LogDebug("");
     get_logi_param(server, lvID, sID);
 
-    LogDebug("");
+    //LogDebug("");
     get_soli_param(server, sID, size);
-    cout
-    << "sID: " << sID
-    << " {" << size[0] << ", " << size[1] << ", " << size[2] << "} "
-    << endl;
+    //cout
+    //<< "sID: " << sID
+    //<< " {" << size[0] << ", " << size[1] << ", " << size[2] << "} "
+    //<< endl;
 
     PHG4BlockSubsystem *box = new PHG4BlockSubsystem(name.c_str(), 0);
     box->SuperDetector(name.c_str());

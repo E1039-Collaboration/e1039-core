@@ -60,16 +60,12 @@ _event_header(nullptr),
 _hit_map(nullptr),
 _hit_vector(nullptr),
 _triggerhit_vector(nullptr),
-_out_name("eval.root")
+_out_name("ktracker_eval.root")
 {
 	//p_jobOptsSvc = new JobOptsSvc();
 	p_jobOptsSvc = JobOptsSvc::instance();
 	p_jobOptsSvc->init("default.opts");
 	LogDebug(p_jobOptsSvc->m_geomVersion);
-
-	ResetEvalVars();
-	InitEvalTree();
-
 }
 
 int KalmanFastTrackingWrapper::Init(PHCompositeNode* topNode) {
@@ -77,6 +73,9 @@ int KalmanFastTrackingWrapper::Init(PHCompositeNode* topNode) {
 }
 
 int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
+
+	ResetEvalVars();
+	InitEvalTree();
 
 	int ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
@@ -168,27 +167,29 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 		}
 		sraw_event->setTargetPos(spill->get_target_pos());
   } else {
-  	sraw_event->setTargetPos(0);
+  	sraw_event->setTargetPos(1);
   }
 
   //Get beam information - QIE
 
   //Get trigger hits - TriggerHit
-	for(auto iter = _triggerhit_vector->begin(); iter!= _triggerhit_vector->end();++iter) {
-    SQHit *sq_hit = (*iter);
+  if(_triggerhit_vector) {
+	  for(auto iter = _triggerhit_vector->begin(); iter!= _triggerhit_vector->end();++iter) {
+      SQHit *sq_hit = (*iter);
 
-    Hit h;
-    h.index = sq_hit->get_hit_id();
-    h.detectorID = sq_hit->get_detector_id();
-    h.elementID = sq_hit->get_element_id();
-    h.tdcTime = sq_hit->get_tdc_time();
-    h.driftDistance = 0;
-    h.pos = sq_hit->get_pos();
+      Hit h;
+      h.index = sq_hit->get_hit_id();
+      h.detectorID = sq_hit->get_detector_id();
+      h.elementID = sq_hit->get_element_id();
+      h.tdcTime = sq_hit->get_tdc_time();
+      h.driftDistance = 0;
+      h.pos = sq_hit->get_pos();
 
-    if(sq_hit->is_in_time()) h.setInTime();
+      if(sq_hit->is_in_time()) h.setInTime();
 
-    sraw_event->insertTriggerHit(h);
-	}
+      sraw_event->insertTriggerHit(h);
+	  }
+  }
 
 	for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
     SQHit *sq_hit = (*iter);
