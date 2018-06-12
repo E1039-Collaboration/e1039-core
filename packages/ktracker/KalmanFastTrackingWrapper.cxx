@@ -136,26 +136,40 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 #ifdef _DEBUG_ON
 	LogDebug("Start: ");
 #endif
-	int run_id   = _event_header->get_run_id();
-	int spill_id = _event_header->get_spill_id();
-	int event_id = _event_header->get_event_id();
+
+	int run_id   = 0;
+	int spill_id = 0;
+	int event_id = _event;
+
+	if(_event_header) {
+		run_id   = _event_header->get_run_id();
+		spill_id = _event_header->get_spill_id();
+		event_id = _event_header->get_event_id();
+	}
 
 	sraw_event->setEventInfo(run_id, spill_id, event_id);
 
   int triggers[10];
   for(int i = SQEvent::NIM1; i <= SQEvent::MATRIX5; ++i)
   {
-      triggers[i] = _event_header->get_trigger(static_cast<SQEvent::TriggerMask>(i));
+		if(_event_header)
+			triggers[i] = _event_header->get_trigger(static_cast<SQEvent::TriggerMask>(i));
+		else
+			triggers[i] = 1;
   }
   sraw_event->setTriggerBits(triggers);
 
   //Get target position
 
-  SQSpill *spill = _spill_map->get(spill_id);
-  if(!spill) {
-  	if(verbosity >= 2) LogError("No Spill Info for ID: ") << spill_id << endl;
+  if(_spill_map) {
+		SQSpill *spill = _spill_map->get(spill_id);
+		if(!spill) {
+			if(verbosity >= 2) LogError("No Spill Info for ID: ") << spill_id << endl;
+		}
+		sraw_event->setTargetPos(spill->get_target_pos());
+  } else {
+  	sraw_event->setTargetPos(0);
   }
-  sraw_event->setTargetPos(spill->get_target_pos());
 
   //Get beam information - QIE
 
@@ -219,24 +233,27 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
 		std::cout << "Entering KalmanFastTrackingWrapper::process_event: " << _event << std::endl;
 
-#ifdef _DEBUG_ON
-  cout
-	<< "runID: " << _event_header->get_run_id()
-	<< " | spillID: " << _event_header->get_spill_id()
-	<< " | eventID: " << _event_header->get_event_id()
-	<< endl;
-#endif
-
 		ResetEvalVars();
 
 	if(!_event_header) {
-		LogDebug("!_event_header");
-		return Fun4AllReturnCodes::ABORTRUN;
+		if(Verbosity() > 2) LogDebug("!_event_header");
+		//return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	if(!_spill_map) {
-		LogDebug("!_spill_map");
-		return Fun4AllReturnCodes::ABORTRUN;
+
+#ifdef _DEBUG_ON
+	if(_event_header) {
+		cout
+		<< "runID: " << _event_header->get_run_id()
+		<< " | spillID: " << _event_header->get_spill_id()
+		<< " | eventID: " << _event_header->get_event_id()
+		<< endl;
+	}
+#endif
+
+  if(!_spill_map) {
+  	if(Verbosity() > 2) LogDebug("!_spill_map");
+		//return Fun4AllReturnCodes::ABORTRUN;
 	}
 
 	if(!_hit_vector) {
@@ -327,20 +344,20 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 
 	_run_header = findNode::getClass<SQRun>(topNode, "SQRun");
 	if (!_run_header) {
-		LogError("!_run_header");
-		return Fun4AllReturnCodes::ABORTEVENT;
+		if(Verbosity() > 2) LogError("!_run_header");
+		//return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
 	_spill_map = findNode::getClass<SQSpillMap>(topNode, "SQSpillMap");
 	if (!_spill_map) {
-		LogError("!_spill_map");
-		return Fun4AllReturnCodes::ABORTEVENT;
+		if(Verbosity() > 2) LogError("!_spill_map");
+		//return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
 	_event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
 	if (!_event_header) {
-		LogError("!_event_header");
-		return Fun4AllReturnCodes::ABORTEVENT;
+		if(Verbosity() > 2) LogError("!_event_header");
+		//return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
 	if(_hit_container_type.find("Map") != std::string::npos) {
@@ -360,8 +377,8 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 
 		_triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
 		if (!_triggerhit_vector) {
-			LogError("!_triggerhit_vector");
-			return Fun4AllReturnCodes::ABORTEVENT;
+			if(Verbosity() > 2) LogError("!_triggerhit_vector");
+			//return Fun4AllReturnCodes::ABORTEVENT;
 		}
 	}
 
