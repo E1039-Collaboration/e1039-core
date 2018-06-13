@@ -97,9 +97,18 @@ int ReadMySql::InitRun(PHCompositeNode* topNode) {
     makeQueryInput();
     nextEntry();
     int run_id = getInt(_row,0);
-	ReadMySql::FillSQRun(_run_header, _input_server, run_id, "Run");
 
-	ReadMySql::FillSQSpill(_spill_map, _input_server, run_id, "Spill");
+  	try {
+  		ReadMySql::FillSQRun(_run_header, _input_server, run_id, "Run");
+  	} catch (...) {
+  		LogWarning("");
+  	}
+
+  	try {
+  		ReadMySql::FillSQSpill(_spill_map, _input_server, run_id, "Spill");
+  	} catch (...) {
+  		LogWarning("");
+  	}
 
     sprintf(_query, "SELECT eventID FROM Event");
     int nrow = makeQueryInput();
@@ -124,16 +133,24 @@ int ReadMySql::process_event(PHCompositeNode* topNode) {
 
 	int eventID = _event_ids[_event++];
 
-	ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
+	try {
+		ReadMySql::FillSQEvent(_event_header, _input_server, eventID, "Event");
+	} catch (...) {
+		LogWarning("");
+	}
 
 	_event_header->identify();
 
-	if(_hit_container_type.find("Map") != std::string::npos)
-		ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
-
-	if(_hit_container_type.find("Vector") != std::string::npos) {
-		ReadMySql::FillSQHitVector(_hit_vector, _hit_type, _input_server, eventID, "Hit");
-		ReadMySql::FillSQTriggerHitVector(_triggerhit_vector, _hit_type, _input_server, eventID, "TriggerHit");
+	try {
+		if(_hit_container_type.find("Map") != std::string::npos) {
+			ReadMySql::FillSQHitMap(_hit_map, _input_server, eventID, "Hit");
+		}
+		if(_hit_container_type.find("Vector") != std::string::npos) {
+			ReadMySql::FillSQHitVector(_hit_vector, _hit_type, _input_server, eventID, "Hit");
+			ReadMySql::FillSQTriggerHitVector(_triggerhit_vector, _hit_type, _input_server, eventID, "TriggerHit");
+		}
+	} catch (...) {
+		LogWarning("");
 	}
 
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
