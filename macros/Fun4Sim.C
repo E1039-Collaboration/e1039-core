@@ -47,7 +47,7 @@ int Fun4Sim(const int nEvents = 1)
   gun_mum->set_name("mu-");
   gun_mum->set_vtx(0, 0, -130);
   gun_mum->set_mom(mass/-2., 0, mass/2.*cot);
-  //se->registerSubsystem(gun_mum);
+  se->registerSubsystem(gun_mum);
 
   // Fun4All G4 module
   PHG4Reco *g4Reco = new PHG4Reco();
