@@ -431,7 +431,7 @@ int ReadMySql::FillSQHitVector(
 			}
 			else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
 				hit = new SQMCHit_v1();
-				hit->set_g4hit_id(getInt(row,0));
+				hit->set_track_id(getInt(row,0));
 			}
 
 			hit->set_hit_id(getInt(row,0));
@@ -522,7 +522,7 @@ int ReadMySql::FillSQTriggerHitVector(
 			}
 			else if (hit_type.find("SQMCHit_v1")!=std::string::npos) {
 				hit = new SQMCHit_v1();
-				hit->set_g4hit_id(getInt(row,0));
+				hit->set_track_id(getInt(row,0));
 			}
 
 			hit->set_hit_id(getInt(row,0));
