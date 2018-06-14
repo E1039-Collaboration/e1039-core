@@ -10,6 +10,7 @@
 
 #include <interface_main/SQHit.h>
 #include <interface_main/SQHit_v1.h>
+#include <interface_main/SQMCHit_v1.h>
 #include <interface_main/SQHitMap_v1.h>
 #include <interface_main/SQHitVector_v1.h>
 #include <interface_main/SQEvent_v1.h>
@@ -106,6 +107,8 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       	_b_track_px[_b_n_hits] = _truth->GetParticle(track_id)->get_px();
       	_b_track_py[_b_n_hits] = _truth->GetParticle(track_id)->get_py();
       	_b_track_pz[_b_n_hits] = _truth->GetParticle(track_id)->get_pz();
+      	LogDebug(track_id);
+      	LogDebug(_b_track_pz[_b_n_hits]);
       }
     }
   }
