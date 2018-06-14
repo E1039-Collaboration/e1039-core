@@ -98,9 +98,9 @@ private:
 	float _b_drift_distance[10000];
 	float _b_pos[10000];
 
-	float _b_track_px[10000];
-	float _b_track_py[10000];
-	float _b_track_pz[10000];
+	float _b_truth_x[10000];
+	float _b_truth_y[10000];
+	float _b_truth_z[10000];
 };
 
 

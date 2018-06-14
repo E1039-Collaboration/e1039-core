@@ -58,6 +58,15 @@ public:
   virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs::keytype>::max();}
   virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {}
 
+  virtual float        get_truth_x() const                              {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_x(const float a)                       {}
+
+  virtual float        get_truth_y() const                              {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_y(const float a)                       {}
+
+  virtual float        get_truth_z() const                              {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_z(const float a)                       {}
+
   virtual bool         is_in_time() const {return false;}
   virtual void         set_in_time(const bool a) {}
 

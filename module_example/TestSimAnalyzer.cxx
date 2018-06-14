@@ -103,12 +103,12 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       _b_pos[_b_n_hits]            = (*iter)->get_pos();
       _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
       if(_truth) {
-      	int track_id = (*iter)->get_track_id();
-      	_b_track_px[_b_n_hits] = _truth->GetParticle(track_id)->get_px();
-      	_b_track_py[_b_n_hits] = _truth->GetParticle(track_id)->get_py();
-      	_b_track_pz[_b_n_hits] = _truth->GetParticle(track_id)->get_pz();
-      	LogDebug(track_id);
-      	LogDebug(_b_track_pz[_b_n_hits]);
+      	//int track_id = (*iter)->get_track_id();
+      	//LogDebug(track_id);
+      	_b_truth_x[_b_n_hits] = (*iter)->get_truth_x();
+      	_b_truth_y[_b_n_hits] = (*iter)->get_truth_y();
+      	_b_truth_z[_b_n_hits] = (*iter)->get_truth_z();
+      	LogDebug(_b_truth_z[_b_n_hits]);
       }
     }
   }
@@ -143,9 +143,9 @@ int TestSimAnalyzer::InitEvalTree() {
   _tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
   _tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
   _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
-  _tout->Branch("track_px",      _b_track_px,         "track_px[nHits]/F");
-  _tout->Branch("track_py",      _b_track_py,         "track_py[nHits]/F");
-  _tout->Branch("track_pz",      _b_track_pz,         "track_pz[nHits]/F");
+  _tout->Branch("truth_x",       _b_truth_x,         "track_px[nHits]/F");
+  _tout->Branch("truth_y",       _b_truth_y,         "track_py[nHits]/F");
+  _tout->Branch("truth_z",       _b_truth_z,         "track_pz[nHits]/F");
   _tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
@@ -163,9 +163,9 @@ int TestSimAnalyzer::ResetEvalVars() {
     _b_drift_distance[i] = std::numeric_limits<float>::max();
     _b_pos[i]            = std::numeric_limits<float>::max();
 
-    _b_track_px[i]       = std::numeric_limits<float>::max();
-    _b_track_py[i]       = std::numeric_limits<float>::max();
-    _b_track_pz[i]       = std::numeric_limits<float>::max();
+    _b_truth_x[i]       = std::numeric_limits<float>::max();
+    _b_truth_y[i]       = std::numeric_limits<float>::max();
+    _b_truth_z[i]       = std::numeric_limits<float>::max();
   }
 
   return 0;
