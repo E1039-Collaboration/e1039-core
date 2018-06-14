@@ -32,7 +32,7 @@ public:
   virtual void         set_track_id(const int a)                        {_track_id = a;}
 
   virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return _g4hit_id;}
-  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {_g4hit_id = a;}                        {}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {_g4hit_id = a;}
 
   virtual float        get_truth_x() const                              {return _truth_x;}
   virtual void         set_truth_x(const float a)                       {_truth_x = a;}

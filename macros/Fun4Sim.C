@@ -88,7 +88,7 @@ int Fun4Sim(const int nEvents = 1)
   se->registerSubsystem(digitizer);
 
   gSystem->Load("libmodule_example.so");
-  TestAnalyzer *analyzer = new TestAnalyzer();
+  TestSimAnalyzer *analyzer = new TestSimAnalyzer();
   analyzer->Verbosity(0);
   analyzer->set_hit_container_choice("Vector");
   analyzer->set_out_name("test_analyzer.root");
