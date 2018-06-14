@@ -9,6 +9,7 @@
 #define _H_SQHit_H_
 
 #include <phool/PHObject.h>
+#include <g4main/PHG4HitDefs.h>
 
 #include <iostream>
 #include <limits>
@@ -53,6 +54,9 @@ public:
 
   virtual int          get_track_id() const                             {return std::numeric_limits<int>::max();}
   virtual void         set_track_id(const int a)                        {}
+
+  virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs::keytype>::max();}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {}
 
   virtual bool         is_in_time() const {return false;}
   virtual void         set_in_time(const bool a) {}

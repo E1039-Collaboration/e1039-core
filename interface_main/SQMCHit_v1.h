@@ -31,9 +31,13 @@ public:
   virtual int          get_track_id() const                             {return _track_id;}
   virtual void         set_track_id(const int a)                        {_track_id = a;}
 
+  virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return _g4hit_id;}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {_g4hit_id = a;}
+
 private:
 
-  int _track_id;  ///< unique identifier within container
+  int _track_id;  ///< truth track id
+  PHG4HitDefs::keytype _g4hit_id;  ///< truth hit id
 
   ClassDef(SQMCHit_v1, 1);
 };

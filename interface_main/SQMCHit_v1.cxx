@@ -14,7 +14,8 @@ using namespace std;
 ClassImp(SQMCHit_v1);
 
 SQMCHit_v1::SQMCHit_v1()
-  : _track_id(std::numeric_limits<int>::max())
+  : _track_id(std::numeric_limits<int>::max()),
+		_g4hit_id(std::numeric_limits<PHG4HitDefs::keytype>::max())
 {}
 
 void SQMCHit_v1::identify(ostream& os) const {
