@@ -24,6 +24,7 @@
 #include <phool/getClass.h>
 
 #include <g4main/PHG4TruthInfoContainer.h>
+#include <g4main/PHG4HitDefs.h>
 
 
 #include <TFile.h>
@@ -99,6 +100,12 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       _b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
       _b_pos[_b_n_hits]            = (*iter)->get_pos();
       _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
+      if(_truth) {
+      	int track_id = (*iter)->get_track_id();
+      	_b_track_px[_b_n_hits] = _truth->GetParticle(track_id)->get_px();
+      	_b_track_py[_b_n_hits] = _truth->GetParticle(track_id)->get_py();
+      	_b_track_pz[_b_n_hits] = _truth->GetParticle(track_id)->get_pz();
+      }
     }
   }
 
@@ -132,6 +139,9 @@ int TestSimAnalyzer::InitEvalTree() {
   _tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
   _tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
   _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
+  _tout->Branch("track_px",      _b_track_px,         "track_px[nHits]/S");
+  _tout->Branch("track_py",      _b_track_py,         "track_py[nHits]/S");
+  _tout->Branch("track_pz",      _b_track_pz,         "track_pz[nHits]/S");
   _tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
@@ -148,6 +158,10 @@ int TestSimAnalyzer::ResetEvalVars() {
     _b_detector_id[i]    = std::numeric_limits<short>::max();
     _b_drift_distance[i] = std::numeric_limits<float>::max();
     _b_pos[i]            = std::numeric_limits<float>::max();
+
+    _b_track_px[i]       = std::numeric_limits<float>::max();
+    _b_track_py[i]       = std::numeric_limits<float>::max();
+    _b_track_pz[i]       = std::numeric_limits<float>::max();
   }
 
   return 0;
