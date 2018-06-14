@@ -24,6 +24,7 @@
 #include <phool/getClass.h>
 
 #include <g4main/PHG4TruthInfoContainer.h>
+#include <g4main/PHG4Particle.h>
 #include <g4main/PHG4HitDefs.h>
 
 
