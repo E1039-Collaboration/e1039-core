@@ -295,6 +295,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         SQMCHit_v1 *digiHit = new SQMCHit_v1();
         digiHit->set_track_id(track_id);
+        digiHit->set_g4hit_id(g4hit.get_hit_id());
         //digiHit.fPDGCode = vHit.particlePDG;
         digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
         digiHit->set_element_id(elementID);
