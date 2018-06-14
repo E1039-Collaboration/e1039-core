@@ -143,9 +143,9 @@ int TestSimAnalyzer::InitEvalTree() {
   _tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
   _tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
   _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
-  _tout->Branch("truth_x",       _b_truth_x,         "track_px[nHits]/F");
-  _tout->Branch("truth_y",       _b_truth_y,         "track_py[nHits]/F");
-  _tout->Branch("truth_z",       _b_truth_z,         "track_pz[nHits]/F");
+  _tout->Branch("truth_x",       _b_truth_x,         "truth_x[nHits]/F");
+  _tout->Branch("truth_y",       _b_truth_y,         "truth_y[nHits]/F");
+  _tout->Branch("truth_z",       _b_truth_z,         "truth_z[nHits]/F");
   _tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
