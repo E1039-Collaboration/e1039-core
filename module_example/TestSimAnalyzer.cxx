@@ -203,7 +203,7 @@ int TestSimAnalyzer::GetNodes(PHCompositeNode* topNode) {
     }
   }
 
-  _truth = findNode::getClass<SQEvent>(topNode, "PHG4TruthInfoContainer");
+  _truth = findNode::getClass<PHG4TruthInfoContainer>(topNode, "PHG4TruthInfoContainer");
   if (!_truth) {
     LogError("!_truth");
     //return Fun4AllReturnCodes::ABORTEVENT;
