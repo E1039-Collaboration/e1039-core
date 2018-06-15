@@ -16,7 +16,7 @@
 #include <phool/PHTimeStamp.h>
 #include <phool/PHRandomSeed.h>
 
-#include <TMCParticle.h>
+//#include <TMCParticle.h>
 #include <TClonesArray.h>
 #include <TFile.h>
 #include <TTree.h>

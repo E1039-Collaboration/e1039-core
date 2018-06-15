@@ -16,8 +16,7 @@ lib_LTLIBRARIES = libPHPythia8.la
 include_HEADERS = \
   PHPythia8.h \
   PHPy8GenTrigger.h \
-  PHPy8ParticleTrigger.h \
-  PHPy8JetTrigger.h 
+  PHPy8ParticleTrigger.h
 
 libPHPythia8_la_LDFLAGS = \
   ${AM_LDFLAGS} \
@@ -32,15 +31,12 @@ libPHPythia8_la_LIBADD = \
   -lboost_iostreams \
   -lpythia8 \
   -lphhepmc \
-  -lHepMC \
-  -lfastjet \
-  -lCGAL
+  -lHepMC
 
 libPHPythia8_la_SOURCES = \
   PHPythia8.C \
   PHPy8GenTrigger.C \
   PHPy8ParticleTrigger.C \
-  PHPy8JetTrigger.C \
   PHPythia8_Dict.C
 
 BUILT_SOURCES = \
@@ -63,7 +59,6 @@ PHPythia8_Dict.C: \
   PHPythia8.h \
   PHPy8GenTrigger.h \
   PHPy8ParticleTrigger.h \
-  PHPy8JetTrigger.h \
   PHPythia8LinkDef.h
 	rootcint -f $@ -c $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $^
 
