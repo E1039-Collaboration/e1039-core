@@ -13,18 +13,13 @@ using namespace std;
 
 //__________________________________________________________
 PHPy8JetTrigger::PHPy8JetTrigger(const std::string &name):
-  PHPy8GenTrigger(name) {
-  
-  _verbosity = 0;
-  
-  _theEtaLow = 1.0;
-  _theEtaHigh = 4.0; 
-  
-  _minPt = 10.0; 
-
-  _R = 1.0; 
- 
-}
+  PHPy8GenTrigger(name),
+  _theEtaHigh(4.0),
+  _theEtaLow(1.0),
+  _minPt(10.0),
+  _minZ(0.0),
+  _R(1.0)
+ {}
 
 PHPy8JetTrigger::~PHPy8JetTrigger() {
   if (_verbosity > 0) PrintConfig();
@@ -70,7 +65,7 @@ bool PHPy8JetTrigger::Apply(Pythia8::Pythia *pythia) {
 
   // Call FastJet
 
-  fastjet::JetDefinition *jetdef = new fastjet::JetDefinition(fastjet::antikt_algorithm,_R,fastjet::Best);
+  fastjet::JetDefinition *jetdef = new fastjet::JetDefinition(fastjet::antikt_algorithm,_R, fastjet::E_scheme,fastjet::Best);
   fastjet::ClusterSequence jetFinder(pseudojets,*jetdef);
   std::vector<fastjet::PseudoJet> fastjets = jetFinder.inclusive_jets();
   delete jetdef;
@@ -83,10 +78,46 @@ bool PHPy8JetTrigger::Apply(Pythia8::Pythia *pythia) {
 
       if (pt > max_pt) max_pt = pt;
 
-    if(pt > _minPt){
-      jetFound = true; 
-      break; 
-    }
+      if(pt > _minPt){
+	
+	if(_minZ>0.0){
+
+	  // Loop over constituents, caluclate the z of the leading particle
+	  
+	  float leading_Z = 0.0; 
+
+	  float jet_ptot = sqrt( pow(fastjets[ijet].px(),2) + 
+				 pow(fastjets[ijet].py(),2) + 
+				 pow(fastjets[ijet].pz(),2) ); 
+
+	  vector<fastjet::PseudoJet> constituents = fastjets[ijet].constituents();
+	  for (unsigned int j=0; j<constituents.size(); j++){
+	    
+	    float con_ptot = sqrt( pow(constituents[j].px(),2) + 
+				   pow(constituents[j].py(),2) + 
+				   pow(constituents[j].pz(),2) ); 
+
+	    float ctheta = (constituents[j].px()*fastjets[ijet].px() + 
+			    constituents[j].py()*fastjets[ijet].py() + 
+			    constituents[j].pz()*fastjets[ijet].pz())/(con_ptot*jet_ptot);
+
+	    float z_constit = con_ptot*ctheta/jet_ptot; 
+
+	    if(z_constit>leading_Z) leading_Z = z_constit; 
+
+	  }
+
+	  if(leading_Z>_minZ){
+            jetFound = true; 
+            break;
+	  }
+
+	}
+	else {
+          jetFound = true; 
+          break;
+	}
+      }
   }
 
   if (_verbosity > 2) {
@@ -110,6 +141,10 @@ void PHPy8JetTrigger::SetEtaHighLow(double etaHigh, double etaLow) {
 
 void PHPy8JetTrigger::SetMinJetPt(double minPt) {
   _minPt = minPt; 
+}
+
+void PHPy8JetTrigger::SetMinLeadingZ(double minZ) {
+  _minZ = minZ; 
 }
 
 void PHPy8JetTrigger::SetJetR(double R) {
