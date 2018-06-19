@@ -9,7 +9,7 @@ AM_LDFLAGS = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib 
 
-AM_CXXFLAGS = -Wall -Werror
+AM_CXXFLAGS = -Wall -Werror -std=c++11
 
 lib_LTLIBRARIES = libPHPythia8.la 
 
