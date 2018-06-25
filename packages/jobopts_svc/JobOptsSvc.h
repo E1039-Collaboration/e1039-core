@@ -60,6 +60,7 @@ public:
     bool m_enableTriggerMask;///< Enable hodo masking with trigger road info
     bool m_enableKMag;       ///< Turn kMag on
     bool m_enableOnlineAlignment;   ///< Get alignment params from database?
+    bool m_useIdealGeom; ///< do not load alignment for ideal geom
     bool m_enableEvaluation; ///< Enable evaluation output
     bool m_attachRawEvent;   ///< Attach the raw event in the reconstructed data
     bool m_sagittaReducer;   ///< Enable the sagitta ratio reducer

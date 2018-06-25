@@ -404,7 +404,7 @@ void GeomSvc::init()
     /////Here starts the user-defined part
     //load alignment parameters
     calibration_loaded = false;
-    if(!p_jobOptsSvc->m_enableOnlineAlignment)
+    if(!p_jobOptsSvc->m_enableOnlineAlignment && (!p_jobOptsSvc->m_useIdealGeom))
     {
         loadAlignment(p_jobOptsSvc->m_alignmentFileChamber, p_jobOptsSvc->m_alignmentFileHodo, p_jobOptsSvc->m_alignmentFileProp);
         loadMilleAlignment(p_jobOptsSvc->m_alignmentFileMille);

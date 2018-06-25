@@ -51,6 +51,7 @@ JobOptsSvc::JobOptsSvc()
     m_enableTriggerMask = true;
     m_enableKMag = true;
     m_enableOnlineAlignment = false;
+    m_useIdealGeom = false;
     m_enableEvaluation = false;
     m_attachRawEvent = false;
     m_sagittaReducer = true;
@@ -180,6 +181,7 @@ bool JobOptsSvc::init(const char* configfile)
     boolOpts["kMag_enable"] = &m_enableKMag;
     boolOpts["Evaluation_enable"] = &m_enableEvaluation;
     boolOpts["OnlineAlignment_enable"] = &m_enableOnlineAlignment;
+    boolOpts["UseIdealGeom"] = &m_useIdealGeom;
     boolOpts["AttachRawEvent"] = &m_attachRawEvent;
     boolOpts["SagittaReducer"] = &m_sagittaReducer;
     boolOpts["UpdateAlignment"] = &m_updateAlignment;
@@ -348,6 +350,7 @@ void JobOptsSvc::save(TFile* saveFile, TString name)
     int s_enableTriggerMask = m_enableTriggerMask;
     int s_enableKMag = m_enableKMag;
     int s_enableOnlineAlignment = m_enableOnlineAlignment;
+    int s_useIdealGeom = m_useIdealGeom;
     int s_enableEvaluation = m_enableEvaluation;
     int s_attachRawEvent = m_attachRawEvent;
     int s_sagittaReducer = m_sagittaReducer;
@@ -405,6 +408,7 @@ void JobOptsSvc::save(TFile* saveFile, TString name)
     saveTree->Branch("TriggerMask", &s_enableTriggerMask);
     saveTree->Branch("KMagON", &s_enableKMag);
     saveTree->Branch("OnlineAlignment", &s_enableOnlineAlignment);
+    saveTree->Branch("UseIdealGeom", &s_useIdealGeom);
     saveTree->Branch("Evaluation", &s_enableEvaluation);
     saveTree->Branch("AttachRaw", &s_attachRawEvent);
     saveTree->Branch("SagittaReducer", &s_sagittaReducer);
