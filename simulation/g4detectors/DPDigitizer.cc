@@ -315,11 +315,11 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   }
 
   map_g4name_group["C1X"] = "D1";
-  map_g4name_group["C1V"] = "D1";
-  map_g4name_group["C1U"] = "D1";
-  map_g4name_group["C2U"] = "D2";
+//  map_g4name_group["C1V"] = "D1";
+//  map_g4name_group["C1U"] = "D1";
+//  map_g4name_group["C2U"] = "D2";
   map_g4name_group["C2X"] = "D2";
-  map_g4name_group["C2V"] = "D2";
+//  map_g4name_group["C2V"] = "D2";
   map_g4name_group["C3T"] = "D3p";
   map_g4name_group["C3B"] = "D3m";
 
