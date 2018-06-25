@@ -139,141 +139,6 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
 DPDigitizer::DPDigitizer(const std::string &name) :
 		p_geomSvc(nullptr)
 {
-		if(Verbosity() > 2) {
-			LogInfo("DPDigitizer::DPDigitizer");
-		}
-
-    const char* mysqlServer = "e906-db1.fnal.gov";
-    const char* geometrySchema = "user_liuk_geometry_DPTrigger";
-    const char* login = "seaguest";
-    const char* password = "qqbar2mu+mu-";
-    const int mysqlPort = 3306;
-
-    const char* detectorEffResol = "";
-
-    //Load basic setup
-    char query[500];
-    sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
-                   "xPrimeOffset,x0+deltaX,y0+deltaY,z0+deltaZ,planeWidth,planeHeight,theta_x+rotX,"
-                   "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
-                   "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
-									 geometrySchema, geometrySchema);
-
-    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d", mysqlServer, mysqlPort), login, password);
-    TSQLResult* res = server->Query(query);
-
-		if(Verbosity() > 2) {
-			LogInfo(query);
-		}
-
-    map_groupID.clear();
-    map_detectorID.clear();
-
-    unsigned int nRows = res->GetRowCount();
-    for(unsigned int i = 0; i < nRows; ++i)
-    {
-        TSQLRow* row = res->Next();
-        int index = boost::lexical_cast<int>(row->GetField(15));
-
-        //assert(index <= NDETPLANES && "detectorID from database exceeds upper limit!");
-        if(index > NDETPLANES) {
-          continue;
-        }
-
-        digiPlanes[index].detectorID = index;
-        digiPlanes[index].detectorName = row->GetField(0);
-        digiPlanes[index].detectorGroupName = row->GetField(16);
-        digiPlanes[index].spacing = boost::lexical_cast<double>(row->GetField(1));
-        digiPlanes[index].cellWidth = boost::lexical_cast<double>(row->GetField(2));
-        digiPlanes[index].overlap = boost::lexical_cast<double>(row->GetField(3));
-        digiPlanes[index].nElements = boost::lexical_cast<int>(row->GetField(4));
-        digiPlanes[index].angleFromVert = boost::lexical_cast<double>(row->GetField(5));
-        digiPlanes[index].xPrimeOffset = boost::lexical_cast<double>(row->GetField(6));
-        digiPlanes[index].xc = boost::lexical_cast<double>(row->GetField(7));
-        digiPlanes[index].yc = boost::lexical_cast<double>(row->GetField(8));
-        digiPlanes[index].zc = boost::lexical_cast<double>(row->GetField(9));
-        digiPlanes[index].planeWidth = boost::lexical_cast<double>(row->GetField(10));
-        digiPlanes[index].planeHeight = boost::lexical_cast<double>(row->GetField(11));
-        digiPlanes[index].rX = boost::lexical_cast<double>(row->GetField(12));
-        digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
-        digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
-        digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
-        digiPlanes[index].preCalculation();
-
-        //TODO: implement RT/eff/resolution here
-        digiPlanes[index].efficiency.resize(digiPlanes[index].nElements+1, 1.);
-        digiPlanes[index].resolution.resize(digiPlanes[index].nElements+1, 0.);
-
-        map_groupID[digiPlanes[index].detectorGroupName].push_back(index);
-        map_detectorID[digiPlanes[index].detectorName] = digiPlanes[index].detectorID;
-
-        if(Verbosity() > 2) {
-        	LogInfo("DPDigitizer::DPDigitizer");
-        	cout
-					<< digiPlanes[index].detectorGroupName << ", "
-					<< digiPlanes[index].detectorID << ", "
-					<< digiPlanes[index].detectorName << ", "
-					<< digiPlanes[index].nElements << " "
-					<< endl;
-        }
-
-#ifdef DEBUG_IN
-        std::cout << digiPlanes[index] << std::endl;
-#endif
-        delete row;
-    }
-
-    map_g4name_group["C1X"] = "D1";
-    map_g4name_group["C1V"] = "D1";
-    map_g4name_group["C1U"] = "D1";
-    map_g4name_group["C2U"] = "D2";
-    map_g4name_group["C2X"] = "D2";
-    map_g4name_group["C2V"] = "D2";
-    map_g4name_group["C3T"] = "D3p";
-    map_g4name_group["C3B"] = "D3m";
-
-    map_g4name_group["H1y"] = "H1Y";
-    map_g4name_group["H1x"] = "H1X";
-    map_g4name_group["H2y"] = "H2Y";
-    map_g4name_group["H2x"] = "H2X";
-    map_g4name_group["H3x"] = "H3X";
-
-    map_g4name_group["P1V"] = "P1Y";
-    map_g4name_group["P2H"] = "P1X";
-    map_g4name_group["P2V"] = "P2Y";
-    map_g4name_group["P1H"] = "P2X";
-
-    map_g4name_group["H4y1L"] = "H4Y1";
-    map_g4name_group["H4y1R"] = "H4Y1";
-    map_g4name_group["H4y2L"] = "H4Y2";
-    map_g4name_group["H4y2R"] = "H4Y2";
-    map_g4name_group["H4xT"] = "H4X";
-    map_g4name_group["H4xB"] = "H4X";
-
-
-    delete res;
-    delete server;
-
-    //Load the detector realization setup
-    std::ifstream fin(detectorEffResol);
-    if(!fin) return;
-
-    std::string line;
-    while(getline(fin, line))
-    {
-        std::string detectorName;
-        int elementID;
-        double eff, res;
-
-        std::stringstream ss(line);
-        ss >> detectorName >> elementID >> eff >> res;
-
-        if(eff >= 0. && eff <= 1. && res >= 0.)
-        {
-            digiPlanes[map_detectorID[detectorName]].efficiency[elementID] = eff;
-            digiPlanes[map_detectorID[detectorName]].resolution[elementID] = res;
-        }
-    }
 }
 
 DPDigitizer::~DPDigitizer() {
@@ -371,6 +236,138 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   if(Verbosity() > 2){
     LogDebug("DPDigitizer::InitRun");
   }
+
+  const char* mysqlServer = "e906-db1.fnal.gov";
+  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
+  const char* login = "seaguest";
+  const char* password = "qqbar2mu+mu-";
+  const int mysqlPort = 3306;
+
+  const char* detectorEffResol = "";
+
+  //Load basic setup
+  char query[500];
+  sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
+                 "xPrimeOffset,x0+deltaX,y0+deltaY,z0+deltaZ,planeWidth,planeHeight,theta_x+rotX,"
+                 "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
+                 "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
+								 geometrySchema, geometrySchema);
+
+  TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d", mysqlServer, mysqlPort), login, password);
+  TSQLResult* res = server->Query(query);
+
+	if(Verbosity() > 2) {
+		LogInfo(query);
+	}
+
+  map_groupID.clear();
+  map_detectorID.clear();
+
+  unsigned int nRows = res->GetRowCount();
+  for(unsigned int i = 0; i < nRows; ++i)
+  {
+      TSQLRow* row = res->Next();
+      int index = boost::lexical_cast<int>(row->GetField(15));
+
+      //assert(index <= NDETPLANES && "detectorID from database exceeds upper limit!");
+      if(index > NDETPLANES) {
+        continue;
+      }
+
+      digiPlanes[index].detectorID = index;
+      digiPlanes[index].detectorName = row->GetField(0);
+      digiPlanes[index].detectorGroupName = row->GetField(16);
+      digiPlanes[index].spacing = boost::lexical_cast<double>(row->GetField(1));
+      digiPlanes[index].cellWidth = boost::lexical_cast<double>(row->GetField(2));
+      digiPlanes[index].overlap = boost::lexical_cast<double>(row->GetField(3));
+      digiPlanes[index].nElements = boost::lexical_cast<int>(row->GetField(4));
+      digiPlanes[index].angleFromVert = boost::lexical_cast<double>(row->GetField(5));
+      digiPlanes[index].xPrimeOffset = boost::lexical_cast<double>(row->GetField(6));
+      digiPlanes[index].xc = boost::lexical_cast<double>(row->GetField(7));
+      digiPlanes[index].yc = boost::lexical_cast<double>(row->GetField(8));
+      digiPlanes[index].zc = boost::lexical_cast<double>(row->GetField(9));
+      digiPlanes[index].planeWidth = boost::lexical_cast<double>(row->GetField(10));
+      digiPlanes[index].planeHeight = boost::lexical_cast<double>(row->GetField(11));
+      digiPlanes[index].rX = boost::lexical_cast<double>(row->GetField(12));
+      digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
+      digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
+      digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
+      digiPlanes[index].preCalculation();
+
+      //TODO: implement RT/eff/resolution here
+      digiPlanes[index].efficiency.resize(digiPlanes[index].nElements+1, 1.);
+      digiPlanes[index].resolution.resize(digiPlanes[index].nElements+1, 0.);
+
+      map_groupID[digiPlanes[index].detectorGroupName].push_back(index);
+      map_detectorID[digiPlanes[index].detectorName] = digiPlanes[index].detectorID;
+
+      if(Verbosity() > 2) {
+      	LogInfo("DPDigitizer::InitRun");
+      	cout
+				<< digiPlanes[index].detectorGroupName << ", "
+				<< digiPlanes[index].detectorID << ", "
+				<< digiPlanes[index].detectorName << ", "
+				<< digiPlanes[index].nElements << " "
+				<< endl;
+      }
+
+#ifdef DEBUG_IN
+      std::cout << digiPlanes[index] << std::endl;
+#endif
+      delete row;
+  }
+
+  map_g4name_group["C1X"] = "D1";
+  map_g4name_group["C1V"] = "D1";
+  map_g4name_group["C1U"] = "D1";
+  map_g4name_group["C2U"] = "D2";
+  map_g4name_group["C2X"] = "D2";
+  map_g4name_group["C2V"] = "D2";
+  map_g4name_group["C3T"] = "D3p";
+  map_g4name_group["C3B"] = "D3m";
+
+  map_g4name_group["H1y"] = "H1Y";
+  map_g4name_group["H1x"] = "H1X";
+  map_g4name_group["H2y"] = "H2Y";
+  map_g4name_group["H2x"] = "H2X";
+  map_g4name_group["H3x"] = "H3X";
+
+  map_g4name_group["P1V"] = "P1Y";
+  map_g4name_group["P2H"] = "P1X";
+  map_g4name_group["P2V"] = "P2Y";
+  map_g4name_group["P1H"] = "P2X";
+
+  map_g4name_group["H4y1L"] = "H4Y1";
+  map_g4name_group["H4y1R"] = "H4Y1";
+  map_g4name_group["H4y2L"] = "H4Y2";
+  map_g4name_group["H4y2R"] = "H4Y2";
+  map_g4name_group["H4xT"] = "H4X";
+  map_g4name_group["H4xB"] = "H4X";
+
+
+  delete res;
+  delete server;
+
+  //Load the detector realization setup
+  std::ifstream fin(detectorEffResol);
+  if(fin) {
+    std::string line;
+    while(getline(fin, line))
+    {
+        std::string detectorName;
+        int elementID;
+        double eff, res;
+
+        std::stringstream ss(line);
+        ss >> detectorName >> elementID >> eff >> res;
+
+        if(eff >= 0. && eff <= 1. && res >= 0.)
+        {
+            digiPlanes[map_detectorID[detectorName]].efficiency[elementID] = eff;
+            digiPlanes[map_detectorID[detectorName]].resolution[elementID] = res;
+        }
+    }
+  };
 
   PHNodeIterator iter(topNode);
 
