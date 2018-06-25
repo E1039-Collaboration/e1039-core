@@ -220,6 +220,11 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         digiHit->set_hit_id(digits->size());
 
+        if(Verbosity() > 2) {
+        	LogInfo("DPDigitizer::digitize:");
+        	digiHit->identify();
+        }
+
         digits->push_back(digiHit);
     }
 
