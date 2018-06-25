@@ -210,8 +210,10 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
             }
         }
 
-        p_geomSvc->toLocalDetectorName(digiPlanes[*dpid].detectorName, DP_elementID);
-        digiHit->set_detector_id(p_geomSvc->getDetectorID(digiPlanes[*dpid].detectorName));
+        string detName = digiPlanes[*dpid].detectorName;
+
+        p_geomSvc->toLocalDetectorName(detName, DP_elementID);
+        digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
         digiHit->set_element_id(DP_elementID);
         digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
 
@@ -222,7 +224,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_hit_id(digits->size());
 
         if(Verbosity() > 2) {
-        	cout << "dpid: " << *dpid << ", DP detectorName: " << digiPlanes[*dpid].detectorName << endl;
+        	cout << "DEBUG: DB ID and Name: " << *dpid << ", DP detectorName: " << digiPlanes[*dpid].detectorName << endl;
+        	cout << "DEBUG: toLocalDetectorName: " << detName << endl;
         	digiHit->identify();
         }
 
