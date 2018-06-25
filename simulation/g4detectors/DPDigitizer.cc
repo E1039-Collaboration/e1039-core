@@ -253,7 +253,7 @@ namespace {
 		regs.push_back(std::regex("(P)([0-9])([X,Y])$"));         //photo-tube
 		regs.push_back(std::regex("(DP)(.*)([L,R])$"));//
 
-		for(int i=0; i<regs.size(); ++i) {
+		for(unsigned int i=0; i<regs.size(); ++i) {
 			if(!std::regex_match(in, regs[i])) continue;
 			cout << i << endl;
 			if(i==0) {
