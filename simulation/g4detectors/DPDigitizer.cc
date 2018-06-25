@@ -212,7 +212,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         string detName = digiPlanes[*dpid].detectorName;
 
-        p_geomSvc->toLocalDetectorName(detName, DP_elementID);
+        //p_geomSvc->toLocalDetectorName(detName, DP_elementID);
         digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
         digiHit->set_element_id(DP_elementID);
         digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
@@ -347,6 +347,12 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
 
+      digiPlanes[index].detectorGroupName = toGroupName(digiPlanes[index].detectorName);
+
+      //user_liuk_geometry_DPTrigger
+      //digiPlanes[index].detectorGroupName = row->GetField(16);
+      //digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
+
 
       std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
@@ -355,15 +361,13 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 
       std::regex eP2("(P)([1-2])(H|V)(1)(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP2)) {
-        digiPlanes[index].xc = 0;
+      	string temp = digiPlanes[index].detectorName;
+      	int dummy;
+      	p_geomSvc->toLocalDetectorName(temp, dummy);
+      	digiPlanes[index].detectorName = temp;
+      	digiPlanes[index].xc = 0;
         digiPlanes[index].yc = 0;
       }
-
-      digiPlanes[index].detectorGroupName = toGroupName(digiPlanes[index].detectorName);
-
-      //user_liuk_geometry_DPTrigger
-      //digiPlanes[index].detectorGroupName = row->GetField(16);
-      //digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
 
       digiPlanes[index].preCalculation();
 
