@@ -253,7 +253,7 @@ namespace {
 		regs.push_back(std::regex("(P)([0-9])([X,Y])"));         //photo-tube
 		regs.push_back(std::regex("(DP)(.*)([L,R])"));//
 
-		for(int i=0; i<regs.size(); ++i) {
+		for(unsigned int i=0; i<regs.size(); ++i) {
 			if(!std::regex_match(in, regs[i])) continue;
 			if(i==0) {
 				out = std::regex_replace(in, regs[i], "$1$2X");
@@ -296,7 +296,7 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
                  "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,"
                  "theta_y,theta_z,Planes.detectorID "
                  "FROM %s.Planes",
-								 geometrySchema, geometrySchema);
+								 geometrySchema);
 
   TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d", mysqlServer, mysqlPort), login, password);
   TSQLResult* res = server->Query(query);
