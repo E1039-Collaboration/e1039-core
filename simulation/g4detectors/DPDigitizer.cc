@@ -347,6 +347,18 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
 
+
+      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
+      if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
+      	continue;
+      }
+
+      std::regex eP2("(P)([1-2])(H|V)(1)(b|f)$");
+      if(std::regex_match(digiPlanes[index].detectorName, eP2)) {
+        digiPlanes[index].xc = 0;
+        digiPlanes[index].yc = 0;
+      }
+
       digiPlanes[index].detectorGroupName = toGroupName(digiPlanes[index].detectorName);
 
       //user_liuk_geometry_DPTrigger
