@@ -148,8 +148,7 @@ DPDigitizer::~DPDigitizer() {
 void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 {
     if(Verbosity() > 2){
-      LogDebug("DPDigitizer::digitize");
-      g4hit.identify();
+      LogDebug("DPDigitizer::digitize: " << map_groupID[detectorGroupName].size());
     }
 
     int track_id = g4hit.get_trkid();
@@ -169,6 +168,11 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     		dpid != map_groupID[detectorGroupName].end();
     		++dpid)
     {
+				if(Verbosity() > 2) {
+					cout << "DEBUG: detectorGroupName: " << detectorGroupName << endl;
+					cout << "DEBUG: detectorName: " << digiPlanes[*dpid].detectorName << endl;
+				}
+
         //check if the track intercepts the plane
         if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
 
