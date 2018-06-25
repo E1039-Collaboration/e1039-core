@@ -198,6 +198,16 @@ DPDigitizer::DPDigitizer(const std::string &name) :
         map_groupID[digiPlanes[index].detectorGroupName].push_back(index);
         map_detectorID[digiPlanes[index].detectorName] = digiPlanes[index].detectorID;
 
+        if(Verbosity() > 2) {
+        	LogInfo("DPDigitizer::DPDigitizer");
+        	cout
+					<< digiPlanes[index].detectorGroupName << ", "
+					<< digiPlanes[index].detectorID << ", "
+					<< digiPlanes[index].detectorName << ", "
+					<< digiPlanes[index].nElements << " "
+					<< endl;
+        }
+
 #ifdef DEBUG_IN
         std::cout << digiPlanes[index] << std::endl;
 #endif
