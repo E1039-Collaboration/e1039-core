@@ -245,29 +245,37 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
 namespace {
 	string toGroupName(string in) {
-		std::string out;
+
 		std::vector<std::regex> regs;
-		regs.push_back(std::regex("(H)([0-9])([T,B])$"));      //HX
-		regs.push_back(std::regex("(H)([0-9])([L,R])$"));      //HY
+		std::vector<std::string> reps;
+
+		regs.push_back(std::regex("(H)([1-3])([T,B])$"));      //HX
+		reps.push_back("$1$2X");
+
+		regs.push_back(std::regex("(H)([1-3])([L,R])$"));      //HY
+		reps.push_back("$1$2Y");
+
+		regs.push_back(std::regex("(H4)(T|B)(.*)"));      //H4X
+		reps.push_back("$1X");
+
+		regs.push_back(std::regex("(H4Y)([1-2])(.*)"));      //H4Y
+		reps.push_back("$1Y$2");
+
 		regs.push_back(std::regex("(P)([0-9])(H|V)(.*)$"));         //photo-tube
+		reps.push_back("$1$2$3");
+
 		regs.push_back(std::regex("(D)(.*)(U|X|V|Up|Xp|Vp)$"));         //Drift chamber
+		reps.push_back("$1$2");
+
 		regs.push_back(std::regex("(DP)(.*)([L,R])$"));//
+		reps.push_back("$1$2");
 
 		for(unsigned int i=0; i<regs.size(); ++i) {
-			if(!std::regex_match(in, regs[i])) continue;
-			cout << i << endl;
-			if(i==0) {
-				out = std::regex_replace(in, regs[i], "$1$2X");
-			} else if (i==1) {
-				out = std::regex_replace(in, regs[i], "$1$2Y");
-			} else if (i==2) {
-				out = std::regex_replace(in, regs[i], "$1$2$3");
-			} else {
-				out = std::regex_replace(in, regs[i], "$1$2");
-			}
+			if(std::regex_match(in, regs[i]))
+				return std::regex_replace(in, regs[i], reps[i]);
 		}
 
-		return out;
+		return "";
 	}
 }
 

@@ -23,7 +23,7 @@ class PHG4HitContainer;
 
 class GeomSvc;
 
-#define NDETPLANES 48
+#define NDETPLANES 128
 
 class DPDigiPlane
 {
