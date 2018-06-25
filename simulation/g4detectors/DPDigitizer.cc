@@ -139,6 +139,10 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
 DPDigitizer::DPDigitizer(const std::string &name) :
 		p_geomSvc(nullptr)
 {
+		if(Verbosity() > 2) {
+			LogInfo("DPDigitizer::DPDigitizer");
+		}
+
     const char* mysqlServer = "e906-db1.fnal.gov";
     const char* geometrySchema = "user_liuk_geometry_DPTrigger";
     const char* login = "seaguest";
@@ -154,8 +158,13 @@ DPDigitizer::DPDigitizer(const std::string &name) :
                    "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
                    "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
 									 geometrySchema, geometrySchema);
+
     TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d", mysqlServer, mysqlPort), login, password);
     TSQLResult* res = server->Query(query);
+
+		if(Verbosity() > 2) {
+			LogInfo(query);
+		}
 
     map_groupID.clear();
     map_detectorID.clear();
