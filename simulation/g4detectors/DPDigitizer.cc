@@ -249,8 +249,8 @@ namespace {
 		std::vector<std::regex> regs;
 		regs.push_back(std::regex("(H)([0-9])([T,B])$"));      //HX
 		regs.push_back(std::regex("(H)([0-9])([L,R])$"));      //HY
+		regs.push_back(std::regex("(P)([0-9])(H|V)(.*)$"));         //photo-tube
 		regs.push_back(std::regex("(D)(.*)(U|X|V|Up|Xp|Vp)$"));         //Drift chamber
-		regs.push_back(std::regex("(P)([0-9])([X,Y])$"));         //photo-tube
 		regs.push_back(std::regex("(DP)(.*)([L,R])$"));//
 
 		for(unsigned int i=0; i<regs.size(); ++i) {
@@ -260,6 +260,8 @@ namespace {
 				out = std::regex_replace(in, regs[i], "$1$2X");
 			} else if (i==1) {
 				out = std::regex_replace(in, regs[i], "$1$2Y");
+			} else if (i==2) {
+				out = std::regex_replace(in, regs[i], "$1$2$3");
 			} else {
 				out = std::regex_replace(in, regs[i], "$1$2");
 			}
@@ -380,10 +382,15 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   map_g4name_group["H2x"] = "H2X";
   map_g4name_group["H3x"] = "H3X";
 
-  map_g4name_group["P1H"] = "P1Y";
-  map_g4name_group["P2V"] = "P1X";
-  map_g4name_group["P2H"] = "P2Y";
-  map_g4name_group["P1V"] = "P2X";
+//  map_g4name_group["P1H"] = "P1Y";
+//  map_g4name_group["P2V"] = "P1X";
+//  map_g4name_group["P2H"] = "P2Y";
+//  map_g4name_group["P1V"] = "P2X";
+
+  map_g4name_group["P1H"] = "P1H";
+  map_g4name_group["P2V"] = "P1V";
+  map_g4name_group["P2H"] = "P2H";
+  map_g4name_group["P1V"] = "P2V";
 
   map_g4name_group["H4y1L"] = "H4Y1";
   map_g4name_group["H4y1R"] = "H4Y1";
