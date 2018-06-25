@@ -307,8 +307,8 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
       map_detectorID[digiPlanes[index].detectorName] = digiPlanes[index].detectorID;
 
       if(Verbosity() > 2) {
-      	LogInfo("DPDigitizer::InitRun");
       	cout
+				<< "index: " << index << ", "
 				<< digiPlanes[index].detectorGroupName << ", "
 				<< digiPlanes[index].detectorID << ", "
 				<< digiPlanes[index].detectorName << ", "
