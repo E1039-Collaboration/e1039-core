@@ -225,7 +225,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_hit_id(digits->size());
 
         if(Verbosity() > 2) {
-        	LogInfo("DPDigitizer::digitize:");
+        	LogInfo(digiPlanes[41].detectorName);
         	cout << "dpid: " << *dpid << ", DP detectorName: " << digiPlanes[*dpid].detectorName << endl;
 
         	digiHit->identify();
