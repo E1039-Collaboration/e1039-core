@@ -17,6 +17,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <regex>
 
 #include <Geant4/G4SystemOfUnits.hh>
 #include <Geant4/Randomize.hh>
@@ -242,6 +243,31 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 //    }
 }
 
+namespace {
+	string toGroupName(string in) {
+		std::string out;
+		std::vector<std::regex> regs;
+		regs.push_back(std::regex("(H)([0-9])([T,B])"));      //HX
+		regs.push_back(std::regex("(H)([0-9])([L,R])"));      //HY
+		regs.push_back(std::regex("(D)(.*)([U,X,V,Up,Xp,Vp])"));         //Drift chamber
+		regs.push_back(std::regex("(P)([0-9])([X,Y])"));         //photo-tube
+		regs.push_back(std::regex("(DP)(.*)([L,R])"));//
+
+		for(int i=0; i<regs.size(); ++i) {
+			if(!std::regex_match(in, regs[i])) continue;
+			if(i==0) {
+				out = std::regex_replace(in, regs[i], "$1$2X");
+			} else if (i==1) {
+				out = std::regex_replace(in, regs[i], "$1$2Y");
+			} else {
+				out = std::regex_replace(in, regs[i], "$1$2");
+			}
+		}
+
+		return out;
+	}
+}
+
 int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   if(Verbosity() > 2){
     LogDebug("DPDigitizer::InitRun");
@@ -257,10 +283,19 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 
   //Load basic setup
   char query[500];
+
+  //user_liuk_geometry_DPTrigger
+//  sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
+//                 "xPrimeOffset,x0+deltaX,y0+deltaY,z0+deltaZ,planeWidth,planeHeight,theta_x+rotX,"
+//                 "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
+//                 "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
+//								 geometrySchema, geometrySchema);
+
+  //geometry_G17_run3
   sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
-                 "xPrimeOffset,x0+deltaX,y0+deltaY,z0+deltaZ,planeWidth,planeHeight,theta_x+rotX,"
-                 "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
-                 "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
+                 "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,"
+                 "theta_y,theta_z,Planes.detectorID "
+                 "FROM %s.Planes",
 								 geometrySchema, geometrySchema);
 
   TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d", mysqlServer, mysqlPort), login, password);
@@ -286,7 +321,6 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 
       digiPlanes[index].detectorID = index;
       digiPlanes[index].detectorName = row->GetField(0);
-      digiPlanes[index].detectorGroupName = row->GetField(16);
       digiPlanes[index].spacing = boost::lexical_cast<double>(row->GetField(1));
       digiPlanes[index].cellWidth = boost::lexical_cast<double>(row->GetField(2));
       digiPlanes[index].overlap = boost::lexical_cast<double>(row->GetField(3));
@@ -301,7 +335,13 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
       digiPlanes[index].rX = boost::lexical_cast<double>(row->GetField(12));
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
-      digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
+
+      digiPlanes[index].detectorGroupName = toGroupName(digiPlanes[index].detectorName);
+
+      //user_liuk_geometry_DPTrigger
+      //digiPlanes[index].detectorGroupName = row->GetField(16);
+      //digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
+
       digiPlanes[index].preCalculation();
 
       //TODO: implement RT/eff/resolution here
