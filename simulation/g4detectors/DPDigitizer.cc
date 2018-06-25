@@ -151,6 +151,10 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
       g4hit.identify();
     }
 
+    if(Verbosity() > 2) {
+    	LogInfo(digiPlanes[41].detectorName);
+    }
+
     int track_id = g4hit.get_trkid();
 
     // calculate the central position in each detector group, then linearly extrapolate the hits
@@ -316,9 +320,6 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 				<< endl;
       }
 
-#ifdef DEBUG_IN
-      std::cout << digiPlanes[index] << std::endl;
-#endif
       delete row;
   }
 
@@ -396,12 +397,20 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 
 	p_geomSvc = GeomSvc::instance();
 
+  if(Verbosity() > 2) {
+  	LogInfo(digiPlanes[41].detectorName);
+  }
+
 	return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int DPDigitizer::process_event(PHCompositeNode* topNode) {
   if(Verbosity() > 2){
     LogDebug("DPDigitizer::process_event");
+  }
+
+  if(Verbosity() > 2) {
+  	LogInfo(digiPlanes[41].detectorName);
   }
 
 	for(auto detector_iter = map_g4name_group.begin();
