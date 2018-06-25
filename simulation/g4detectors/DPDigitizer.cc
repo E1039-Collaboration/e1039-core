@@ -184,7 +184,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_truth_z(g4hit.get_z(0));
 
         //digiHit.fPDGCode = vHit.particlePDG;
-        digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
+        //digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
         digiHit->set_drift_distance(driftDistance);
         //digiHit.fMomentum.SetXYZ(vHit.get_px(0)/GeV, vHit.get_py(0)/GeV, vHit.get_pz(0)/GeV);
         //digiHit.fPosition.SetXYZ(pos[0], pos[1], pos[2]);
@@ -222,6 +222,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         if(Verbosity() > 2) {
         	LogInfo("DPDigitizer::digitize:");
+        	cout << "dpid: " << *dpid << ", DP detectorName: " << digiPlanes[*dpid].detectorName << endl;
+
         	digiHit->identify();
         }
 
