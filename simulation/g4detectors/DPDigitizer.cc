@@ -277,12 +277,14 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
   }
 
 //  const char* mysqlServer = "e906-db1.fnal.gov";
+//  const int mysqlPort = 3306;
 //  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
+
   const char* mysqlServer = "seaquestdb01.fnal.gov";
+  const int mysqlPort = 3310;
   const char* geometrySchema = "geometry_G17_run3";
   const char* login = "seaguest";
   const char* password = "qqbar2mu+mu-";
-  const int mysqlPort = 3306;
 
   const char* detectorEffResol = "";
 
