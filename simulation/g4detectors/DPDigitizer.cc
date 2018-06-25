@@ -152,8 +152,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     }
 
     int track_id = g4hit.get_trkid();
-    //FIXME only keep primary hit only for now
-    if(track_id < 0) return;
 
     // calculate the central position in each detector group, then linearly extrapolate the hits
     // to each individual plane, this is assuming there is no magnetic field in the detector, or
@@ -422,7 +420,12 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
 	  for(PHG4HitContainer::ConstIterator hit_iter = hits->getHits().first;
 	  		hit_iter != hits->getHits().second; ++ hit_iter){
 	  	PHG4Hit* hit = hit_iter->second;
-	  	string group = map_g4name_group[g4name];
+
+	  	int track_id = hit->get_trkid();
+	    //FIXME only keep primary hit only for now
+	    if(track_id < 0) continue;
+
+	    string group = map_g4name_group[g4name];
       if(Verbosity() > 2) {
         hit->identify();
         LogDebug(g4name);
