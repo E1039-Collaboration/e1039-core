@@ -152,10 +152,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
       g4hit.identify();
     }
 
-    if(Verbosity() > 2) {
-    	LogInfo(digiPlanes[41].detectorName);
-    }
-
     int track_id = g4hit.get_trkid();
 
     // calculate the central position in each detector group, then linearly extrapolate the hits
@@ -226,10 +222,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_hit_id(digits->size());
 
         if(Verbosity() > 2) {
-        	LogInfo(digiPlanes[9].detectorName);
-        	LogInfo(digiPlanes[41].detectorName);
         	cout << "dpid: " << *dpid << ", DP detectorName: " << digiPlanes[*dpid].detectorName << endl;
-
         	digiHit->identify();
         }
 
