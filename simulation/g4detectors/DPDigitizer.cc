@@ -173,9 +173,9 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         //check if the track intercepts the plane
         if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
 
-        int elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 + (w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing);
-        double driftDistance = w - digiPlanes[*dpid].spacing*(elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
-        if(elementID < 1 || elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
+        int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 + (w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing);
+        double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
+        if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
         SQMCHit_v1 *digiHit = new SQMCHit_v1();
 
@@ -187,7 +187,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         //digiHit.fPDGCode = vHit.particlePDG;
         digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
-        digiHit->set_element_id(elementID);
         digiHit->set_drift_distance(driftDistance);
         //digiHit.fMomentum.SetXYZ(vHit.get_px(0)/GeV, vHit.get_py(0)/GeV, vHit.get_pz(0)/GeV);
         //digiHit.fPosition.SetXYZ(pos[0], pos[1], pos[2]);
@@ -198,22 +197,22 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         //see if it also hits the next elements in the overlap region
         if(fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth - digiPlanes[*dpid].overlap)
         {
-            if(driftDistance > 0. && elementID != digiPlanes[*dpid].nElements)
+            if(driftDistance > 0. && DP_elementID != digiPlanes[*dpid].nElements)
             {
-                digiHit->set_element_id(elementID + 1);
+                digiHit->set_element_id(DP_elementID + 1);
                 digiHit->set_drift_distance(driftDistance - digiPlanes[*dpid].spacing);
                 //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
             }
-            else if(driftDistance < 0. && elementID != 1)
+            else if(driftDistance < 0. && DP_elementID != 1)
             {
-                digiHit->set_element_id(elementID - 1);
+                digiHit->set_element_id(DP_elementID - 1);
                 digiHit->set_drift_distance(driftDistance + digiPlanes[*dpid].spacing);
                 //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
             }
         }
 
-        p_geomSvc->toLocalDetectorName(digiPlanes[*dpid].detectorName, elementID);
-        //digiHit->set_detector_id(p_geomSvc->getDetectorID(detectorName));
+        p_geomSvc->toLocalDetectorName(digiPlanes[*dpid].detectorName, DP_elementID);
+        digiHit->set_detector_id(p_geomSvc->getDetectorID(digiPlanes[*dpid].detectorName));
         digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
 
         // FIXME figure this out
