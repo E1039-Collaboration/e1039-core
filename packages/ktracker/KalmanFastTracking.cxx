@@ -1476,12 +1476,12 @@ void KalmanFastTracking::buildPropSegments()
         for(std::list<SRawEvent::hit_pair>::iterator fiter = pairs_forward.begin(); fiter != pairs_forward.end(); ++fiter)
         {
 #ifdef _DEBUG_ON
-            LogInfo("Trying forward pair " << fiter->second << "  " << fiter->second);
+            LogInfo("Trying forward pair " << fiter->first << "  " << fiter->second);
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator biter = pairs_backward.begin(); biter != pairs_backward.end(); ++biter)
             {
 #ifdef _DEBUG_ON
-                LogInfo("Trying backward pair " << biter->second << "  " << biter->second);
+                LogInfo("Trying backward pair " << biter->first << "  " << biter->second);
 #endif
 
                 PropSegment seg;
@@ -1492,6 +1492,9 @@ void KalmanFastTracking::buildPropSegments()
                 if(biter->first >= 0) seg.hits[3] = SignedHit(hitAll[biter->first], 0);
                 if(biter->second >= 0) seg.hits[2] = SignedHit(hitAll[biter->second], 0);
 
+#ifdef _DEBUG_ON
+                seg.print();
+#endif
                 seg.fit();
 #ifdef _DEBUG_ON
                 seg.print();
