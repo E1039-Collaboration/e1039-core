@@ -276,8 +276,10 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
     LogDebug("DPDigitizer::InitRun");
   }
 
-  const char* mysqlServer = "e906-db1.fnal.gov";
-  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
+//  const char* mysqlServer = "e906-db1.fnal.gov";
+//  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
+  const char* mysqlServer = "seaquestdb01.fnal.gov";
+  const char* geometrySchema = "geometry_G17_run3";
   const char* login = "seaguest";
   const char* password = "qqbar2mu+mu-";
   const int mysqlPort = 3306;
