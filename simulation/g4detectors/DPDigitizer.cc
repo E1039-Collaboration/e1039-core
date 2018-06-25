@@ -372,6 +372,9 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
       	p_geomSvc->toLocalDetectorName(temp, dummy);
       	digiPlanes[index].detectorName = temp;
       	LogInfo(digiPlanes[index].detectorName);
+        digiPlanes[index].nElements = 72;
+        digiPlanes[index].planeWidth = 365.76;
+        digiPlanes[index].planeHeight = 365.76;
       	digiPlanes[index].xc = 0;
         digiPlanes[index].yc = 0;
       }
