@@ -64,8 +64,11 @@ void PropSegment::print()
 {
     using namespace std;
 
+    cout<< "nHits: " << getNHits() << ", nPlanes: " << getNPlanes() << endl;
     cout << "a = " << a << ", b = " << b << ", chisq = " << chisq << endl;
+    cout << "TX_MAX = " << TX_MAX << ", X0_MAX = " << X0_MAX << ", chisq max = " << 5 << endl;
     cout << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
+
     for(int i = 0; i < 4; ++i)
     {
         if(hits[i].sign > 0) cout << "L: ";
