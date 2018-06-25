@@ -359,6 +359,9 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
 #ifndef ALIGNMENT_MODE
+#ifdef _DEBUG_ON
+        LogInfo("ALIGNMENT_MODE");
+#endif
     buildPropSegments();
     /*
     if(propSegs[0].empty() || propSegs[1].empty())
