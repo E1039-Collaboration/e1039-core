@@ -368,7 +368,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 #ifdef _DEBUG_ON
         LogInfo("Failed in prop tube segment building: " << propSegs[0].size() << ", " << propSegs[1].size());
 #endif
-        return TFEXIT_FAIL_ROUGH_MUONID;
+        //return TFEXIT_FAIL_ROUGH_MUONID;
     }
 #endif
 
