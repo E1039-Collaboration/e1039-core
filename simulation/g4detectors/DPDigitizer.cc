@@ -356,15 +356,18 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 
       std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
+      	LogInfo(digiPlanes[index].detectorName);
       	continue;
       }
 
       std::regex eP2("(P)([1-2])(H|V)(1)(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP2)) {
+      	LogInfo(digiPlanes[index].detectorName);
       	string temp = digiPlanes[index].detectorName;
       	int dummy;
       	p_geomSvc->toLocalDetectorName(temp, dummy);
       	digiPlanes[index].detectorName = temp;
+      	LogInfo(digiPlanes[index].detectorName);
       	digiPlanes[index].xc = 0;
         digiPlanes[index].yc = 0;
       }
