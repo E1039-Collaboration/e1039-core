@@ -108,10 +108,12 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       	_b_truth_x[_b_n_hits] = (*iter)->get_truth_x();
       	_b_truth_y[_b_n_hits] = (*iter)->get_truth_y();
       	_b_truth_z[_b_n_hits] = (*iter)->get_truth_z();
-      	LogDebug(_b_truth_z[_b_n_hits]);
+      	LogDebug("detector_id: " << _b_detector_id[_b_n_hits]);
       }
     }
   }
+
+  LogDebug("nhits: " << _hit_vector->size());
 
   _tout->Fill();
 
