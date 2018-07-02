@@ -158,8 +158,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     // the bending is negligible
     double tx = g4hit.get_px(0)/g4hit.get_pz(0);
     double ty = g4hit.get_py(0)/g4hit.get_pz(0);
-    double x0 = g4hit.get_avg_x(); //(g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
-    double y0 = g4hit.get_avg_y(); //(g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
+    double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
+    double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
 
     //temporary variabels
     double w;
@@ -185,9 +185,13 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_track_id(track_id);
         digiHit->set_g4hit_id(g4hit.get_hit_id());
 
-        digiHit->set_truth_x(g4hit.get_x(0));
-        digiHit->set_truth_y(g4hit.get_y(0));
-        digiHit->set_truth_z(g4hit.get_z(0));
+//        digiHit->set_truth_x(g4hit.get_x(0));
+//        digiHit->set_truth_y(g4hit.get_y(0));
+//        digiHit->set_truth_z(g4hit.get_z(0));
+
+        digiHit->set_truth_x(pos[0]);
+        digiHit->set_truth_y(pos[1]);
+        digiHit->set_truth_z(pos[2]);
 
         //digiHit.fPDGCode = vHit.particlePDG;
         //digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
@@ -376,6 +380,7 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
         digiPlanes[index].nElements = 72;
         digiPlanes[index].planeWidth = 365.76;
         digiPlanes[index].planeHeight = 365.76;
+        // TODO hard coding for now
       	digiPlanes[index].xc = 0;
         digiPlanes[index].yc = 0;
       }
