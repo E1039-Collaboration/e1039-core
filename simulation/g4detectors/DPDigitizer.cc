@@ -223,7 +223,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
         //p_geomSvc->toLocalDetectorName(detName, DP_elementID);
         digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
-        digiHit->set_element_id(DP_elementID);
+        //digiHit->set_element_id(DP_elementID);
         digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
 
         // FIXME figure this out
