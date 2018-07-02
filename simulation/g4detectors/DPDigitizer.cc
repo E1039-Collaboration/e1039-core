@@ -158,8 +158,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     // the bending is negligible
     double tx = g4hit.get_px(0)/g4hit.get_pz(0);
     double ty = g4hit.get_py(0)/g4hit.get_pz(0);
-    double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
-    double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
+    double x0 = g4hit.get_avg_x(); //(g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
+    double y0 = g4hit.get_avg_y(); //(g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
 
     //temporary variabels
     double w;
