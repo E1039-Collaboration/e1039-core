@@ -67,6 +67,8 @@ int TestSimAnalyzer::InitRun(PHCompositeNode* topNode) {
 	ResetEvalVars();
 	InitEvalTree();
 
+	p_geomSvc = GeomSvc::instance();
+
 	int ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
