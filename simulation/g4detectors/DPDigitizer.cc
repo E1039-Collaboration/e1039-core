@@ -237,7 +237,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         //TODO temp solution
         if(digiHit->get_detector_id()==0) continue;
 
-        digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+        //digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+        digiHit->set_pos(w);
 
         // FIXME figure this out
         digiHit->set_in_time(1);
