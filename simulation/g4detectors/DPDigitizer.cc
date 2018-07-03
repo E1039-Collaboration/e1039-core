@@ -239,7 +239,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         if(Verbosity() > 2) {
         	cout << "DEBUG: DigiHit: DPSim: ID: " << *dpid << ", Name: " << digiPlanes[*dpid].detectorName << endl;
         	cout << "DEBUG: DigiHit: GeoSvc: ID: " << digiHit->get_detector_id() << ", Name: " << detName << ", "<< endl;
-        	digiHit->identify();
+        	cout << "DEBUG: DigiHit: w: " << w << ", pos: " << digiHit->get_pos() << ", "<< endl;
+        	//digiHit->identify();
         }
 
         digits->push_back(digiHit);
