@@ -144,7 +144,7 @@ int TestSimAnalyzer::InitEvalTree() {
   _tout->Branch("eventID",       &_b_event_id,        "eventID/I");
   _tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
   _tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
-  _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/S");
+  _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/I");
   _tout->Branch("truth_x",       _b_truth_x,         "truth_x[nHits]/F");
   _tout->Branch("truth_y",       _b_truth_y,         "truth_y[nHits]/F");
   _tout->Branch("truth_z",       _b_truth_z,         "truth_z[nHits]/F");
