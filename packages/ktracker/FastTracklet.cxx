@@ -21,6 +21,8 @@ ClassImp(SignedHit)
 ClassImp(PropSegment)
 ClassImp(Tracklet)
 
+#define _DEBUG_ON
+
 //Signed hit definition
 SignedHit::SignedHit() : sign(0)
 {
@@ -426,22 +428,77 @@ Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(999
 
 bool Tracklet::isValid()
 {
-    if(stationID < 1 || stationID > nStations) return false;
+    if(stationID < 1 || stationID > nStations)
+    {
+#ifdef _DEBUG_ON
+    	LogInfo("");
+#endif
+    	return false;
+    }
 
-    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX) return false;
-    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX) return false;
-    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0) return false;
+    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX)
+    {
+#ifdef _DEBUG_ON
+    	LogInfo("");
+#endif
+    	return false;
+    }
+
+    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX)
+    {
+#ifdef _DEBUG_ON
+    	LogInfo("");
+#endif
+    	return false;
+    }
+
+    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0)
+    {
+#ifdef _DEBUG_ON
+    	LogInfo("");
+#endif
+    	return false;
+    }
+
 
     double prob = getProb();
-    if(stationID != nStations && prob < PROB_LOOSE) return false;
+    if(stationID != nStations && prob < PROB_LOOSE)
+    {
+#ifdef _DEBUG_ON
+    	LogInfo("");
+#endif
+    	return false;
+    }
+
 
     //Tracklets in each station
     int nHits = nXHits + nUHits + nVHits;
     if(stationID < nStations-1)
     {
-        if(nXHits < 1 || nUHits < 1 || nVHits < 1) return false;
-        if(nHits < 4) return false;
-        if(chisq > 40.) return false; //an absolute upper limit
+        if(nXHits < 1 || nUHits < 1 || nVHits < 1)
+        {
+    #ifdef _DEBUG_ON
+        	LogInfo("");
+    #endif
+        	return false;
+        }
+
+        if(nHits < 4)
+        {
+    #ifdef _DEBUG_ON
+        	LogInfo("");
+    #endif
+        	return false;
+        }
+
+        if(chisq > 40.)
+        {
+    #ifdef _DEBUG_ON
+        	LogInfo("");
+    #endif
+        	return false;
+        }
+
     }
     else
     {
@@ -475,20 +532,61 @@ bool Tracklet::isValid()
         //Number of hits cut after removing bad hits
         for(int i = 1; i < 3; ++i)
         {
-            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1) return false;
-            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4) return false;
+            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1)
+            {
+        #ifdef _DEBUG_ON
+            	LogInfo("");
+        #endif
+            	return false;
+            }
+
+            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4)
+            {
+        #ifdef _DEBUG_ON
+            	LogInfo("");
+        #endif
+            	return false;
+            }
+
         }
 
         //for global tracks only -- TODO: may need to set a new station-1 cut
         if(stationID == nStations)
         {
-            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1) return false;
-            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return false;
+            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1)
+            {
+        #ifdef _DEBUG_ON
+            	LogInfo("");
+        #endif
+            	return false;
+            }
 
-            if(prob < PROB_TIGHT) return false;
+            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4)
+            {
+        #ifdef _DEBUG_ON
+            	LogInfo("");
+        #endif
+            	return false;
+            }
+
+
+            if(prob < PROB_TIGHT)
+            {
+        #ifdef _DEBUG_ON
+            	LogInfo("");
+        #endif
+            	return false;
+            }
             if(kmag_on)
             {
-                if(invP < INVP_MIN || invP > INVP_MAX) return false;
+                if(invP < INVP_MIN || invP > INVP_MAX)
+                {
+            #ifdef _DEBUG_ON
+                	LogInfo("");
+            #endif
+                	return false;
+                }
+
             }
         }
     }
