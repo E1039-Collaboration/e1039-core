@@ -129,7 +129,7 @@ bool DPDigiPlane::intercept(double tx, double ty, double x0, double y0, G4ThreeV
     //w = (vcp[0]*dpos[0] + vcp[1]*dpos[1] + vcp[2]*dpos[2])/det;
 
     //yuhw
-    w = uVec[0]*pos[0] + uVec[1]*pos[1] + uVec[2]*pos[2];
+    w = uVec[0]*(pos[0]-xc) + uVec[1]*(pos[1]-yc) + uVec[2]*(pos[2]-zc);
 
     return isInPlane(pos[0], pos[1], pos[2]);
 }
