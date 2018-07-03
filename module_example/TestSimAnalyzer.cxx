@@ -97,7 +97,6 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
   if(_hit_vector) {
     _b_n_hits = 0;
     for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
-      ++_b_n_hits;
       _b_hit_id[_b_n_hits]         = (*iter)->get_hit_id();
       _b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
       _b_pos[_b_n_hits]            = (*iter)->get_pos();
@@ -110,6 +109,7 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       	_b_truth_z[_b_n_hits] = (*iter)->get_truth_z();
       	LogDebug("detector_id: " << _b_detector_id[_b_n_hits]);
       }
+      ++_b_n_hits;
     }
   }
 
