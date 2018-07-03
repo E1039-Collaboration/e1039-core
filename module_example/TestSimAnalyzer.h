@@ -33,6 +33,8 @@ class SQHitVector;
 
 class PHG4TruthInfoContainer;
 
+class GeomSvc;
+
 class TFile;
 class TTree;
 
@@ -97,10 +99,13 @@ private:
 	int _b_detector_id[10000];
 	float _b_drift_distance[10000];
 	float _b_pos[10000];
+	float _b_detector_z[10000];
 
 	float _b_truth_x[10000];
 	float _b_truth_y[10000];
 	float _b_truth_z[10000];
+
+	GeomSvc *p_geomSvc;
 };
 
 

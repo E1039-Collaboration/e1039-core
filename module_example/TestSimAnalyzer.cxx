@@ -18,6 +18,8 @@
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
 
+#include <geom_svc/GeomSvc.h>
+
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/PHTFileServer.h>
 #include <phool/PHNodeIterator.h>
@@ -100,6 +102,7 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       _b_hit_id[_b_n_hits]         = (*iter)->get_hit_id();
       _b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
       _b_pos[_b_n_hits]            = (*iter)->get_pos();
+      _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition((*iter)->get_detector_id());
       _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
       if(_truth) {
       	//int track_id = (*iter)->get_track_id();
@@ -150,6 +153,7 @@ int TestSimAnalyzer::InitEvalTree() {
   _tout->Branch("truth_z",       _b_truth_z,         "truth_z[nHits]/F");
   _tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
+  _tout->Branch("detectorZ",     _b_detector_z,       "detectorZ[nHits]/F");
 
   return 0;
 }
@@ -164,6 +168,7 @@ int TestSimAnalyzer::ResetEvalVars() {
     _b_detector_id[i]    = std::numeric_limits<short>::max();
     _b_drift_distance[i] = std::numeric_limits<float>::max();
     _b_pos[i]            = std::numeric_limits<float>::max();
+    _b_detector_z[i]     = std::numeric_limits<float>::max();
 
     _b_truth_x[i]       = std::numeric_limits<float>::max();
     _b_truth_y[i]       = std::numeric_limits<float>::max();
