@@ -186,7 +186,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
 
         int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
-        		(w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh + digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
+        		//(w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh + digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
+        		(w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing) ;
         double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
         if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
