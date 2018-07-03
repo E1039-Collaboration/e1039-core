@@ -137,7 +137,12 @@ bool DPDigiPlane::intercept(double tx, double ty, double x0, double y0, G4ThreeV
 std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
 {
     os << "DigiPlane ID = " << plane.detectorID << ", name = " << plane.detectorName << " belongs to group " << plane.detectorGroupName << "\n"
-       << "   nElements = " << plane.nElements << ",  center x = " << plane.xc << ", y = " << plane.yc << ", z = " << plane.zc;
+       << "nElements = " << plane.nElements
+			 << ", center x = " << plane.xc << ", y = " << plane.yc << ", z = " << plane.zc << "\n"
+			 << ", nVec: {" << plane.nVec[0] << ", " << plane.nVec[1] << ", " << plane.nVec[2] << "} "
+			 << ", uVec: {" << plane.uVec[0] << ", " << plane.uVec[1] << ", " << plane.uVec[2] << "} "
+			 << ", vVec: {" << plane.vVec[0] << ", " << plane.vVec[1] << ", " << plane.vVec[2] << "} "
+			 ;
     return os;
 }
 
@@ -241,6 +246,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_hit_id(digits->size());
 
         if(Verbosity() > 2) {
+        	cout << digiPlanes[*dpid] << endl;
         	cout << "DEBUG: DigiHit: DPSim: ID: " << *dpid << ", Name: " << digiPlanes[*dpid].detectorName << endl;
         	cout << "DEBUG: DigiHit: GeoSvc: ID: " << digiHit->get_detector_id() << ", Name: " << detName << ", "<< endl;
         	cout
