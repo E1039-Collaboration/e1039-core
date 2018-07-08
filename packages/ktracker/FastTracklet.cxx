@@ -431,7 +431,7 @@ bool Tracklet::isValid()
     if(stationID < 1 || stationID > nStations)
     {
 #ifdef _DEBUG_ON
-    	LogInfo("");
+    	LogInfo("stationID: " << stationID);
 #endif
     	return false;
     }
@@ -543,7 +543,7 @@ bool Tracklet::isValid()
             if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4)
             {
         #ifdef _DEBUG_ON
-            	LogInfo("");
+            	LogInfo("nRealHits at " << i << " : " << nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2]);
         #endif
             	return false;
             }
