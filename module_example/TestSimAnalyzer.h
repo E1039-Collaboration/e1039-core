@@ -104,6 +104,7 @@ private:
 	float _b_truth_x[10000];
 	float _b_truth_y[10000];
 	float _b_truth_z[10000];
+	float _b_truth_pos[10000];
 
 	GeomSvc *p_geomSvc;
 };
