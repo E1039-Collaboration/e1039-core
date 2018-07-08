@@ -455,7 +455,7 @@ bool Tracklet::isValid()
     if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0)
     {
 #ifdef _DEBUG_ON
-    	LogInfo("");
+    	LogInfo("err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0");
 #endif
     	return false;
     }

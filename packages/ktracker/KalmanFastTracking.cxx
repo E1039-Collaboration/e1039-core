@@ -1219,6 +1219,9 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     }
 
     //If everything is fine ...
+#ifdef _DEBUG_ON
+    LogInfo("AcceptTracklet!!!");
+#endif
     return true;
 }
 
