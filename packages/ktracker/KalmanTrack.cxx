@@ -214,7 +214,8 @@ KalmanTrack::KalmanTrack(SRecTrack& _trk, SRawEvent *_rawevt, SRecEvent *_recevt
 
 bool KalmanTrack::isValid()
 {
-    if(_chisq < 0 || _chisq > 150) return false;
+	//FIXME 20 for now; original _chisq < 150
+    if(_chisq < 0 || _chisq/_hit_index.size() > 20) return false;
     if(_nodes.empty()) return false;
     if(getMomentumUpstream() < 1./INVP_MAX || getMomentumUpstream() > 1./INVP_MIN) return false;
 
