@@ -24,7 +24,7 @@
 #include <memory>
 #include <cassert>
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 static const double c_light   = 2.99792458e+8 * m/s;
 
