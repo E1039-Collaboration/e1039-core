@@ -1768,6 +1768,9 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     //Fit the track first with possibily a few nodes unresolved
     if(!fitTrack(kmtrk))
     {
+#ifdef _DEBUG_ON
+    	LogInfo("!fitTrack(kmtrk)");
+#endif
         SRecTrack strack = tracklet.getSRecTrack();
         strack.setKalmanStatus(-1);
 
@@ -1794,6 +1797,9 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     }
     else
     {
+#ifdef _DEBUG_ON
+    	LogInfo("!kmtrk.isValid()");
+#endif
         SRecTrack strack = tracklet.getSRecTrack();
         strack.setKalmanStatus(-1);
 
