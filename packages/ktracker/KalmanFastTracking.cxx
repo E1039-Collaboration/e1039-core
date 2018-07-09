@@ -855,8 +855,13 @@ void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
             //LogInfo("Final: " << index_min << "  " << pull_min);
             if(index_min >= 0 && pull_min < threshold)//((tracklet.stationID == 5 && pull_min < 25.) || (tracklet.stationID == 6 && pull_min < 100.)))
             {
-                hit1->sign = possibility[index_min][0];
-                hit2->sign = possibility[index_min][1];
+            	//FIXME temp for debug purpose
+							//hit1->sign = possibility[index_min][0];
+							//hit2->sign = possibility[index_min][1];
+
+            	//FIXME temp for debug purpose
+            	hit1->sign = hit1->hit.driftDistance > 0 ? 1 : -1;
+            	hit2->sign = hit2->hit.driftDistance > 0 ? 1 : -1;
 
                 isUpdated = true;
             }
