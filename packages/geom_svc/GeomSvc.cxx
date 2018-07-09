@@ -166,6 +166,11 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.x0
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.y0
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW;
+    if(plane.detectorID>=nChamberPlanes+nHodoPlanes+1 && plane.detectorID<=nChamberPlanes+nHodoPlanes+nPropPlanes) {
+    	os << "\n";
+    	for(auto i=0; i<9; ++i)
+			 os << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW_module[i];
+    }
 
     return os;
 }
