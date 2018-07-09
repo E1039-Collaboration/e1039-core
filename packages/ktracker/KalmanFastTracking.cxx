@@ -1802,6 +1802,12 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
   			strack.setKalmanStatus(-1);
   			return strack;
       }
+
+#ifdef _DEBUG_ON
+      if(kmtrk.isValid()) {
+      	LogInfo("flip charge worked!");
+      }
+#endif
     }
 
 #ifdef _DEBUG_ON
