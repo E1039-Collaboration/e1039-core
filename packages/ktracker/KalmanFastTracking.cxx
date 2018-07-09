@@ -1786,6 +1786,24 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
       }
     }
 
+    if(!kmtrk.isValid()) {
+#ifdef _DEBUG_ON
+    	LogInfo("!kmtrk.isValid() - try flip charge");
+#endif
+    	trkpar_curr._state_kf[0][0] *= -1.;
+      kmtrk.setCurrTrkpar(trkpar_curr);
+      kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
+      if(!fitTrack(kmtrk))
+      {
+#ifdef _DEBUG_ON
+      	LogInfo("!fitTrack(kmtrk) - failed flip charge also");
+#endif
+  			SRecTrack strack = tracklet.getSRecTrack();
+  			strack.setKalmanStatus(-1);
+  			return strack;
+      }
+    }
+
 #ifdef _DEBUG_ON
     LogInfo("kmtrk.print()");
     kmtrk.print();
