@@ -1780,6 +1780,8 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
 #ifdef _DEBUG_ON
     LogInfo("kmtrk.print()");
     kmtrk.print();
+    LogInfo("kmtrk.printNodes()");
+    kmtrk.printNodes();
 #endif
 
     //Resolve left-right based on the current solution, re-fit if anything changed
