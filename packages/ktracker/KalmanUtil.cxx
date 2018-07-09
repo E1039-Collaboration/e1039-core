@@ -197,6 +197,8 @@ void TrkPar::print()
 void Node::print(bool verbose)
 {
     std::cout << "The status of this node " << std::endl;
+    std::cout << "Chi square of this node: " << _chisq << std::endl;
+
     if(_prediction_done)
     {
         std::cout << "The prediction is done! " << std::endl;
@@ -221,8 +223,6 @@ void Node::print(bool verbose)
 
         SMatrix::printMatrix(_projector*_smoothed._state_kf, "The smoothed measurement");
     }
-
-    std::cout << "Chi square of this node: " << _chisq << std::endl;
 
     if(!verbose) return;
     SMatrix::printMatrix(_measurement, "The measurement of this node: ");
