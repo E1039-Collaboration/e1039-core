@@ -196,10 +196,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         digiHit->set_track_id(track_id);
         digiHit->set_g4hit_id(g4hit.get_hit_id());
 
-//        digiHit->set_truth_x(g4hit.get_x(0));
-//        digiHit->set_truth_y(g4hit.get_y(0));
-//        digiHit->set_truth_z(g4hit.get_z(0));
-
         digiHit->set_truth_x(pos[0]);
         digiHit->set_truth_y(pos[1]);
         digiHit->set_truth_z(pos[2]);
