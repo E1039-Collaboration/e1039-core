@@ -857,7 +857,7 @@ void GeomSvc::printAlignPar()
 
 void GeomSvc::printTable()
 {
-    std::cout << "detectorName    detectorID  planeType    Spacing     Xoffset     overlap     width       height       nElement       angleFromVertical       Z" << std::endl;
+    std::cout << "detectorID detectorName planeType    Spacing     Xoffset     overlap     width       height       nElement       angleFromVertical     z0     x0     y0     deltaW" << std::endl;
     for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
     {
         std::cout << planes[iter->second] << std::endl;
