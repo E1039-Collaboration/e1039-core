@@ -54,7 +54,7 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 	double z_test = 1000;
   LogInfo("");
   {
-		double p[4] = {0, 0, z_test, 0};
+		double p[4] = {0, 0, z_test*cm, 0};
 		double B[3] = {0, 0, 0};
 		field->GetFieldValue(p, B);
 		cout << "PHField (CLHEP) at Z = " << z_test << endl;
