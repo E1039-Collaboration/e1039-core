@@ -62,6 +62,10 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
 
     //Initialize geometry service
     p_geomSvc = GeomSvc::instance();
+    p_geomSvc->printTable();
+    p_geomSvc->printWirePosition();
+    p_geomSvc->printAlignPar();
+
 
     //Initialize plane angles for all planes
     for(int i = 1; i <= nChamberPlanes; ++i)
@@ -578,6 +582,9 @@ void KalmanFastTracking::buildBackPartialTracks()
 #endif
                 continue;
             }
+#ifdef _DEBUG_ON
+            LogInfo("Hodomasking Scucess!");
+#endif
 
 #ifndef COARSE_MODE
             resolveLeftRight(tracklet_23, 40.);
