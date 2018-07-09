@@ -62,10 +62,11 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
 
     //Initialize geometry service
     p_geomSvc = GeomSvc::instance();
+#ifdef _DEBUG_ON
     p_geomSvc->printTable();
     p_geomSvc->printWirePosition();
     p_geomSvc->printAlignPar();
-
+#endif
 
     //Initialize plane angles for all planes
     for(int i = 1; i <= nChamberPlanes; ++i)
