@@ -51,19 +51,26 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 	_tgeo_manager = const_cast<TGeoManager*>(geom);
 
 #ifdef _DEBUG_ON
+	double z_test = 1000;
   LogInfo("");
   {
-		double p[4] = {0, 0, 1000, 0};
+		double p[4] = {0, 0, z_test, 0};
 		double B[3] = {0, 0, 0};
 		field->GetFieldValue(p, B);
-		cout << "PHField (CLHEP): " << endl;
+		cout << "PHField (CLHEP) at Z = " << z_test << endl;
 		cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
   }
   {
 		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
-		TVector3 H = f->get(TVector3(0,0,0));
+		TVector3 H = f->get(TVector3(0,0,z_test));
 		H *= kilogauss/tesla;
-		cout << "genfit::AbsBField (tesla): " << endl;
+		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
+		H.Print();
+
+		z_test = 250;
+		H = f->get(TVector3(0,0,z_test));
+		H *= kilogauss/tesla;
+		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
 		H.Print();
   }
 #endif
