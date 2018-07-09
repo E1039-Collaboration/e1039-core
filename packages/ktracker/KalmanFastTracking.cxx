@@ -1788,7 +1788,7 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
 
     if(!kmtrk.isValid()) {
 #ifdef _DEBUG_ON
-    	LogInfo("!kmtrk.isValid() - try flip charge");
+    	LogInfo("!kmtrk.isValid() Chi2 = " << kmtrk.getChisq() << " - try flip charge");
 #endif
     	trkpar_curr._state_kf[0][0] *= -1.;
       kmtrk.setCurrTrkpar(trkpar_curr);
