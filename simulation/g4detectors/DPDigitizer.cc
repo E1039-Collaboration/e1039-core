@@ -307,6 +307,8 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
     LogDebug("DPDigitizer::InitRun");
   }
 
+	p_geomSvc = GeomSvc::instance();
+
 //  const char* mysqlServer = "e906-db1.fnal.gov";
 //  const int mysqlPort = 3306;
 //  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
@@ -399,8 +401,10 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
         digiPlanes[index].planeWidth = 365.76;
         digiPlanes[index].planeHeight = 365.76;
         // TODO hard coding for now
-      	digiPlanes[index].xc = 0;
-        digiPlanes[index].yc = 0;
+        int ktracker_id = p_geomSvc->getDetectorID(temp);
+      	digiPlanes[index].xc = p_geomSvc->getPlaneCenterX(ktracker_id);
+        digiPlanes[index].yc = p_geomSvc->getPlaneCenterY(ktracker_id);
+        digiPlanes[index].zc = p_geomSvc->getPlaneCenterZ(ktracker_id);
       }
 
       digiPlanes[index].preCalculation();
@@ -501,8 +505,6 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
 		PHIODataNode<PHObject> *newNode = new PHIODataNode<PHObject>(digits, digit_name.c_str() , "PHObject");
 		dstNode->addNode(newNode);
 	}
-
-	p_geomSvc = GeomSvc::instance();
 
   if(Verbosity() > 2) {
   	LogInfo(digiPlanes[41].detectorName);
