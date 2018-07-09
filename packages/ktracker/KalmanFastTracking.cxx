@@ -1777,6 +1777,11 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
         return strack;
     }
 
+#ifdef _DEBUG_ON
+    LogInfo("kmtrk.print()");
+    kmtrk.print();
+#endif
+
     //Resolve left-right based on the current solution, re-fit if anything changed
     //resolveLeftRight(kmtrk);
     if(kmtrk.isValid())
