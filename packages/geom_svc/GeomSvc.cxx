@@ -168,7 +168,7 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW;
     if(plane.detectorID>=nChamberPlanes+nHodoPlanes+1 && plane.detectorID<=nChamberPlanes+nHodoPlanes+nPropPlanes) {
     	os << "\n";
-    	for(auto i=0; i<9; ++i)
+    	for(int i=0; i<9; ++i)
 			 os << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW_module[i];
     }
 
