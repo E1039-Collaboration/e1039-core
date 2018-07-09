@@ -168,8 +168,7 @@ public:
     double getMomentum() const;
 
     //Decide charge by KMag bending direction
-    //FIXME try to reverse?
-    int getCharge() const { return x0*KMAGSTR < tx ? 1 : -1; }
+    int getCharge() const { return x0*KMAGSTR > tx ? 1 : -1; }
 
     //Get the slope and intersection in station 1
     void getXZInfoInSt1(double& tx_st1, double& x0_st1);
