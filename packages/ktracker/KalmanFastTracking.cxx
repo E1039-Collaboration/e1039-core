@@ -1804,6 +1804,7 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
       }
 
 #ifdef _DEBUG_ON
+      LogInfo("Chi2 after flip charge: " << kmtrk.getChisq());
       if(kmtrk.isValid()) {
       	LogInfo("flip charge worked!");
       }
