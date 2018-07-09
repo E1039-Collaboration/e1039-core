@@ -19,12 +19,12 @@
 #include <TMath.h>
 
 //
-#include <G4SystemOfUnits.hh>
+//#include <G4SystemOfUnits.hh>
 
 #include <memory>
 #include <cassert>
 
-//#define _DEBUG_ON
+#define _DEBUG_ON
 
 static const double c_light   = 2.99792458e+8 * m/s;
 
@@ -68,7 +68,7 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
   }
 #endif
 
-  _tgeo_manager->Export("test.root");
+  _tgeo_manager->Export("GenFitExtrapolatorGeom.root");
 
 	genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
 
@@ -257,8 +257,9 @@ double GenFitExtrapolator::extrapolateToIP() {
   TVector3 pos[NSLICES_FMAG + NSTEPS_TARGET + 1];
 
   //Step size in FMAG/target area, unit is cm.
-  double step_fmag   = FMAG_LENGTH/NSLICES_FMAG*cm;
-  double step_target = fabs(Z_UPSTREAM)/NSTEPS_TARGET*cm;
+  //FIXME Units
+  double step_fmag   = FMAG_LENGTH/NSLICES_FMAG;//*cm;
+  double step_target = fabs(Z_UPSTREAM)/NSTEPS_TARGET;//*cm;
 
   //Start from FMAG face downstream
   extrapolateTo(FMAG_LENGTH);
