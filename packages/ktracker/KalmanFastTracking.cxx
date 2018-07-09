@@ -1749,7 +1749,8 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     //Set initial state
     TrkPar trkpar_curr;
     trkpar_curr._z = p_geomSvc->getPlanePosition(kmtrk.getNodeList().back().getHit().detectorID);
-    trkpar_curr._state_kf[0][0] = tracklet.getCharge()*tracklet.invP/sqrt(1. + tracklet.tx*tracklet.tx + tracklet.ty*tracklet.ty);
+    //FIXME Debug Testing: sign reverse
+    trkpar_curr._state_kf[0][0] = -tracklet.getCharge()*tracklet.invP/sqrt(1. + tracklet.tx*tracklet.tx + tracklet.ty*tracklet.ty);
     trkpar_curr._state_kf[1][0] = tracklet.tx;
     trkpar_curr._state_kf[2][0] = tracklet.ty;
     trkpar_curr._state_kf[3][0] = tracklet.getExpPositionX(trkpar_curr._z);
