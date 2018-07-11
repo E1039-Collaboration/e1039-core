@@ -10,8 +10,8 @@ int Fun4Sim(const int nEvents = 1)
   const double target_z = (7.9-target_l)/2.; //cm
 
   const bool gen_gun = false;
-  const bool gen_pythia8 = true;
-  const bool gen_test = false;
+  const bool gen_pythia8 = false;
+  const bool gen_test = true;
 
   gSystem->Load("libfun4all");
   gSystem->Load("libg4detectors");
@@ -56,21 +56,21 @@ int Fun4Sim(const int nEvents = 1)
   }
 
   if(gen_test) {
-    double mass = 7;
-    double cot = 7.4;
     PHG4ParticleGun *gun_mup = new PHG4ParticleGun("GUN_mup");
     gun_mup->set_name("mu+");
-    gun_mup->set_vtx(0, 0, -130);
-    gun_mup->set_mom(mass/2., 0, mass/2.*cot);
-    //gun_mup->set_vtx(0, 0, 500);
-    //gun_mup->set_mom(0, 0, 2);
+    //gun_mup->set_vtx(30, 0, 500);
+    //gun_mup->set_mom(0., 0., 20.);
+    gun_mup->set_vtx(0., 0., -130);
+    gun_mup->set_mom(3., 0., 20.);
     se->registerSubsystem(gun_mup);
 
     PHG4ParticleGun *gun_mum = new PHG4ParticleGun("GUN_mum");
     gun_mum->set_name("mu-");
-    gun_mum->set_vtx(0, 0, -130);
-    gun_mum->set_mom(mass/-2., 0, mass/2.*cot);
-    se->registerSubsystem(gun_mum);
+    //gun_mum->set_vtx(-30, 0, 500);
+    //gun_mum->set_mom(0., 0., 20.);
+    gun_mum->set_vtx(0., 0., -130);
+    gun_mum->set_mom(-3., 0., 20.);
+    //se->registerSubsystem(gun_mum);
   }
 
   // Fun4All G4 module
@@ -108,7 +108,7 @@ int Fun4Sim(const int nEvents = 1)
   se->registerSubsystem(g4Reco);
 
   DPDigitizer *digitizer = new DPDigitizer();
-  digitizer->Verbosity(0);
+  digitizer->Verbosity(100);
   se->registerSubsystem(digitizer);
 
   gSystem->Load("libmodule_example.so");
