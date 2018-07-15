@@ -473,10 +473,10 @@ bool KalmanFastTracking::acceptEvent(SRawEvent* rawEvent)
 #endif
 
     if(rawEvent->getNHitsInD0() > 350) return false;
-    if(rawEvent->getNHitsInD1() > 350) return false;
-    if(rawEvent->getNHitsInD2() > 170) return false;
-    if(rawEvent->getNHitsInD3p() > 140) return false;
-    if(rawEvent->getNHitsInD3m() > 140) return false;
+    if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
+    if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
+    if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
+    if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
 
     /*
     if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
