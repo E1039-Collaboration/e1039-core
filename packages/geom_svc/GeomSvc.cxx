@@ -416,35 +416,7 @@ void GeomSvc::init()
         loadCalibration(p_jobOptsSvc->m_calibrationsFile);
     }
 
-    ///Initialize the position look up table for all wires, hodos, and tubes
-    typedef std::map<std::pair<int, int>, double>::value_type posType;
-    for(int i = 1; i <= nChamberPlanes; ++i)
-    {
-        for(int j = 1; j <= planes[i].nElements; ++j)
-        {
-            double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
-            map_wirePosition.insert(posType(make_pair(i, j), pos));
-        }
-    }
-
-    // 2. for hodoscopes and prop. tubes
-    for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
-    {
-        for(int j = 1; j <= planes[i].nElements; ++j)
-        {
-            double pos;
-            if(i <= nChamberPlanes+nHodoPlanes)
-            {
-                pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
-            }
-            else
-            {
-                int moduleID = 8 - int((j - 1)/8);        //Need to re-define moduleID for run2, note it's reversed compared to elementID
-                pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
-            }
-            map_wirePosition.insert(posType(make_pair(i, j), pos));
-        }
-    }
+    initWireLUT();
 
     ///Initialize channel mapping  --- not needed at the moment
     xmin_kmag = -57.*2.54;
@@ -461,6 +433,39 @@ void GeomSvc::init()
         cout << planes[i] << endl;
     }
 #endif
+}
+
+void GeomSvc::initWireLUT() {
+
+  ///Initialize the position look up table for all wires, hodos, and tubes
+  typedef std::map<std::pair<int, int>, double>::value_type posType;
+  for(int i = 1; i <= nChamberPlanes; ++i)
+  {
+      for(int j = 1; j <= planes[i].nElements; ++j)
+      {
+          double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
+          map_wirePosition.insert(posType(std::make_pair(i, j), pos));
+      }
+  }
+
+  // 2. for hodoscopes and prop. tubes
+  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
+  {
+      for(int j = 1; j <= planes[i].nElements; ++j)
+      {
+          double pos;
+          if(i <= nChamberPlanes+nHodoPlanes)
+          {
+              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
+          }
+          else
+          {
+              int moduleID = 8 - int((j - 1)/8);        //Need to re-define moduleID for run2, note it's reversed compared to elementID
+              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
+          }
+          map_wirePosition.insert(posType(std::make_pair(i, j), pos));
+      }
+  }
 }
 
 std::vector<int> GeomSvc::getDetectorIDs(std::string pattern)

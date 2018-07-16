@@ -119,6 +119,7 @@ public:
 
     ///Initialization, either from MySQL or from ascii file
     void init();
+    void initWireLUT();
     void loadCalibration(const std::string& calibrateFile);
     void loadAlignment(const std::string& alignmentFile_chamber, const std::string& alignmentFile_hodo, const std::string& alignmentFile_prop);
     void loadMilleAlignment(const std::string& alignmentFile_mille);
@@ -128,6 +129,12 @@ public:
 
     ///Convert the official detectorName to local detectorName
     void toLocalDetectorName(std::string& detectorName, int& eID);
+
+  	/// TODO temp solution to overwrite the y0 of a plane
+  	void setDetectorY0(const std::string &detectorName, const double val) {
+  		int index = map_detectorID[detectorName];
+  		planes[index].yc = val;
+  	}
 
     ///Get the plane position
     int getDetectorID(std::string detectorName) { return map_detectorID[detectorName]; }
