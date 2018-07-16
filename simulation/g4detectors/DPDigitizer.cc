@@ -146,126 +146,6 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
     return os;
 }
 
-DPDigitizer::DPDigitizer(const std::string &name) :
-		p_geomSvc(nullptr)
-{
-}
-
-DPDigitizer::~DPDigitizer() {
-}
-
-void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
-{
-    if(Verbosity() > 2){
-      LogDebug("DPDigitizer::digitize: " << map_groupID[detectorGroupName].size());
-    }
-
-    int track_id = g4hit.get_trkid();
-
-    // calculate the central position in each detector group, then linearly extrapolate the hits
-    // to each individual plane, this is assuming there is no magnetic field in the detector, or
-    // the bending is negligible
-    double tx = g4hit.get_px(0)/g4hit.get_pz(0);
-    double ty = g4hit.get_py(0)/g4hit.get_pz(0);
-    double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
-    double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
-
-    //temporary variabels
-    double w;
-    G4ThreeVector pos;
-    for(std::vector<int>::iterator dpid = map_groupID[detectorGroupName].begin();
-    		dpid != map_groupID[detectorGroupName].end();
-    		++dpid)
-    {
-				if(Verbosity() > 2) {
-					cout << "DEBUG: detectorGroupName: " << detectorGroupName << endl;
-					cout << "DEBUG: detectorName: " << digiPlanes[*dpid].detectorName << endl;
-				}
-
-        //check if the track intercepts the plane
-        if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
-
-        int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
-        		//(w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh + digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
-        		(w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing) ;
-        double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
-        if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
-
-        SQMCHit_v1 *digiHit = new SQMCHit_v1();
-
-        digiHit->set_track_id(track_id);
-        digiHit->set_g4hit_id(g4hit.get_hit_id());
-
-        digiHit->set_truth_x(pos[0]);
-        digiHit->set_truth_y(pos[1]);
-        digiHit->set_truth_z(pos[2]);
-
-        //digiHit.fPDGCode = vHit.particlePDG;
-        //digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
-        digiHit->set_element_id(DP_elementID);
-        digiHit->set_drift_distance(driftDistance);
-        //digiHit.fMomentum.SetXYZ(vHit.get_px(0)/GeV, vHit.get_py(0)/GeV, vHit.get_pz(0)/GeV);
-        //digiHit.fPosition.SetXYZ(pos[0], pos[1], pos[2]);
-        //digiHit.fDepEnergy = vHit.edep/GeV;
-
-        //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
-
-        //see if it also hits the next elements in the overlap region
-        if(fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth - digiPlanes[*dpid].overlap)
-        {
-            if(driftDistance > 0. && DP_elementID != digiPlanes[*dpid].nElements)
-            {
-                digiHit->set_element_id(DP_elementID + 1);
-                digiHit->set_drift_distance(driftDistance - digiPlanes[*dpid].spacing);
-                //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
-            }
-            else if(driftDistance < 0. && DP_elementID != 1)
-            {
-                digiHit->set_element_id(DP_elementID - 1);
-                digiHit->set_drift_distance(driftDistance + digiPlanes[*dpid].spacing);
-                //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
-            }
-        }
-
-        string detName = digiPlanes[*dpid].detectorName;
-
-        //p_geomSvc->toLocalDetectorName(detName, DP_elementID);
-        digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
-
-        //TODO temp solution
-        if(digiHit->get_detector_id()==0) continue;
-
-        digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
-        //digiHit->set_pos(w);
-
-        // FIXME figure this out
-        digiHit->set_in_time(1);
-        digiHit->set_hodo_mask(1);
-
-        digiHit->set_hit_id(digits->size());
-
-        if(Verbosity() > 2) {
-        	cout << digiPlanes[*dpid] << endl;
-        	cout << "DEBUG: DigiHit: DPSim: ID: " << *dpid << ", Name: " << digiPlanes[*dpid].detectorName << endl;
-        	cout << "DEBUG: DigiHit: GeoSvc: ID: " << digiHit->get_detector_id() << ", Name: " << detName << ", "<< endl;
-        	cout
-					<< "DEBUG: DigiHit: hit_id: " << digiHit->get_hit_id()
-					<< ", w: " << w
-					<< ", pos: " << digiHit->get_pos()
-					<< endl;
-        	//digiHit->identify();
-        }
-
-        digits->push_back(digiHit);
-    }
-
-    //split the energy deposition to all digihits
-//    for(std::vector<SQHit>::iterator iter = g4hit.digiHits.begin(); iter != g4hit.digiHits.end(); ++iter)
-//    {
-//        iter->fDepEnergy = iter->fDepEnergy/g4hit.digiHits.size();
-//    }
-}
-
 namespace {
 	string toGroupName(string in) {
 
@@ -302,10 +182,9 @@ namespace {
 	}
 }
 
-int DPDigitizer::InitRun(PHCompositeNode* topNode) {
-  if(Verbosity() > 2){
-    LogDebug("DPDigitizer::InitRun");
-  }
+DPDigitizer::DPDigitizer(const std::string &name) :
+		p_geomSvc(nullptr)
+{
 
 	p_geomSvc = GeomSvc::instance();
 
@@ -485,7 +364,127 @@ int DPDigitizer::InitRun(PHCompositeNode* topNode) {
         }
     }
   };
+}
 
+DPDigitizer::~DPDigitizer() {
+}
+
+void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
+{
+    if(Verbosity() > 2){
+      LogDebug("DPDigitizer::digitize: " << map_groupID[detectorGroupName].size());
+    }
+
+    int track_id = g4hit.get_trkid();
+
+    // calculate the central position in each detector group, then linearly extrapolate the hits
+    // to each individual plane, this is assuming there is no magnetic field in the detector, or
+    // the bending is negligible
+    double tx = g4hit.get_px(0)/g4hit.get_pz(0);
+    double ty = g4hit.get_py(0)/g4hit.get_pz(0);
+    double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
+    double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
+
+    //temporary variabels
+    double w;
+    G4ThreeVector pos;
+    for(std::vector<int>::iterator dpid = map_groupID[detectorGroupName].begin();
+    		dpid != map_groupID[detectorGroupName].end();
+    		++dpid)
+    {
+				if(Verbosity() > 2) {
+					cout << "DEBUG: detectorGroupName: " << detectorGroupName << endl;
+					cout << "DEBUG: detectorName: " << digiPlanes[*dpid].detectorName << endl;
+				}
+
+        //check if the track intercepts the plane
+        if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
+
+        int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
+        		//(w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh + digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
+        		(w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing) ;
+        double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
+        if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
+
+        SQMCHit_v1 *digiHit = new SQMCHit_v1();
+
+        digiHit->set_track_id(track_id);
+        digiHit->set_g4hit_id(g4hit.get_hit_id());
+
+        digiHit->set_truth_x(pos[0]);
+        digiHit->set_truth_y(pos[1]);
+        digiHit->set_truth_z(pos[2]);
+
+        //digiHit.fPDGCode = vHit.particlePDG;
+        //digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
+        digiHit->set_element_id(DP_elementID);
+        digiHit->set_drift_distance(driftDistance);
+        //digiHit.fMomentum.SetXYZ(vHit.get_px(0)/GeV, vHit.get_py(0)/GeV, vHit.get_pz(0)/GeV);
+        //digiHit.fPosition.SetXYZ(pos[0], pos[1], pos[2]);
+        //digiHit.fDepEnergy = vHit.edep/GeV;
+
+        //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
+
+        //see if it also hits the next elements in the overlap region
+        if(fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth - digiPlanes[*dpid].overlap)
+        {
+            if(driftDistance > 0. && DP_elementID != digiPlanes[*dpid].nElements)
+            {
+                digiHit->set_element_id(DP_elementID + 1);
+                digiHit->set_drift_distance(driftDistance - digiPlanes[*dpid].spacing);
+                //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
+            }
+            else if(driftDistance < 0. && DP_elementID != 1)
+            {
+                digiHit->set_element_id(DP_elementID - 1);
+                digiHit->set_drift_distance(driftDistance + digiPlanes[*dpid].spacing);
+                //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
+            }
+        }
+
+        string detName = digiPlanes[*dpid].detectorName;
+
+        //p_geomSvc->toLocalDetectorName(detName, DP_elementID);
+        digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
+
+        //TODO temp solution
+        if(digiHit->get_detector_id()==0) continue;
+
+        digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+        //digiHit->set_pos(w);
+
+        // FIXME figure this out
+        digiHit->set_in_time(1);
+        digiHit->set_hodo_mask(1);
+
+        digiHit->set_hit_id(digits->size());
+
+        if(Verbosity() > 2) {
+        	cout << digiPlanes[*dpid] << endl;
+        	cout << "DEBUG: DigiHit: DPSim: ID: " << *dpid << ", Name: " << digiPlanes[*dpid].detectorName << endl;
+        	cout << "DEBUG: DigiHit: GeoSvc: ID: " << digiHit->get_detector_id() << ", Name: " << detName << ", "<< endl;
+        	cout
+					<< "DEBUG: DigiHit: hit_id: " << digiHit->get_hit_id()
+					<< ", w: " << w
+					<< ", pos: " << digiHit->get_pos()
+					<< endl;
+        	//digiHit->identify();
+        }
+
+        digits->push_back(digiHit);
+    }
+
+    //split the energy deposition to all digihits
+//    for(std::vector<SQHit>::iterator iter = g4hit.digiHits.begin(); iter != g4hit.digiHits.end(); ++iter)
+//    {
+//        iter->fDepEnergy = iter->fDepEnergy/g4hit.digiHits.size();
+//    }
+}
+
+int DPDigitizer::InitRun(PHCompositeNode* topNode) {
+  if(Verbosity() > 2){
+    LogDebug("DPDigitizer::InitRun");
+  }
   PHNodeIterator iter(topNode);
 
   // Looking for the DST node
