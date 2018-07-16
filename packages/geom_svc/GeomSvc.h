@@ -131,7 +131,7 @@ public:
     void toLocalDetectorName(std::string& detectorName, int& eID);
 
   	/// TODO temp solution to overwrite the y0 of a plane
-  	void setDetectorY0(const std::string &detectorName, const double val) {
+  	void setDetectorY0(const char *detectorName, const double val) {
   		int index = map_detectorID[detectorName];
   		planes[index].yc = val;
   	}
