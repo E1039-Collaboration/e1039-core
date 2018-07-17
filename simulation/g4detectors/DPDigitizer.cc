@@ -261,7 +261,14 @@ DPDigitizer::DPDigitizer(const std::string &name) :
       //digiPlanes[index].detectorGroupName = row->GetField(16);
       //digiPlanes[index].triggerLv = boost::lexical_cast<int>(row->GetField(17));
 
+      // Use GeomSvc for geom info
+      string gs_detectorName = digiPlanes[index].detectorName;
+      int gs_detectorID = p_geomSvc->getDetectorID(gs_detectorName);
+    	digiPlanes[index].xc = p_geomSvc->getPlaneCenterX(gs_detectorID);
+      digiPlanes[index].yc = p_geomSvc->getPlaneCenterY(gs_detectorID);
+      digiPlanes[index].zc = p_geomSvc->getPlaneCenterZ(gs_detectorID);
 
+      // Process prop tubes
       std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
       	LogInfo(digiPlanes[index].detectorName);
