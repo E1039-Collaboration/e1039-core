@@ -134,6 +134,7 @@ public:
   	void setDetectorY0(const std::string detectorName, const double val) {
   		int index = map_detectorID[detectorName];
   		planes[index].y0 = val;
+  		planes[index].update();
   	}
 
     ///Get the plane position
