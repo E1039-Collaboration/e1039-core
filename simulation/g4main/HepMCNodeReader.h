@@ -9,9 +9,13 @@
 #endif
 
 #include <string>
+#include <vector>
 
 class PHHepMCGenEvent;
 class PHCompositeNode;
+namespace HepMC {
+	class GenParticle;
+}
 
 //! HepMCNodeReader take input from all subevents from PHHepMCGenEventMap and send them to simulation in Geant4
 //! For HepMC subevent which is already simulated, they will not be simulated again in Geant4.
@@ -50,6 +54,11 @@ class HepMCNodeReader : public SubsysReco
     use_seed = 1;
   }
 
+  void set_particle_filter_on(const bool a) {_particle_filter_on = a;}
+  void insert_particle_filter_pid(const int a) {_particle_filter_pid.push_back(a);}
+
+  bool PassParticleFilter(HepMC::GenParticle * p);
+
  private:
   double smeargauss(const double width);
   double smearflat(const double width);
@@ -62,6 +71,10 @@ class HepMCNodeReader : public SubsysReco
   double width_vx;
   double width_vy;
   double width_vz;
+
+  bool _particle_filter_on;
+  std::vector<int> _particle_filter_pid;
+
 
 #ifndef __CINT__
   gsl_rng *RandomGenerator;

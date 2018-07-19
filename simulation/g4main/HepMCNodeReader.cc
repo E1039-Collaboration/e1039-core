@@ -60,8 +60,10 @@ HepMCNodeReader::HepMCNodeReader(const std::string &name)
   , width_vx(0.0)
   , width_vy(0.0)
   , width_vz(0.0)
+	, _particle_filter_on(false)
 {
   RandomGenerator = gsl_rng_alloc(gsl_rng_mt19937);
+  _particle_filter_pid.clear();
   return;
 }
 
@@ -218,6 +220,9 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
       {
         if (isfinal(*p))
         {
+        	if(_particle_filter_on) {
+        		if(!PassParticleFilter(*p)) continue;
+        	}
           finalstateparticles.push_back(*p);
         }
       }
@@ -309,6 +314,13 @@ double HepMCNodeReader::smeargauss(const double width)
 {
   if (width == 0) return 0;
   return gsl_ran_gaussian(RandomGenerator, width);
+}
+
+bool HepMCNodeReader::PassParticleFilter(HepMC::GenParticle* p) {
+	for(int pid : _particle_filter_pid) {
+		if(p->pdg_id() == pid) return true;
+	}
+	return false;
 }
 
 double HepMCNodeReader::smearflat(const double width)
