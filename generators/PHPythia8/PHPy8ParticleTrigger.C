@@ -88,6 +88,16 @@ bool PHPy8ParticleTrigger::Apply(Pythia8::Pythia *pythia) {
   	if (_doPHighCut && pythia->event[i].pAbs() > _thePHigh ) continue;
   	if (_doPLowCut && pythia->event[i].pAbs() < _thePLow) continue;
 
+  	if (_doBothPxCut && (pythia->event[i].px() < _thePxLow ||
+  			     pythia->event[i].px() > _thePxHigh)) continue;
+  	if (_doPxHighCut && pythia->event[i].px() > _thePxHigh ) continue;
+  	if (_doPxLowCut && pythia->event[i].px() < _thePxLow) continue;
+
+  	if (_doBothPyCut && (pythia->event[i].py() < _thePyLow ||
+  			     pythia->event[i].py() > _thePyHigh)) continue;
+  	if (_doPyHighCut && pythia->event[i].py() > _thePyHigh ) continue;
+  	if (_doPyLowCut && pythia->event[i].py() < _thePyLow) continue;
+
   	if (_doBothPzCut && (pythia->event[i].pz() < _thePzLow ||
   			     pythia->event[i].pz() > _thePzHigh)) continue;
   	if (_doPzHighCut && pythia->event[i].pz() > _thePzHigh ) continue;
