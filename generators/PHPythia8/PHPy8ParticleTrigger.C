@@ -13,6 +13,10 @@ PHPy8ParticleTrigger::PHPy8ParticleTrigger(const std::string &name):
   _thePtLow(-999.9),
   _thePHigh(999.9),
   _thePLow(-999.9),
+  _thePxHigh(999.9),
+  _thePxLow(-999.9),
+  _thePyHigh(999.9),
+  _thePyLow(-999.9),
   _thePzHigh(999.9),
   _thePzLow(-999.9),
 
@@ -32,6 +36,12 @@ PHPy8ParticleTrigger::PHPy8ParticleTrigger(const std::string &name):
   _doPLowCut(false),
   _doBothPCut(false),
 
+  _doPxHighCut(false),
+  _doPxLowCut(false),
+  _doBothPxCut(false),
+  _doPyHighCut(false),
+  _doPyLowCut(false),
+  _doBothPyCut(false),
   _doPzHighCut(false),
   _doPzLowCut(false),
   _doBothPzCut(false)
@@ -256,6 +266,72 @@ void PHPy8ParticleTrigger::SetAbsEtaHighLow(double etaHigh, double etaLow) {
   _doAbsEtaHighCut = false;
 }
 
+void PHPy8ParticleTrigger::SetPxHigh(double px) {
+  _thePxHigh = px;
+  if (_doPxLowCut) {
+    _doBothPxCut = true;
+    _doPxLowCut = false;
+  } else {
+    _doPxHighCut = true;
+  }
+}
+
+void PHPy8ParticleTrigger::SetPxLow(double px) {
+  _thePxLow = px;
+  if (_doPxHighCut) {
+    _doBothPxCut = true;
+    _doPxHighCut = false;
+  } else {
+    _doPxLowCut = true;
+  }
+}
+
+void PHPy8ParticleTrigger::SetPxHighLow(double pxHigh, double pxLow) {
+  if (pxHigh < pxLow) {
+    _thePxHigh = pxLow;
+    _thePxLow= pxHigh;
+  } else {
+    _thePxHigh = pxHigh;
+    _thePxLow = pxLow;
+  }
+  _doBothPxCut = true;
+  _doPxLowCut = false;
+  _doPxHighCut = false;
+}
+
+void PHPy8ParticleTrigger::SetPyHigh(double py) {
+  _thePyHigh = py;
+  if (_doPyLowCut) {
+    _doBothPyCut = true;
+    _doPyLowCut = false;
+  } else {
+    _doPyHighCut = true;
+  }
+}
+
+void PHPy8ParticleTrigger::SetPyLow(double py) {
+  _thePyLow = py;
+  if (_doPyHighCut) {
+    _doBothPyCut = true;
+    _doPyHighCut = false;
+  } else {
+    _doPyLowCut = true;
+  }
+}
+
+void PHPy8ParticleTrigger::SetPyHighLow(double pyHigh, double pyLow) {
+  if (pyHigh < pyLow) {
+    _thePyHigh = pyLow;
+    _thePyLow= pyHigh;
+  } else {
+    _thePyHigh = pyHigh;
+    _thePyLow = pyLow;
+  }
+  _doBothPyCut = true;
+  _doPyLowCut = false;
+  _doPyHighCut = false;
+}
+
 void PHPy8ParticleTrigger::SetPzHigh(double pz) {
   _thePzHigh = pz;
   if (_doPzLowCut) {
@@ -306,7 +382,11 @@ void PHPy8ParticleTrigger::PrintConfig() {
   if (_doPtHighCut||_doPtLowCut||_doBothPtCut)
     cout << "   doPtCut:  " << _thePtLow << " < pT < " << _thePtHigh << endl; 
   if (_doPHighCut||_doPLowCut||_doBothPCut)
-    cout << "   doPCut:  " << _thePLow << " < p < " << _thePHigh << endl; 
+    cout << "   doPCut:  " << _thePLow << " < p < " << _thePHigh << endl;
+  if (_doPxHighCut||_doPxLowCut||_doBothPxCut)
+    cout << "   doPxCut:  " << _thePxLow << " < px < " << _thePxHigh << endl;
+  if (_doPyHighCut||_doPyLowCut||_doBothPyCut)
+    cout << "   doPyCut:  " << _thePyLow << " < py < " << _thePyHigh << endl;
   if (_doPzHighCut||_doPzLowCut||_doBothPzCut)
     cout << "   doPzCut:  " << _thePzLow << " < pz < " << _thePzHigh << endl; 
   cout << "-----------------------------------------------------------------------" << endl;

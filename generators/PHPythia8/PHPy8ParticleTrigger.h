@@ -43,6 +43,14 @@ class PHPy8ParticleTrigger : public PHPy8GenTrigger {
   void SetAbsEtaLow(double eta);
   void SetAbsEtaHighLow(double etaHigh, double etaLow);
 
+  void SetPxHigh(double pz);
+  void SetPxLow(double pz);
+  void SetPxHighLow(double pzHigh, double pzLow);
+
+  void SetPyHigh(double pz);
+  void SetPyLow(double pz);
+  void SetPyHighLow(double pzHigh, double pzLow);
+
   void SetPzHigh(double pz);
   void SetPzLow(double pz);
   void SetPzHighLow(double pzHigh, double pzLow);
@@ -57,12 +65,16 @@ class PHPy8ParticleTrigger : public PHPy8GenTrigger {
   double _theEtaHigh, _theEtaLow;
   double _thePtHigh, _thePtLow;
   double _thePHigh, _thePLow;
+  double _thePxHigh, _thePxLow;
+  double _thePyHigh, _thePyLow;
   double _thePzHigh, _thePzLow;
   
   bool _doEtaHighCut, _doEtaLowCut, _doBothEtaCut;
   bool _doAbsEtaHighCut, _doAbsEtaLowCut, _doBothAbsEtaCut;
   bool _doPtHighCut, _doPtLowCut, _doBothPtCut;
   bool _doPHighCut, _doPLowCut, _doBothPCut;
+  bool _doPxHighCut, _doPxLowCut, _doBothPxCut;
+  bool _doPyHighCut, _doPyLowCut, _doBothPyCut;
   bool _doPzHighCut, _doPzLowCut, _doBothPzCut;
 };
 
