@@ -243,6 +243,10 @@ void PHG4E1039InsensDetector::Construct( G4LogicalVolume* logicWorld )
       cout << __LINE__ << ": " <<  name << endl;
       continue;
     }
+    if(name.find("target_air") != std::string::npos) {
+      cout << __LINE__ << ": " <<  name << endl;
+      continue;
+    }
     sID = atoi(row[2]);
     mID = atoi(row[3]);
     sensitiveDetector = atoi(row[4]);
