@@ -91,6 +91,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 	/// init KalmanFastTracking
 	fastfinder = new KalmanFastTracking(field, _t_geo_manager);
+	fastfinder->Verbosity(verbosity);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
   if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";

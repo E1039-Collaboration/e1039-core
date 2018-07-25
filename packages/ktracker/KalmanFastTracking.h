@@ -29,12 +29,18 @@ Created: 05-24-2013
 class TGeoManager;
 
 class PHField;
+class PHTimer;
 
 class KalmanFastTracking
 {
 public:
     explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
     ~KalmanFastTracking();
+
+    //
+    void Verbosity(const int a) {verbosity = a;}
+    int Verbosity() const {return verbosity;}
+    void printTimers();
 
     //Set the input event
     int setRawEvent(SRawEvent* event_input);
@@ -104,6 +110,9 @@ public:
     void chi2fit(int n, double x[], double y[], double& a, double& b);
 
 private:
+
+    int verbosity;
+
     //Raw event input
     SRawEvent* rawEvent;
     std::vector<Hit> hitAll;
@@ -193,6 +202,13 @@ private:
 
     //Flag for enable Kalman fitting
     const bool enable_KF;
+
+    PHTimer* _t_st2;
+    PHTimer* _t_st3;
+    PHTimer* _t_st23;
+    PHTimer* _t_global;
+    PHTimer* _t_kalman;
+
 };
 
 #endif

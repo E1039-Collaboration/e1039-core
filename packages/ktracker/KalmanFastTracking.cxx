@@ -8,6 +8,7 @@ Created: 05-28-2013
 */
 
 #include <phfield/PHField.h>
+#include <phool/PHTimer.h>
 
 #include <iostream>
 #include <algorithm>
@@ -24,13 +25,21 @@ Created: 05-28-2013
 
 #define _DEBUG_ON
 
-KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag) : enable_KF(flag)
+KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag)
+: verbosity(0), enable_KF(flag), _t_st2(nullptr), _t_st3(nullptr), _t_st23(nullptr), _t_global(nullptr), _t_kalman(nullptr)
 {
     using namespace std;
+
 #ifdef _DEBUG_ON
     cout << "Initialization of KalmanFastTracking ..." << endl;
     cout << "========================================" << endl;
 #endif
+
+    _t_st2 = new PHTimer("_t_st2"); _t_st2->stop();
+    _t_st3 = new PHTimer("_t_st3"); _t_st3->stop();
+    _t_st23 = new PHTimer("_t_st23"); _t_st23->stop();
+    _t_global = new PHTimer("_t_global"); _t_global->stop();
+    _t_kalman = new PHTimer("_t_kalman"); _t_kalman->stop();
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
@@ -378,7 +387,9 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 #endif
 
     //Build tracklets in station 2, 3+, 3-
+    _t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
+    _t_st2->stop();
     if(trackletsInSt[1].empty())
     {
 #ifdef _DEBUG_ON
@@ -387,8 +398,10 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
         return TFEXIT_FAIL_ST2_TRACKLET;
     }
 
+    _t_st3->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
+    _t_st3->stop();
     if(trackletsInSt[2].empty())
     {
 #ifdef _DEBUG_ON
@@ -398,7 +411,9 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
     //Build back partial tracks in station 2, 3+ and 3-
+    _t_st23->restart();
     buildBackPartialTracks();
+    _t_st23->restart();
     if(trackletsInSt[3].empty())
     {
 #ifdef _DEBUG_ON
@@ -408,7 +423,9 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
+    _t_global->restart();
     buildGlobalTracks();
+    _t_global->restart();
 
 #ifdef _DEBUG_ON
     for(int i = 0; i < 2; ++i)
@@ -438,11 +455,13 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     if(!enable_KF) return TFEXIT_SUCCESS;
 
     //Build kalman tracks
+    _t_kalman->restart();
     for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
     }
+    _t_kalman->stop();
 
 #ifdef _DEBUG_ON
     LogInfo(stracks.size() << " final tracks:");
@@ -451,6 +470,9 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
         strack->print();
     }
 #endif
+
+    if(verbosity >= 2)
+    	printTimers();
 
     return TFEXIT_SUCCESS;
 }
@@ -1899,6 +1921,16 @@ void KalmanFastTracking::resolveLeftRight(KalmanTrack& kmtrk)
     }
 
     if(isUpdated) fitTrack(kmtrk);
+}
+
+void KalmanFastTracking::printTimers() {
+	LogInfo("KalmanFastTracking::printTimers: ");
+	std::cout <<"================================================================" << std::endl;
+	std::cout << "Tracklet St2                "<<_t_st2->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
 }
 
 void KalmanFastTracking::chi2fit(int n, double x[], double y[], double& a, double& b)
