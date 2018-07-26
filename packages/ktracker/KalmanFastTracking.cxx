@@ -35,12 +35,12 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
     cout << "========================================" << endl;
 #endif
 
-    _t_st2 = new PHTimer("_t_st2"); _t_st2->stop();
-    _t_st3 = new PHTimer("_t_st3"); _t_st3->stop();
-    _t_st23 = new PHTimer("_t_st23"); _t_st23->stop();
-    _t_global = new PHTimer("_t_global"); _t_global->stop();
-    _t_global_kalman = new PHTimer("_t_global_kalman"); _t_global_kalman->stop();
-    _t_kalman = new PHTimer("_t_kalman"); _t_kalman->stop();
+    _t_st2 = new PHTimer("_t_st2");
+    _t_st3 = new PHTimer("_t_st3");
+    _t_st23 = new PHTimer("_t_st23");
+    _t_global = new PHTimer("_t_global");
+    _t_global_kalman = new PHTimer("_t_global_kalman");
+    _t_kalman = new PHTimer("_t_kalman");
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
