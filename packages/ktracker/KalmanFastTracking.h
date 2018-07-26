@@ -207,6 +207,7 @@ private:
     PHTimer* _t_st3;
     PHTimer* _t_st23;
     PHTimer* _t_global;
+    PHTimer* _t_global_kalman;
     PHTimer* _t_kalman;
 
 };

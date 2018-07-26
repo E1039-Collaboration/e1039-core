@@ -26,7 +26,7 @@ Created: 05-28-2013
 //#define _DEBUG_ON
 
 KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag)
-: verbosity(0), enable_KF(flag), _t_st2(nullptr), _t_st3(nullptr), _t_st23(nullptr), _t_global(nullptr), _t_kalman(nullptr)
+: verbosity(0), enable_KF(flag), _t_st2(nullptr), _t_st3(nullptr), _t_st23(nullptr), _t_global_kalman(nullptr), _t_global(nullptr), _t_kalman(nullptr)
 {
     using namespace std;
 
@@ -39,6 +39,7 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
     _t_st3 = new PHTimer("_t_st3"); _t_st3->stop();
     _t_st23 = new PHTimer("_t_st23"); _t_st23->stop();
     _t_global = new PHTimer("_t_global"); _t_global->stop();
+    _t_global_kalman = new PHTimer("_t_global_kalman"); _t_global_kalman->stop();
     _t_kalman = new PHTimer("_t_kalman"); _t_kalman->stop();
 
     //Initialize jobOpts service
@@ -703,7 +704,9 @@ void KalmanFastTracking::buildGlobalTracks()
 
 #if !defined(ALIGNMENT_MODE) && defined(_ENABLE_KF)
                 ///Set vertex information
+                _t_global_kalman->restart();
                 SRecTrack recTrack = processOneTracklet(tracklet_global);
+                _t_global_kalman->stop();
                 tracklet_global.chisq_vtx = recTrack.getChisqVertex();
 
                 if(recTrack.isValid() && tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx) tracklet_best_vtx = tracklet_global;
@@ -1930,6 +1933,7 @@ void KalmanFastTracking::printTimers() {
 	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global Kalman               "<<_t_global_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout <<"================================================================" << std::endl;
 }
