@@ -121,13 +121,13 @@ int TestSimAnalyzer::process_event(PHCompositeNode* topNode) {
       	_b_truth_pos[_b_n_hits] =
       			_b_truth_x[_b_n_hits]*uVec[0] + _b_truth_y[_b_n_hits]*uVec[1];
 
-      	LogDebug("detector_id: " << _b_detector_id[_b_n_hits]);
+      	//LogDebug("detector_id: " << _b_detector_id[_b_n_hits]);
       }
       ++_b_n_hits;
     }
   }
 
-  LogDebug("nhits: " << _hit_vector->size());
+  //LogDebug("nhits: " << _hit_vector->size());
 
   _tout->Fill();
 

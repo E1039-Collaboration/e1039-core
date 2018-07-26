@@ -23,7 +23,7 @@ Created: 05-28-2013
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag)
 : verbosity(0), enable_KF(flag), _t_st2(nullptr), _t_st3(nullptr), _t_st23(nullptr), _t_global(nullptr), _t_kalman(nullptr)
@@ -413,7 +413,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     //Build back partial tracks in station 2, 3+ and 3-
     _t_st23->restart();
     buildBackPartialTracks();
-    _t_st23->restart();
+    _t_st23->stop();
     if(trackletsInSt[3].empty())
     {
 #ifdef _DEBUG_ON
@@ -425,7 +425,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     //Connect tracklets in station 2/3 and station 1 to form global tracks
     _t_global->restart();
     buildGlobalTracks();
-    _t_global->restart();
+    _t_global->stop();
 
 #ifdef _DEBUG_ON
     for(int i = 0; i < 2; ++i)
@@ -1924,13 +1924,14 @@ void KalmanFastTracking::resolveLeftRight(KalmanTrack& kmtrk)
 }
 
 void KalmanFastTracking::printTimers() {
-	LogInfo("KalmanFastTracking::printTimers: ");
+	std::cout <<"KalmanFastTracking::printTimers: " << std::endl;
 	std::cout <<"================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_t_st2->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout <<"================================================================" << std::endl;
 }
 
 void KalmanFastTracking::chi2fit(int n, double x[], double y[], double& a, double& b)

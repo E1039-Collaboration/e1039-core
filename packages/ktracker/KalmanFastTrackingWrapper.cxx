@@ -46,7 +46,7 @@
 #define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 using namespace std;
 

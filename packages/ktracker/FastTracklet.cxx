@@ -21,7 +21,7 @@ ClassImp(SignedHit)
 ClassImp(PropSegment)
 ClassImp(Tracklet)
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 //Signed hit definition
 SignedHit::SignedHit() : sign(0)
