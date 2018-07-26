@@ -391,6 +391,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     _t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
     _t_st2->stop();
+
+    if(verbosity >= 2) {
+    	LogInfo("NTracklets in St2: " << trackletsInSt[1].size());
+    }
+
     if(trackletsInSt[1].empty())
     {
 #ifdef _DEBUG_ON
@@ -403,6 +408,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
     _t_st3->stop();
+
+    if(verbosity >= 2) {
+    	LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
+    }
+
     if(trackletsInSt[2].empty())
     {
 #ifdef _DEBUG_ON
@@ -415,6 +425,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     _t_st23->restart();
     buildBackPartialTracks();
     _t_st23->stop();
+
+    if(verbosity >= 2) {
+    	LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
+    }
+
     if(trackletsInSt[3].empty())
     {
 #ifdef _DEBUG_ON
@@ -427,6 +442,10 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     _t_global->restart();
     buildGlobalTracks();
     _t_global->stop();
+
+    if(verbosity >= 2) {
+    	LogInfo("NTracklets Global: " << trackletsInSt[4].size());
+    }
 
 #ifdef _DEBUG_ON
     for(int i = 0; i < 2; ++i)
