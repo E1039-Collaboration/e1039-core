@@ -337,7 +337,7 @@ int KalmanFastTrackingWrapper::End(PHCompositeNode* topNode) {
 int KalmanFastTrackingWrapper::InitEvalTree() {
 	PHTFileServer::get().open(_out_name.c_str(), "RECREATE");
 
-	_tout = new TTree("save", "save");
+	_tout = new TTree("T", "save");
 	_tout->Branch("rawEvent", &_rawEvent, 256000, 99);
 	_tout->Branch("recEvent", &_recEvent, 256000, 99);
 
