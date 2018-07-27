@@ -149,6 +149,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
   		int track_id = par->get_track_id();
   		gnhits[n_particles] = trackID_nhits[track_id];
+
+  		++n_particles;
   	}
   }
 
