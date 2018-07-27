@@ -31,6 +31,10 @@ class SQEvent;
 class SQHitMap;
 class SQHitVector;
 
+class PHG4TruthInfoContainer;
+
+class GeomSvc;
+
 class TFile;
 class TTree;
 
@@ -81,6 +85,8 @@ private:
 	SQHitMap *_hit_map;
 	SQHitVector *_hit_vector;
 
+	PHG4TruthInfoContainer* _truth;
+
 	std::string _out_name;
 	TTree* _tout;
 
@@ -90,9 +96,17 @@ private:
 	int _b_event_id;
 	int _b_n_hits;
 	int _b_hit_id[10000];
-	short _b_detector_id[10000];
+	int _b_detector_id[10000];
 	float _b_drift_distance[10000];
 	float _b_pos[10000];
+	float _b_detector_z[10000];
+
+	float _b_truth_x[10000];
+	float _b_truth_y[10000];
+	float _b_truth_z[10000];
+	float _b_truth_pos[10000];
+
+	GeomSvc *p_geomSvc;
 };
 
 
