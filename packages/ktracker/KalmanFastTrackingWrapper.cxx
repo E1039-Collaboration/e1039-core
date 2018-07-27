@@ -281,6 +281,9 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
 	_recEvent->setRecStatus(fastfinder->setRawEvent(sraw_event));
 
+  if(verbosity >= 2)
+  	fastfinder->printTimers();
+
   _recEvent->setRawEvent(_rawEvent);
 
   std::list<Tracklet>& rec_tracklets = fastfinder->getFinalTracklets();

@@ -526,9 +526,6 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 #endif
 
-    if(verbosity >= 2)
-    	printTimers();
-
     return TFEXIT_SUCCESS;
 }
 
