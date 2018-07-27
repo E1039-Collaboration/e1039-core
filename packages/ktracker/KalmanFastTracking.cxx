@@ -352,7 +352,7 @@ void KalmanFastTracking::setRawEventDebug(SRawEvent* event_input)
 int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 {
 	//
-	for(auto iter=_timers.begin(); iter!=_timers.end();++_iter) {
+	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
 		iter->second->reset();
 	}
 
