@@ -109,17 +109,17 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition((*iter)->get_detector_id());
       _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
       if(_truth) {
-      	int track_id = (*iter)->get_track_id();
-      	//LogDebug(track_id);
+      	int track_id = hit->get_track_id();
+      	LogDebug(track_id);
 
       	if(trackID_nhits.find(track_id)!=trackID_nhits.end())
       		trackID_nhits[track_id] = trackID_nhits[track_id]+1;
       	else
       		trackID_nhits[track_id] = 1;
 
-      	_b_truth_x[_b_n_hits] = (*iter)->get_truth_x();
-      	_b_truth_y[_b_n_hits] = (*iter)->get_truth_y();
-      	_b_truth_z[_b_n_hits] = (*iter)->get_truth_z();
+      	_b_truth_x[_b_n_hits] = hit->get_truth_x();
+      	_b_truth_y[_b_n_hits] = hit->get_truth_y();
+      	_b_truth_z[_b_n_hits] = hit->get_truth_z();
 
       	double uVec[3] = {
       			p_geomSvc->getCostheta(hit->get_detector_id()),
