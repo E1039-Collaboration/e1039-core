@@ -97,25 +97,42 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     _b_run_id   = _event_header->get_run_id();
   }
 
-	std::map<int, int> trackID_nhits;
+	std::map<int, int> trackID_nhits_st1;
+	std::map<int, int> trackID_nhits_st2;
+	std::map<int, int> trackID_nhits_st3;
 
   if(_hit_vector) {
     _b_n_hits = 0;
     for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
     	SQHit *hit = (*iter);
-      _b_hit_id[_b_n_hits]         = (*iter)->get_hit_id();
-      _b_drift_distance[_b_n_hits] = (*iter)->get_drift_distance();
-      _b_pos[_b_n_hits]            = (*iter)->get_pos();
-      _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition((*iter)->get_detector_id());
-      _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
+      _b_hit_id[_b_n_hits]         = hit->get_hit_id();
+      _b_drift_distance[_b_n_hits] = hit->get_drift_distance();
+      _b_pos[_b_n_hits]            = hit->get_pos();
+      _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition(hit->get_detector_id());
+      _b_detector_id[_b_n_hits]    = hit->get_detector_id();
+
       if(_truth) {
       	int track_id = hit->get_track_id();
-      	LogDebug(track_id);
 
-      	if(trackID_nhits.find(track_id)!=trackID_nhits.end())
-      		trackID_nhits[track_id] = trackID_nhits[track_id]+1;
-      	else
-      		trackID_nhits[track_id] = 1;
+      	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=12) {
+        	if(trackID_nhits_st1.find(track_id)!=trackID_nhits_st1.end())
+        		trackID_nhits_st1[track_id] = trackID_nhits_st1[track_id]+1;
+        	else
+        		trackID_nhits_st1[track_id] = 1;
+      	}
+      	if(hit->get_detector_id() >= 13 and hit->get_detector_id() <=18) {
+        	if(trackID_nhits_st2.find(track_id)!=trackID_nhits_st2.end())
+        		trackID_nhits_st2[track_id] = trackID_nhits_st2[track_id]+1;
+        	else
+        		trackID_nhits_st2[track_id] = 1;
+      	}
+      	if(hit->get_detector_id() >= 19 and hit->get_detector_id() <=30) {
+        	if(trackID_nhits_st3.find(track_id)!=trackID_nhits_st3.end())
+        		trackID_nhits_st3[track_id] = trackID_nhits_st3[track_id]+1;
+        	else
+        		trackID_nhits_st3[track_id] = 1;
+      	}
+
 
       	_b_truth_x[_b_n_hits] = hit->get_truth_x();
       	_b_truth_y[_b_n_hits] = hit->get_truth_y();
@@ -148,7 +165,14 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		geta[n_particles] = mom.Eta();
 
   		int track_id = par->get_track_id();
-  		gnhits[n_particles] = trackID_nhits[track_id];
+  		gnhits[n_particles] =
+  				trackID_nhits_st1[track_id] +
+					trackID_nhits_st2[track_id] +
+					trackID_nhits_st3[track_id];
+
+  		gnst1[n_particles] = trackID_nhits_st1[track_id];
+  		gnst2[n_particles] = trackID_nhits_st2[track_id];
+  		gnst3[n_particles] = trackID_nhits_st3[track_id];
 
   		++n_particles;
   	}
@@ -202,6 +226,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
   _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
+  _tout->Branch("gnst1",         gnst1,               "gnst1[n_particles]/I");
+  _tout->Branch("gnst2",         gnst2,               "gnst2[n_particles]/I");
+  _tout->Branch("gnst3",         gnst3,               "gnst3[n_particles]/I");
 
   return 0;
 }
@@ -233,6 +260,9 @@ int TrkEval::ResetEvalVars() {
     gpt[i]       = std::numeric_limits<float>::max();
     geta[i]      = std::numeric_limits<float>::max();
     gnhits[i]    = std::numeric_limits<int>::max();
+    gnst1[i]     = std::numeric_limits<int>::max();
+    gnst2[i]     = std::numeric_limits<int>::max();
+    gnst3[i]     = std::numeric_limits<int>::max();
   }
 
   return 0;
