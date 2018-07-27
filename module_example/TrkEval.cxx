@@ -159,8 +159,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		PHG4Particle * par = iter->second;
   		TVector3 mom(par->get_px(), par->get_py(), par->get_pz());
   		gpx[n_particles] = par->get_px();
-  		gpy[n_particles] = par->get_px();
-  		gpz[n_particles] = par->get_px();
+  		gpy[n_particles] = par->get_py();
+  		gpz[n_particles] = par->get_pz();
   		gpt[n_particles] = mom.Pt();
   		geta[n_particles] = mom.Eta();
 
