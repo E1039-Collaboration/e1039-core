@@ -14,6 +14,7 @@ Created: 05-24-2013
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include <Math/Factory.h>
 #include <Math/Minimizer.h>
@@ -203,12 +204,16 @@ private:
     //Flag for enable Kalman fitting
     const bool enable_KF;
 
-    PHTimer* _t_st2;
-    PHTimer* _t_st3;
-    PHTimer* _t_st23;
-    PHTimer* _t_global;
-    PHTimer* _t_global_kalman;
-    PHTimer* _t_kalman;
+    std::map< std::string, PHTimer* > _timers;
+
+//    PHTimer* _t_st2;
+//    PHTimer* _t_st3;
+//    PHTimer* _t_st23;
+//    PHTimer* _t_global;
+//    PHTimer* _t_global_st1;
+//    PHTimer* _t_global_link;
+//    PHTimer* _t_global_kalman;
+//    PHTimer* _t_kalman;
 
 };
 

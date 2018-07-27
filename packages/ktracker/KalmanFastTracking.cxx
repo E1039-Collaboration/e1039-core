@@ -26,7 +26,16 @@ Created: 05-28-2013
 //#define _DEBUG_ON
 
 KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag)
-: verbosity(0), enable_KF(flag), _t_st2(nullptr), _t_st3(nullptr), _t_st23(nullptr), _t_global_kalman(nullptr), _t_global(nullptr), _t_kalman(nullptr)
+: verbosity(0),
+	enable_KF(flag)
+//	_t_st2(nullptr),
+//	_t_st3(nullptr),
+//	_t_st23(nullptr),
+//	_t_global(nullptr),
+//	_t_global_st1(nullptr),
+//	_t_global_link(nullptr),
+//	_t_global_kalman(nullptr),
+//	_t_kalman(nullptr)
 {
     using namespace std;
 
@@ -35,12 +44,23 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
     cout << "========================================" << endl;
 #endif
 
-    _t_st2 = new PHTimer("_t_st2");
-    _t_st3 = new PHTimer("_t_st3");
-    _t_st23 = new PHTimer("_t_st23");
-    _t_global = new PHTimer("_t_global");
-    _t_global_kalman = new PHTimer("_t_global_kalman");
-    _t_kalman = new PHTimer("_t_kalman");
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("global", new PHTimer("global")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("global_st1", new PHTimer("global_st1")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
+
+//    _t_st2 = new PHTimer("_t_st2");
+//    _t_st3 = new PHTimer("_t_st3");
+//    _t_st23 = new PHTimer("_t_st23");
+//    _t_global = new PHTimer("_t_global");
+//    _t_global_st1 = new PHTimer("_t_global_st1");
+//    _t_global_link = new PHTimer("_t_global_link");
+//    _t_global_kalman = new PHTimer("_t_global_kalman");
+//    _t_kalman = new PHTimer("_t_kalman");
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
@@ -331,6 +351,11 @@ void KalmanFastTracking::setRawEventDebug(SRawEvent* event_input)
 
 int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 {
+	//
+	for(auto iter=_timers.begin(); iter!=_timers.end();++_iter) {
+		iter->second->reset();
+	}
+
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
     stracks.clear();
@@ -388,9 +413,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 #endif
 
     //Build tracklets in station 2, 3+, 3-
-    _t_st2->restart();
+    _timers["st2"]->restart();
+    //_t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
-    _t_st2->stop();
+    //_t_st2->stop();
+    _timers["st2"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets in St2: " << trackletsInSt[1].size());
@@ -404,10 +431,12 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
         return TFEXIT_FAIL_ST2_TRACKLET;
     }
 
-    _t_st3->restart();
+    _timers["st3"]->restart();
+    //_t_st3->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
-    _t_st3->stop();
+    //_t_st3->stop();
+    _timers["st3"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
@@ -422,9 +451,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
     //Build back partial tracks in station 2, 3+ and 3-
-    _t_st23->restart();
+    _timers["st23"]->restart();
+    //_t_st23->restart();
     buildBackPartialTracks();
-    _t_st23->stop();
+    //_t_st23->stop();
+    _timers["st23"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
@@ -439,9 +470,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
-    _t_global->restart();
+    _timers["global"]->restart();
+    //_t_global->restart();
     buildGlobalTracks();
-    _t_global->stop();
+    //_t_global->stop();
+    _timers["global"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets Global: " << trackletsInSt[4].size());
@@ -475,13 +508,15 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     if(!enable_KF) return TFEXIT_SUCCESS;
 
     //Build kalman tracks
-    _t_kalman->restart();
+    _timers["kalman"]->restart();
+    //_t_kalman->restart();
     for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
     }
-    _t_kalman->stop();
+    //_t_kalman->stop();
+    _timers["kalman"]->stop();
 
 #ifdef _DEBUG_ON
     LogInfo(stracks.size() << " final tracks:");
@@ -693,7 +728,14 @@ void KalmanFastTracking::buildGlobalTracks()
             for(int j = 0; j < 3; j++) LogInfo("Extrapo: " << pos_exp[j] << "  " << window[j]);
 #endif
 
+            _timers["global_st1"]->restart();
+            //_t_global_st1->restart();
             buildTrackletsInStation(i+1, 0, pos_exp, window);
+            //_t_global_st1->stop();
+            _timers["global_st1"]->stop();
+
+            _timers["global_link"]->restart();
+            //_t_global_link->restart();
             Tracklet tracklet_best_prob, tracklet_best_vtx;
             for(std::list<Tracklet>::iterator tracklet1 = trackletsInSt[0].begin(); tracklet1 != trackletsInSt[0].end(); ++tracklet1)
             {
@@ -723,9 +765,11 @@ void KalmanFastTracking::buildGlobalTracks()
 
 #if !defined(ALIGNMENT_MODE) && defined(_ENABLE_KF)
                 ///Set vertex information
-                _t_global_kalman->restart();
+                _timers["global_kalman"]->restart();
+                //_t_global_kalman->restart();
                 SRecTrack recTrack = processOneTracklet(tracklet_global);
-                _t_global_kalman->stop();
+                //_t_global_kalman->stop();
+                _timers["global_kalman"]->stop();
                 tracklet_global.chisq_vtx = recTrack.getChisqVertex();
 
                 if(recTrack.isValid() && tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx) tracklet_best_vtx = tracklet_global;
@@ -750,6 +794,9 @@ void KalmanFastTracking::buildGlobalTracks()
 #endif
 #endif
             }
+            //_t_global_link->stop();
+            _timers["global_link"]->stop();
+
 
 #if !defined(ALIGNMENT_MODE) && defined(_ENABLE_KF)
             //The selection logic is, prefer the tracks with best p-value, as long as it's not low-pz
@@ -1948,12 +1995,20 @@ void KalmanFastTracking::resolveLeftRight(KalmanTrack& kmtrk)
 void KalmanFastTracking::printTimers() {
 	std::cout <<"KalmanFastTracking::printTimers: " << std::endl;
 	std::cout <<"================================================================" << std::endl;
-	std::cout << "Tracklet St2                "<<_t_st2->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "  Global Kalman               "<<_t_global_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "Tracklet St2                "<<_t_st2->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "  Global Kalman               "<<_t_global_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
+//	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global St1                  "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global Kalman               "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout <<"================================================================" << std::endl;
 }
 
