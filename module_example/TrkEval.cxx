@@ -201,7 +201,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
-  _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/F");
+  _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
 
   return 0;
 }
