@@ -97,6 +97,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     _b_run_id   = _event_header->get_run_id();
   }
 
+	std::map<int, int> trackID_nhits;
+
   if(_hit_vector) {
     _b_n_hits = 0;
     for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
@@ -107,8 +109,14 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition((*iter)->get_detector_id());
       _b_detector_id[_b_n_hits]    = (*iter)->get_detector_id();
       if(_truth) {
-      	//int track_id = (*iter)->get_track_id();
+      	int track_id = (*iter)->get_track_id();
       	//LogDebug(track_id);
+
+      	if(trackID_nhits.find(track_id)!=trackID_nhits.end())
+      		trackID_nhits[track_id] = trackID_nhits[track_id]+1;
+      	else
+      		trackID_nhits[track_id] = 1;
+
       	_b_truth_x[_b_n_hits] = (*iter)->get_truth_x();
       	_b_truth_y[_b_n_hits] = (*iter)->get_truth_y();
       	_b_truth_z[_b_n_hits] = (*iter)->get_truth_z();
@@ -125,6 +133,23 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       }
       ++_b_n_hits;
     }
+  }
+
+  if(_truth) {
+  	for(auto iter=_truth->GetPrimaryParticleRange().first;
+  			iter!=_truth->GetPrimaryParticleRange().second;
+  			++iter) {
+  		PHG4Particle * par = iter->second;
+  		TVector3 mom(par->get_px(), par->get_py(), par->get_pz());
+  		gpx[n_particles] = par->get_px();
+  		gpy[n_particles] = par->get_px();
+  		gpz[n_particles] = par->get_px();
+  		gpt[n_particles] = mom.Pt();
+  		geta[n_particles] = mom.Eta();
+
+  		int track_id = par->get_track_id();
+  		gnhits[n_particles] = trackID_nhits[track_id];
+  	}
   }
 
   //LogDebug("nhits: " << _hit_vector->size());
@@ -156,6 +181,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("spillID",       &_b_spill_id,        "spillID/I");
   _tout->Branch("liveProton",    &_b_target_pos,      "liveProton/F");
   _tout->Branch("eventID",       &_b_event_id,        "eventID/I");
+
   _tout->Branch("nHits",         &_b_n_hits,          "nHits/I");
   _tout->Branch("hitID",         _b_hit_id,           "hitID[nHits]/I");
   _tout->Branch("detectorID",    _b_detector_id,      "detectorID[nHits]/I");
@@ -167,6 +193,14 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("driftDistance", _b_drift_distance,   "driftDistance[nHits]/F");
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
+  _tout->Branch("n_particles",   &n_particles,        "n_particles/I");
+  _tout->Branch("gpx",           gpx,                 "gpx[n_particles]/F");
+  _tout->Branch("gpy",           gpy,                 "gpy[n_particles]/F");
+  _tout->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
+  _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
+  _tout->Branch("geta",          geta,                "geta[n_particles]/F");
+  _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/F");
+
   return 0;
 }
 
@@ -175,6 +209,7 @@ int TrkEval::ResetEvalVars() {
   _b_spill_id = std::numeric_limits<int>::max();
   _b_target_pos = std::numeric_limits<float>::max();
   _b_event_id = std::numeric_limits<int>::max();
+
   _b_n_hits = 0;
   for(int i=0; i<10000; ++i) {
     _b_detector_id[i]    = std::numeric_limits<short>::max();
@@ -186,6 +221,16 @@ int TrkEval::ResetEvalVars() {
     _b_truth_y[i]       = std::numeric_limits<float>::max();
     _b_truth_z[i]       = std::numeric_limits<float>::max();
     _b_truth_pos[i]     = std::numeric_limits<float>::max();
+  }
+
+  n_particles = 0;
+  for(int i=0; i<1000; ++i) {
+    gpx[i]       = std::numeric_limits<float>::max();
+    gpy[i]       = std::numeric_limits<float>::max();
+    gpz[i]       = std::numeric_limits<float>::max();
+    gpt[i]       = std::numeric_limits<float>::max();
+    geta[i]      = std::numeric_limits<float>::max();
+    gnhits[i]    = std::numeric_limits<int>::max();
   }
 
   return 0;
