@@ -63,6 +63,13 @@ public:
   //! set the dimensions of the distribution of particles about the vertex
   void set_vertex_size_parameters(const double mean, const double width);
 
+  //!
+  void set_pxpypz_range(
+  		const double x_min, const double x_max,
+			const double y_min, const double y_max,
+			const double z_min, const double z_max
+			);
+
 private:
 
   double smearvtx(const double position, const double width, FUNCTION dist) const;
@@ -96,6 +103,10 @@ private:
   double _p_min;
   double _p_max; 
   double _p_gaus_width;
+
+  double _px_min, _px_max;
+  double _py_min, _py_max;
+  double _pz_min, _pz_max;
 
   PHG4InEvent* _ineve;
 };
