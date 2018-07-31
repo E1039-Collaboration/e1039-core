@@ -183,6 +183,7 @@ namespace {
 }
 
 DPDigitizer::DPDigitizer(const std::string &name) :
+		SubsysReco(name),
 		p_geomSvc(nullptr)
 {
 
