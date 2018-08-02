@@ -3,21 +3,36 @@
 
 using namespace std;
 
-int Fun4Sim(const int nEvents = 1)
+int Fun4Sim(
+    const int nEvents = 1,
+    const double hodo_gap = 0.,
+    const double target_coil_pos_z = -130
+    )
 {
-  const int use_g4steps = 1;
+  const bool do_collimator = false;
+  const bool do_target = false;
   const double target_l = 7.9; //cm
   const double target_z = (7.9-target_l)/2.; //cm
+  const int use_g4steps = 1;
 
   const bool gen_gun = false;
-  const bool gen_pythia8 = false;
-  const bool gen_test = true;
+  const bool gen_pythia8 = true;
+  const bool gen_test = false;
+  const bool gen_particle = false;
 
   gSystem->Load("libfun4all");
   gSystem->Load("libg4detectors");
   gSystem->Load("libg4testbench");
   gSystem->Load("libg4eval");
   gSystem->Load("libtruth_eval.so");
+
+  JobOptsSvc *jobopt_svc = JobOptsSvc::instance();
+  jobopt_svc->init("default.opts");
+
+  GeomSvc *geom_svc = GeomSvc::instance();
+  geom_svc->setDetectorY0("H1T", 35.+hodo_gap/2.); //orig. ~  35 cm
+  geom_svc->setDetectorY0("H1B", -35.-hodo_gap/2.);//orig. ~ -35 cm
+  geom_svc->initWireLUT();
 
   ///////////////////////////////////////////
   // Make the Server
@@ -43,15 +58,30 @@ int Fun4Sim(const int nEvents = 1)
     gSystem->Load("libPHPythia8.so");
 
     PHPythia8 *pythia8 = new PHPythia8();
-    pythia8->set_config_file("phpythia8.cfg");
-    pythia8->set_vertex_distribution_mean(0, 0, -130, 0);
+    pythia8->set_config_file("phpythia8_DY.cfg");
+    pythia8->set_vertex_distribution_mean(0, 0, target_coil_pos_z, 0);
     se->registerSubsystem(pythia8);
 
-    PHPy8ParticleTrigger* trigger = new PHPy8ParticleTrigger();
-    trigger->AddParticles("13,-13");
-    pythia8->register_trigger(trigger);
+    pythia8->set_trigger_AND();
+
+    PHPy8ParticleTrigger* trigger_mup = new PHPy8ParticleTrigger();
+    trigger_mup->AddParticles("-13");
+    //trigger_mup->SetPxHighLow(7, 0.5);
+    //trigger_mup->SetPyHighLow(6, -6);
+    trigger_mup->SetPzHighLow(120, 10);
+    pythia8->register_trigger(trigger_mup);
+
+    PHPy8ParticleTrigger* trigger_mum = new PHPy8ParticleTrigger();
+    trigger_mum->AddParticles("13");
+    //trigger_mum->SetPxHighLow(-0.5, -7);
+    //trigger_mum->SetPyHighLow(6, -6);
+    trigger_mum->SetPzHighLow(120, 10);
+    pythia8->register_trigger(trigger_mum);
 
     HepMCNodeReader *hr = new HepMCNodeReader();
+    hr->set_particle_filter_on(true);
+    hr->insert_particle_filter_pid(13);
+    hr->insert_particle_filter_pid(-13);
     se->registerSubsystem(hr);
   }
 
@@ -60,17 +90,46 @@ int Fun4Sim(const int nEvents = 1)
     gun_mup->set_name("mu+");
     //gun_mup->set_vtx(30, 0, 500);
     //gun_mup->set_mom(0., 0., 20.);
-    gun_mup->set_vtx(0., 0., -130);
-    gun_mup->set_mom(3., 0., 20.);
+    gun_mup->set_vtx(0., 0., target_coil_pos_z);
+    gun_mup->set_mom(3., 0.2, 40.);
     se->registerSubsystem(gun_mup);
 
     PHG4ParticleGun *gun_mum = new PHG4ParticleGun("GUN_mum");
     gun_mum->set_name("mu-");
     //gun_mum->set_vtx(-30, 0, 500);
     //gun_mum->set_mom(0., 0., 20.);
-    gun_mum->set_vtx(0., 0., -130);
-    gun_mum->set_mom(-3., 0., 20.);
-    //se->registerSubsystem(gun_mum);
+    gun_mum->set_vtx(0., 0., target_coil_pos_z);
+    gun_mum->set_mom(-3., -0.2, 40.);
+    se->registerSubsystem(gun_mum);
+  }
+
+  if(gen_particle) {
+    // toss low multiplicity dummy events
+    PHG4SimpleEventGenerator *gen = new PHG4SimpleEventGenerator();
+    gen->add_particles("mu+", 1);  // mu+,e+,proton,pi+,Upsilon
+
+    gen->set_vertex_distribution_function(PHG4SimpleEventGenerator::Uniform,
+        PHG4SimpleEventGenerator::Uniform,
+        PHG4SimpleEventGenerator::Uniform);
+    gen->set_vertex_distribution_mean(0.0, 0.0, target_coil_pos_z);
+    gen->set_vertex_distribution_width(0.0, 0.0, 0.0);
+
+    gen->set_vertex_size_function(PHG4SimpleEventGenerator::Uniform);
+    gen->set_vertex_size_parameters(0.0, 0.0);
+
+    gen->set_eta_range(2, 4);
+    gen->set_phi_range(-1.0 * TMath::Pi(), 1.0 * TMath::Pi());
+    //gen->set_pt_range(1.0, 3.0);
+    gen->set_p_range(20, 25);
+
+    //gen->set_pxpypz_range(2, 3.3, -0.5, 0.5, 20, 21);
+    //gen->set_pxpypz_range(1, 4, -1, 1, 15, 60);
+    gen->set_pxpypz_range(1, 4, -1, 1, 30, 60);
+
+    //gen->Embed(2);
+    gen->Verbosity(0);
+
+    se->registerSubsystem(gen);
   }
 
   // Fun4All G4 module
@@ -92,15 +151,14 @@ int Fun4Sim(const int nEvents = 1)
   // Geant4 Physics list to use
   g4Reco->SetPhysicsList("FTFP_BERT");
 
-
   PHG4E1039InsensSubsystem* insens = new PHG4E1039InsensSubsystem("Insens");
   g4Reco->registerSubsystem(insens);
 
   gROOT->LoadMacro("G4_Target.C");
-  SetupTarget(g4Reco, use_g4steps, target_l, target_z);
+  SetupTarget(g4Reco, do_collimator, do_target, target_coil_pos_z, target_l, target_z, use_g4steps);
 
-  gROOT->LoadMacro("G4_DriftChamber.C");
-  SetupDriftChamber(g4Reco);
+  gROOT->LoadMacro("G4_SensitiveDetectors.C");
+  SetupSensitiveDetectors(g4Reco);
 
   PHG4TruthSubsystem *truth = new PHG4TruthSubsystem();
   g4Reco->registerSubsystem(truth);
@@ -108,15 +166,15 @@ int Fun4Sim(const int nEvents = 1)
   se->registerSubsystem(g4Reco);
 
   DPDigitizer *digitizer = new DPDigitizer();
-  digitizer->Verbosity(100);
+  //digitizer->Verbosity(100);
   se->registerSubsystem(digitizer);
 
   gSystem->Load("libmodule_example.so");
-  TestSimAnalyzer *analyzer = new TestSimAnalyzer();
-  analyzer->Verbosity(0);
-  analyzer->set_hit_container_choice("Vector");
-  analyzer->set_out_name("test_analyzer.root");
-  se->registerSubsystem(analyzer);
+  TrkEval *trk_eval = new TrkEval();
+  trk_eval->Verbosity(0);
+  trk_eval->set_hit_container_choice("Vector");
+  trk_eval->set_out_name("trk_eval.root");
+  se->registerSubsystem(trk_eval);
 
   gSystem->Load("libktracker.so");
   KalmanFastTrackingWrapper *ktracker = new KalmanFastTrackingWrapper();
@@ -164,6 +222,7 @@ int Fun4Sim(const int nEvents = 1)
 
     // finish job - close and save output files
     se->End();
+    se->PrintTimer();
     std::cout << "All done" << std::endl;
 
     // cleanup - delete the server and exit
