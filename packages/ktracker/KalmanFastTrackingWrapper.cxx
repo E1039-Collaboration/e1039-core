@@ -40,6 +40,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <limits>
+#include <memory>
+
 #include <boost/lexical_cast.hpp>
 
 #define LogDebug(exp)		    std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
@@ -268,7 +270,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	SRawEvent* sraw_event = BuildSRawEvent();
+	auto up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
+	SRawEvent* sraw_event = up_raw_event.get();
 
   // TODO temp solution
   if(_event_header) {
@@ -277,7 +280,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
 	_rawEvent = sraw_event;
 
-	_recEvent = new SRecEvent();
+	auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
+	_recEvent = up_recEvent.get();
 
 	_recEvent->setRecStatus(fastfinder->setRawEvent(sraw_event));
 
