@@ -92,7 +92,7 @@ void get_soli_param(
   return;
 }
 
-void SetupDriftChamber(
+void SetupSensitiveDetectors(
     PHG4Reco *g4Reco,
     std::string _server_name = "seaquestdb01.fnal.gov",
     int _port = 3310,
@@ -180,7 +180,7 @@ void SetupDriftChamber(
     box->set_double_param("place_x", place[0]);
     box->set_double_param("place_y", place[1]);
     box->set_double_param("place_z", place[2]);
-    box->set_string_param("material", "G4_AIR");// G4_Si, G4_AIR
+    box->set_string_param("material", "G4_Si");// G4_Si, G4_AIR
     box->SetActive(1);
     g4Reco->registerSubsystem(box);
   }
