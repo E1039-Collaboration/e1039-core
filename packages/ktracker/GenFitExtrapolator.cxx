@@ -227,7 +227,8 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 		<< endl;
 #endif
 
-	genfit::AbsTrackRep* rep = new genfit::RKTrackRep(pid);
+	auto up_rep = std::unique_ptr<genfit::AbsTrackRep> (new genfit::RKTrackRep(pid));
+	auto rep = up_rep.get();
 
 	genfit::SharedPlanePtr destPlane(new genfit::DetPlane(TVector3(0, 0, z_out), TVector3(0, 0, 1)));
 
