@@ -426,7 +426,8 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     //TODO temp solution
     if(kt_detector_id>54 || kt_detector_id<1) continue;
 
-    SQMCHit_v1 *digiHit = new SQMCHit_v1();
+    auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
+    auto digiHit = up_digiHit.get();
 
     digiHit->set_detector_id(kt_detector_id);
 
