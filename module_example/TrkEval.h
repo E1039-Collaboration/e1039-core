@@ -145,6 +145,7 @@ private:
 	float dimu_geta[100];
 	float dimu_gphi[100];
 
+	int dimu_nrec[100];
 	float dimu_px[100];
 	float dimu_py[100];
 	float dimu_pz[100];

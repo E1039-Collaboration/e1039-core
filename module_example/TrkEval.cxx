@@ -410,6 +410,14 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("dimu_geta",     dimu_geta,            "dimu_geta[gndimu]/F");
   _tout->Branch("dimu_gphi",     dimu_gphi,            "dimu_gphi[gndimu]/F");
 
+  _tout->Branch("dimu_nrec",       dimu_px,              "dimu_px[gndimu]/F");
+  _tout->Branch("dimu_px",       dimu_px,              "dimu_px[gndimu]/F");
+  _tout->Branch("dimu_py",       dimu_py,              "dimu_py[gndimu]/F");
+  _tout->Branch("dimu_pz",       dimu_pz,              "dimu_pz[gndimu]/F");
+  _tout->Branch("dimu_pt",       dimu_pt,              "dimu_pt[gndimu]/F");
+  _tout->Branch("dimu_eta",      dimu_eta,             "dimu_eta[gndimu]/F");
+  _tout->Branch("dimu_phi",      dimu_phi,             "dimu_phi[gndimu]/F");
+
   return 0;
 }
 
