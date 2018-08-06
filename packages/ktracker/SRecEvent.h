@@ -16,6 +16,8 @@ Created: 01-21-2013
 
 #include "GlobalConsts.h"
 
+#include <phool/PHObject.h>
+
 #include <iostream>
 #include <vector>
 #include <list>
@@ -32,10 +34,17 @@ Created: 01-21-2013
 
 #include "SRawEvent.h"
 
-class SRecTrack: public TObject
+class SRecTrack: public PHObject
 {
 public:
     SRecTrack();
+
+    /// PHObject virtual overloads
+    void         identify(std::ostream& os = std::cout) const {print(os);}
+    void         Reset() {*this = SRecTrack();}
+    int          isValid() const;
+    SRecTrack*        Clone() const {return (new SRecTrack(*this));}
+
 
     ///Gets
     Int_t getCharge() const { return (fState[0])[0][0] > 0 ? 1 : -1; }
@@ -95,7 +104,7 @@ public:
     void adjustKMag(double kmagStr);
 
     ///Vertex stuff
-    bool isVertexValid();
+    bool isVertexValid() const;
     void setZVertex(Double_t z, bool update = true);
     void updateVtxHypothesis();
 
@@ -161,12 +170,12 @@ public:
     Int_t getNHitsInPTY() { return fNPropHitsY; }
 
     //Overall track quality cut
-    bool isValid();
+    //bool isValid();
     bool isTarget();
     bool isDump();
 
     ///Debugging output
-    void print();
+    void print(std::ostream& os = std::cout) const;
 
 private:
     ///Total Chisq
@@ -219,9 +228,16 @@ private:
     ClassDef(SRecTrack, 10)
 };
 
-class SRecDimuon: public TObject
+class SRecDimuon: public PHObject
 {
 public:
+
+		/// PHObject virtual overloads
+		void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl;}
+		void         Reset() {*this = SRecDimuon();}
+		int          isValid() const;
+		SRecDimuon*        Clone() const {return (new SRecDimuon(*this));}
+
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
 
@@ -229,7 +245,7 @@ public:
     void calcVariables();
 
     //Dimuon quality cut
-    bool isValid();
+    //bool isValid();
 
     //Target dimuon
     bool isTarget();
@@ -283,10 +299,16 @@ public:
     ClassDef(SRecDimuon, 6)
 };
 
-class SRecEvent: public TObject
+class SRecEvent: public PHObject
 {
 public:
     SRecEvent();
+
+    /// PHObject virtual overloads
+    void         identify(std::ostream& os = std::cout) const { os << "SRecEvent: TODO: NOT IMPLEMENTED!" << std::endl;}
+    void         Reset() {*this = SRecEvent();}
+    int          isValid() const {return true;}
+    SRecEvent*        Clone() const {return (new SRecEvent(*this));}
 
     ///Set/Get event info
     void setEventInfo(SRawEvent* rawEvent);
