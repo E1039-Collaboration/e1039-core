@@ -267,8 +267,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
 			const double mu_mass = 0.106;
 			if (abs(par->get_pid()) == 13) {
-				for (auto iter2 = iter++;
-						iter2 != _truth->GetPrimaryParticleRange().second; ++iter2) {
+				auto iter2 = iter;
+				iter2++;
+				for (;iter2 != _truth->GetPrimaryParticleRange().second; ++iter2) {
 					PHG4Particle* par2 = iter2->second;
 					if(par2->get_pid()+par->get_pid()!=0) continue;
 
