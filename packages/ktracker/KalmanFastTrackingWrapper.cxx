@@ -345,6 +345,10 @@ int KalmanFastTrackingWrapper::End(PHCompositeNode* topNode) {
 }
 
 int KalmanFastTrackingWrapper::InitEvalTree() {
+
+	_rawEvent = nullptr;
+	_recEvent = nullptr;
+
 	PHTFileServer::get().open(_out_name.c_str(), "RECREATE");
 
 	_tout = new TTree("T", "save");
