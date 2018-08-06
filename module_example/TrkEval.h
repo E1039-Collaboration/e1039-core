@@ -33,6 +33,8 @@ class SQHitVector;
 
 class PHG4TruthInfoContainer;
 
+class SRecEvent;
+
 class GeomSvc;
 
 class TFile;
@@ -87,6 +89,8 @@ private:
 
 	PHG4TruthInfoContainer* _truth;
 
+	SRecEvent* _recEvent;
+
 	std::string _out_name;
 	TTree* _tout;
 
@@ -114,6 +118,7 @@ private:
 	float gpt[1000];
 	float geta[1000];
 	int gnhits[1000];
+	int ntruhits[1000];
 	int gndc[1000];
 	int gnhodo[1000];
 	int gnprop[1000];

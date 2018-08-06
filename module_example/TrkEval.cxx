@@ -18,6 +18,8 @@
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
 
+#include <ktracker/SRecEvent.h>
+
 #include <geom_svc/GeomSvc.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -39,6 +41,8 @@
 #include <cfloat>
 #include <stdexcept>
 #include <limits>
+#include <tuple>
+
 #include <boost/lexical_cast.hpp>
 
 #define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
@@ -97,15 +101,20 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     _b_run_id   = _event_header->get_run_id();
   }
 
-	std::map<int, int> trackID_nhits_dc;
-	std::map<int, int> trackID_nhits_hodo;
-	std::map<int, int> trackID_nhits_prop;
+	std::map<int, int> parID_nhits_dc;
+	std::map<int, int> parID_nhits_hodo;
+	std::map<int, int> parID_nhits_prop;
+
+	std::map<int, int> hitID_ihit;
 
   if(_hit_vector) {
     _b_n_hits = 0;
-    for(auto iter = _hit_vector->begin(); iter!= _hit_vector->end();++iter) {
-    	SQHit *hit = (*iter);
-      _b_hit_id[_b_n_hits]         = hit->get_hit_id();
+    for(int ihit=0; ihit<_hit_vector->size(); ++ihit) {
+    	SQHit *hit = _hit_vector->at(ihit);
+
+    	int hitID = hit->get_hit_id();
+    	_b_hit_id[_b_n_hits]         = hitID;
+    	hitID_ihit[hitID] = ihit;
       _b_drift_distance[_b_n_hits] = hit->get_drift_distance();
       _b_pos[_b_n_hits]            = hit->get_pos();
       _b_detector_z[_b_n_hits]     = p_geomSvc->getPlanePosition(hit->get_detector_id());
@@ -115,22 +124,22 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       	int track_id = hit->get_track_id();
 
       	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=30) {
-        	if(trackID_nhits_dc.find(track_id)!=trackID_nhits_dc.end())
-        		trackID_nhits_dc[track_id] = trackID_nhits_dc[track_id]+1;
+        	if(parID_nhits_dc.find(track_id)!=parID_nhits_dc.end())
+        		parID_nhits_dc[track_id] = parID_nhits_dc[track_id]+1;
         	else
-        		trackID_nhits_dc[track_id] = 1;
+        		parID_nhits_dc[track_id] = 1;
       	}
       	if(hit->get_detector_id() >= 31 and hit->get_detector_id() <=46) {
-        	if(trackID_nhits_hodo.find(track_id)!=trackID_nhits_hodo.end())
-        		trackID_nhits_hodo[track_id] = trackID_nhits_hodo[track_id]+1;
+        	if(parID_nhits_hodo.find(track_id)!=parID_nhits_hodo.end())
+        		parID_nhits_hodo[track_id] = parID_nhits_hodo[track_id]+1;
         	else
-        		trackID_nhits_hodo[track_id] = 1;
+        		parID_nhits_hodo[track_id] = 1;
       	}
       	if(hit->get_detector_id() >= 47 and hit->get_detector_id() <=54) {
-        	if(trackID_nhits_prop.find(track_id)!=trackID_nhits_prop.end())
-        		trackID_nhits_prop[track_id] = trackID_nhits_prop[track_id]+1;
+        	if(parID_nhits_prop.find(track_id)!=parID_nhits_prop.end())
+        		parID_nhits_prop[track_id] = parID_nhits_prop[track_id]+1;
         	else
-        		trackID_nhits_prop[track_id] = 1;
+        		parID_nhits_prop[track_id] = 1;
       	}
 
 
@@ -152,6 +161,55 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     }
   }
 
+  typedef std::tuple<int, int> ParRecoPair;
+  std::map<ParRecoPair, int> parID_recID_nHit;
+
+  typedef std::tuple<int, int> TrkIDNHit;
+  std::map<int, TrkIDNHit> parID_bestRecID;
+  std::map<int, TrkIDNHit> recID_bestParID;
+
+  if(_recEvent) {
+  	for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
+  		SRecTrack* recTrack = _recEvent->getTrack(itrack);
+  		for(int ihit=0; ihit<recTrack->getNHits();++ihit) {
+  			int hitID = recTrack->getHitIndex(ihit);
+  			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
+  			int parID = hit->get_track_id();
+  			ParRecoPair key = std::make_tuple(parID, itrack);
+
+      	if(parID_recID_nHit.find(key)!=parID_recID_nHit.end())
+      		parID_recID_nHit[key] = parID_recID_nHit[key]+1;
+      	else
+      		parID_recID_nHit[key] = 1;
+  		}
+  	}
+
+  	for(auto iter=parID_recID_nHit.begin();
+  			iter!=parID_recID_nHit.end(); ++iter) {
+  		int parID = std::get<0>(iter->first);
+  		int recID = std::get<1>(iter->first);
+  		int nHit  = iter->second;
+
+    	if(parID_bestRecID.find(parID)!=parID_bestRecID.end()) {
+    		int nHit_current_best  = std::get<1>(parID_bestRecID[parID]);
+    		if (nHit > nHit_current_best)
+    			parID_bestRecID[parID] = std::make_tuple(recID, nHit);
+    	}
+    	else
+    		parID_bestRecID[parID] = std::make_tuple(recID, nHit);
+
+    	if(recID_bestParID.find(recID)!=recID_bestParID.end()) {
+    		int nHit_current_best  = std::get<1>(recID_bestParID[recID]);
+    		if (nHit > nHit_current_best)
+    			recID_bestParID[recID] = std::make_tuple(parID, nHit);
+    	}
+    	else
+    		recID_bestParID[recID] = std::make_tuple(parID, nHit);
+  	}
+
+
+  }
+
   if(_truth) {
   	for(auto iter=_truth->GetPrimaryParticleRange().first;
   			iter!=_truth->GetPrimaryParticleRange().second;
@@ -164,15 +222,20 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		gpt[n_particles] = mom.Pt();
   		geta[n_particles] = mom.Eta();
 
-  		int track_id = par->get_track_id();
+  		int parID = par->get_track_id();
   		gnhits[n_particles] =
-  				trackID_nhits_dc[track_id] +
-					trackID_nhits_hodo[track_id] +
-					trackID_nhits_prop[track_id];
+  				parID_nhits_dc[parID] +
+					parID_nhits_hodo[parID] +
+					parID_nhits_prop[parID];
 
-  		gndc[n_particles] = trackID_nhits_dc[track_id];
-  		gnhodo[n_particles] = trackID_nhits_hodo[track_id];
-  		gnprop[n_particles] = trackID_nhits_prop[track_id];
+  		gndc[n_particles] = parID_nhits_dc[parID];
+  		gnhodo[n_particles] = parID_nhits_hodo[parID];
+  		gnprop[n_particles] = parID_nhits_prop[parID];
+
+  		ntruhits = 0;
+  		if(parID_bestRecID.find(parID)!=parID_bestRecID.end()) {
+  			ntruhits = std::get<1>(parID_bestRecID[parID]);
+  		}
 
   		++n_particles;
   	}
@@ -226,6 +289,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
   _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
+  _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
   _tout->Branch("gndc",          gndc,                "gndc[n_particles]/I");
   _tout->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
@@ -254,13 +318,14 @@ int TrkEval::ResetEvalVars() {
 
   n_particles = 0;
   for(int i=0; i<1000; ++i) {
-    gpx[i]       = std::numeric_limits<float>::max();
-    gpy[i]       = std::numeric_limits<float>::max();
-    gpz[i]       = std::numeric_limits<float>::max();
-    gpt[i]       = std::numeric_limits<float>::max();
-    geta[i]      = std::numeric_limits<float>::max();
-    gnhits[i]    = std::numeric_limits<int>::max();
-    gndc[i]     = std::numeric_limits<int>::max();
+    gpx[i]        = std::numeric_limits<float>::max();
+    gpy[i]        = std::numeric_limits<float>::max();
+    gpz[i]        = std::numeric_limits<float>::max();
+    gpt[i]        = std::numeric_limits<float>::max();
+    geta[i]       = std::numeric_limits<float>::max();
+    gnhits[i]     = std::numeric_limits<int>::max();
+    ntruhits[i]   = std::numeric_limits<int>::max();
+    gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
   }
@@ -307,9 +372,14 @@ int TrkEval::GetNodes(PHCompositeNode* topNode) {
   _truth = findNode::getClass<PHG4TruthInfoContainer>(topNode, "G4TruthInfo");
   if (!_truth) {
     LogError("!_truth");
-    //return Fun4AllReturnCodes::ABORTEVENT;
+    return Fun4AllReturnCodes::ABORTEVENT;
   }
 
+  _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+  if (!_recEvent) {
+    LogError("!_recEvent");
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
