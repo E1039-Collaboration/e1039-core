@@ -94,22 +94,22 @@ private:
 	std::string _out_name;
 	TTree* _tout;
 
-	int _b_run_id;
-	int _b_spill_id;
-	float _b_target_pos;
-	int _b_event_id;
+	int run_id;
+	int spill_id;
+	float target_pos;
+	int event_id;
 
-	int _b_n_hits;
-	int _b_hit_id[10000];
-	int _b_detector_id[10000];
-	float _b_drift_distance[10000];
-	float _b_pos[10000];
-	float _b_detector_z[10000];
+	int n_hits;
+	int hit_id[10000];
+	int detector_id[10000];
+	float drift_distance[10000];
+	float pos[10000];
+	float detector_z[10000];
 
-	float _b_truth_x[10000];
-	float _b_truth_y[10000];
-	float _b_truth_z[10000];
-	float _b_truth_pos[10000];
+	float truth_x[10000];
+	float truth_y[10000];
+	float truth_z[10000];
+	float truth_pos[10000];
 
 	int n_particles;
 	float gvx[1000];
