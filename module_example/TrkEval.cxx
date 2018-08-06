@@ -170,9 +170,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
   if(_recEvent) {
   	for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
-  		SRecTrack* recTrack = _recEvent->getTrack(itrack);
-  		for(int ihit=0; ihit<recTrack->getNHits();++ihit) {
-  			int hitID = recTrack->getHitIndex(ihit);
+  		SRecTrack recTrack = _recEvent->getTrack(itrack);
+  		for(int ihit=0; ihit<recTrack.getNHits();++ihit) {
+  			int hitID = recTrack.getHitIndex(ihit);
   			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
   			int parID = hit->get_track_id();
   			ParRecoPair key = std::make_tuple(parID, itrack);

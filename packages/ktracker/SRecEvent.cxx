@@ -59,6 +59,9 @@ Int_t SRecTrack::getNHitsInStation(Int_t stationID)
     return nHits;
 }
 
+Double_t SRecTrack::getProb() const
+{ return KMAG_ON == 1 ? TMath::Prob(fChisq, getNHits() - 5) : TMath::Prob(fChisq, getNHits() - 4); }
+
 void SRecTrack::setZVertex(Double_t z, bool update)
 {
     Node _node_vertex;
