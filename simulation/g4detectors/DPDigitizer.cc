@@ -420,7 +420,15 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
     if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
+    string detName = digiPlanes[*dpid].detectorName;
+    int kt_detector_id = p_geomSvc->getDetectorID(detName);
+
+    //TODO temp solution
+    if(kt_detector_id>54 || kt_detector_id<1) continue;
+
     SQMCHit_v1 *digiHit = new SQMCHit_v1();
+
+    digiHit->set_detector_id(kt_detector_id);
 
     digiHit->set_track_id(track_id);
     digiHit->set_g4hit_id(g4hit.get_hit_id());
@@ -455,14 +463,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
       }
     }
-
-    string detName = digiPlanes[*dpid].detectorName;
-
-    //p_geomSvc->toLocalDetectorName(detName, DP_elementID);
-    digiHit->set_detector_id(p_geomSvc->getDetectorID(detName));
-
-    //TODO temp solution
-    if(digiHit->get_detector_id()==0) continue;
 
     digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
     //digiHit->set_pos(w);
