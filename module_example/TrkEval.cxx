@@ -289,10 +289,11 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 					dimu_geta[gndimu] = vphoton.Eta();
 					dimu_gphi[gndimu] = vphoton.Phi();
 
-					if(
-							parID_bestRecID.find(par->get_track_id())!=parID_bestRecID.end() and
-							parID_bestRecID.find(par2->get_track_id())!=parID_bestRecID.end()
-					) {
+					dimu_nrec = 0;
+					if(parID_bestRecID.find(par->get_track_id())!=parID_bestRecID.end()) ++dimu_nrec;
+					if(parID_bestRecID.find(par2->get_track_id())!=parID_bestRecID.end()) ++dimu_nrec;
+
+					if(dimu_nrec==2) {
 						int recID1 = std::get<0>(parID_bestRecID[par->get_track_id()]);
 						int recID2 = std::get<0>(parID_bestRecID[par2->get_track_id()]);
 
@@ -410,7 +411,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("dimu_geta",     dimu_geta,            "dimu_geta[gndimu]/F");
   _tout->Branch("dimu_gphi",     dimu_gphi,            "dimu_gphi[gndimu]/F");
 
-  _tout->Branch("dimu_nrec",       dimu_px,              "dimu_px[gndimu]/F");
+  _tout->Branch("dimu_nrec",     dimu_nrec,            "dimu_nrec[gndimu]/I");
   _tout->Branch("dimu_px",       dimu_px,              "dimu_px[gndimu]/F");
   _tout->Branch("dimu_py",       dimu_py,              "dimu_py[gndimu]/F");
   _tout->Branch("dimu_pz",       dimu_pz,              "dimu_pz[gndimu]/F");
