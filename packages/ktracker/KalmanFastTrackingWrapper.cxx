@@ -82,7 +82,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	int ret = MakeNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
-	int ret = GetNodes(topNode);
+	ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
 	ret = InitField(topNode);
@@ -421,6 +421,12 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 			if(Verbosity() > 2) LogError("!_triggerhit_vector");
 			//return Fun4AllReturnCodes::ABORTEVENT;
 		}
+	}
+
+	_recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+	if (!_recEvent) {
+		if(Verbosity() > 2) LogError("!_recEvent");
+		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
