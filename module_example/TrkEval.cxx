@@ -232,9 +232,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		gnhodo[n_particles] = parID_nhits_hodo[parID];
   		gnprop[n_particles] = parID_nhits_prop[parID];
 
-  		ntruhits = 0;
+  		ntruhits[n_particles] = 0;
   		if(parID_bestRecID.find(parID)!=parID_bestRecID.end()) {
-  			ntruhits = std::get<1>(parID_bestRecID[parID]);
+  			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
   		}
 
   		++n_particles;
