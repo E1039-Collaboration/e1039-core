@@ -245,11 +245,11 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
   			int recID = std::get<0>(parID_bestRecID[parID]);
   			SRecTrack recTrack = _recEvent->getTrack(recID);
-  			TVector3 rec_vtx = recTrack.getVertexPos();
+  			TVector3 rec_vtx = recTrack.getTargetPos();
   			vx[n_particles]  = rec_vtx.X();
   			vy[n_particles]  = rec_vtx.Y();
   			vz[n_particles]  = rec_vtx.Z();
-  			TVector3 rec_mom = recTrack.getVertexMom();
+  			TVector3 rec_mom = recTrack.getTargetMom();
   			px[n_particles]  = rec_mom.Px();
   			py[n_particles]  = rec_mom.Py();
   			pz[n_particles]  = rec_mom.Pz();
