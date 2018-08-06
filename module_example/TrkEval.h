@@ -138,20 +138,20 @@ private:
 	float phi[1000];
 
 	int gndimu;
-	float dimu_gpx[100];
-	float dimu_gpy[100];
-	float dimu_gpz[100];
-	float dimu_gpt[100];
-	float dimu_geta[100];
-	float dimu_gphi[100];
+	float dimu_gpx[1000];
+	float dimu_gpy[1000];
+	float dimu_gpz[1000];
+	float dimu_gpt[1000];
+	float dimu_geta[1000];
+	float dimu_gphi[1000];
 
-	int dimu_nrec[100];
-	float dimu_px[100];
-	float dimu_py[100];
-	float dimu_pz[100];
-	float dimu_pt[100];
-	float dimu_eta[100];
-	float dimu_phi[100];
+	int dimu_nrec[1000];
+	float dimu_px[1000];
+	float dimu_py[1000];
+	float dimu_pz[1000];
+	float dimu_pt[1000];
+	float dimu_eta[1000];
+	float dimu_phi[1000];
 
 
 

@@ -470,7 +470,7 @@ int TrkEval::ResetEvalVars() {
   }
 
   gndimu = 0;
-  for(int i=0; i<100; ++i) {
+  for(int i=0; i<1000; ++i) {
   	dimu_gpx[i]        = std::numeric_limits<float>::max();
   	dimu_gpy[i]        = std::numeric_limits<float>::max();
   	dimu_gpz[i]        = std::numeric_limits<float>::max();
