@@ -221,6 +221,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		gpz[n_particles] = par->get_pz();
   		gpt[n_particles] = mom.Pt();
   		geta[n_particles] = mom.Eta();
+  		gphi[n_particles] = mom.Phi();
 
   		int parID = par->get_track_id();
   		gnhits[n_particles] =
@@ -288,11 +289,13 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
+  _tout->Branch("gphi",          gphi,                "gphi[n_particles]/F");
   _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
-  _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
   _tout->Branch("gndc",          gndc,                "gndc[n_particles]/I");
   _tout->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
+
+  _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
 
   return 0;
 }
@@ -323,11 +326,12 @@ int TrkEval::ResetEvalVars() {
     gpz[i]        = std::numeric_limits<float>::max();
     gpt[i]        = std::numeric_limits<float>::max();
     geta[i]       = std::numeric_limits<float>::max();
+    gphi[i]       = std::numeric_limits<float>::max();
     gnhits[i]     = std::numeric_limits<int>::max();
-    ntruhits[i]   = std::numeric_limits<int>::max();
     gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
+    ntruhits[i]   = std::numeric_limits<int>::max();
   }
 
   return 0;
