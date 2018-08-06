@@ -97,9 +97,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     _b_run_id   = _event_header->get_run_id();
   }
 
-	std::map<int, int> trackID_nhits_st1;
-	std::map<int, int> trackID_nhits_st2;
-	std::map<int, int> trackID_nhits_st3;
+	std::map<int, int> trackID_nhits_dc;
+	std::map<int, int> trackID_nhits_hodo;
+	std::map<int, int> trackID_nhits_prop;
 
   if(_hit_vector) {
     _b_n_hits = 0;
@@ -114,23 +114,23 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       if(_truth) {
       	int track_id = hit->get_track_id();
 
-      	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=12) {
-        	if(trackID_nhits_st1.find(track_id)!=trackID_nhits_st1.end())
-        		trackID_nhits_st1[track_id] = trackID_nhits_st1[track_id]+1;
+      	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=30) {
+        	if(trackID_nhits_dc.find(track_id)!=trackID_nhits_dc.end())
+        		trackID_nhits_dc[track_id] = trackID_nhits_dc[track_id]+1;
         	else
-        		trackID_nhits_st1[track_id] = 1;
+        		trackID_nhits_dc[track_id] = 1;
       	}
-      	if(hit->get_detector_id() >= 13 and hit->get_detector_id() <=18) {
-        	if(trackID_nhits_st2.find(track_id)!=trackID_nhits_st2.end())
-        		trackID_nhits_st2[track_id] = trackID_nhits_st2[track_id]+1;
+      	if(hit->get_detector_id() >= 31 and hit->get_detector_id() <=46) {
+        	if(trackID_nhits_hodo.find(track_id)!=trackID_nhits_hodo.end())
+        		trackID_nhits_hodo[track_id] = trackID_nhits_hodo[track_id]+1;
         	else
-        		trackID_nhits_st2[track_id] = 1;
+        		trackID_nhits_hodo[track_id] = 1;
       	}
-      	if(hit->get_detector_id() >= 19 and hit->get_detector_id() <=30) {
-        	if(trackID_nhits_st3.find(track_id)!=trackID_nhits_st3.end())
-        		trackID_nhits_st3[track_id] = trackID_nhits_st3[track_id]+1;
+      	if(hit->get_detector_id() >= 47 and hit->get_detector_id() <=54) {
+        	if(trackID_nhits_prop.find(track_id)!=trackID_nhits_prop.end())
+        		trackID_nhits_prop[track_id] = trackID_nhits_prop[track_id]+1;
         	else
-        		trackID_nhits_st3[track_id] = 1;
+        		trackID_nhits_prop[track_id] = 1;
       	}
 
 
@@ -166,13 +166,13 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
   		int track_id = par->get_track_id();
   		gnhits[n_particles] =
-  				trackID_nhits_st1[track_id] +
-					trackID_nhits_st2[track_id] +
-					trackID_nhits_st3[track_id];
+  				trackID_nhits_dc[track_id] +
+					trackID_nhits_hodo[track_id] +
+					trackID_nhits_prop[track_id];
 
-  		gnst1[n_particles] = trackID_nhits_st1[track_id];
-  		gnst2[n_particles] = trackID_nhits_st2[track_id];
-  		gnst3[n_particles] = trackID_nhits_st3[track_id];
+  		gndc[n_particles] = trackID_nhits_dc[track_id];
+  		gnhodo[n_particles] = trackID_nhits_hodo[track_id];
+  		gnprop[n_particles] = trackID_nhits_prop[track_id];
 
   		++n_particles;
   	}
@@ -226,9 +226,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
   _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
-  _tout->Branch("gnst1",         gnst1,               "gnst1[n_particles]/I");
-  _tout->Branch("gnst2",         gnst2,               "gnst2[n_particles]/I");
-  _tout->Branch("gnst3",         gnst3,               "gnst3[n_particles]/I");
+  _tout->Branch("gndc",          gndc,                "gndc[n_particles]/I");
+  _tout->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
+  _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
 
   return 0;
 }
@@ -260,9 +260,9 @@ int TrkEval::ResetEvalVars() {
     gpt[i]       = std::numeric_limits<float>::max();
     geta[i]      = std::numeric_limits<float>::max();
     gnhits[i]    = std::numeric_limits<int>::max();
-    gnst1[i]     = std::numeric_limits<int>::max();
-    gnst2[i]     = std::numeric_limits<int>::max();
-    gnst3[i]     = std::numeric_limits<int>::max();
+    gndc[i]     = std::numeric_limits<int>::max();
+    gnhodo[i]     = std::numeric_limits<int>::max();
+    gnprop[i]     = std::numeric_limits<int>::max();
   }
 
   return 0;

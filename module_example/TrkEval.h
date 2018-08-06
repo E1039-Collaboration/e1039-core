@@ -114,9 +114,9 @@ private:
 	float gpt[1000];
 	float geta[1000];
 	int gnhits[1000];
-	int gnst1[1000];
-	int gnst2[1000];
-	int gnst3[1000];
+	int gndc[1000];
+	int gnhodo[1000];
+	int gnprop[1000];
 
 
 
