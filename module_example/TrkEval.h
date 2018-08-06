@@ -112,6 +112,9 @@ private:
 	float _b_truth_pos[10000];
 
 	int n_particles;
+	float gvx[1000];
+	float gvy[1000];
+	float gvz[1000];
 	float gpx[1000];
 	float gpy[1000];
 	float gpz[1000];
@@ -124,6 +127,9 @@ private:
 	int gnprop[1000];
 
 	int ntruhits[1000];
+	float vx[1000];
+	float vy[1000];
+	float vz[1000];
 	float px[1000];
 	float py[1000];
 	float pz[1000];

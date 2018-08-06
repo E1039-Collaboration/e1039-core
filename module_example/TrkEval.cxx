@@ -215,6 +215,13 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			iter!=_truth->GetPrimaryParticleRange().second;
   			++iter) {
   		PHG4Particle * par = iter->second;
+
+  		int vtx_id =  par->get_vtx_id();
+  		PHG4VtxPoint* vtx = _truth->GetVtx(vtx_id);
+  		gvx[n_particles] = vtx->get_x();
+  		gvy[n_particles] = vtx->get_y();
+  		gvz[n_particles] = vtx->get_z();
+
   		TVector3 mom(par->get_px(), par->get_py(), par->get_pz());
   		gpx[n_particles] = par->get_px();
   		gpy[n_particles] = par->get_py();
@@ -238,7 +245,11 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
   			int recID = std::get<0>(parID_bestRecID[parID]);
   			SRecTrack recTrack = _recEvent->getTrack(recID);
-  			TLorentzVector rec_mom = recTrack.getMomentumVertex();
+  			TVector3 rec_vtx = recTrack.getVertexPos();
+  			vx[n_particles]  = rec_vtx.X();
+  			vy[n_particles]  = rec_vtx.Y();
+  			vz[n_particles]  = rec_vtx.Z();
+  			TVector3 rec_mom = recTrack.getVertexMom();
   			px[n_particles]  = rec_mom.Px();
   			py[n_particles]  = rec_mom.Py();
   			pz[n_particles]  = rec_mom.Pz();
@@ -293,6 +304,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
   _tout->Branch("n_particles",   &n_particles,        "n_particles/I");
+  _tout->Branch("gvx",           gpx,                 "gpx[n_particles]/F");
+  _tout->Branch("gvy",           gpy,                 "gpy[n_particles]/F");
+  _tout->Branch("gvz",           gpz,                 "gpz[n_particles]/F");
   _tout->Branch("gpx",           gpx,                 "gpx[n_particles]/F");
   _tout->Branch("gpy",           gpy,                 "gpy[n_particles]/F");
   _tout->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
@@ -305,6 +319,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
 
   _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
+  _tout->Branch("vx",            px,                  "px[n_particles]/F");
+  _tout->Branch("vy",            py,                  "py[n_particles]/F");
+  _tout->Branch("vz",            pz,                  "pz[n_particles]/F");
   _tout->Branch("px",            px,                  "px[n_particles]/F");
   _tout->Branch("py",            py,                  "py[n_particles]/F");
   _tout->Branch("pz",            pz,                  "pz[n_particles]/F");
@@ -336,6 +353,9 @@ int TrkEval::ResetEvalVars() {
 
   n_particles = 0;
   for(int i=0; i<1000; ++i) {
+    gvx[i]        = std::numeric_limits<float>::max();
+    gvy[i]        = std::numeric_limits<float>::max();
+    gvz[i]        = std::numeric_limits<float>::max();
     gpx[i]        = std::numeric_limits<float>::max();
     gpy[i]        = std::numeric_limits<float>::max();
     gpz[i]        = std::numeric_limits<float>::max();
@@ -348,6 +368,9 @@ int TrkEval::ResetEvalVars() {
     gnprop[i]     = std::numeric_limits<int>::max();
 
     ntruhits[i]   = std::numeric_limits<int>::max();
+    vx[i]         = std::numeric_limits<float>::max();
+    vy[i]         = std::numeric_limits<float>::max();
+    vz[i]         = std::numeric_limits<float>::max();
     px[i]         = std::numeric_limits<float>::max();
     py[i]         = std::numeric_limits<float>::max();
     pz[i]         = std::numeric_limits<float>::max();
