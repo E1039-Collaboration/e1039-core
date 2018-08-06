@@ -89,6 +89,8 @@ private:
 
 	int InitGeom(PHCompositeNode *topNode);
 
+	int MakeNodes(PHCompositeNode *topNode);
+
 	int GetNodes(PHCompositeNode *topNode);
 
 	SRawEvent* BuildSRawEvent();

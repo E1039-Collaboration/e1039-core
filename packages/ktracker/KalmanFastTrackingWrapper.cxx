@@ -79,6 +79,9 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	ResetEvalVars();
 	InitEvalTree();
 
+	int ret = MakeNodes(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
 	int ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
@@ -280,8 +283,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
 	_rawEvent = sraw_event;
 
-	auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
-	_recEvent = up_recEvent.get();
+	//auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
+	//_recEvent = up_recEvent.get();
 
 	_recEvent->setRecStatus(fastfinder->setRawEvent(sraw_event));
 
@@ -352,10 +355,30 @@ int KalmanFastTrackingWrapper::InitEvalTree() {
 }
 
 int KalmanFastTrackingWrapper::ResetEvalVars() {
-	_rawEvent = nullptr;
-	_recEvent = nullptr;
+	//_rawEvent = nullptr;
+	//_recEvent = nullptr;
 
 	return 0;
+}
+
+int KalmanFastTrackingWrapper::MakeNodes(PHCompositeNode* topNode) {
+
+	PHNodeIterator iter(topNode);
+
+	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+	if (!eventNode) {
+		LogInfo("No DST node, create one");
+		eventNode = new PHCompositeNode("DST");
+		topNode->addNode(eventNode);
+	}
+
+	_recEvent = new SRecEvent();
+	PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent,"SRecEvent", "PHObject");
+	eventNode->addNode(recEventNode);
+	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+		LogInfo("DST/SRecEvent Added");
+
+	return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
