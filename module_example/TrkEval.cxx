@@ -304,9 +304,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("pos",           _b_pos,              "pos[nHits]/F");
 
   _tout->Branch("n_particles",   &n_particles,        "n_particles/I");
-  _tout->Branch("gvx",           gpx,                 "gpx[n_particles]/F");
-  _tout->Branch("gvy",           gpy,                 "gpy[n_particles]/F");
-  _tout->Branch("gvz",           gpz,                 "gpz[n_particles]/F");
+  _tout->Branch("gvx",           gvx,                 "gvx[n_particles]/F");
+  _tout->Branch("gvy",           gvy,                 "gvy[n_particles]/F");
+  _tout->Branch("gvz",           gvz,                 "gvz[n_particles]/F");
   _tout->Branch("gpx",           gpx,                 "gpx[n_particles]/F");
   _tout->Branch("gpy",           gpy,                 "gpy[n_particles]/F");
   _tout->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
@@ -319,9 +319,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
 
   _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
-  _tout->Branch("vx",            px,                  "px[n_particles]/F");
-  _tout->Branch("vy",            py,                  "py[n_particles]/F");
-  _tout->Branch("vz",            pz,                  "pz[n_particles]/F");
+  _tout->Branch("vx",            vx,                  "vx[n_particles]/F");
+  _tout->Branch("vy",            vy,                  "vy[n_particles]/F");
+  _tout->Branch("vz",            vz,                  "vz[n_particles]/F");
   _tout->Branch("px",            px,                  "px[n_particles]/F");
   _tout->Branch("py",            py,                  "py[n_particles]/F");
   _tout->Branch("pz",            pz,                  "pz[n_particles]/F");
