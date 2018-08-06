@@ -127,7 +127,7 @@ private:
 	int gnprop[1000];
 
 	int ntruhits[1000];
-	float vx[1000];
+	c vx[1000];
 	float vy[1000];
 	float vz[1000];
 	float px[1000];
@@ -136,6 +136,22 @@ private:
 	float pt[1000];
 	float eta[1000];
 	float phi[1000];
+
+	int gndimu;
+	float dimu_gpx[100];
+	float dimu_gpy[100];
+	float dimu_gpz[100];
+	float dimu_gpt[100];
+	float dimu_geta[100];
+	float dimu_gphi[100];
+
+	float dimu_px[100];
+	float dimu_py[100];
+	float dimu_pz[100];
+	float dimu_pt[100];
+	float dimu_eta[100];
+	float dimu_phi[100];
+
 
 
 

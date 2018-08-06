@@ -258,6 +258,79 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			phi[n_particles] = rec_mom.Phi();
   		}
 
+			const double mu_mass = 0.106;
+			if (abs(par->get_pid()) == 13) {
+				for (auto iter2 = iter + 1;
+						iter2 != _truth->GetPrimaryParticleRange().second; ++iter2) {
+					PHG4Particle* par2 = iter2->second;
+					if(par2->get_pid()+par->get_pid()!=0) continue;
+
+					TLorentzVector par1_mom;
+					par1_mom.SetXYZM(
+							par->get_px(),
+							par->get_py(),
+							par->get_pz(),
+							mu_mass
+					);
+
+					TLorentzVector par2_mom;
+					par2_mom.SetXYZM(
+							par2->get_px(),
+							par2->get_py(),
+							par2->get_pz(),
+							mu_mass
+							);
+
+					TLorentzVector vphoton = par1_mom + par2_mom;
+					dimu_gpx[gndimu] = vphoton.Px();
+					dimu_gpy[gndimu] = vphoton.Py();
+					dimu_gpz[gndimu] = vphoton.Pz();
+					dimu_gpt[gndimu] = vphoton.Pt();
+					dimu_geta[gndimu] = vphoton.Eta();
+					dimu_gphi[gndimu] = vphoton.Phi();
+
+					if(
+							parID_bestRecID.find(par->get_track_id())!=parID_bestRecID.end() and
+							parID_bestRecID.find(par2->get_track_id())!=parID_bestRecID.end()
+					) {
+						int recID1 = std::get<0>(parID_bestRecID[par->get_track_id()]);
+						int recID2 = std::get<0>(parID_bestRecID[par2->get_track_id()]);
+
+						SRecTrack rec_trk1 = _recEvent->getTrack(recID1);
+						SRecTrack rec_trk2 = _recEvent->getTrack(recID2);
+
+						TVector3 rec_3mom1 = rec_trk1.getTargetMom();
+						TVector3 rec_3mom2 = rec_trk2.getTargetMom();
+
+						TLorentzVector rec_4mom1;
+						rec_4mom1.SetXYZM(
+								rec_3mom1.Px(),
+								rec_3mom1.Py(),
+								rec_3mom1.Pz(),
+								mu_mass
+						);
+
+						TLorentzVector rec_4mom2;
+						rec_4mom2.SetXYZM(
+								rec_3mom2.Px(),
+								rec_3mom2.Py(),
+								rec_3mom2.Pz(),
+								mu_mass
+						);
+
+						TLorentzVector rec_vphoton = rec_4mom1 + rec_4mom2;
+						dimu_px[gndimu] = rec_vphoton.Px();
+						dimu_py[gndimu] = rec_vphoton.Py();
+						dimu_pz[gndimu] = rec_vphoton.Pz();
+						dimu_pt[gndimu] = rec_vphoton.Pt();
+						dimu_eta[gndimu] = rec_vphoton.Eta();
+						dimu_phi[gndimu] = rec_vphoton.Phi();
+					}
+
+					++gndimu;
+				}
+			}
+
   		++n_particles;
   	}
   }
@@ -329,6 +402,14 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("eta",           eta,                 "eta[n_particles]/F");
   _tout->Branch("phi",           phi,                 "phi[n_particles]/F");
 
+  _tout->Branch("gndimu",        &gndimu,              "gndimu/I");
+  _tout->Branch("dimu_gpx",      dimu_gpx,             "dimu_gpx[gndimu]/F");
+  _tout->Branch("dimu_gpy",      dimu_gpy,             "dimu_gpy[gndimu]/F");
+  _tout->Branch("dimu_gpz",      dimu_gpz,             "dimu_gpz[gndimu]/F");
+  _tout->Branch("dimu_gpt",      dimu_gpt,             "dimu_gpt[gndimu]/F");
+  _tout->Branch("dimu_geta",     dimu_geta,            "dimu_geta[gndimu]/F");
+  _tout->Branch("dimu_gphi",     dimu_gphi,            "dimu_gphi[gndimu]/F");
+
   return 0;
 }
 
@@ -377,6 +458,16 @@ int TrkEval::ResetEvalVars() {
     pt[i]         = std::numeric_limits<float>::max();
     eta[i]        = std::numeric_limits<float>::max();
     phi[i]        = std::numeric_limits<float>::max();
+  }
+
+  gndimu = 0;
+  for(int i=0; i<100; ++i) {
+  	dimu_gpx[i]        = std::numeric_limits<float>::max();
+  	dimu_gpy[i]        = std::numeric_limits<float>::max();
+  	dimu_gpz[i]        = std::numeric_limits<float>::max();
+  	dimu_gpt[i]        = std::numeric_limits<float>::max();
+  	dimu_geta[i]       = std::numeric_limits<float>::max();
+  	dimu_gphi[i]       = std::numeric_limits<float>::max();
   }
 
   return 0;
