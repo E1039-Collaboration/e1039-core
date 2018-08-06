@@ -236,6 +236,15 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		ntruhits[n_particles] = 0;
   		if(parID_bestRecID.find(parID)!=parID_bestRecID.end()) {
   			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
+  			int recID = std::get<0>(parID_bestRecID[parID]);
+  			SRecTrack recTrack = _recEvent->getTrack(recID);
+  			TLorentzVector rec_mom = recTrack.getMomentumVertex();
+  			px[n_particles]  = rec_mom.Px();
+  			py[n_particles]  = rec_mom.Py();
+  			pz[n_particles]  = rec_mom.Pz();
+  			pt[n_particles]  = rec_mom.Pt();
+  			eta[n_particles] = rec_mom.Eta();
+  			phi[n_particles] = rec_mom.Phi();
   		}
 
   		++n_particles;
@@ -296,6 +305,12 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
 
   _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
+  _tout->Branch("px",            px,                  "px[n_particles]/F");
+  _tout->Branch("py",            py,                  "py[n_particles]/F");
+  _tout->Branch("pz",            pz,                  "pz[n_particles]/F");
+  _tout->Branch("pt",            pt,                  "pt[n_particles]/F");
+  _tout->Branch("eta",           eta,                 "eta[n_particles]/F");
+  _tout->Branch("phi",           phi,                 "phi[n_particles]/F");
 
   return 0;
 }
@@ -331,7 +346,14 @@ int TrkEval::ResetEvalVars() {
     gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
+
     ntruhits[i]   = std::numeric_limits<int>::max();
+    px[i]         = std::numeric_limits<float>::max();
+    py[i]         = std::numeric_limits<float>::max();
+    pz[i]         = std::numeric_limits<float>::max();
+    pt[i]         = std::numeric_limits<float>::max();
+    eta[i]        = std::numeric_limits<float>::max();
+    phi[i]        = std::numeric_limits<float>::max();
   }
 
   return 0;

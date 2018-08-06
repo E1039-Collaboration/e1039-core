@@ -124,6 +124,12 @@ private:
 	int gnprop[1000];
 
 	int ntruhits[1000];
+	float px[1000];
+	float py[1000];
+	float pz[1000];
+	float pt[1000];
+	float eta[1000];
+	float phi[1000];
 
 
 
