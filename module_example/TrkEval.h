@@ -127,7 +127,7 @@ private:
 	int gnprop[1000];
 
 	int ntruhits[1000];
-	c vx[1000];
+	float vx[1000];
 	float vy[1000];
 	float vz[1000];
 	float px[1000];
