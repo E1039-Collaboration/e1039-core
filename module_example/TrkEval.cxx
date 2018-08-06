@@ -31,7 +31,7 @@
 #include <g4main/PHG4TruthInfoContainer.h>
 #include <g4main/PHG4Particle.h>
 #include <g4main/PHG4HitDefs.h>
-
+#include <g4main/PHG4VtxPoint.h>
 
 #include <TFile.h>
 #include <TTree.h>
