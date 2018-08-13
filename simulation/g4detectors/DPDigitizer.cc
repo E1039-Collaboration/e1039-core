@@ -162,7 +162,7 @@ namespace {
 		reps.push_back("$1X");
 
 		regs.push_back(std::regex("(H4Y)([1-2])(.*)"));      //H4Y
-		reps.push_back("$1Y$2");
+		reps.push_back("$1$2");
 
 		regs.push_back(std::regex("(P)([0-9])(H|V)(.*)$"));         //photo-tube
 		reps.push_back("$1$2$3");
