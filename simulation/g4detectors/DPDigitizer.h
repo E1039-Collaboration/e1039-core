@@ -102,7 +102,7 @@ public:
 class DPDigitizer : public SubsysReco
 {
 public:
-	DPDigitizer(const std::string &name = "DPDigitizer");
+	DPDigitizer(const std::string &name = "DPDigitizer", const int verbo = 0);
 
   virtual ~DPDigitizer();
 

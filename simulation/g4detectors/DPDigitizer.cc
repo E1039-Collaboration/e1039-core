@@ -182,10 +182,11 @@ namespace {
 	}
 }
 
-DPDigitizer::DPDigitizer(const std::string &name) :
+DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 		SubsysReco(name),
 		p_geomSvc(nullptr)
 {
+	Verbosity(verbo);
 
 	p_geomSvc = GeomSvc::instance();
 
