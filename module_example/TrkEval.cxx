@@ -178,6 +178,11 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
   	for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
   		SRecTrack recTrack = _recEvent->getTrack(itrack);
+
+			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+				cout << "--------- itrack: " << itrack << " ---------"<< endl;
+			}
+
   		for(int ihit=0; ihit<recTrack.getNHits();++ihit) {
   			int hitID = recTrack.getHitIndex(ihit);
   			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
@@ -189,7 +194,6 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			}
 
   			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
-  				cout << "--------- itrack: " << itrack << " ---------"<< endl;
   				hit->identify();
   			}
 
