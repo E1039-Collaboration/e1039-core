@@ -116,7 +116,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
     	int hitID = hit->get_hit_id();
     	hit_id[n_hits]         = hitID;
-    	hitID_ihit[hitID] = ihit;
+    	hitID_ihit[hitID]      = ihit;
       drift_distance[n_hits] = hit->get_drift_distance();
       pos[n_hits]            = hit->get_pos();
       detector_z[n_hits]     = p_geomSvc->getPlanePosition(hit->get_detector_id());
@@ -185,6 +185,14 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
   		for(int ihit=0; ihit<recTrack.getNHits();++ihit) {
   			int hitID = recTrack.getHitIndex(ihit);
+
+  			if(Verbosity() >= Fun4AllBase::VERBOSITY_MORE) {
+  				LogDebug("hitID: " << hitID);
+  			}
+
+  			//! TODO change back to map?
+  			if(hitID_ihit.find(hitID)==hitID_ihit.end()) continue;
+
   			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
 
   			if(!hit) {
