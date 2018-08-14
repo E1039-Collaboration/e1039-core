@@ -240,10 +240,14 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 	map_dname_group["H4T"]      = "H4X";
 	map_dname_group["H4B"]      = "H4X";
 
-	map_dname_group["P1H1"]     = "P1Y";
-	map_dname_group["P1V1"]     = "P1X";
-	map_dname_group["P2H1"]     = "P2Y";
-	map_dname_group["P2V1"]     = "P2X";
+	map_dname_group["P1H1f"]     = "P1Y";
+	map_dname_group["P1H1b"]     = "P1Y";
+	map_dname_group["P1V1f"]     = "P1X";
+	map_dname_group["P1V1b"]     = "P1X";
+	map_dname_group["P2H1f"]     = "P2Y";
+	map_dname_group["P2H1b"]     = "P2Y";
+	map_dname_group["P2V1f"]     = "P2X";
+	map_dname_group["P2V1b"]     = "P2X";
 
 	//! init map_g4name_group
   map_g4name_group["C1X"] = "D1";
@@ -345,6 +349,9 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
 
       std::string groupName = toGroupName(digiPlanes[index].detectorName);
+
+      if(Verbosity() >= 2)
+        LogInfo(digiPlanes[index].detectorName << ": (" << groupName << ")");
 
       if(groupName=="") continue;
 
