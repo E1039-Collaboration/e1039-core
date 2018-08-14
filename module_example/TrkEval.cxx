@@ -172,11 +172,18 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   std::map<int, TrkIDNHit> recID_bestParID;
 
   if(_recEvent) {
+  	krecstat = _recEvent->getRecStatus();
+
   	for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
   		SRecTrack recTrack = _recEvent->getTrack(itrack);
   		for(int ihit=0; ihit<recTrack.getNHits();++ihit) {
   			int hitID = recTrack.getHitIndex(ihit);
   			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
+
+  			// TODO better way to exclude hodo and prop hits?
+  			// this is try to exclude hodo and prop hits
+  			if(hit->get_detector_id() > 30) continue;
+
   			int parID = hit->get_track_id();
   			ParRecoPair key = std::make_tuple(parID, itrack);
 
@@ -375,6 +382,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("spillID",       &spill_id,        "spillID/I");
   _tout->Branch("liveProton",    &target_pos,      "liveProton/F");
   _tout->Branch("eventID",       &event_id,        "eventID/I");
+  _tout->Branch("krecstat",      &krecstat,        "krecstat/I");
 
   _tout->Branch("nHits",         &n_hits,          "nHits/I");
   _tout->Branch("hitID",         hit_id,           "hitID[nHits]/I");
@@ -437,6 +445,7 @@ int TrkEval::ResetEvalVars() {
   spill_id = std::numeric_limits<int>::max();
   target_pos = std::numeric_limits<float>::max();
   event_id = std::numeric_limits<int>::max();
+  krecstat = std::numeric_limits<int>::max();
 
   n_hits = 0;
   for(int i=0; i<10000; ++i) {

@@ -98,6 +98,7 @@ private:
 	int spill_id;
 	float target_pos;
 	int event_id;
+	int krecstat;
 
 	int n_hits;
 	int hit_id[10000];
@@ -125,7 +126,6 @@ private:
 	int gndc[1000];
 	int gnhodo[1000];
 	int gnprop[1000];
-
 	int ntruhits[1000];
 	float vx[1000];
 	float vy[1000];
