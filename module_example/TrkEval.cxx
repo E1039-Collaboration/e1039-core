@@ -49,6 +49,8 @@
 #define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 
+using namespace std;
+
 TrkEval::TrkEval(const std::string& name) :
 SubsysReco(name),
 _hit_container_type("Vector"),
@@ -187,6 +189,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			}
 
   			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+  				cout << "--------- itrack: " << itrack << " ---------"<< endl;
   				hit->identify();
   			}
 
