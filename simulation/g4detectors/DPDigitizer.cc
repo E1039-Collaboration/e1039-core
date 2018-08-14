@@ -146,40 +146,42 @@ std::ostream& operator << (std::ostream& os, const DPDigiPlane& plane)
     return os;
 }
 
-namespace {
-	string toGroupName(string in) {
+string DPDigitizer::toGroupName(string in) {
 
-		std::vector<std::regex> regs;
-		std::vector<std::string> reps;
+//		std::vector<std::regex> regs;
+//		std::vector<std::string> reps;
+//
+//		regs.push_back(std::regex("(H)([1-3])([T,B])$"));      //HX
+//		reps.push_back("$1$2X");
+//
+//		regs.push_back(std::regex("(H)([1-3])([L,R])$"));      //HY
+//		reps.push_back("$1$2Y");
+//
+//		regs.push_back(std::regex("(H4)(T|B)(.*)"));      //H4X
+//		reps.push_back("$1X");
+//
+//		regs.push_back(std::regex("(H4Y)([1-2])(.*)"));      //H4Y
+//		reps.push_back("$1$2");
+//
+//		regs.push_back(std::regex("(P)([0-9])(H|V)(.*)$"));         //photo-tube
+//		reps.push_back("$1$2$3");
+//
+//		regs.push_back(std::regex("(D)(.*)(U|X|V|Up|Xp|Vp)$"));         //Drift chamber
+//		reps.push_back("$1$2");
+//
+//		regs.push_back(std::regex("(DP)(.*)([L,R])$"));//
+//		reps.push_back("$1$2");
+//
+//		for(unsigned int i=0; i<regs.size(); ++i) {
+//			if(std::regex_match(in, regs[i]))
+//				return std::regex_replace(in, regs[i], reps[i]);
+//		}
 
-		regs.push_back(std::regex("(H)([1-3])([T,B])$"));      //HX
-		reps.push_back("$1$2X");
-
-		regs.push_back(std::regex("(H)([1-3])([L,R])$"));      //HY
-		reps.push_back("$1$2Y");
-
-		regs.push_back(std::regex("(H4)(T|B)(.*)"));      //H4X
-		reps.push_back("$1X");
-
-		regs.push_back(std::regex("(H4Y)([1-2])(.*)"));      //H4Y
-		reps.push_back("$1$2");
-
-		regs.push_back(std::regex("(P)([0-9])(H|V)(.*)$"));         //photo-tube
-		reps.push_back("$1$2$3");
-
-		regs.push_back(std::regex("(D)(.*)(U|X|V|Up|Xp|Vp)$"));         //Drift chamber
-		reps.push_back("$1$2");
-
-		regs.push_back(std::regex("(DP)(.*)([L,R])$"));//
-		reps.push_back("$1$2");
-
-		for(unsigned int i=0; i<regs.size(); ++i) {
-			if(std::regex_match(in, regs[i]))
-				return std::regex_replace(in, regs[i], reps[i]);
-		}
-
-		return "";
+	if(map_dname_group.find(in)!=map_dname_group.end()) {
+		return map_dname_group[in];
 	}
+
+	return "";
 }
 
 DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
@@ -187,6 +189,91 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 		p_geomSvc(nullptr)
 {
 	Verbosity(verbo);
+
+	//init map_dname_group
+	map_dname_group["D1U"]      = "D1";
+	map_dname_group["D1Up"]     = "D1";
+	map_dname_group["D1V"]      = "D1";
+	map_dname_group["D1Vp"]     = "D1";
+	map_dname_group["D1X"]      = "D1";
+	map_dname_group["D1Xp"]     = "D1";
+
+	map_dname_group["D2U"]      = "D2";
+	map_dname_group["D2Up"]     = "D2";
+	map_dname_group["D2V"]      = "D2";
+	map_dname_group["D2Vp"]     = "D2";
+	map_dname_group["D2X"]      = "D2";
+	map_dname_group["D2Xp"]     = "D2";
+
+	map_dname_group["D3pU"]     = "D3p";
+	map_dname_group["D3pUp"]    = "D3p";
+	map_dname_group["D3pV"]     = "D3p";
+	map_dname_group["D3pVp"]    = "D3p";
+	map_dname_group["D3pX"]     = "D3p";
+	map_dname_group["D3pXp"]    = "D3p";
+
+	map_dname_group["D3mU"]     = "D3m";
+	map_dname_group["D3mUp"]    = "D3m";
+	map_dname_group["D3mV"]     = "D3m";
+	map_dname_group["D3mVp"]    = "D3m";
+	map_dname_group["D3mX"]     = "D3m";
+	map_dname_group["D3mXp"]    = "D3m";
+
+	map_dname_group["H1T"]      = "H1X";
+	map_dname_group["H1B"]      = "H1X";
+	map_dname_group["H1L"]      = "H1Y";
+	map_dname_group["H1R"]      = "H1Y";
+
+	map_dname_group["H2T"]      = "H2X";
+	map_dname_group["H2B"]      = "H2X";
+	map_dname_group["H2L"]      = "H2Y";
+	map_dname_group["H2R"]      = "H2Y";
+
+	map_dname_group["H3T"]      = "H3X";
+	map_dname_group["H3B"]      = "H3X";
+
+	map_dname_group["H4Y1L"]    = "H4Y1";
+	map_dname_group["H4Y1R"]    = "H4Y1";
+	map_dname_group["H4Y2L"]    = "H4Y2";
+	map_dname_group["H4Y2R"]    = "H4Y2";
+
+	map_dname_group["H4T"]      = "H4X";
+	map_dname_group["H4B"]      = "H4X";
+
+	map_dname_group["P1H1"]     = "P1Y";
+	map_dname_group["P1V1"]     = "P1X";
+	map_dname_group["P2H1"]     = "P2Y";
+	map_dname_group["P2V1"]     = "P2X";
+
+	//! init map_g4name_group
+  map_g4name_group["C1X"] = "D1";
+  map_g4name_group["C2X"] = "D2";
+  map_g4name_group["C3T"] = "D3p";
+  map_g4name_group["C3B"] = "D3m";
+
+  map_g4name_group["H1y"] = "H1Y";
+  map_g4name_group["H1x"] = "H1X";
+  map_g4name_group["H2y"] = "H2Y";
+  map_g4name_group["H2x"] = "H2X";
+  map_g4name_group["H3x"] = "H3X";
+
+  map_g4name_group["H4y1L"] = "H4Y1";
+  map_g4name_group["H4y1R"] = "H4Y1";
+  map_g4name_group["H4y2L"] = "H4Y2";
+  map_g4name_group["H4y2R"] = "H4Y2";
+  map_g4name_group["H4xT"] = "H4X";
+  map_g4name_group["H4xB"] = "H4X";
+
+	map_g4name_group["P1H"] = "P1Y";
+	map_g4name_group["P1V"] = "P1X";
+	map_g4name_group["P2H"] = "P2Y";
+	map_g4name_group["P2V"] = "P2X";
+
+//  map_g4name_group["P1H"] = "P1H";
+//  map_g4name_group["P2V"] = "P2V";
+//  map_g4name_group["P2H"] = "P2H";
+//  map_g4name_group["P1V"] = "P1V";
+
 
 	p_geomSvc = GeomSvc::instance();
 
@@ -257,7 +344,11 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
 
-      digiPlanes[index].detectorGroupName = toGroupName(digiPlanes[index].detectorName);
+      std::string groupName = toGroupName(digiPlanes[index].detectorName);
+
+      if(groupName=="") continue;
+
+      digiPlanes[index].detectorGroupName = toGroupName(groupName);
 
       //user_liuk_geometry_DPTrigger
       //digiPlanes[index].detectorGroupName = row->GetField(16);
@@ -277,11 +368,11 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
         LogInfo(digiPlanes[index].detectorName << ": (" << digiPlanes[index].xc << ", " << digiPlanes[index].yc << ", " << digiPlanes[index].zc << ")");
 
       // Process prop tubes
-      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
-      if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
-        //LogInfo(digiPlanes[index].detectorName);
-        continue;
-      }
+//      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
+//      if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
+//        //LogInfo(digiPlanes[index].detectorName);
+//        continue;
+//      }
 
       std::regex eP2("(P)([1-2])(H|V)(1)(b|f)$");
       if(std::regex_match(digiPlanes[index].detectorName, eP2)) {
@@ -322,39 +413,6 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 
       delete row;
   }
-
-  map_g4name_group["C1X"] = "D1";
-  //  map_g4name_group["C1V"] = "D1";
-  //  map_g4name_group["C1U"] = "D1";
-  //  map_g4name_group["C2U"] = "D2";
-  map_g4name_group["C2X"] = "D2";
-  //  map_g4name_group["C2V"] = "D2";
-  map_g4name_group["C3T"] = "D3p";
-  map_g4name_group["C3B"] = "D3m";
-
-  map_g4name_group["H1y"] = "H1Y";
-  map_g4name_group["H1x"] = "H1X";
-  map_g4name_group["H2y"] = "H2Y";
-  map_g4name_group["H2x"] = "H2X";
-  map_g4name_group["H3x"] = "H3X";
-
-  //  map_g4name_group["P1H"] = "P1Y";
-  //  map_g4name_group["P2V"] = "P1X";
-  //  map_g4name_group["P2H"] = "P2Y";
-  //  map_g4name_group["P1V"] = "P2X";
-
-  map_g4name_group["P1H"] = "P1H";
-  map_g4name_group["P2V"] = "P2V";
-  map_g4name_group["P2H"] = "P2H";
-  map_g4name_group["P1V"] = "P1V";
-
-  map_g4name_group["H4y1L"] = "H4Y1";
-  map_g4name_group["H4y1R"] = "H4Y1";
-  map_g4name_group["H4y2L"] = "H4Y2";
-  map_g4name_group["H4y2R"] = "H4Y2";
-  map_g4name_group["H4xT"] = "H4X";
-  map_g4name_group["H4xB"] = "H4X";
-
 
   delete res;
   delete server;
