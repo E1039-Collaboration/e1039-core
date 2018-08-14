@@ -190,6 +190,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   				LogDebug("hitID: " << hitID);
   			}
 
+  			// signed hitID to hitID
+  			hitID = abs(hitID);
+
   			//! TODO change back to map?
   			if(hitID_ihit.find(hitID)==hitID_ihit.end()) continue;
 
