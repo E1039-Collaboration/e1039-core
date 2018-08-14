@@ -355,7 +355,7 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 
       if(groupName=="") continue;
 
-      digiPlanes[index].detectorGroupName = toGroupName(groupName);
+      digiPlanes[index].detectorGroupName = groupName;
 
       //user_liuk_geometry_DPTrigger
       //digiPlanes[index].detectorGroupName = row->GetField(16);
@@ -410,7 +410,8 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
 
       if(Verbosity() > 2) {
         cout
-          << "index: " << index << ", "
+					<<__LINE__
+          << ": index: " << index << ", "
           << digiPlanes[index].detectorGroupName << ", "
           << digiPlanes[index].detectorID << ", "
           << digiPlanes[index].detectorName << ", "
