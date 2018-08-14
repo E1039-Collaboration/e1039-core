@@ -180,6 +180,16 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			int hitID = recTrack.getHitIndex(ihit);
   			SQHit *hit = _hit_vector->at(hitID_ihit[hitID]);
 
+  			if(!hit) {
+    			if(Verbosity() >= Fun4AllBase::VERBOSITY_MORE) {
+    				LogWarning("!hit");
+    			}
+  			}
+
+  			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+  				hit->identify();
+  			}
+
   			// TODO better way to exclude hodo and prop hits?
   			// this is try to exclude hodo and prop hits
   			if(hit->get_detector_id() > 30) continue;
