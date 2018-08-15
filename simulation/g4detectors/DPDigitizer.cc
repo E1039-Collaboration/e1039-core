@@ -348,7 +348,22 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
 
-      std::string groupName = toGroupName(digiPlanes[index].detectorName);
+      //std::string groupName = toGroupName(digiPlanes[index].detectorName);
+      if(Verbosity() >= 2)
+        LogInfo(digiPlanes[index].detectorName);
+
+      // TODO solution for now - geometry_G17_run3 - only use one block of prop tube in DB.
+      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
+			if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
+				//LogInfo(digiPlanes[index].detectorName);
+				continue;
+			}
+
+      {
+      	int dummy;
+      	p_geomSvc->toLocalDetectorName(digiPlanes[index].detectorName, dummy);
+      }
+      std::string groupName = p_geomSvc->getDetectorGroupName(digiPlanes[index].detectorName);
 
       if(Verbosity() >= 2)
         LogInfo(digiPlanes[index].detectorName << ": (" << groupName << ")");
@@ -375,28 +390,16 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
         LogInfo(digiPlanes[index].detectorName << ": (" << digiPlanes[index].xc << ", " << digiPlanes[index].yc << ", " << digiPlanes[index].zc << ")");
 
       // Process prop tubes
-//      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
-//      if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
-//        //LogInfo(digiPlanes[index].detectorName);
-//        continue;
-//      }
-
-      std::regex eP2("(P)([1-2])(H|V)(1)(b|f)$");
+      std::regex eP2("(P)(.*)");
       if(std::regex_match(digiPlanes[index].detectorName, eP2)) {
-        //LogInfo(digiPlanes[index].detectorName);
-        string temp = digiPlanes[index].detectorName;
-        int dummy;
-        p_geomSvc->toLocalDetectorName(temp, dummy);
-        digiPlanes[index].detectorName = temp;
-        //LogInfo(digiPlanes[index].detectorName);
         digiPlanes[index].nElements = 72;
         digiPlanes[index].planeWidth = 365.76;
         digiPlanes[index].planeHeight = 365.76;
         // TODO hard coding for now
-        int ktracker_id = p_geomSvc->getDetectorID(temp);
-        digiPlanes[index].xc = p_geomSvc->getPlaneCenterX(ktracker_id);
-        digiPlanes[index].yc = p_geomSvc->getPlaneCenterY(ktracker_id);
-        digiPlanes[index].zc = p_geomSvc->getPlaneCenterZ(ktracker_id);
+        int gs_id = p_geomSvc->getDetectorID(digiPlanes[index].detectorName);
+        digiPlanes[index].xc = p_geomSvc->getPlaneCenterX(gs_id);
+        digiPlanes[index].yc = p_geomSvc->getPlaneCenterY(gs_id);
+        digiPlanes[index].zc = p_geomSvc->getPlaneCenterZ(gs_id);
       }
 
       digiPlanes[index].preCalculation();
