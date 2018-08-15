@@ -135,16 +135,19 @@ public:
   		int index = getDetectorID(detectorName);
   		planes[index].x0 = val;
   		planes[index].update();
+  		initWireLUT();
   	}
   	void setDetectorY0(const std::string detectorName, const double val) {
   		int index = getDetectorID(detectorName);
   		planes[index].y0 = val;
   		planes[index].update();
+  		initWireLUT();
   	}
   	void setDetectorZ0(const std::string detectorName, const double val) {
   		int index = getDetectorID(detectorName);
   		planes[index].z0 = val;
   		planes[index].update();
+  		initWireLUT();
   	}
 
   	double getDetectorX0(const std::string detectorName) const {
