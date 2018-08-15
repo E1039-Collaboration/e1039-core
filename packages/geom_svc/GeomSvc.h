@@ -132,37 +132,37 @@ public:
 
   	/// TODO temp solution to overwrite the y0 of a plane
   	void setDetectorX0(const std::string detectorName, const double val) {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		planes[index].x0 = val;
   		planes[index].update();
   	}
   	void setDetectorY0(const std::string detectorName, const double val) {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		planes[index].y0 = val;
   		planes[index].update();
   	}
   	void setDetectorZ0(const std::string detectorName, const double val) {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		planes[index].z0 = val;
   		planes[index].update();
   	}
 
   	double getDetectorX0(const std::string detectorName) const {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		return planes[index].x0;
   	}
   	double getDetectorY0(const std::string detectorName) const {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		return planes[index].y0;
   	}
   	double getDetectorZ0(const std::string detectorName) const {
-  		int index = map_detectorID[detectorName];
+  		int index = getDetectorID(detectorName);
   		return planes[index].z0;
   	}
 
     ///Get the plane position
-    int getDetectorID(std::string detectorName) { return map_detectorID[detectorName]; }
-    std::string getDetectorName(int detectorID) { return map_detectorName[detectorID]; }
+    int getDetectorID(std::string detectorName) const { return map_detectorID.at(detectorName); }
+    std::string getDetectorName(int detectorID) const { return map_detectorName.at(detectorID); }
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
 
