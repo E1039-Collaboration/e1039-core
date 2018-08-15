@@ -164,9 +164,19 @@ public:
   	}
 
     ///Get the plane position
-    int getDetectorID(const std::string & detectorName) const { return map_detectorID.at(detectorName); }
-    std::string getDetectorName(const int & detectorID) const { return map_detectorName.at(detectorID); }
-    std::string getDetectorGroupName(const std::string & detectorName) const { return map_dname_group.at(detectorName); }
+    int getDetectorID(const std::string & detectorName) const
+    {
+    	return map_detectorID.find(detectorName)!=map_detectorID.end() ? map_detectorID.at(detectorName) : 0;
+    }
+    std::string getDetectorName(const int & detectorID) const
+    {
+    	return map_detectorName.find(detectorID)!=map_detectorName.end() ? map_detectorName.at(detectorID) : "";
+    }
+    std::string getDetectorGroupName(const std::string & detectorName) const
+    {
+    	return map_dname_group.find(detectorName)!=map_dname_group.end() ? map_dname_group.at(detectorName) : "";
+    }
+
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
 
@@ -250,6 +260,7 @@ private:
     std::map<std::string, int> map_detectorID;
     std::map<int, std::string> map_detectorName;
     std::map<std::string, std::string> map_dname_group;
+    std::map<std::string, std::string> map_g4name_dname;
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;

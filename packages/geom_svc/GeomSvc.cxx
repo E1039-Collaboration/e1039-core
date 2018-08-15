@@ -269,6 +269,19 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
     map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
 
+    // TODO figure this out ...
+    // init map_g4name_dname
+    map_g4name_dname["C1X"]    = "D1X";
+    map_g4name_dname["C1U"]    = "D1U";
+    map_g4name_dname["C1V"]    = "D1V";
+    map_g4name_dname["C2X"]    = "D2X";
+    map_g4name_dname["C2U"]    = "D2U";
+    map_g4name_dname["C2V"]    = "D2V";
+    map_g4name_dname["C3T"]    = "D3pX";
+    map_g4name_dname["C3B"]    = "D3mX";
+
+    map_g4name_dname["H1y"]    = "H1Y";
+
 
   	//init map_dname_group
   	map_dname_group["D1U"]      = "D1";
