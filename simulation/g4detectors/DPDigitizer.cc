@@ -353,11 +353,15 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
         LogInfo(digiPlanes[index].detectorName);
 
       // TODO solution for now - geometry_G17_run3 - only use one block of prop tube in DB.
-      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
-			if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
-				//LogInfo(digiPlanes[index].detectorName);
-				continue;
-			}
+      // remove duplications
+//      std::regex eP1("(P)([1-2])(H|V)([2-9])(b|f)$");
+//			if(std::regex_match(digiPlanes[index].detectorName, eP1)) {
+//				//LogInfo(digiPlanes[index].detectorName);
+//				continue;
+//			}
+
+      if(map_dname_group.find(digiPlanes[index].detectorName) == map_dname_group.end())
+      	continue;
 
       {
       	int dummy;
