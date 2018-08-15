@@ -131,10 +131,33 @@ public:
     void toLocalDetectorName(std::string& detectorName, int& eID);
 
   	/// TODO temp solution to overwrite the y0 of a plane
+  	void setDetectorX0(const std::string detectorName, const double val) {
+  		int index = map_detectorID[detectorName];
+  		planes[index].x0 = val;
+  		planes[index].update();
+  	}
   	void setDetectorY0(const std::string detectorName, const double val) {
   		int index = map_detectorID[detectorName];
   		planes[index].y0 = val;
   		planes[index].update();
+  	}
+  	void setDetectorZ0(const std::string detectorName, const double val) {
+  		int index = map_detectorID[detectorName];
+  		planes[index].z0 = val;
+  		planes[index].update();
+  	}
+
+  	double getDetectorX0(const std::string detectorName) const {
+  		int index = map_detectorID[detectorName];
+  		return planes[index].x0;
+  	}
+  	double getDetectorY0(const std::string detectorName) const {
+  		int index = map_detectorID[detectorName];
+  		return planes[index].y0;
+  	}
+  	double getDetectorZ0(const std::string detectorName) const {
+  		int index = map_detectorID[detectorName];
+  		return planes[index].z0;
   	}
 
     ///Get the plane position
