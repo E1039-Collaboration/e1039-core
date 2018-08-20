@@ -114,7 +114,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 {
-  if (verbosity > 1) cout << "PHG4Reco::InitField" << endl;
+  if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitField" << endl;
   PHField * phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
   if(!phfield) {
   	if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
@@ -130,7 +130,7 @@ int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 
 int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 {
-	if (verbosity > 1) cout << "PHG4Reco::InitGeom" << endl;
+	if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitGeom" << endl;
 
 	_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
 	if(!_t_geo_manager && _geom_file_name!=""){
