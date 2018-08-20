@@ -116,6 +116,10 @@ int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 {
   if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitField" << endl;
   PHField * phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
+
+  if(phfield && verbosity > 1)
+  	cout << "KalmanFastTrackingWrapper::InitField - use filed from NodeTree." << endl;
+
   if(!phfield) {
   	if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitField - create magnetic field setup" << endl;
 		unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
@@ -133,6 +137,10 @@ int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 	if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitGeom" << endl;
 
 	_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+
+  if(_t_geo_manager && verbosity > 1)
+  	cout << "KalmanFastTrackingWrapper::InitGeom - use geom from NodeTree." << endl;
+
 	if(!_t_geo_manager && _geom_file_name!=""){
 		if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitGeom - create geom from " << _geom_file_name << endl;
 		PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
