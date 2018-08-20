@@ -62,7 +62,8 @@ _event_header(nullptr),
 _hit_map(nullptr),
 _hit_vector(nullptr),
 _triggerhit_vector(nullptr),
-_out_name("ktracker_eval.root")
+_out_name("ktracker_eval.root"),
+_geom_file_name("")
 {
 	//p_jobOptsSvc = new JobOptsSvc();
 	p_jobOptsSvc = JobOptsSvc::instance();
@@ -113,24 +114,31 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 {
-  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
+  if (verbosity > 1) cout << "PHG4Reco::InitField" << endl;
+  PHField * phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
+  if(!phfield) {
+  	if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
+		unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
+		default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+		phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
+  }
 
-  unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
-
-  default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
-
-  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
-
-  PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
-  assert(phfield);
+	assert(phfield);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 {
-	PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
+	if (verbosity > 1) cout << "PHG4Reco::InitGeom" << endl;
+
 	_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+	if(!_t_geo_manager && _geom_file_name!=""){
+		PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
+		_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+	}
+
+	assert(_t_geo_manager);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
