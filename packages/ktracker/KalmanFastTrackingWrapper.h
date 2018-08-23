@@ -47,6 +47,8 @@ public:
 
 	KalmanFastTrackingWrapper(const std::string &name = "KalmanFastTrackingWrapper");
 	virtual ~KalmanFastTrackingWrapper() {
+		//delete fastfinder;
+		//delete eventReducer;
 	}
 
 	int Init(PHCompositeNode *topNode);
@@ -86,6 +88,8 @@ private:
 	int InitField(PHCompositeNode *topNode);
 
 	int InitGeom(PHCompositeNode *topNode);
+
+	int MakeNodes(PHCompositeNode *topNode);
 
 	int GetNodes(PHCompositeNode *topNode);
 

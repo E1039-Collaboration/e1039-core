@@ -102,7 +102,7 @@ public:
 class DPDigitizer : public SubsysReco
 {
 public:
-	DPDigitizer(const std::string &name = "DPDigitizer");
+	DPDigitizer(const std::string &name = "DPDigitizer", const int verbo = 0);
 
   virtual ~DPDigitizer();
 
@@ -130,6 +130,9 @@ public:
 	//!Get the digi plane object by ID
 	DPDigiPlane& getDigiPlane(int detectorID) { return digiPlanes[detectorID]; }
 
+	//!
+	std::string toGroupName(std::string in);
+
 private:
 
 	//!array of digi planes
@@ -143,6 +146,9 @@ private:
 
 	//!
 	std::map<std::string, std::string> map_g4name_group;
+
+	//!
+	std::map<std::string, std::string> map_dname_group;
 
 	//!GeomSvc
 	GeomSvc *p_geomSvc;

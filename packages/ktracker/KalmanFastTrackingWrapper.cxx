@@ -40,13 +40,15 @@
 #include <cassert>
 #include <stdexcept>
 #include <limits>
+#include <memory>
+
 #include <boost/lexical_cast.hpp>
 
 #define LogDebug(exp)		    std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogError(exp)		    std::cout<<"ERROR: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 using namespace std;
 
@@ -60,7 +62,8 @@ _event_header(nullptr),
 _hit_map(nullptr),
 _hit_vector(nullptr),
 _triggerhit_vector(nullptr),
-_out_name("ktracker_eval.root")
+_out_name("ktracker_eval.root"),
+_geom_file_name("")
 {
 	//p_jobOptsSvc = new JobOptsSvc();
 	p_jobOptsSvc = JobOptsSvc::instance();
@@ -77,7 +80,10 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	ResetEvalVars();
 	InitEvalTree();
 
-	int ret = GetNodes(topNode);
+	int ret = MakeNodes(topNode);
+	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
+	ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
 	ret = InitField(topNode);
@@ -91,6 +97,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 	/// init KalmanFastTracking
 	fastfinder = new KalmanFastTracking(field, _t_geo_manager);
+	fastfinder->Verbosity(verbosity);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
   if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
@@ -107,24 +114,40 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
 int KalmanFastTrackingWrapper::InitField(PHCompositeNode *topNode)
 {
-  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
+  if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitField" << endl;
+  PHField * phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 
-  unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
+  if(phfield && verbosity > 1)
+  	cout << "KalmanFastTrackingWrapper::InitField - use filed from NodeTree." << endl;
 
-  default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+  if(!phfield) {
+  	if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitField - create magnetic field setup" << endl;
+		unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
+		default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+		phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
+  }
 
-  if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
-
-  PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
-  assert(phfield);
+	assert(phfield);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 {
-	PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
+	if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitGeom" << endl;
+
 	_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+
+  if(_t_geo_manager && verbosity > 1)
+  	cout << "KalmanFastTrackingWrapper::InitGeom - use geom from NodeTree." << endl;
+
+	if(!_t_geo_manager && _geom_file_name!=""){
+		if (verbosity > 1) cout << "KalmanFastTrackingWrapper::InitGeom - create geom from " << _geom_file_name << endl;
+		PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
+		_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+	}
+
+	assert(_t_geo_manager);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -267,7 +290,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	SRawEvent* sraw_event = BuildSRawEvent();
+	auto up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
+	SRawEvent* sraw_event = up_raw_event.get();
 
   // TODO temp solution
   if(_event_header) {
@@ -276,9 +300,13 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
 	_rawEvent = sraw_event;
 
-	_recEvent = new SRecEvent();
+	//auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
+	//_recEvent = up_recEvent.get();
 
 	_recEvent->setRecStatus(fastfinder->setRawEvent(sraw_event));
+
+  if(verbosity >= 2)
+  	fastfinder->printTimers();
 
   _recEvent->setRawEvent(_rawEvent);
 
@@ -334,9 +362,13 @@ int KalmanFastTrackingWrapper::End(PHCompositeNode* topNode) {
 }
 
 int KalmanFastTrackingWrapper::InitEvalTree() {
+
+	_rawEvent = nullptr;
+	_recEvent = nullptr;
+
 	PHTFileServer::get().open(_out_name.c_str(), "RECREATE");
 
-	_tout = new TTree("save", "save");
+	_tout = new TTree("T", "save");
 	_tout->Branch("rawEvent", &_rawEvent, 256000, 99);
 	_tout->Branch("recEvent", &_recEvent, 256000, 99);
 
@@ -344,10 +376,30 @@ int KalmanFastTrackingWrapper::InitEvalTree() {
 }
 
 int KalmanFastTrackingWrapper::ResetEvalVars() {
-	_rawEvent = nullptr;
-	_recEvent = nullptr;
+	//_rawEvent = nullptr;
+	//_recEvent = nullptr;
 
 	return 0;
+}
+
+int KalmanFastTrackingWrapper::MakeNodes(PHCompositeNode* topNode) {
+
+	PHNodeIterator iter(topNode);
+
+	PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+	if (!eventNode) {
+		LogInfo("No DST node, create one");
+		eventNode = new PHCompositeNode("DST");
+		topNode->addNode(eventNode);
+	}
+
+	_recEvent = new SRecEvent();
+	PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent,"SRecEvent", "PHObject");
+	eventNode->addNode(recEventNode);
+	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+		LogInfo("DST/SRecEvent Added");
+
+	return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
@@ -390,6 +442,12 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 			if(Verbosity() > 2) LogError("!_triggerhit_vector");
 			//return Fun4AllReturnCodes::ABORTEVENT;
 		}
+	}
+
+	_recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+	if (!_recEvent) {
+		if(Verbosity() > 2) LogError("!_recEvent");
+		return Fun4AllReturnCodes::ABORTEVENT;
 	}
 
 	return Fun4AllReturnCodes::EVENT_OK;

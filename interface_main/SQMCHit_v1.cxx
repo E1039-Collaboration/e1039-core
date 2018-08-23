@@ -20,10 +20,9 @@ SQMCHit_v1::SQMCHit_v1()
 
 void SQMCHit_v1::identify(ostream& os) const {
   os << "---SQMCHit_v1--------------------" << endl;
-  os << "G4HitID: " << get_track_id() << endl;
+  os << "track_id: " << get_track_id() << endl;
   os << "hit_id: " << get_hit_id() << endl;
-  os << "detector_id: " << get_detector_id() << endl;
-  os << "pos: " << get_pos() << endl;
+  os << "truth_pos: (" << _truth_x << ", " << _truth_y << ", " << _truth_z << ")" << endl;
 
   SQHit_v1::identify(os);
 

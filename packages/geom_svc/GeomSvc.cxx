@@ -269,6 +269,72 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
     map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
 
+    // TODO figure this out ...
+    // init map_g4name_dname
+    map_g4name_dname["C1X"]    = "D1X";
+    map_g4name_dname["C1U"]    = "D1U";
+    map_g4name_dname["C1V"]    = "D1V";
+    map_g4name_dname["C2X"]    = "D2X";
+    map_g4name_dname["C2U"]    = "D2U";
+    map_g4name_dname["C2V"]    = "D2V";
+    map_g4name_dname["C3T"]    = "D3pX";
+    map_g4name_dname["C3B"]    = "D3mX";
+
+    map_g4name_dname["H1y"]    = "H1Y";
+
+
+  	//init map_dname_group
+  	map_dname_group["D1U"]      = "D1";
+  	map_dname_group["D1Up"]     = "D1";
+  	map_dname_group["D1V"]      = "D1";
+  	map_dname_group["D1Vp"]     = "D1";
+  	map_dname_group["D1X"]      = "D1";
+  	map_dname_group["D1Xp"]     = "D1";
+  	map_dname_group["D2U"]      = "D2";
+  	map_dname_group["D2Up"]     = "D2";
+  	map_dname_group["D2V"]      = "D2";
+  	map_dname_group["D2Vp"]     = "D2";
+  	map_dname_group["D2X"]      = "D2";
+  	map_dname_group["D2Xp"]     = "D2";
+  	map_dname_group["D3pU"]     = "D3p";
+  	map_dname_group["D3pUp"]    = "D3p";
+  	map_dname_group["D3pV"]     = "D3p";
+  	map_dname_group["D3pVp"]    = "D3p";
+  	map_dname_group["D3pX"]     = "D3p";
+  	map_dname_group["D3pXp"]    = "D3p";
+  	map_dname_group["D3mU"]     = "D3m";
+  	map_dname_group["D3mUp"]    = "D3m";
+  	map_dname_group["D3mV"]     = "D3m";
+  	map_dname_group["D3mVp"]    = "D3m";
+  	map_dname_group["D3mX"]     = "D3m";
+  	map_dname_group["D3mXp"]    = "D3m";
+
+  	map_dname_group["H1T"]      = "H1X";
+  	map_dname_group["H1B"]      = "H1X";
+  	map_dname_group["H1L"]      = "H1Y";
+  	map_dname_group["H1R"]      = "H1Y";
+  	map_dname_group["H2T"]      = "H2X";
+  	map_dname_group["H2B"]      = "H2X";
+  	map_dname_group["H2L"]      = "H2Y";
+  	map_dname_group["H2R"]      = "H2Y";
+  	map_dname_group["H3T"]      = "H3X";
+  	map_dname_group["H3B"]      = "H3X";
+  	map_dname_group["H4Y1L"]    = "H4Y1";
+  	map_dname_group["H4Y1R"]    = "H4Y1";
+  	map_dname_group["H4Y2L"]    = "H4Y2";
+  	map_dname_group["H4Y2R"]    = "H4Y2";
+  	map_dname_group["H4T"]      = "H4X";
+  	map_dname_group["H4B"]      = "H4X";
+
+  	map_dname_group["P1Y1"]     = "P1Y";
+  	map_dname_group["P1Y2"]     = "P1Y";
+  	map_dname_group["P1X1"]     = "P1X";
+  	map_dname_group["P1X2"]     = "P1X";
+  	map_dname_group["P2Y1"]     = "P2Y";
+  	map_dname_group["P2Y2"]     = "P2Y";
+  	map_dname_group["P2X1"]     = "P2X";
+  	map_dname_group["P2X2"]     = "P2X";
+
     typedef std::map<int, std::string>::value_type idToName;
     for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
     {

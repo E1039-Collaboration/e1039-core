@@ -59,6 +59,9 @@ Int_t SRecTrack::getNHitsInStation(Int_t stationID)
     return nHits;
 }
 
+Double_t SRecTrack::getProb() const
+{ return KMAG_ON == 1 ? TMath::Prob(fChisq, getNHits() - 5) : TMath::Prob(fChisq, getNHits() - 4); }
+
 void SRecTrack::setZVertex(Double_t z, bool update)
 {
     Node _node_vertex;
@@ -132,7 +135,7 @@ void SRecTrack::setVertexFast(TVector3 mom, TVector3 pos)
     fCovarVertex.UnitMatrix();
 }
 
-bool SRecTrack::isVertexValid()
+bool SRecTrack::isVertexValid() const
 {
     if(fChisqVertex > 50.) return false;
     if(fVertexPos.Z() < -500. || fVertexPos.Z() > 300.) return false;
@@ -250,7 +253,7 @@ void SRecTrack::adjustKMag(double kmagStr)
     }
 }
 
-bool SRecTrack::isValid()
+int SRecTrack::isValid() const
 {
     //Vertex valid
     if(!isVertexValid()) return false;
@@ -469,19 +472,19 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
     if(cleanupMom) delete[] mom;
 }
 
-void SRecTrack::print()
+void SRecTrack::print(std::ostream& os) const
 {
-    std::cout << "=============== Reconstructed track ==================" << std::endl;
-    std::cout << "This candidate has " << fHitIndex.size() << " hits!" << std::endl;
-    std::cout << "Most upstream momentum is: " << 1./fabs((fState[0])[0][0]) << std::endl;
-    std::cout << "Chi square of the track is: " << fChisq << std::endl;
+  os << "=============== Reconstructed track ==================" << std::endl;
+  os << "This candidate has " << fHitIndex.size() << " hits!" << std::endl;
+  os << "Most upstream momentum is: " << 1./fabs((fState[0])[0][0]) << std::endl;
+  os << "Chi square of the track is: " << fChisq << std::endl;
 
-    std::cout << "Current vertex position: " << std::endl;
-    for(Int_t i = 0; i < 3; i++) std::cout << fVertexPos[i] << "  ";
-    std::cout << std::endl;
+  os << "Current vertex position: " << std::endl;
+  for(Int_t i = 0; i < 3; i++) os << fVertexPos[i] << "  ";
+  os << std::endl;
 
-    std::cout << "Momentum at vertex: " << 1./fabs(fStateVertex[0][0]) << std::endl;
-    std::cout << "Chi square at vertex: " << fChisqVertex << std::endl;
+  os << "Momentum at vertex: " << 1./fabs(fStateVertex[0][0]) << std::endl;
+  os << "Chi square at vertex: " << fChisqVertex << std::endl;
 }
 
 void SRecDimuon::calcVariables()
@@ -511,7 +514,7 @@ void SRecDimuon::calcVariables()
     mass_single = (p_pos_single + p_neg_single).M();
 }
 
-bool SRecDimuon::isValid()
+int SRecDimuon::isValid() const
 {
     //Chisq of vertex fit
     if(chisq_kf > 15. || chisq_kf < 0.) return false;

@@ -52,6 +52,9 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
   _p_min(NAN),
   _p_max(NAN),
   _p_gaus_width(NAN),
+	_px_min(NAN), _px_max(NAN),
+	_py_min(NAN), _py_max(NAN),
+	_pz_min(NAN), _pz_max(NAN),
   _ineve(NULL) 
 {
   return;
@@ -297,23 +300,34 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
       }
 
       ++trackid;
-   
-      double eta = (_eta_max-_eta_min) * gsl_rng_uniform_pos(RandomGenerator) + _eta_min;
-      double phi = (_phi_max-_phi_min) * gsl_rng_uniform_pos(RandomGenerator) + _phi_min;
 
-      double pt;
-      if (!std::isnan(_p_min) && !std::isnan(_p_max) && !std::isnan(_p_gaus_width)) {
-	pt =  ((_p_max-_p_min) * gsl_rng_uniform_pos(RandomGenerator) + _p_min + gsl_ran_gaussian(RandomGenerator, _p_gaus_width)) / cosh(eta);
-      } else if (!std::isnan(_pt_min) && !std::isnan(_pt_max) && !std::isnan(_pt_gaus_width)) {
-	pt = (_pt_max-_pt_min) * gsl_rng_uniform_pos(RandomGenerator) + _pt_min + gsl_ran_gaussian(RandomGenerator, _pt_gaus_width);
+      double px = std::numeric_limits<double>::max();
+      double py = std::numeric_limits<double>::max();
+      double pz = std::numeric_limits<double>::max();
+   
+      if(std::isnan(_px_min)) {
+				double eta = (_eta_max-_eta_min) * gsl_rng_uniform_pos(RandomGenerator) + _eta_min;
+				double phi = (_phi_max-_phi_min) * gsl_rng_uniform_pos(RandomGenerator) + _phi_min;
+
+				double pt;
+				if (!std::isnan(_p_min) && !std::isnan(_p_max) && !std::isnan(_p_gaus_width)) {
+		pt =  ((_p_max-_p_min) * gsl_rng_uniform_pos(RandomGenerator) + _p_min + gsl_ran_gaussian(RandomGenerator, _p_gaus_width)) / cosh(eta);
+				} else if (!std::isnan(_pt_min) && !std::isnan(_pt_max) && !std::isnan(_pt_gaus_width)) {
+		pt = (_pt_max-_pt_min) * gsl_rng_uniform_pos(RandomGenerator) + _pt_min + gsl_ran_gaussian(RandomGenerator, _pt_gaus_width);
+				} else {
+		cout << PHWHERE << "Error: neither a p range or pt range was specified" << endl;
+		exit(-1);
+				}
+
+				px = pt*cos(phi);
+				py = pt*sin(phi);
+				pz = pt*sinh(eta);
       } else {
-	cout << PHWHERE << "Error: neither a p range or pt range was specified" << endl;
-	exit(-1);
+      	px = (_px_max-_px_min) * gsl_rng_uniform_pos(RandomGenerator) + _px_min;
+      	py = (_py_max-_py_min) * gsl_rng_uniform_pos(RandomGenerator) + _py_min;
+      	pz = (_pz_max-_pz_min) * gsl_rng_uniform_pos(RandomGenerator) + _pz_min;
       }
 
-      double px = pt*cos(phi);
-      double py = pt*sin(phi);
-      double pz = pt*sinh(eta);
       double m = get_mass(pdgcode);
       double e = sqrt(px*px+py*py+pz*pz+m*m);
 
@@ -339,6 +353,14 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
   } 
 
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void PHG4SimpleEventGenerator::set_pxpypz_range(const double x_min,
+		const double x_max, const double y_min, const double y_max,
+		const double z_min, const double z_max) {
+	_px_min = x_min; _px_max = x_max;
+	_py_min = y_min; _py_max = y_max;
+	_pz_min = z_min; _pz_max = z_max;
 }
 
 double

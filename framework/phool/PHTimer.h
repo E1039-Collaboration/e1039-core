@@ -48,6 +48,15 @@ class PHTimer
         _stop_time._low++;
     }
 
+    void reset() {
+      _state = STOP;
+    	_start_time = get_clock_counts();
+      _stop_time = get_clock_counts();
+      _accumulated_time = 0;
+      _ncycle = 0;
+      _stop_time._low++;
+    }
+
     //! stops the counter
     void stop(){
         if( _state == STOP ) return;
