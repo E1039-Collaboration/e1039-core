@@ -8,26 +8,28 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 # ROOT dict generation
+file(GLOB LinkDefhs "")
 foreach(header ${headers})
-	message("header: " ${header})
+	#message("header: " ${header})
 	string(REPLACE ".h" "_LinkDef.h" LinkDefh ${header})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" LinkDefh ${LinkDefh})
-	message("LinkDefh: " ${LinkDefh})
-	message("cmd: " "${PROJECT_SOURCE_DIR}/PdbRootify.pl")
-	add_custom_command(
-	OUTPUT ${LinkDefh}
-	COMMAND perl
-	ARGS ${PROJECT_SOURCE_DIR}/PdbRootify.pl ${LinkDefh}
-	)
+	#message("LinkDefh: " ${LinkDefh})
+	#message("cmd: " "${PROJECT_SOURCE_DIR}/PdbRootify.pl")
+	list(APPEND LinkDefhs ${LinkDefh})
+	add_custom_command(OUTPUT ${LinkDefh} COMMAND perl ARGS ${PROJECT_SOURCE_DIR}/PdbRootify.pl ${LinkDefh})
 endforeach(header)
 
+list(REMOVE_ITEM LinkDefhs "PdbBankManagerFactory_LinkDef.h")
+list(REMOVE_ITEM LinkDefhs "RunToTimeFactory_LinkDef.h")
+
 file(GLOB dicts "")
-file(GLOB LinkDefhs *LinkDef.h)
 foreach(LinkDefh ${LinkDefhs})
-	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-	string(REPLACE "LinkDef.h" "_dict.C" DictC ${LinkDefh})
+	#message("LinkDefh: " ${LinkDefh})
+	string(REPLACE "_LinkDef.h" ".h" Dicth ${LinkDefh})
+	string(REPLACE "_LinkDef.h" "_dict.C" DictC ${LinkDefh})
 	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
+  #message("Dicth: " ${PROJECT_SOURCE_DIR}/${Dicth})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${PROJECT_SOURCE_DIR}/${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
@@ -37,7 +39,8 @@ add_custom_command (
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h
-  ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory_LinkDef.h
+  PdbBankManagerFactory_LinkDef.h
+  DEPENDS PdbBankManagerFactory_LinkDef.h
 	)
 
 add_custom_command (
@@ -47,7 +50,8 @@ add_custom_command (
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h
-  ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory_LinkDef.h
+  PdbBankManagerFactory_LinkDef.h
+  DEPENDS PdbBankManagerFactory_LinkDef.h
 	)
 
 # ROOT
@@ -97,7 +101,7 @@ add_library(pdbcalBase SHARED
   ${PROJECT_SOURCE_DIR}/RunToTime.cc 
   RunToTime_dict.C
 )
-target_link_libraries(pdbcalBase -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lXMLIO)
+target_link_libraries(pdbcalBase -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -L${ROOT_PREFIX}/lib -lXMLIO)
 
 install(TARGETS pdbcalBase 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

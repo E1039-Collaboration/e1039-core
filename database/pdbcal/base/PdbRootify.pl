@@ -12,6 +12,10 @@
 #  Author: Matthias Messer
 #-----------------------------------------------------------------------------
 
+#print "perl PdbRootify.pl ";
+#print $ARGV[0];
+#print "\n";
+
 if ($#ARGV > -1) {
   #
   # Anybody asked for help?
