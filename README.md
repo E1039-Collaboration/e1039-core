@@ -1,6 +1,6 @@
 # Fun4All based E1039 offline software
 
-A doxygen page of the seaquest-offline is [here](https://haiwangyu.github.io/seaquest-offline-doc/) hosted by GitHub Pages.
+A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.github.io/seaquest-offline-doc/index.html) hosted by GitHub Pages.
 
 ## Build
 ### cmake
