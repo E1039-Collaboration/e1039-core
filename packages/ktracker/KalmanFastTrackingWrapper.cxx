@@ -8,6 +8,7 @@
 
 #include "KalmanFastTrackingWrapper.h"
 #include "KalmanFastTracking.h"
+#include "KalmanPrgTrk.h"
 #include "EventReducer.h"
 
 #include <phfield/PHFieldConfig_v3.h>
@@ -95,8 +96,8 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 	assert(field);
 
-	/// init KalmanFastTracking
-	fastfinder = new KalmanFastTracking(field, _t_geo_manager);
+	/// init KalmanPrgTrk
+	fastfinder = new KalmanPrgTrk(field, _t_geo_manager);
 	fastfinder->Verbosity(verbosity);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal

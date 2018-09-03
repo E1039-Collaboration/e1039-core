@@ -1,6 +1,6 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(phgeom CXX C)
+project(phhepmc CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
@@ -14,12 +14,28 @@ foreach(LinkDefh ${LinkDefhs})
 	message("LinkDefh: " ${LinkDefh})
 	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${LinkDefh})
-	string(REPLACE "LinkDef.h" "_Dict.cc" DictC ${DictC})
+	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${DictC})
 	list(APPEND dicts ${DictC})
   message("Dicth: " ${Dicth})
   message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
+
+add_custom_command (
+  OUTPUT PHHepMC_io_Dict.C
+  COMMAND rootcint
+  ARGS -f PHHepMC_io_Dict.C -c
+  -I$ENV{OFFLINE_MAIN}/include
+  ${PROJECT_SOURCE_DIR}/PHGenEvent.h
+  ${PROJECT_SOURCE_DIR}/PHGenEventv1.h
+  ${PROJECT_SOURCE_DIR}/PHGenEventList.h
+  ${PROJECT_SOURCE_DIR}/PHGenEventListv1.h
+  ${PROJECT_SOURCE_DIR}/PHHepMCGenEvent.h
+  ${PROJECT_SOURCE_DIR}/PHHepMCGenEventMap.h
+  $(OFFLINE_MAIN)/include/HepMC/*.h
+  ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
+	)
+
 
 # ROOT
 find_program(ROOTCONF "root-config")
@@ -34,33 +50,44 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} -std=c++0x ")
 
-add_library(phgeom SHARED
-  ${PROJECT_SOURCE_DIR}/PHGeomTGeo.cc
-  ${PROJECT_SOURCE_DIR}/PHGeomFileImport.cc
-  ${PROJECT_SOURCE_DIR}/PHGeomUtility.cc
-  PHGeomTGeo_Dict.cc
-  PHGeomFileImport_Dict.cc 
-  PHGeomUtility_Dict.cc 
+add_library(phhepmc SHARED
+  ${PROJECT_SOURCE_DIR}/PHHepMCGenHelper.cc
+  ${PROJECT_SOURCE_DIR}/PHHepMCParticleSelectorDecayProductChain.cc
+  PHHepMCGenHelper_Dict.C
+  PHHepMCParticleSelectorDecayProductChain_Dict.C
 )
 
-add_library(phgeom_io SHARED
-  ${PROJECT_SOURCE_DIR}/PHGeomIOTGeo.cc
-  PHGeomIOTGeo_Dict.cc 
+add_library(phhepmc_io SHARED
+  PHGenEventv1.cc
+  PHGenEventListv1.cc
+  PHHepMCGenEvent.cc
+  PHHepMCGenEventMap.cc
+  PHGenIntegral.cc
+  PHGenIntegralv1.cc
+  PHHepMC_io_Dict.C
+  PHGenIntegral_Dict.C
+  PHGenIntegralv1_Dict.C
 )
 
-target_link_libraries(phgeom_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -L${ROOT_PREFIX}/lib -lGeom)
+target_link_libraries(phhepmc_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lHepMC)
 
-target_link_libraries(phgeom -L./ -lphgeom_io -L$ENV{OFFLINE_MAIN}/lib -lSubsysReco)
+target_link_libraries(phhepmc -L./ -lphhepmc_io -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lboost_iostreams -lfun4all -lgsl -lgslcblas)
 
-install(TARGETS phgeom_io	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-install(TARGETS phgeom	  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS phhepmc_io  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS phhepmc     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
-  PHGeomTGeo.h
-  PHGeomIOTGeo.h
-  PHGeomUtility.h
+  PHGenEvent.h
+  PHGenEventv1.h
+  PHGenEventList.h
+  PHGenEventListv1.h
+  PHGenIntegral.h
+  PHGenIntegralv1.h
+  PHHepMCGenEvent.h
+  PHHepMCGenEventMap.h
+  PHHepMCGenHelper.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
