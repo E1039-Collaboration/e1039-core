@@ -110,6 +110,8 @@ PHG4SquareTubeSubsystem::GetDetector(void) const
 
 void PHG4SquareTubeSubsystem::SetDefaultParameters()
 {
+	set_default_string_param("hole_type", "rectangular"); // rectangular, circle
+
   set_default_double_param("place_x", 0.);
   set_default_double_param("place_y", 0.);
   set_default_double_param("place_z", 0.);
@@ -125,6 +127,8 @@ void PHG4SquareTubeSubsystem::SetDefaultParameters()
   set_default_double_param("inner_place_y", 0.); // y offset
   set_default_double_param("inner_size_x", 0.); // full length of hole
   set_default_double_param("inner_size_y", 0.); // full length of hole
+
+  set_default_double_param("inner_diameter", 0.); //for circle type of hole
 
   set_default_int_param("use_g4steps", 0);
 
