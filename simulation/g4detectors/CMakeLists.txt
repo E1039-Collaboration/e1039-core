@@ -92,15 +92,11 @@ add_library(g4detectors_io SHARED
   PHG4CylinderGeomv4_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeom_Siladders.cc
   PHG4CylinderGeom_Siladders_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderGeom_MAPS.cc
-  PHG4CylinderGeom_MAPS_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeomContainer.cc
   PHG4CylinderGeomContainer_Dict.cc
   PHG4CylinderCell_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv1.cc
   PHG4CylinderCellv1_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderCell_MAPS.cc
-  PHG4CylinderCell_MAPS_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv2.cc
   PHG4CylinderCellv2_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv3.cc
@@ -153,6 +149,10 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSubsystem.cc
   PHG4E1039InsensSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSteppingAction.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeDetector.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeSubsystem.cc
+  PHG4SquareTubeSubsystem_Dict.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4DetectorGroupSubsystem.cc
   PHG4DetectorGroupSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4DetectorSubsystem.cc
@@ -184,7 +184,6 @@ file(GLOB dist_headers
   PHG4CellDefs.h
   PHG4CylinderCell.h
   PHG4CylinderCellv1.h
-  PHG4CylinderCell_MAPS.h
   PHG4CylinderCellv2.h
   PHG4CylinderCellv3.h
   PHG4CylinderCellContainer.h
@@ -193,7 +192,6 @@ file(GLOB dist_headers
   PHG4CylinderGeomv2.h
   PHG4CylinderGeomv3.h
   PHG4CylinderGeomv4.h
-  PHG4CylinderGeom_MAPS.h
   PHG4CylinderGeom_Siladders.h
   PHG4CylinderGeomContainer.h
   PHG4CylinderCellDefs.h
@@ -205,6 +203,7 @@ file(GLOB dist_headers
   PHG4BNLTargetCoilSubsystem.h
   PHG4CollimatorSubsystem.h
   PHG4E1039InsensSubsystem.h
+  PHG4SquareTubeSubsystem.h
   PHG4DetectorSubsystem.h
   PHG4DetectorGroupSubsystem.h
   PHG4ParameterContainerInterface.h
