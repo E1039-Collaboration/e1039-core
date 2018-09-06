@@ -67,7 +67,7 @@ namespace {
 		G4VSolid *inner_solid = new G4Box((name+"_inner").c_str(),
 				x_inner/2,
 				y_inner/2,
-				z_inner/2+0.1*cm);
+				z_inner/2+0.0001*cm);
 
 		G4VSolid * outer_solid = new G4SubtractionSolid((name+"_outer").c_str(),
 				all_solid,
@@ -101,8 +101,6 @@ namespace {
 //_______________________________________________________________
 void PHG4SquareTubeDetector::Construct( G4LogicalVolume* logicWorld )
 {
-	double inch = 2.54*cm;
-
 	double place_x = params->get_double_param("place_x")*cm;
 	double place_y = params->get_double_param("place_y")*cm;
 	double place_z = params->get_double_param("place_z")*cm;

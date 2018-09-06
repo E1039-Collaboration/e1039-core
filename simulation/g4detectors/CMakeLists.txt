@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4detectors CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -43,13 +43,14 @@ foreach(LinkDefh ${LinkDefhs})
   #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
   -c
+  -I$ENV{MY_INSALL}/include 
   -I$ENV{OFFLINE_MAIN}/include 
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{MY_INSALL}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
 add_library(g4detectors_io SHARED
   ${PROJECT_SOURCE_DIR}/PHG4Parameters.cc
@@ -164,8 +165,8 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TrackStatusDecode.cc
 )
 
-target_link_libraries(g4detectors_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
-target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
+target_link_libraries(g4detectors_io -L./ -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
+target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
 
 install(TARGETS g4detectors_io  					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4detectors     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
