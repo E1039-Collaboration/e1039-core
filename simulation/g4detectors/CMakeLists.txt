@@ -91,8 +91,6 @@ add_library(g4detectors_io SHARED
   PHG4CylinderGeomv3_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeomv4.cc
   PHG4CylinderGeomv4_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderGeom_Siladders.cc
-  PHG4CylinderGeom_Siladders_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeomContainer.cc
   PHG4CylinderGeomContainer_Dict.cc
   PHG4CylinderCell_Dict.cc
@@ -193,7 +191,6 @@ file(GLOB dist_headers
   PHG4CylinderGeomv2.h
   PHG4CylinderGeomv3.h
   PHG4CylinderGeomv4.h
-  PHG4CylinderGeom_Siladders.h
   PHG4CylinderGeomContainer.h
   PHG4CylinderCellDefs.h
   PHG4CylinderCellGeom.h

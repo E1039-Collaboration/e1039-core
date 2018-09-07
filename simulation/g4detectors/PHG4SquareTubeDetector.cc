@@ -125,8 +125,8 @@ G4VPhysicalVolume* PlaceCircleHollowdBox(
 				z_outer/2);
 
 		G4VSolid *inner_solid = new G4Tubs((name+"inner").c_str(),
-				0, diam_inner/2., z_inner/2.,
-				0, 360*deg);
+				0, diam_inner/2., z_inner/2.+0.0001*cm,
+				-0.0001*CLHEP::twopi, CLHEP::twopi);
 
 		G4VSolid * outer_solid = new G4SubtractionSolid((name+"_outer").c_str(),
 				all_solid,
@@ -190,7 +190,7 @@ void PHG4SquareTubeDetector::Construct( G4LogicalVolume* logicWorld )
 
 				0,
 				inner_size_x, inner_size_y, size_z,
-				G4ThreeVector(place_x+inner_place_x,place_y+inner_place_y,0.),
+				G4ThreeVector(place_x+inner_place_x,place_y+inner_place_y,place_z),
 
 				G4Material::GetMaterial(params->get_string_param("material")),
 				size_x, size_y, size_z,
@@ -206,8 +206,8 @@ void PHG4SquareTubeDetector::Construct( G4LogicalVolume* logicWorld )
 				GetName(),
 
 				0,
-				params->get_double_param("inner_diameter"), size_z,
-				G4ThreeVector(place_x+inner_place_x,place_y+inner_place_y,0.),
+				params->get_double_param("inner_diameter")*cm, size_z,
+				G4ThreeVector(place_x+inner_place_x,place_y+inner_place_y,place_z),
 
 				G4Material::GetMaterial(params->get_string_param("material")),
 				size_x, size_y, size_z,
