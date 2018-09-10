@@ -7,7 +7,7 @@ A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.git
 ### Prerequisite
 * To install on seaquestgpvm machines, simply source this macro to get all dependencies in place.
 ```
-/e906/user/yuhw/setup.sh
+/e906/app/users/yuhw/setup.sh
 ```
 * To install from scratch without any dependent software installed, refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-offline-software-from-scratch).
 
