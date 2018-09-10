@@ -2,10 +2,18 @@
 
 A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.github.io/seaquest-offline-doc/index.html) hosted by GitHub Pages.
 
-## install
+## Install
 
-Each package included a 'CMakeLists.txt'
-Using the shell script "build.sh" to build all packages. 
+### Prerequisite
+* To install on seaquestgpvm machines, simply source this macro to get all dependencies in place.
+```
+/e906/user/yuhw/setup.sh
+```
+* To install from scratch without any dependent software installed, refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-offline-software-from-scratch).
+
+### Build
+Each package included a 'CMakeLists.txt'.
+A shell script "build.sh" is provided to build all packages. 
 
 Check out the repository
 ```
