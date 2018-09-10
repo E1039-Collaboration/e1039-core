@@ -2,16 +2,40 @@
 
 A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.github.io/seaquest-offline-doc/index.html) hosted by GitHub Pages.
 
-Each package included a "CMakeLists.txt"
+## install
+
+Each package included a 'CMakeLists.txt'
 Using the shell script "build.sh" to build all packages. 
 
+Check out the repository
 ```
 git clone https://github.com/E1039-Collaboration/seaquest-offline.git
+```
+
+
+Make a build and install folder
+```
 mkdir <build-dir>
 mkdir <install-dir>
-export MY_INSTALL=<install-dir> # Using the MY_INSTALL variable is suggested
-# change build.sh the 'src' line to use your source dir
 cd <build-dir>
-./build.sh # this will build all packages in correct order
-./build.sh <package-name> # this will build a specific package 
 ```
+
+Using the MY_INSTALL variable is suggested, for this variable is used in 'CMakeLists.txt' files.
+You may also put this line in your login macro.
+```
+export MY_INSTALL=<install-dir>
+```
+
+Then change the 'src' line of 'build.sh' to use your source path.
+
+To build and install all packages
+```
+./build.sh
+```
+
+To build one specific package
+```
+./build.sh <package-name>
+```
+
+
