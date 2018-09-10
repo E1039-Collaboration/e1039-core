@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4detectors CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -43,13 +43,14 @@ foreach(LinkDefh ${LinkDefhs})
   #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
   -c
+  -I$ENV{MY_INSALL}/include 
   -I$ENV{OFFLINE_MAIN}/include 
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{MY_INSALL}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
 add_library(g4detectors_io SHARED
   ${PROJECT_SOURCE_DIR}/PHG4Parameters.cc
@@ -90,17 +91,11 @@ add_library(g4detectors_io SHARED
   PHG4CylinderGeomv3_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeomv4.cc
   PHG4CylinderGeomv4_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderGeom_Siladders.cc
-  PHG4CylinderGeom_Siladders_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderGeom_MAPS.cc
-  PHG4CylinderGeom_MAPS_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderGeomContainer.cc
   PHG4CylinderGeomContainer_Dict.cc
   PHG4CylinderCell_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv1.cc
   PHG4CylinderCellv1_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4CylinderCell_MAPS.cc
-  PHG4CylinderCell_MAPS_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv2.cc
   PHG4CylinderCellv2_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CylinderCellv3.cc
@@ -153,6 +148,10 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSubsystem.cc
   PHG4E1039InsensSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSteppingAction.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeDetector.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeSubsystem.cc
+  PHG4SquareTubeSubsystem_Dict.cc
+  ${PROJECT_SOURCE_DIR}/PHG4SquareTubeSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4DetectorGroupSubsystem.cc
   PHG4DetectorGroupSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4DetectorSubsystem.cc
@@ -164,8 +163,8 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TrackStatusDecode.cc
 )
 
-target_link_libraries(g4detectors_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
-target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
+target_link_libraries(g4detectors_io -L./ -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
+target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
 
 install(TARGETS g4detectors_io  					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4detectors     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
@@ -184,7 +183,6 @@ file(GLOB dist_headers
   PHG4CellDefs.h
   PHG4CylinderCell.h
   PHG4CylinderCellv1.h
-  PHG4CylinderCell_MAPS.h
   PHG4CylinderCellv2.h
   PHG4CylinderCellv3.h
   PHG4CylinderCellContainer.h
@@ -193,8 +191,6 @@ file(GLOB dist_headers
   PHG4CylinderGeomv2.h
   PHG4CylinderGeomv3.h
   PHG4CylinderGeomv4.h
-  PHG4CylinderGeom_MAPS.h
-  PHG4CylinderGeom_Siladders.h
   PHG4CylinderGeomContainer.h
   PHG4CylinderCellDefs.h
   PHG4CylinderCellGeom.h
@@ -205,6 +201,7 @@ file(GLOB dist_headers
   PHG4BNLTargetCoilSubsystem.h
   PHG4CollimatorSubsystem.h
   PHG4E1039InsensSubsystem.h
+  PHG4SquareTubeSubsystem.h
   PHG4DetectorSubsystem.h
   PHG4DetectorGroupSubsystem.h
   PHG4ParameterContainerInterface.h
