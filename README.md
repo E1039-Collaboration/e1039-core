@@ -2,20 +2,16 @@
 
 A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.github.io/seaquest-offline-doc/index.html) hosted by GitHub Pages.
 
-## Build
-### cmake
 Each package included a "CMakeLists.txt"
 Using the shell script "build.sh" to build all packages. 
 
-### automake
-Use [automake](https://www.gnu.org/software/automake/), [autoconf](https://www.gnu.org/software/autoconf/autoconf.html) and [libtool](https://www.gnu.org/software/libtool/) to build the code. Each package should contain 3 files: 'autogen.sh', 'configure.ac' and 'MakeFile.am'
-
 ```
-mkdir [path_to_build]
-cd [path_to_build]
-[path_to_package]/autogen.sh --prefix=[path_to_install]
-make -j 4
-make install
+git clone https://github.com/E1039-Collaboration/seaquest-offline.git
+mkdir <build-dir>
+mkdir <install-dir>
+export MY_INSTALL=<install-dir> # Using the MY_INSTALL variable is suggested
+# change build.sh the 'src' line to use your source dir
+cd <build-dir>
+./build.sh # this will build all packages in correct order
+./build.sh <package-name> # this will build a specific package 
 ```
-
-Follow the package order listed in the "build.sh"
