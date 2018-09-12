@@ -1,6 +1,6 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(pdbcalBase CXX C)
+project(pdbcalbase CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")

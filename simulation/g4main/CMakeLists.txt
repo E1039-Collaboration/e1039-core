@@ -2,8 +2,10 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4main CXX C)
 
+include_directories( "${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include" "$ENV{OFFLINE_MAIN}/include/")
+link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib/")
+
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -144,8 +146,8 @@ add_library(g4testbench SHARED
     PHG4_Dict.cc
 )
 
-target_link_libraries(phg4hit     -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lfun4all)
-target_link_libraries(g4testbench -L./ -lphg4hit)
+target_link_libraries(phg4hit      -lphool -lSubsysReco -lfun4all ${GEANT4_LINK})
+target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc -lxerces-c ${GEANT4_LINK} -lphgeom -lphg4gdml -lphg4hit)
 
 install(TARGETS phg4hit     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4testbench 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

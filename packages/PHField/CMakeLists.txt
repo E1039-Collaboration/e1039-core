@@ -14,7 +14,9 @@ foreach(LinkDefh ${LinkDefhs})
 endforeach(LinkDefh)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("$ENV{MY_INSTALL}/include" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib/")
+
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -56,7 +58,6 @@ add_library(phfield_io SHARED
   PHFieldConfig_v3_Dict.C
   ${PROJECT_SOURCE_DIR}/PHFieldConfig_v3.cc 
 )
-target_link_libraries(phfield_io -L$ENV{OFFLINE_MAIN}/lib -lphool)
 
 add_library(phfield SHARED
   ${PROJECT_SOURCE_DIR}/PHField.cc
@@ -69,7 +70,11 @@ add_library(phfield SHARED
   PHFieldUtility_Dict.C
   ${PROJECT_SOURCE_DIR}/PHFieldUtility.cc 
 )
-target_link_libraries(phfield -L./ -L$ENV{OFFLINE_MAIN}/lib -lfun4all -lphfield_io )
+
+add_dependencies(phfield phfield_io)
+
+target_link_libraries(phfield_io -lphool)
+target_link_libraries(phfield    -lfun4all -lphfield_io )
 
 install(TARGETS phfield_io 				DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phfield 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
