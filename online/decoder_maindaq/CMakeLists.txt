@@ -1,6 +1,6 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(module_example CXX C)
+project(decoder_maindaq CXX C)
 
 # ROOT dict generation
 file(GLOB dicts "")
@@ -13,10 +13,10 @@ foreach(LinkDefh ${LinkDefhs})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
-# source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
+include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 # ROOT
@@ -32,12 +32,12 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
 
-add_library(module_example SHARED ${sources} ${dicts})
-target_link_libraries(module_example -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lfun4all -lphool)
+add_library(decoder_maindaq SHARED ${sources} ${dicts})
+target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool -levent -lmyevio)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
-install(TARGETS module_example DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS decoder_maindaq DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)

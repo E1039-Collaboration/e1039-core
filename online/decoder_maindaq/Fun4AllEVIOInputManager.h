@@ -1,7 +1,7 @@
 #ifndef Fun4AllEVIOInputManager_H_
 #define Fun4AllEVIOInputManager_H_
 
-#include "Fun4AllInputManager.h"
+#include <fun4all/Fun4AllInputManager.h>
 
 #include <string>
 #include <map>

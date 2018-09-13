@@ -8,6 +8,8 @@
 #ifndef _H_Event_H_
 #define _H_Event_H_
 
+#include <stdio.h>
+
 class Event{
 
 public:
@@ -15,7 +17,7 @@ public:
 	Event() {}
   virtual ~Event() {}
 
-  virtual int* get_words();
+  virtual int* get_words() = 0;
 };
 
 

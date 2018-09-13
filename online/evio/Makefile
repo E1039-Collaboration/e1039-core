@@ -1,10 +1,10 @@
 ifeq ($(shell getconf LONG_BIT),64)
-	CC = gcc -m64 -DBIT64
+	CC = gcc -m64 -DBIT64 -fPIC
 else
-	CC = gcc -m32
+	CC = gcc -m32 -fPIC
 endif
 
-ARFLAGS = rvU
+ARFLAGS = rv
 
 sources = evio.c swap_util.c ceMsgLib.c ceMsgTbl.c
 lib_targets := $(patsubst %.c, libmyevio.a(%.o), $(sources))

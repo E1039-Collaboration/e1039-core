@@ -8,7 +8,7 @@
 #include "EVIO_Event.h"
 
 EVIO_Event::EVIO_Event() {
-	words = nullptr;
+	words = NULL;
 }
 
 EVIO_Event::EVIO_Event(int* data) {
@@ -16,5 +16,5 @@ EVIO_Event::EVIO_Event(int* data) {
 }
 
 EVIO_Event::~EVIO_Event() {
-	delete [] words;
+  delete [] words;
 }

@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <unistd.h>
-#include <evio.h>
+#include <evio/evio.h>
 #include "ManageCodaInput.h"
 using namespace std;
 

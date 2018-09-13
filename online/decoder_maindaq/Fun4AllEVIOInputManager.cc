@@ -1,15 +1,16 @@
-#include <event/EVIO_Event.h>
-#include <evio/ManageCodaInput.h>
-
 #include "Fun4AllEVIOInputManager.h"
-#include "Fun4AllServer.h"
-#include "Fun4AllSyncManager.h"
-#include "Fun4AllReturnCodes.h"
-#include "Fun4AllUtils.h"
+
+#include "ManageCodaInput.h"
+
+#include <event/EVIO_Event.h>
+
+#include <fun4all/Fun4AllServer.h>
+#include <fun4all/Fun4AllSyncManager.h>
+#include <fun4all/Fun4AllReturnCodes.h>
+#include <fun4all/Fun4AllUtils.h>
 
 #include <ffaobjects/RunHeader.h>
 #include <ffaobjects/SyncObjectv2.h>
-//#include <frog/FROG.h>
 
 #include <phool/getClass.h>
 #include <phool/PHCompositeNode.h>
@@ -18,9 +19,9 @@
 #include <cstdlib>
 #include <memory>
 
-#include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
+//#include <boost/tokenizer.hpp>
+//#include <boost/foreach.hpp>
+//#include <boost/lexical_cast.hpp>
 
 using namespace std;
 

@@ -7,7 +7,7 @@ include_directories("${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 add_library(event SHARED ${sources})
 target_link_libraries(event)
