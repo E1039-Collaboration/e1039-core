@@ -1,0 +1,33 @@
+!-----------------------------------------------------------------------------
+!  Copyright (c) 1991,1992 Southeastern Universities Research Association,
+!                          Continuous Electron Beam Accelerator Facility
+! 
+!  This software was developed under a United States Government license
+!  described in the NOTICE file included as part of this distribution.
+! 
+!  CEBAF Data Acquisition Group, 12000 Jefferson Ave., Newport News, VA 23606
+!  Email: coda@cebaf.gov  Tel: (804) 249-7101  Fax: (804) 249-7363
+! -----------------------------------------------------------------------------
+!  
+!  Description:
+! 	File to assign facility number for Event File I/O
+! 	
+!  Author:  Chip Watson, CEBAF Data Acquisition Group
+! 
+!  Revision History:
+!    $Log: facility,v $
+!    Revision 1.1  1998/12/07 22:11:05  saw
+!    Initial setup
+!
+! Revision 1.1  1992/07/08  18:29:07  watson
+! Initial revision
+!
+!
+!
+! Name  Number  Filename   	[String]
+
+evfile	115	evfile.msg	Event File I/O
+
+!
+! Note: Name is case sensitive in searching for the corresponding .msg file
+!
