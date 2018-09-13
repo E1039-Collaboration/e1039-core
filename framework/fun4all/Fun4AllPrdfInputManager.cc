@@ -6,7 +6,7 @@
 
 #include <ffaobjects/RunHeader.h>
 #include <ffaobjects/SyncObjectv2.h>
-#include <frog/FROG.h>
+//#include <frog/FROG.h>
 
 #include <phool/getClass.h>
 #include <phool/PHCompositeNode.h>
@@ -68,8 +68,9 @@ int Fun4AllPrdfInputManager::fileopen(const string &filenam)
       fileclose();
     }
   filename = filenam;
-  FROG frog;
-  string fname = frog.location(filename.c_str());
+  //FROG frog;
+  //string fname = frog.location(filename.c_str());
+  string fname = filename;
   if (verbosity > 0)
     {
       cout << ThisName << ": opening file " << filename.c_str() << endl;
