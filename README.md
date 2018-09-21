@@ -1,6 +1,6 @@
-# Fun4All based E1039 offline software
+# Fun4All based E1039 core software
 
-A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.github.io/seaquest-offline-doc/index.html) hosted by GitHub Pages.
+A doxygen page of the e1039-core is [here](https://e1039-collaboration.github.io/e1039-doc/index.html) hosted by GitHub Pages.
 
 ## Install
 
@@ -9,7 +9,7 @@ A doxygen page of the seaquest-offline is [here](https://e1039-collaboration.git
 ```
 /e906/app/users/yuhw/setup.sh
 ```
-* To install from scratch without any dependent software installed, refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-offline-software-from-scratch).
+* To install from scratch without any dependent software installed, refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-core-software-from-scratch).
 
 ### Build
 Each package included a 'CMakeLists.txt'.
@@ -17,7 +17,7 @@ A shell script "build.sh" is provided to build all packages.
 
 Check out the repository
 ```
-git clone https://github.com/E1039-Collaboration/seaquest-offline.git
+git clone https://github.com/E1039-Collaboration/e1039-core.git
 ```
 
 
@@ -45,5 +45,6 @@ To build one specific package
 ```
 ./build.sh <package-name>
 ```
+
 
 
