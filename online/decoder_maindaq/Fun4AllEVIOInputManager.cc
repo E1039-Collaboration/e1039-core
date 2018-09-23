@@ -1,31 +1,31 @@
-#include "Fun4AllPrdfInputManager.h"
-#include "Fun4AllServer.h"
-#include "Fun4AllSyncManager.h"
-#include "Fun4AllReturnCodes.h"
-#include "Fun4AllUtils.h"
+#include "Fun4AllEVIOInputManager.h"
+
+#include "ManageCodaInput.h"
+
+#include <event/EVIO_Event.h>
+
+#include <fun4all/Fun4AllServer.h>
+#include <fun4all/Fun4AllSyncManager.h>
+#include <fun4all/Fun4AllReturnCodes.h>
+#include <fun4all/Fun4AllUtils.h>
 
 #include <ffaobjects/RunHeader.h>
 #include <ffaobjects/SyncObjectv2.h>
-//#include <frog/FROG.h>
 
 #include <phool/getClass.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHDataNode.h>
 #include <phool/recoConsts.h>
-
-#include <Event/Event.h>
-#include <Event/fileEventiterator.h>
-
 #include <cstdlib>
 #include <memory>
 
-#include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
+//#include <boost/tokenizer.hpp>
+//#include <boost/foreach.hpp>
+//#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
-Fun4AllPrdfInputManager::Fun4AllPrdfInputManager(const string &name, const string &topnodename) : 
+Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const string &topnodename) :
  Fun4AllInputManager(name, ""),
  segment(-999),
  isopen(0),
@@ -34,22 +34,22 @@ Fun4AllPrdfInputManager::Fun4AllPrdfInputManager(const string &name, const strin
  topNodeName(topnodename),
  evt(NULL),
  save_evt(NULL),
- eventiterator(NULL)
+ coda(NULL)
 {
   Fun4AllServer *se = Fun4AllServer::instance();
   topNode = se->topNode(topNodeName.c_str());
   PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","PRDF"));
+  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   if (!PrdfNode)
     {
-      PHDataNode<Event> *newNode = new PHDataNode<Event>(evt,"PRDF","Event");
+      PHDataNode<Event> *newNode = new PHDataNode<Event>(evt,"EVIO","Event");
       topNode->addNode(newNode);
     }
   syncobject = new SyncObjectv2();
   return ;
 }
 
-Fun4AllPrdfInputManager::~Fun4AllPrdfInputManager()
+Fun4AllEVIOInputManager::~Fun4AllEVIOInputManager()
 {
   if (isopen)
     {
@@ -58,7 +58,7 @@ Fun4AllPrdfInputManager::~Fun4AllPrdfInputManager()
   delete syncobject;
 }
 
-int Fun4AllPrdfInputManager::fileopen(const string &filenam)
+int Fun4AllEVIOInputManager::fileopen(const string &filenam)
 {
   if (isopen)
     {
@@ -75,16 +75,22 @@ int Fun4AllPrdfInputManager::fileopen(const string &filenam)
     {
       cout << ThisName << ": opening file " << filename.c_str() << endl;
     }
-  int status = 0;
-  eventiterator = new fileEventiterator(fname.c_str(), status);
+
+  coda = new ManageCodaInput();
   events_thisfile = 0;
-  if (status)
-    {
-      delete eventiterator;
-      eventiterator = NULL;
+
+  const int file_size_min = 32768;
+  const int sec_wait      = 15;
+  const int n_wait        = 40;
+  int status = coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
+
+  if (status!=0) {
+  	cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
+      delete coda;
+      coda = NULL;
       cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
       return -1;
-    }
+  }
   pair<int, int> runseg = Fun4AllUtils::GetRunSegment(fname);
   segment = runseg.second;
   isopen = 1;
@@ -92,7 +98,7 @@ int Fun4AllPrdfInputManager::fileopen(const string &filenam)
   return 0;
 }
 
-int Fun4AllPrdfInputManager::run(const int nevents)
+int Fun4AllEVIOInputManager::run(const int nevents)
 {
   readagain:
   if (!isopen)
@@ -121,7 +127,7 @@ int Fun4AllPrdfInputManager::run(const int nevents)
     }
   //  cout << "running event " << nevents << endl;
   PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","PRDF"));
+  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   if (save_evt) // if an event was pushed back, copy saved pointer and reset save_evt pointer
     {
       evt = save_evt;
@@ -131,7 +137,10 @@ int Fun4AllPrdfInputManager::run(const int nevents)
     }
   else
     {
-      evt = eventiterator->getNextEvent();
+      int * data_ptr = NULL;
+      unsigned int coda_id = 0;
+			if(coda->NextEvent(coda_id, data_ptr))
+				evt = new EVIO_Event(data_ptr);
     }
   PrdfNode->setData(evt);
   if (!evt)
@@ -141,18 +150,23 @@ int Fun4AllPrdfInputManager::run(const int nevents)
     }
   if (verbosity > 1)
     {
-      cout << ThisName << " PRDF run " << evt->getRunNumber() << ", evt no: " << evt->getEvtSequence() << endl;
+  		//TODO implement this
+      //cout << ThisName << " EVIO run " << evt->getRunNumber() << ", evt no: " << evt->getEvtSequence() << endl;
     }
   events_total++;
   events_thisfile++;
-  SetRunNumber(evt->getRunNumber());
-  mySyncManager->PrdfEvents(events_thisfile);
-  mySyncManager->SegmentNumber(segment);
-  mySyncManager->CurrentEvent(evt->getEvtSequence());
-  syncobject->EventCounter(events_thisfile);
-  syncobject->SegmentNumber(segment);
-  syncobject->RunNumber(evt->getRunNumber());
-  syncobject->EventNumber(evt->getEvtSequence());
+
+  //TODO implement these
+//  SetRunNumber(evt->getRunNumber());
+//  mySyncManager->PrdfEvents(events_thisfile);
+//  mySyncManager->SegmentNumber(segment);
+//  mySyncManager->CurrentEvent(evt->getEvtSequence());
+//  syncobject->EventCounter(events_thisfile);
+//  syncobject->SegmentNumber(segment);
+//  syncobject->RunNumber(evt->getRunNumber());
+//  syncobject->EventNumber(evt->getEvtSequence());
+
+
   // check if the local SubsysReco discards this event
   if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
     {
@@ -162,15 +176,15 @@ int Fun4AllPrdfInputManager::run(const int nevents)
   return 0;
 }
 
-int Fun4AllPrdfInputManager::fileclose()
+int Fun4AllEVIOInputManager::fileclose()
 {
   if (!isopen)
     {
       cout << Name() << ": fileclose: No Input file open" << endl;
       return -1;
     }
-  delete eventiterator;
-  eventiterator = NULL;
+  delete coda;
+  coda = NULL;
   isopen = 0;
   // if we have a file list, move next entry to top of the list
   // or repeat the same entry again
@@ -192,14 +206,14 @@ int Fun4AllPrdfInputManager::fileclose()
 
 
 void
-Fun4AllPrdfInputManager::Print(const string &what) const
+Fun4AllEVIOInputManager::Print(const string &what) const
 {
   Fun4AllInputManager::Print(what);
   return ;
 }
 
 int
-Fun4AllPrdfInputManager::OpenNextFile()
+Fun4AllEVIOInputManager::OpenNextFile()
 {
   while (!filelist.empty())
     {
@@ -223,10 +237,10 @@ Fun4AllPrdfInputManager::OpenNextFile()
 }
 
 int
-Fun4AllPrdfInputManager::ResetEvent()
+Fun4AllEVIOInputManager::ResetEvent()
 {
   PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","PRDF"));
+  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   PrdfNode->setData(NULL); // set pointer in Node to NULL before deleting it
   delete evt;
   evt = NULL;
@@ -235,7 +249,7 @@ Fun4AllPrdfInputManager::ResetEvent()
 }
 
 int
-Fun4AllPrdfInputManager::PushBackEvents(const int i)
+Fun4AllEVIOInputManager::PushBackEvents(const int i)
 {
   // PushBackEvents is supposedly pushing events back on the stack which works
   // easily with root trees (just grab a different entry) but hard in these HepMC ASCII files.
@@ -250,11 +264,11 @@ Fun4AllPrdfInputManager::PushBackEvents(const int i)
 	  return 0;
 	}
       cout << PHWHERE << ThisName
-           << " Fun4AllPrdfInputManager cannot push back " << i << " events into file"
+           << " Fun4AllEVIOInputManager cannot push back " << i << " events into file"
            << endl;
       return -1;
     }
-  if (!eventiterator)
+  if (!coda)
     {
       cout << PHWHERE << ThisName
 	   << " no file open" << endl;
@@ -267,7 +281,10 @@ Fun4AllPrdfInputManager::PushBackEvents(const int i)
   int errorflag = 0;
   while (nevents > 0 && ! errorflag)
     {
-      evt = eventiterator->getNextEvent();
+			int * data_ptr = NULL;
+			unsigned int coda_id = 0;
+			if(coda->NextEvent(coda_id, data_ptr))
+				evt = new EVIO_Event(data_ptr);
       if (! evt)
 	{
 	  cout << "Error after skipping " << i - nevents 
@@ -279,7 +296,8 @@ Fun4AllPrdfInputManager::PushBackEvents(const int i)
 	{
 	  if (verbosity > 3)
 	    {
-	      cout << "Skipping evt no: " << evt->getEvtSequence() << endl;
+	  		//TODO implement this
+	      //cout << "Skipping evt no: " << evt->getEvtSequence() << endl;
 	    }
 	}
       delete evt;
@@ -289,7 +307,7 @@ Fun4AllPrdfInputManager::PushBackEvents(const int i)
 }
 
 int
-Fun4AllPrdfInputManager::GetSyncObject(SyncObject **mastersync)
+Fun4AllEVIOInputManager::GetSyncObject(SyncObject **mastersync)
 {
   // here we copy the sync object from the current file to the
   // location pointed to by mastersync. If mastersync is a 0 pointer
@@ -307,7 +325,7 @@ Fun4AllPrdfInputManager::GetSyncObject(SyncObject **mastersync)
 }
 
 int
-Fun4AllPrdfInputManager::SyncIt(const SyncObject *mastersync)
+Fun4AllEVIOInputManager::SyncIt(const SyncObject *mastersync)
 {
   if (!mastersync)
     {
