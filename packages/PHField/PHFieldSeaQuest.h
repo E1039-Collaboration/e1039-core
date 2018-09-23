@@ -3,6 +3,7 @@
 
 #include "PHField.h"
 #include "PHField3DCartesian.h"
+#include "PHFieldRegionalConst.h"
 
 #include <map>
 #include <set>
@@ -11,7 +12,7 @@
 class PHFieldSeaQuest : public PHField
 {
  public:
-  PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name);
+  PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name, const double targermag_y = 5.0);
   virtual ~PHFieldSeaQuest();
 
   //! access field value
@@ -26,6 +27,7 @@ class PHFieldSeaQuest : public PHField
 
   PHField3DCartesian fmag;
   PHField3DCartesian kmag;
+  PHFieldRegionalConst targetmag;
 };
 
 #endif  // __PHFIELD3D_H

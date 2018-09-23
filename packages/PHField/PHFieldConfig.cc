@@ -129,3 +129,15 @@ double PHFieldConfig::get_field_mag_z() const
 void PHFieldConfig::set_field_mag_z(double fieldMagZ)
 {
 }
+
+
+//! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_taregetmag_y() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+//! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+void PHFieldConfig::set_taregetmag_y(double fieldMagY)
+{
+}

@@ -22,10 +22,12 @@ using namespace std;
 
 PHFieldConfig_v3::PHFieldConfig_v3(
     const std::string& filename1,
-		const std::string& filename2):
-				field_config_(kFieldSeaQuest),
-				filename1_(filename1),
-				filename2_(filename2)
+		const std::string& filename2,
+		const double targetmag_y):
+		field_config_(kFieldSeaQuest),
+		filename1_(filename1),
+		filename2_(filename2),
+		_taregetmag_y(targetmag_y)
 {
 }
 

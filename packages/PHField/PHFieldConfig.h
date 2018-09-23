@@ -89,6 +89,12 @@ class PHFieldConfig : public PHObject
   //! field value in Tesla for uniform field model ONLY for PHFieldConfig_v2
   virtual void set_field_mag_z(double fieldMagZ);
 
+  //! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+  virtual void set_taregetmag_y(double fieldMagX);
+
+  //! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+  virtual double get_taregetmag_y() const;
+
  protected:
   //! pure virtual interface class. not for direct use
   PHFieldConfig();

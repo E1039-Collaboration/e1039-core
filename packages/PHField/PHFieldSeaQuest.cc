@@ -13,9 +13,10 @@
 using namespace std;
 using namespace CLHEP;  // units
 
-PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name):
+PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name, const double targermag_y):
 		fmag(fmag_name),
-		kmag(kmag_name)
+		kmag(kmag_name),
+		targetmag(targermag_y)
 
 {
   zValues[0] = -204.0*cm;  // front of fmag field map
@@ -37,7 +38,9 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
 
 	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
-  if (point[2]>zValues[0] && point[2]<zValues[1])
+	if(point[2] < zValues[0]) {
+		targetmag.GetFieldValue(point, Bfield);
+	}else if (point[2]>zValues[0] && point[2]<zValues[1])
   {
     fmag.GetFieldValue( point, Bfield );
   } else if ((point[2]>zValues[2])&&(point[2]<zValues[3])) {
