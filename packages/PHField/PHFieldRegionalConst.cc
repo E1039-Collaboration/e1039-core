@@ -13,7 +13,7 @@ using namespace CLHEP;// units
 
 PHFieldRegionalConst::PHFieldRegionalConst(const double field, const double magfield_rescale, const int verb) :
     PHField(verb),
-		_mean_x(0*cm), _mean_y(0*cm), _mean_z(-300),
+		_mean_x(0*cm), _mean_y(0*cm), _mean_z(0*cm),
 		_maxy(4*cm), _miny(-4*cm),
 		_maxr(22.225*cm), _minr(0*cm),
 		_field_val(field*tesla)

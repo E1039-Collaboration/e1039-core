@@ -25,6 +25,10 @@ PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string
   zValues[3] = 1572.26*cm; // end of kmag field map
 
   kmagZOffset = 1064.26*cm;
+
+  targetmag.set_mean_x(0*cm);
+  targetmag.set_mean_y(0*cm);
+  targetmag.set_mean_z(-300*cm);
 }
 
 PHFieldSeaQuest::~PHFieldSeaQuest()
