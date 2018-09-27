@@ -4,6 +4,7 @@ project(phhepmc CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -69,9 +70,10 @@ add_library(phhepmc_io SHARED
   PHGenIntegralv1_Dict.C
 )
 
-target_link_libraries(phhepmc_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lHepMC)
+target_link_libraries(phhepmc_io -lphool -lHepMC)
 
-target_link_libraries(phhepmc -L./ -lphhepmc_io -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lboost_iostreams -lfun4all -lgsl -lgslcblas)
+add_dependencies(phhepmc phhepmc_io)
+target_link_libraries(phhepmc -lphhepmc_io -lphool -lSubsysReco -lboost_iostreams -lfun4all -lgsl -lgslcblas)
 
 install(TARGETS phhepmc_io  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phhepmc     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

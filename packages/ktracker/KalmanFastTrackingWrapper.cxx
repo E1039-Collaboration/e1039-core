@@ -96,6 +96,24 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 	assert(field);
 
+  if(verbosity >1) {
+    cout << "PHField check: " << "-------" << endl;
+    double cm = 10.;
+    double Tesla = 10.;
+    double point[4] = {0, 0, 0, 0};
+    double bfield[3] = {0, 0, 0};
+    field->identify();
+    point[2] = -300*cm;
+    field->GetFieldValue(point, bfield);
+    cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
+    point[2] = 250*cm;
+    field->GetFieldValue(point, bfield);
+    cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
+    point[2] = 1050*cm;
+    field->GetFieldValue(point, bfield);
+    cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
+  }
+
 	/// init KalmanPrgTrk
 	fastfinder = new KalmanPrgTrk(field, _t_geo_manager);
 	fastfinder->Verbosity(verbosity);
