@@ -12,13 +12,13 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 file(GLOB dicts "")
 foreach(LinkDefh ${LinkDefhs})
-	message("LinkDefh: " ${LinkDefh})
+	#message("LinkDefh: " ${LinkDefh})
 	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${LinkDefh})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${DictC})
 	list(APPEND dicts ${DictC})
-  message("Dicth: " ${Dicth})
-  message("DictC: " ${DictC})
+  #message("Dicth: " ${Dicth})
+  #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
@@ -33,7 +33,7 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/PHGenEventListv1.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEventMap.h
-  $(OFFLINE_MAIN)/include/HepMC/*.h
+  $ENV{OFFLINE_MAIN}/include/HepMC/*.h
   ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
 	)
 

@@ -4,6 +4,8 @@ project(g4detectors CXX C)
 
 # source code
 include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+cmake_policy(SET CMP0015 OLD)
+
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
