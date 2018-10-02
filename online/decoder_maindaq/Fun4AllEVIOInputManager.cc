@@ -1,6 +1,8 @@
 #include "Fun4AllEVIOInputManager.h"
 
-#include "ManageCodaInput.h"
+//#include "ManageCodaInput.h"
+#include "MainDaqParser.h"
+#include "DecoData.h"
 
 #include <event/EVIO_Event.h>
 
@@ -34,7 +36,8 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
  topNodeName(topnodename),
  evt(NULL),
  save_evt(NULL),
- coda(NULL)
+ parser(NULL)
+ //coda(NULL)
 {
   Fun4AllServer *se = Fun4AllServer::instance();
   topNode = se->topNode(topNodeName.c_str());
@@ -76,23 +79,25 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
       cout << ThisName << ": opening file " << filename.c_str() << endl;
     }
 
-  coda = new ManageCodaInput();
+  //coda = new ManageCodaInput();
+  parser = new MainDaqParser();
   events_thisfile = 0;
 
   const int file_size_min = 32768;
   const int sec_wait      = 15;
   const int n_wait        = 40;
-  int status = coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
+  int status = parser->coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
 
   if (status!=0) {
   	cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
-      delete coda;
-      coda = NULL;
+      delete parser->coda;
+      parser->coda = NULL;
       cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
       return -1;
   }
-  pair<int, int> runseg = Fun4AllUtils::GetRunSegment(fname);
-  segment = runseg.second;
+  //pair<int, int> runseg = Fun4AllUtils::GetRunSegment(fname);
+  //segment = runseg.second;
+  segment = 0;
   isopen = 1;
   AddToFileOpened(fname); // add file to the list of files which were opened
   return 0;
@@ -100,6 +105,7 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
 
 int Fun4AllEVIOInputManager::run(const int nevents)
 {
+  //cout << "Fun4AllEVIOInputManager::run(): " << nevents << endl;
   readagain:
   if (!isopen)
     {
@@ -127,9 +133,11 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
   //  cout << "running event " << nevents << endl;
   PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
+  //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
+  EventData* ed = 0;
   if (save_evt) // if an event was pushed back, copy saved pointer and reset save_evt pointer
     {
+      cerr << "!!ERROR!!  save_evt is not supported yet." << endl;
       evt = save_evt;
       save_evt = NULL;
       events_thisfile--;
@@ -137,13 +145,14 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
   else
     {
-      int * data_ptr = NULL;
-      unsigned int coda_id = 0;
-			if(coda->NextEvent(coda_id, data_ptr))
-				evt = new EVIO_Event(data_ptr);
+      //int * data_ptr = NULL;
+      //unsigned int coda_id = 0;
+      //if(parser->coda->NextEvent(coda_id, data_ptr))
+      //  evt = new EVIO_Event(data_ptr);
+      parser->NextPhysicsEvent(ed);
     }
-  PrdfNode->setData(evt);
-  if (!evt)
+  //PrdfNode->setData(evt);
+  if (!ed) // (!evt)
     {
       fileclose();
       goto readagain;
@@ -166,7 +175,15 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 //  syncobject->RunNumber(evt->getRunNumber());
 //  syncobject->EventNumber(evt->getEvtSequence());
 
-
+  cout << "E "
+       << " " << ed->event.eventID
+       << " " << ed->event.runID
+       << " " << ed->event.spillID
+       << " " << ed->event.dataQuality
+       << " " << ed->event.trigger_bits
+       << " " << ed->list_hit.size()
+       << " " << ed->list_hit_trig.size()
+       << endl;
   // check if the local SubsysReco discards this event
   if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
     {
@@ -183,8 +200,8 @@ int Fun4AllEVIOInputManager::fileclose()
       cout << Name() << ": fileclose: No Input file open" << endl;
       return -1;
     }
-  delete coda;
-  coda = NULL;
+  delete parser->coda;
+  parser->coda = NULL;
   isopen = 0;
   // if we have a file list, move next entry to top of the list
   // or repeat the same entry again
@@ -268,7 +285,7 @@ Fun4AllEVIOInputManager::PushBackEvents(const int i)
            << endl;
       return -1;
     }
-  if (!coda)
+  if (!parser->coda)
     {
       cout << PHWHERE << ThisName
 	   << " no file open" << endl;
@@ -283,7 +300,7 @@ Fun4AllEVIOInputManager::PushBackEvents(const int i)
     {
 			int * data_ptr = NULL;
 			unsigned int coda_id = 0;
-			if(coda->NextEvent(coda_id, data_ptr))
+			if(parser->coda->NextEvent(coda_id, data_ptr))
 				evt = new EVIO_Event(data_ptr);
       if (! evt)
 	{

@@ -63,52 +63,6 @@ int ManageCodaInput::OpenFile(const std::string fname, const int file_size_min, 
   return 0;
 }
 
-//int ManageCodaInput::OpenFileV1(const std::string fname)
-//{
-//  if (! file_exists(fname)) {
-//    cerr << "!!ERROR!!  Coda file does not exist: " << fname << ".\n"
-//	 << "Exiting...\n";
-//    return 1;
-//  }
-//  m_fname = fname;
-//
-//  if (m_online) {
-//    // evOpen will return an error if the file is less than
-//    //	a certain size, so wait until the file is big enough.
-//    bool size_ok = false;
-//    for (int i_try = 0; i_try < 40; i_try++) {
-//      FILE* fp = fopen (fname.c_str(), "r");
-//      fseek(fp, 0L, SEEK_END);
-//      m_file_size = ftell(fp);
-//      fclose(fp);
-//      if (m_file_size < 32768) {
-//	if (m_verb) { 
-//	  cout << "File too small (" << i_try << "). Waiting for more..." << endl;
-//	}
-//      } else {
-//	size_ok = true;
-//	break;
-//      } 
-//      sleep (15);
-//    }
-//    if (! size_ok) {
-//      cout << "File not large enough.  Wait timeout.  Exiting..." << endl;
-//      return 2;
-//    }
-//  }
-//  
-//  if (m_verb) {
-//    cout << "Loading " << fname << "...\n";
-//  }
-//  int ret = evOpen((char*)fname.c_str(), (char*)"r", &m_handle);
-//  if (ret != 0) {
-//    cout << "Failed.  ret = " << ret << ".  Exiting..." << endl;
-//    return 3;
-//  }
-//  m_event_count = 0;
-//  return 0;
-//}
-
 int ManageCodaInput::CloseFile()
 {
   return evClose(m_handle);
