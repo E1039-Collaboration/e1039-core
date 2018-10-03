@@ -1,11 +1,13 @@
-/*
- * Fun4MainDaq.C
+/** Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
+ * 
+ * 
  */
 R__LOAD_LIBRARY(libdecoder_maindaq)
 
 int Fun4MainDaq(
-  const int nevent = 100000, 
-  const char *outdst = "dst.root")
+  const int nevent = 10000,
+  const char* fn_in  = "/data/e906/run_028700.dat",  
+  const char* fn_out = "dst.root")
 {
   int verbosity = 1;
   
@@ -28,13 +30,12 @@ int Fun4MainDaq(
   //analyzer->set_out_name(outeval);
   //se->registerSubsystem(analyzer);
 
-  const string fn_in = "/data/e906/run_028700.dat";
   Fun4AllInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(verbosity);
   in->fileopen(fn_in);
   se->registerInputManager(in);
 
-  Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outdst);
+  Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
   se->registerOutputManager(out);
 
   se->run(nevent);

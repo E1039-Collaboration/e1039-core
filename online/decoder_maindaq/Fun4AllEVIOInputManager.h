@@ -40,8 +40,6 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   //Event *save_evt;
   SyncObject* syncobject;
   //ManageCodaInput *coda;
-
- public:
   MainDaqParser* parser;
 };
 

@@ -30,7 +30,7 @@ class ManageCodaInput {
 
   int OpenFile(const std::string fname, const int file_size_min=0, const int sec_wait=10, const int n_wait=0, const int n_evt_pre_read=0);
   int CloseFile();
-  bool NextEvent(unsigned int& coda_id, int*& event_words);
+  bool NextCodaEvent(unsigned int& coda_id, int*& event_words);
 
  private:
   bool file_exists(const std::string fname);

@@ -58,7 +58,7 @@ int ManageCodaInput::OpenFile(const std::string fname, const int file_size_min, 
   for (int ii = 0; ii < n_evt_pre_read; ii++) { // todo: this loop number is exactly correct??
     unsigned int coda_id; // dummy
     int* words = 0; // dummy
-    NextEvent(coda_id, words); // todo: check if it fails
+    NextCodaEvent(coda_id, words); // todo: check if it fails
   }
   return 0;
 }
@@ -68,7 +68,7 @@ int ManageCodaInput::CloseFile()
   return evClose(m_handle);
 }
 
-bool ManageCodaInput::NextEvent(unsigned int& coda_id, int*& words)
+bool ManageCodaInput::NextCodaEvent(unsigned int& coda_id, int*& words)
 {
   if (m_go_end) return false;
   int ret = evRead(m_handle, event_words, buflen);

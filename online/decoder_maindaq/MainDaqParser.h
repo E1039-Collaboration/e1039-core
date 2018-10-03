@@ -1,28 +1,25 @@
 #ifndef _MAIN_DAQ_PARSER_H_
 #define _MAIN_DAQ_PARSER_H_
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <libgen.h>
-#include <unistd.h>
-#include <regex.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <map>
-#include "assert.h"
 #include "ManageCodaInput.h"
+#include "DecoData.h"
 #include "DecoParam.h"
-class EventInfo;
-class EventData;
 
 class MainDaqParser {
   static const int file_size_min = 32768;
   static const int sec_wait      = 15;
   static const int n_wait        = 40;
 
+  ManageCodaInput* coda;
   bool at_bos;
+  DecoParam dec_par;
+
+  /// Variables for data storage
+  RunData run_data;
+  SpillDataMap* list_sd;
+  EventDataMap* list_ed;
+  
+  SpillData   * sd_now; //< Contain the spill info of the current spill
+  EventDataMap* list_ed_now; //< Contain the event info only in the current spill
 
 /** Error flags to be inserted to the "Event.dataQuality" field.
  * We should add more types.
@@ -67,25 +64,17 @@ class MainDaqParser {
   int ProcessBoardV1495TDC    (int* words, int idx);
   int ProcessBoardJyTDC2      (int* words, int idx_begin, int idx_roc_end);
 
-  // Data submitting functions
-  int  PackOneSpillData();
-  int  SubmitEventData();
-  void OpenOutput(const std::string fn_out);
-  int  CloseOutput();
-  
+  int PackOneSpillData();
+  int ParseOneSpill();
   void SetEventInfo(EventInfo* evt, const int eventID);
 
 public:
   MainDaqParser();
   ~MainDaqParser();
 
+  int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
   bool NextPhysicsEvent(EventData*& evt);
-  int ParseOneSpill();
-  int MainOld(int argc, char *argv[]);
-  
-  ManageCodaInput* coda;
-
-  DecoParam dec_par;
+  int End();
 };
 
 #endif // _MAIN_DAQ_PARSER_H_

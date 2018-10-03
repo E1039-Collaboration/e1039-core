@@ -113,21 +113,16 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
       cout << ThisName << ": opening file " << filename.c_str() << endl;
     }
 
-  //coda = new ManageCodaInput();
   parser = new MainDaqParser();
   events_thisfile = 0;
 
-  const int file_size_min = 32768;
-  const int sec_wait      = 15;
-  const int n_wait        = 40;
-  int status = parser->coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
-
+  int status = parser->OpenCodaFile(fname);
   if (status!=0) {
-  	cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
-      delete parser->coda;
-      parser->coda = NULL;
-      cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
-      return -1;
+    cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
+    delete parser;
+    parser = NULL;
+    cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
+    return -1;
   }
   //pair<int, int> runseg = Fun4AllUtils::GetRunSegment(fname);
   //segment = runseg.second;
@@ -206,7 +201,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     {
       //int * data_ptr = NULL;
       //unsigned int coda_id = 0;
-      //if(parser->coda->NextEvent(coda_id, data_ptr))
+      //if(parser->coda->NextCodaEvent(coda_id, data_ptr))
       //  evt = new EVIO_Event(data_ptr);
       parser->NextPhysicsEvent(ed);
     }
@@ -304,8 +299,10 @@ int Fun4AllEVIOInputManager::fileclose()
       cout << Name() << ": fileclose: No Input file open" << endl;
       return -1;
     }
-  delete parser->coda;
-  parser->coda = NULL;
+
+  parser->End();
+  delete parser;
+  parser = NULL;
   isopen = 0;
   // if we have a file list, move next entry to top of the list
   // or repeat the same entry again
@@ -405,7 +402,7 @@ Fun4AllEVIOInputManager::PushBackEvents(const int i)
 //    {
 //			int * data_ptr = NULL;
 //			unsigned int coda_id = 0;
-//			if(parser->coda->NextEvent(coda_id, data_ptr))
+//			if(parser->coda->NextCodaEvent(coda_id, data_ptr))
 //				evt = new EVIO_Event(data_ptr);
 //      if (! evt)
 //	{

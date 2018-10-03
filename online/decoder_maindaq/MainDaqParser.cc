@@ -3,33 +3,8 @@
 #include <TTree.h>
 #include <TFile.h>
 #include "ManageCodaInput.h"
-#include "DecoData.h"
-//#include "SRawEvent.h"
-//#include "docopt.h"
 #include "MainDaqParser.h"
 using namespace std;
-
-/// Variables for data storage
-RunData run_data;
-SpillDataMap* list_sd;
-EventDataMap* list_ed;
-
-SpillData   * sd_now; //< Used in the spill-by-spill parsing
-EventDataMap* list_ed_now; //< Used in the spill-by-spill parsing
-
-/// Variables for output
-TFile* file_out;
-TTree* tr_evt;
-TTree* tr_run;
-TTree* tr_spill;
-SpillData* br_sd;
-EventData* br_evt;
-//SRawEvent* rawEvent;
-
-/// Variables for decoding parameters
-//DecoParam dec_par;
-//ManageCodaInput coda;
-//DocoptArgs args;
 
 // In the current design, all event-word handlers (i.e. functions) should print out all error messages needed, so that their caller should print nothing but just check the returned value.
 
@@ -38,7 +13,7 @@ MainDaqParser::MainDaqParser()
   coda = new ManageCodaInput();
   list_sd = new SpillDataMap();
   list_ed = new EventDataMap();
-  sd_now  = 0;
+  sd_now  = 0; // Will be just a pointer to one object in "list_sd"
   list_ed_now = new EventDataMap();
   
   dec_par.fn_in = "in.dat";
@@ -51,7 +26,15 @@ MainDaqParser::MainDaqParser()
 
 MainDaqParser::~MainDaqParser()
 {
-  delete coda;
+  if (coda       ) delete coda;
+  if (list_sd    ) delete list_sd;
+  if (list_ed    ) delete list_ed;
+  if (list_ed_now) delete list_ed_now;
+}
+
+int MainDaqParser::OpenCodaFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
+{
+  return coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
 }
 
 bool MainDaqParser::NextPhysicsEvent(EventData*& evt)
@@ -78,8 +61,8 @@ int MainDaqParser::ParseOneSpill()
 {
   at_bos = false;
   int* event_words = 0;
-  while (coda->NextEvent(dec_par.codaID, event_words)) {
-    //cout << "NextEvent(): " << dec_par.codaID << " 0x" << hex <<  event_words[1] << dec << endl;
+  while (coda->NextCodaEvent(dec_par.codaID, event_words)) {
+    //cout << "NextCodaEvent(): " << dec_par.codaID << " 0x" << hex <<  event_words[1] << dec << endl;
     int ret = 0;
     int evt_type_id = event_words[1];
     
@@ -126,122 +109,16 @@ int MainDaqParser::ParseOneSpill()
   return 0;
 }
 
-int MainDaqParser::MainOld(int argc, char *argv[])
+/** A function that is called when one input file is finished reading.
+ * We might have to parse any remaining Coda events here as we did in the original decoder via CloseOutput(), although such events are most likely useless since their spill info is imcomplete.
+ */
+int MainDaqParser::End()
 {
-  //args = docopt(argc, argv, /* help */ 1, /* version */ "2.0rc2");
-  dec_par.fn_in = "in.dat";
-  dec_par.fn_out = "out.root";
-  dec_par.verbose   = 0; // args.verbose;
-  dec_par.sampling  = 10; // atoi(args.sampling);
-  dec_par.timeStart = time (NULL);
-  dec_par.dir_param = "X"; // args.pardir; // "/data2/production/runs"
-      
-  int ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait);
-  if (ret != 0) {
-    cerr << "!!ERROR!! Failed at file open (" << ret << ").  Exit.\n";
-    exit(ret);
-  }
-  
-  OpenOutput(dec_par.fn_out);
-  
-  int* event_words = 0;
-  while (coda->NextEvent(dec_par.codaID, event_words)) {
-    int ret = 0;
-    int evt_type_id = event_words[1];
-
-    // The last 4 hex digits will be 0x01cc for Prestart, Go Event,
-    //		and End Event, and 0x10cc for Physics Events
-    switch (evt_type_id & 0xFFFF) {
-    case PHYSICS_EVENT:
-      ret = ProcessCodaPhysics(event_words);
-      break;
-    case CODA_EVENT:
-      switch (evt_type_id) {
-      case PRESTART_EVENT:
-	ret = ProcessCodaPrestart(event_words);
-	break;
-      case GO_EVENT: // do nothing
-	break;
-      case END_EVENT:
-	coda->ForceEnd(); //if (dec_par.verbose) printf ("End Event Processed\n");
-	break;
-      default:
-	cerr << "!!ERROR!! Uncovered Coda event type: " << evt_type_id << ".  Exit.\n";
-	return 1;
-      }
-      break;
-    case FEE_PREFIX:
-      ret = ProcessCodaFee(event_words);
-      break;
-    case 0: // Special case which requires waiting and retrying
-      if (dec_par.verbose) cout << "Case '0' @ coda " << dec_par.codaID << "\n";
-      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait, dec_par.codaID-1);
-      break;
-    default: // If no match to any given case, print it and exit.
-      cerr << "!!ERROR!!  Uncovered Coda event type: " << evt_type_id << ".  Exit\n";
-      return 1;
-    }
-    if (ret != 0) {
-      cout << "ZZ ret = " << ret << endl;
-    }
-    if (ret != 0) break;
-    if (dec_par.n_phys_evt_max > 0 && 
-	dec_par.n_phys_evt_dec > dec_par.n_phys_evt_max) break; // End in case of tests
-  }
-  cout << "End of Coda file." << endl;
   coda->CloseFile();
-  
-  return CloseOutput();
-};
-
-void MainDaqParser::OpenOutput(const string fn_out)
-{
-  file_out = new TFile(fn_out.c_str(), "RECREATE");
-
-  br_evt   = new EventData();
-  //rawEvent = new SRawEvent();
-  tr_evt = new TTree("event", "Event Data");
-  tr_evt->Branch("event"   , &br_evt  , 256000, 99); 
-  //tr_evt->Branch("rawEvent", &rawEvent, 256000, 99); 
-  
-  tr_run = new TTree("run", "Run Data");
-  tr_run->Branch("run", &run_data);
-  
-  br_sd    = new SpillData();
-  tr_spill = new TTree("spill", "Spill Data");
-  tr_spill->Branch("spill", &br_sd);
-}
-
-int MainDaqParser::CloseOutput()
-{
-  if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
-    cout << "!!ERROR!!  Failed at submitting data...\n";
-    return 1;
-  }
-
-  /// Submit Run Data
-  tr_run->Fill();
-
-  /// SubmitSpillData
-  if (dec_par.verbose) cout << "  Spill data: n = " << list_sd->size() << endl;
-  for (SpillDataMap::iterator it = list_sd->begin(); it != list_sd->end(); it++) {
-    br_sd = &it->second;
-    tr_spill->Fill();
-  }
-  list_sd->clear();
-  
-  file_out->cd();
-  tr_run  ->Write();
-  tr_spill->Write();
-  tr_evt  ->Write();
-  file_out->Close();
-  
-  dec_par.timeEnd = time (NULL);
+  dec_par.timeEnd = time(NULL);
   if (dec_par.verbose) dec_par.PrintStat();
-  
   return 0;
 }
-
 
 /** Process one Coda Prestart event.
  * It is called in main() on CODA_EVENT PRESTART_EVENT.
@@ -1252,115 +1129,6 @@ int MainDaqParser::PackOneSpillData()
   list_ed_now = list_ed;
   list_ed = ptr;
 
-  return 0;
-}
-
-int MainDaqParser::SubmitEventData()
-{
-  if (dec_par.verbose) cout << "SubmitEventData(): n=" << list_ed->size() << endl;
-
-  dec_par.n_phys_evt_all += list_ed->size();
-
-  for (EventDataMap::iterator it = list_ed->begin(); it != list_ed->end(); it++) {
-    unsigned int evt_id = it->first;
-    if (evt_id == 0) continue; // 1st event?  bad anyway
-    if (dec_par.sampling > 0 && evt_id % dec_par.sampling != 0) continue;
-
-    EventData* ed = &it->second;
-    EventInfo* event  = &ed->event;
-    if (dec_par.turn_id_max > 360000 && event->turnOnset == 0 && event->NIM[2]) continue;
-    dec_par.n_phys_evt_dec++;
-
-    unsigned int n_tdc; // expected number of tdc info
-    if (dec_par.runID >= 28664) n_tdc = 101; // seen in run 28700
-    else                 n_tdc = 108; // seen in run 28000
-    // This run range was confirmed by checking n_tdc in the following runs;
-    //  * 101 in runs 28680, 28670, 28665, 28664
-    //  * 108 in runs 28500, 28600, 28650, 28660, 28661
-    // Note that runs 28662 & 28663 contain no event.
-    // Is the change of n_tdc related to elog #17385??
-    // https://e906-gat6.fnal.gov:8080/SeaQuest/17385
-    if (ed->n_tdc != n_tdc) event->dataQuality |= EVT_ERR_N_TDC;
-
-    if      (ed->n_v1495  < 2) event->dataQuality |= EVT_ERR_N_V1495_0;
-    else if (ed->n_v1495  > 2) event->dataQuality |= EVT_ERR_N_V1495_2;
-    if      (ed->n_trig_b < 1) event->dataQuality |= EVT_ERR_N_TRIGB_0;
-    else if (ed->n_trig_b > 1) event->dataQuality |= EVT_ERR_N_TRIGB_2;
-    if      (ed->n_trig_c < 1) event->dataQuality |= EVT_ERR_N_TRIGC_0;
-    else if (ed->n_trig_c > 1) event->dataQuality |= EVT_ERR_N_TRIGC_2;
-    if      (ed->n_qie    < 1) event->dataQuality |= EVT_ERR_N_QIE_0;
-    else if (ed->n_qie    > 1) event->dataQuality |= EVT_ERR_N_QIE_2;
-
-    if (dec_par.verbose > 1) {
-      if (ed->n_qie != 1 || ed->n_v1495 != 2 || ed->n_tdc != n_tdc || ed->n_trig_b != 1 || ed->n_trig_c != 1) {
-	cout << "  N! " << evt_id << " | " << ed->n_qie << " " << ed->n_v1495 << " " << ed->n_tdc << " " << ed->n_trig_b << " " << ed->n_trig_c << endl;
-      }
-    }
-
-    //rawEvent->clear();
-    //rawEvent->setEventInfo(event->runID, event->spillID, event->eventID);
-    //rawEvent->setTargetPos(dec_par.targPos); // !! DANGER since targPos depends on when this function is called...
-    //rawEvent->setTriggerBits(event->trigger_bits);
-    //rawEvent->setTurnID(event->turnOnset);
-    //rawEvent->setRFID  (event->rfOnset  );
-    //rawEvent->setIntensity((const int*)event->rf);
-
-    unsigned int n_taiwan = ed->list_hit     .size();
-    unsigned int n_v1495  = ed->list_hit_trig.size();
-    dec_par.n_hit  += n_taiwan;
-    dec_par.n_thit += n_v1495;
-    if (dec_par. n_hit_max < n_taiwan) dec_par. n_hit_max = n_taiwan;
-    if (dec_par.n_thit_max < n_v1495 ) dec_par.n_thit_max = n_v1495 ;
-
-    /// Push Taiwan-TDC hits into SRawEvent
-    //for (unsigned int ih = 0; ih < n_taiwan; ih++) {
-    //  HitData* hd = &ed->list_hit[ih];
-    //  short  roc   = hd->roc  ;
-    //  short  board = hd->board;
-    //  short  chan  = hd->chan ;
-    //  double time  = hd->time ;
-    //  Hit h;
-    //  if (! dec_par.map_taiwan.Find(roc, board, chan, h.detectorID, h.elementID)) {
-    //    if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << (int)roc << " " << board << " " << (int)chan << "\n";
-    //    continue;
-    //  }
-    //  h.index         = dec_par.hitID++;
-    //  h.tdcTime       = time;
-    //  h.setInTime     (false);
-    //  h.setHodoMask   (false);
-    //  h.setTriggerMask(false);
-    //  h.driftDistance = 0.0;
-    //  h.pos           = 0.0;
-    //  rawEvent->insertHit(h);
-    //}
-
-    /// Push trigger hits into SRawEvent
-    //for (unsigned int ih = 0; ih < n_v1495; ih++) {
-    //  HitData* hd = &ed->list_hit_trig[ih];
-    //  short  roc   = hd->roc  ;
-    //  short  board = hd->board;
-    //  short  chan  = hd->chan ;
-    //  double time  = hd->time ;
-    //  short  level;
-    //  Hit h;
-    //  if (! dec_par.map_v1495.Find(roc, board, chan, h.detectorID, h.elementID, level)) {
-    //    if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << (int)roc << " " << board << " " << (int)chan << "\n";
-    //    continue;
-    //  }
-    //  h.index         = dec_par.hitID++;
-    //  h.tdcTime       = time;
-    //  h.setInTime(false);
-    //  rawEvent->insertTriggerHit(h);
-    //}
-    //rawEvent->reIndex(true);
-    //br_evt = ed;
-    tr_evt->Fill();
-  }
-
-  tr_spill->AutoSave("SaveSelf");
-  tr_evt->AutoSave("SaveSelf");
-
-  list_ed->clear();
   return 0;
 }
 

@@ -1,3 +1,5 @@
+#ifndef __DECO_DATA_H__
+#define __DECO_DATA_H__
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
@@ -198,3 +200,4 @@ struct EventData {
 };
 typedef std::map<unsigned int, EventData> EventDataMap;
 
+#endif // __DECO_DATA_H__
