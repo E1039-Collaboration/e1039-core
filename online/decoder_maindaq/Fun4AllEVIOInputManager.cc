@@ -5,9 +5,8 @@
 #include "DecoData.h"
 
 //#include <event/EVIO_Event.h>
-//#include <interface_main/SQHit_v1.h>
-//#include <interface_main/SQHitMap_v1.h>
-//#include <interface_main/SQHitVector_v1.h>
+#include <interface_main/SQHit_v1.h>
+#include <interface_main/SQHitVector_v1.h>
 #include <interface_main/SQEvent_v1.h>
 #include <interface_main/SQRun_v1.h>
 #include <interface_main/SQSpill_v1.h>
@@ -70,6 +69,12 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
   
   PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(new SQEvent_v1(),"SQEvent", "PHObject");
   eventNode->addNode(eventHeaderNode);
+
+  PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(new SQHitVector_v1(), "SQHitVector", "PHObject");
+  eventNode->addNode(hitNode);
+
+  PHIODataNode<PHObject>* triggerhitNode = new PHIODataNode<PHObject>(new SQHitVector_v1(), "SQTriggerHitVector", "PHObject");
+  eventNode->addNode(triggerhitNode);
   
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   //if (!PrdfNode)
@@ -174,6 +179,16 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   if (!event_header) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+
+  SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  if (!hit_vec) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  
+  SQHitVector* trig_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+  if (!trig_hit_vec) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
   
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   EventData* ed = 0;
@@ -233,16 +248,46 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   }
   spill->set_run_id    (ed->event.runID);
   spill->set_target_pos(0); // not implemented
-  
-  cout << "E "
-       << " " << ed->event.eventID
-       << " " << ed->event.runID
-       << " " << ed->event.spillID
-       << " " << ed->event.dataQuality
-       << " " << ed->event.trigger_bits
-       << " " << ed->list_hit.size()
-       << " " << ed->list_hit_trig.size()
-       << endl;
+
+  event_header->set_run_id       (ed->event.runID  );
+  event_header->set_spill_id     (ed->event.spillID);
+  event_header->set_event_id     (ed->event.eventID);
+  event_header->set_coda_event_id(ed->event.codaEventID);
+  event_header->set_data_quality (ed->event.dataQuality);
+  event_header->set_vme_time     (ed->event.vmeTime);
+  //event_header->set_trigger_bits      (ed->event.trigger_bits);
+
+  for (HitDataList::iterator it = ed->list_hit.begin(); it != ed->list_hit.end(); it++) {
+    HitData* hd = &*it;
+    SQHit* hit = new SQHit_v1();
+    hit->set_hit_id     (0); // not implemented yet
+    hit->set_detector_id(hd->roc); // !! temporary value
+    hit->set_element_id (hd->board*100 + hd->chan); // !! temporary value
+    hit->set_tdc_time   (hd->time);
+    hit_vec->push_back(hit);
+    delete hit;
+  }
+
+  for (HitDataList::iterator it = ed->list_hit_trig.begin(); it != ed->list_hit_trig.end(); it++) {
+    HitData* hd = &*it;
+    SQHit* hit = new SQHit_v1();
+    hit->set_hit_id     (0); // not implemented yet
+    hit->set_detector_id(hd->roc); // !! temporary value
+    hit->set_element_id (hd->board*100 + hd->chan); // !! temporary value
+    hit->set_tdc_time   (hd->time);
+    trig_hit_vec->push_back(hit);
+    delete hit;
+  }
+
+  //cout << "E "
+  //     << " " << ed->event.eventID
+  //     << " " << ed->event.runID
+  //     << " " << ed->event.spillID
+  //     << " " << ed->event.dataQuality
+  //     << " " << ed->event.trigger_bits
+  //     << " " << ed->list_hit.size()
+  //     << " " << ed->list_hit_trig.size()
+  //     << endl;
   // check if the local SubsysReco discards this event
   if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
     {
