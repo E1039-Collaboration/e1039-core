@@ -1,6 +1,5 @@
 #include "Fun4AllEVIOInputManager.h"
 
-//#include "ManageCodaInput.h"
 #include "MainDaqParser.h"
 #include "DecoData.h"
 
@@ -42,7 +41,7 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
  topNodeName(topnodename),
  //evt(NULL),
  //save_evt(NULL),
- parser(NULL)
+ parser(new MainDaqParser())
  //coda(NULL)
 {
   Fun4AllServer *se = Fun4AllServer::instance();
@@ -92,6 +91,7 @@ Fun4AllEVIOInputManager::~Fun4AllEVIOInputManager()
     {
       fileclose();
     }
+  if (parser) delete parser;
   delete syncobject;
 }
 
@@ -113,14 +113,14 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
       cout << ThisName << ": opening file " << filename.c_str() << endl;
     }
 
-  parser = new MainDaqParser();
   events_thisfile = 0;
-
+  //parser = new MainDaqParser();
+  parser->dec_par.verbose = Verbosity();
   int status = parser->OpenCodaFile(fname);
   if (status!=0) {
     cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
-    delete parser;
-    parser = NULL;
+    //delete parser;
+    //parser = NULL;
     cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
     return -1;
   }
@@ -301,8 +301,8 @@ int Fun4AllEVIOInputManager::fileclose()
     }
 
   parser->End();
-  delete parser;
-  parser = NULL;
+  //delete parser;
+  //parser = NULL;
   isopen = 0;
   // if we have a file list, move next entry to top of the list
   // or repeat the same entry again
@@ -464,3 +464,15 @@ Fun4AllEVIOInputManager::SyncIt(const SyncObject *mastersync)
     }
   return Fun4AllReturnCodes::SYNC_OK;
 }
+
+
+void Fun4AllEVIOInputManager::EventSamplingFactor(const int factor)
+{
+  parser->dec_par.sampling = factor;
+}
+
+void Fun4AllEVIOInputManager::DirParam(const std::string dir)
+{
+  parser->dec_par.dir_param = dir;
+}
+

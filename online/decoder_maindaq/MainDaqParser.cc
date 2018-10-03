@@ -1,7 +1,5 @@
 #include <iomanip>
 #include <sstream>
-#include <TTree.h>
-#include <TFile.h>
 #include "ManageCodaInput.h"
 #include "MainDaqParser.h"
 using namespace std;
@@ -15,13 +13,6 @@ MainDaqParser::MainDaqParser()
   list_ed = new EventDataMap();
   sd_now  = 0; // Will be just a pointer to one object in "list_sd"
   list_ed_now = new EventDataMap();
-  
-  dec_par.fn_in = "in.dat";
-  dec_par.fn_out = "out.root";
-  dec_par.verbose   = 1;
-  dec_par.sampling  = 10;
-  dec_par.timeStart = time(NULL);
-  dec_par.dir_param = "/data/e906/runs"; // "/data2/production/runs";
 }
 
 MainDaqParser::~MainDaqParser()
@@ -34,6 +25,8 @@ MainDaqParser::~MainDaqParser()
 
 int MainDaqParser::OpenCodaFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
 {
+  dec_par.timeStart = time(NULL);
+  dec_par.fn_in = fname;
   return coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
 }
 
@@ -99,11 +92,9 @@ int MainDaqParser::ParseOneSpill()
       return false;
     }
     if (ret != 0) {
-      cout << "ZZ ret = " << ret << endl;
+      cout << "WARNING:  ParseOneSpill():  ret = " << ret << endl;
+      break;
     }
-    if (ret != 0) break;
-    if (dec_par.n_phys_evt_max > 0 && 
-        dec_par.n_phys_evt_dec > dec_par.n_phys_evt_max) break; // End in case of tests
     if (at_bos) break;
   }
   return 0;

@@ -3,7 +3,7 @@
 #include "MapperTaiwan.h"
 #include "MapperV1495.h"
 #include "MapperScaler.h"
-#include "assert.h"
+//#include "assert.h"
 class EventInfo;
 
 /** This class contains all decoder parameters.
@@ -16,11 +16,9 @@ struct DecoParam {
   /// Control parameters
   ///
   std::string fn_in;
-  std::string fn_out;
+  std::string dir_param;
   int sampling;
   int verbose;
-  unsigned int n_phys_evt_max; //< If >0, stop decoding events at this value.  For debug.
-  std::string dir_param;
   MapperTaiwan map_taiwan;
   MapperV1495  map_v1495;
   MapperScaler map_scaler;

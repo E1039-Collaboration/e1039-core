@@ -5,8 +5,7 @@
 using namespace std;
 
 DecoParam::DecoParam() :
-  fn_in(""), fn_out(""),
-  sampling(0), verbose(0), n_phys_evt_max(0), dir_param(""), 
+  fn_in(""), dir_param(""), sampling(0), verbose(0), 
   runID(0), spillID(0), spillID_cntr(0), spillID_slow(0),
   targPos(0), targPos_slow(0), 
   codaID(0), rocID(0), hitID(0), 

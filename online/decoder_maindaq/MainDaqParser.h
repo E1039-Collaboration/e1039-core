@@ -11,7 +11,6 @@ class MainDaqParser {
 
   ManageCodaInput* coda;
   bool at_bos;
-  DecoParam dec_par;
 
   /// Variables for data storage
   RunData run_data;
@@ -75,6 +74,8 @@ public:
   int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
   bool NextPhysicsEvent(EventData*& evt);
   int End();
+
+  DecoParam dec_par;
 };
 
 #endif // _MAIN_DAQ_PARSER_H_
