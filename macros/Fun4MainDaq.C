@@ -34,8 +34,8 @@ int Fun4MainDaq(
   in->fileopen(fn_in);
   se->registerInputManager(in);
 
-  //Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outdst);
-  //se->registerOutputManager(out);
+  Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", outdst);
+  se->registerOutputManager(out);
 
   se->run(nevent);
   se->End();

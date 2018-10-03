@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-class Event;
+//class Event;
 class PHCompositeNode;
 class SyncObject;
 //class ManageCodaInput;
@@ -36,8 +36,8 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   int events_thisfile;
   std::string topNodeName;
   PHCompositeNode *topNode;
-  Event *evt;
-  Event *save_evt;
+  //Event *evt;
+  //Event *save_evt;
   SyncObject* syncobject;
   //ManageCodaInput *coda;
 

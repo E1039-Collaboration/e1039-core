@@ -4,8 +4,15 @@
 #include "MainDaqParser.h"
 #include "DecoData.h"
 
-#include <event/EVIO_Event.h>
-
+//#include <event/EVIO_Event.h>
+//#include <interface_main/SQHit_v1.h>
+//#include <interface_main/SQHitMap_v1.h>
+//#include <interface_main/SQHitVector_v1.h>
+#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQRun_v1.h>
+#include <interface_main/SQSpill_v1.h>
+#include <interface_main/SQSpillMap_v1.h>
+ 
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllSyncManager.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -34,20 +41,42 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
  events_total(0),
  events_thisfile(0),
  topNodeName(topnodename),
- evt(NULL),
- save_evt(NULL),
+ //evt(NULL),
+ //save_evt(NULL),
  parser(NULL)
  //coda(NULL)
 {
   Fun4AllServer *se = Fun4AllServer::instance();
   topNode = se->topNode(topNodeName.c_str());
   PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
-  if (!PrdfNode)
-    {
-      PHDataNode<Event> *newNode = new PHDataNode<Event>(evt,"EVIO","Event");
-      topNode->addNode(newNode);
-    }
+
+  PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+  if (!runNode) {
+    runNode = new PHCompositeNode("RUN");
+    topNode->addNode(runNode);
+  }
+
+  PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(new SQRun_v1(), "SQRun", "PHObject");
+  runNode->addNode(runHeaderNode);
+  
+  PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(new SQSpillMap_v1(), "SQSpillMap", "PHObject");
+  runNode->addNode(spillNode);
+  
+  PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+  if (!eventNode) {
+    eventNode = new PHCompositeNode("DST");
+    topNode->addNode(eventNode);
+  }
+  
+  PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(new SQEvent_v1(),"SQEvent", "PHObject");
+  eventNode->addNode(eventHeaderNode);
+  
+  //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
+  //if (!PrdfNode)
+  //  {
+  //    PHDataNode<Event> *newNode = new PHDataNode<Event>(evt,"EVIO","Event");
+  //    topNode->addNode(newNode);
+  //  }
   syncobject = new SyncObjectv2();
   return ;
 }
@@ -133,17 +162,32 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
   //  cout << "running event " << nevents << endl;
   PHNodeIterator iter(topNode);
+  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  if (!run_header) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  SQSpillMap* spill_map = findNode::getClass<SQSpillMap>(topNode, "SQSpillMap");
+  if (!spill_map) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  SQEvent* event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (!event_header) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   EventData* ed = 0;
-  if (save_evt) // if an event was pushed back, copy saved pointer and reset save_evt pointer
-    {
-      cerr << "!!ERROR!!  save_evt is not supported yet." << endl;
-      evt = save_evt;
-      save_evt = NULL;
-      events_thisfile--;
-      events_total--;
-    }
-  else
+  //SpillData* sd = 0;
+  //RunData  * rd = 0;
+//  if (save_evt) // if an event was pushed back, copy saved pointer and reset save_evt pointer
+//    {
+//      cerr << "!!ERROR!!  save_evt is not supported yet." << endl;
+//      evt = save_evt;
+//      save_evt = NULL;
+//      events_thisfile--;
+//      events_total--;
+//    }
+//  else
     {
       //int * data_ptr = NULL;
       //unsigned int coda_id = 0;
@@ -175,6 +219,21 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 //  syncobject->RunNumber(evt->getRunNumber());
 //  syncobject->EventNumber(evt->getEvtSequence());
 
+  //SQRun* run_header
+  //SQSpillMap* spill_map
+  //SQEvent* event_header
+
+  run_header->set_run_id(ed->event.runID);
+  run_header->set_spill_count(0); // not implemented
+  SQSpill* spill = spill_map->get(ed->event.spillID);
+  if (! spill) {
+    spill = new SQSpill_v1();
+    spill->set_spill_id(ed->event.spillID);
+    spill = spill_map->insert(spill); // yes, memory leak
+  }
+  spill->set_run_id    (ed->event.runID);
+  spill->set_target_pos(0); // not implemented
+  
   cout << "E "
        << " " << ed->event.eventID
        << " " << ed->event.runID
@@ -256,11 +315,11 @@ Fun4AllEVIOInputManager::OpenNextFile()
 int
 Fun4AllEVIOInputManager::ResetEvent()
 {
-  PHNodeIterator iter(topNode);
-  PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
-  PrdfNode->setData(NULL); // set pointer in Node to NULL before deleting it
-  delete evt;
-  evt = NULL;
+  //PHNodeIterator iter(topNode);
+  //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
+  //PrdfNode->setData(NULL); // set pointer in Node to NULL before deleting it
+  //delete evt;
+  //evt = NULL;
   syncobject->Reset();
   return 0;
 }
@@ -268,59 +327,61 @@ Fun4AllEVIOInputManager::ResetEvent()
 int
 Fun4AllEVIOInputManager::PushBackEvents(const int i)
 {
+  cerr << "!!ERROR!!  PushBackEvents():  Not implemented yet." << endl;
   // PushBackEvents is supposedly pushing events back on the stack which works
   // easily with root trees (just grab a different entry) but hard in these HepMC ASCII files.
   // A special case is when the synchronization fails and we need to only push back a single
   // event. In this case we save the evt pointer as save_evt which is used in the run method
   // instead of getting the next event.
-  if (i > 0)
-    {
-      if (i == 1 && evt) // check on evt pointer makes sure it is not done from the cmd line
-	{
-	  save_evt = evt;
-	  return 0;
-	}
-      cout << PHWHERE << ThisName
-           << " Fun4AllEVIOInputManager cannot push back " << i << " events into file"
-           << endl;
-      return -1;
-    }
-  if (!parser->coda)
-    {
-      cout << PHWHERE << ThisName
-	   << " no file open" << endl;
-      return -1;
-    }
+//  if (i > 0)
+//    {
+//      if (i == 1 && evt) // check on evt pointer makes sure it is not done from the cmd line
+//	{
+//	  save_evt = evt;
+//	  return 0;
+//	}
+//      cout << PHWHERE << ThisName
+//           << " Fun4AllEVIOInputManager cannot push back " << i << " events into file"
+//           << endl;
+//      return -1;
+//    }
+//  if (!parser->coda)
+//    {
+//      cout << PHWHERE << ThisName
+//	   << " no file open" << endl;
+//      return -1;
+//    }
   // Skipping events is implemented as
   // pushing a negative number of events on the stack, so in order to implement
   // the skipping of events we read -i events.
-  int nevents = -i; // negative number of events to push back -> skip num events
-  int errorflag = 0;
-  while (nevents > 0 && ! errorflag)
-    {
-			int * data_ptr = NULL;
-			unsigned int coda_id = 0;
-			if(parser->coda->NextEvent(coda_id, data_ptr))
-				evt = new EVIO_Event(data_ptr);
-      if (! evt)
-	{
-	  cout << "Error after skipping " << i - nevents 
-	       << " file exhausted?" << endl;
-	  errorflag = -1;
-          fileclose();
-	}
-      else
-	{
-	  if (verbosity > 3)
-	    {
-	  		//TODO implement this
-	      //cout << "Skipping evt no: " << evt->getEvtSequence() << endl;
-	    }
-	}
-      delete evt;
-      nevents--;
-    }
-  return errorflag;
+//  int nevents = -i; // negative number of events to push back -> skip num events
+//  int errorflag = 0;
+//  while (nevents > 0 && ! errorflag)
+//    {
+//			int * data_ptr = NULL;
+//			unsigned int coda_id = 0;
+//			if(parser->coda->NextEvent(coda_id, data_ptr))
+//				evt = new EVIO_Event(data_ptr);
+//      if (! evt)
+//	{
+//	  cout << "Error after skipping " << i - nevents 
+//	       << " file exhausted?" << endl;
+//	  errorflag = -1;
+//          fileclose();
+//	}
+//      else
+//	{
+//	  if (verbosity > 3)
+//	    {
+//	  		//TODO implement this
+//	      //cout << "Skipping evt no: " << evt->getEvtSequence() << endl;
+//	    }
+//	}
+//      delete evt;
+//      nevents--;
+//    }
+//  return errorflag;
+  return -1;
 }
 
 int
