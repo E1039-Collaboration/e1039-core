@@ -75,6 +75,8 @@ bool MapperV1495::Find(const short roc, const short board, const short chan,  st
     lvl = std::get<2>(*value);
     return true;
   }
+  det = "";
+  ele = lvl = 0;
   return false;
 }  
 
@@ -86,5 +88,6 @@ bool MapperV1495::Find(const short roc, const short board, const short chan,  sh
     det = m_map_name2id[det_str];
     return true;
   }
+  det = ele = lvl = 0;
   return false;
 }

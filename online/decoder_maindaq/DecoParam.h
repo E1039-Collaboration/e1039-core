@@ -34,12 +34,10 @@ struct DecoParam {
   short targPos;
   short targPos_slow; // from slow-control event
 
-  unsigned int codaID; //< Event ID unique to coda event
-
+  unsigned int codaID; //< current Coda event ID
   short spillType; //< current spill type
   short rocID; //< current ROC ID
-
-  long int hitID; //< Used by Hit and TriggerHit.
+  long int hitID; //< current hit ID, commonly used by Hit and TriggerHit.
 
   // Count of all hits/triggerhits
   unsigned long n_hit;
@@ -61,6 +59,8 @@ struct DecoParam {
   unsigned long n_flush_evt_all;
   unsigned long n_flush_evt_ok;
 
+  bool at_bos;
+  
   /// Max turnOnset in a spill.  Used to drop NIM3 events that came after the beam stops.  See elog 15010
   unsigned int turn_id_max;
 

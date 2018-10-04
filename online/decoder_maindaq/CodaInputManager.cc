@@ -5,16 +5,16 @@
 #include <fstream>
 #include <unistd.h>
 #include "evio.h"
-#include "ManageCodaInput.h"
+#include "CodaInputManager.h"
 using namespace std;
 
-ManageCodaInput::ManageCodaInput() : 
+CodaInputManager::CodaInputManager() : 
   m_verb(0), m_online(true), m_go_end(false), m_handle(0), m_run(0)
 {
   ;
 }
 
-int ManageCodaInput::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait, const int n_evt_pre_read)
+int CodaInputManager::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait, const int n_evt_pre_read)
 {
   if (! file_exists(fname)) {
     cerr << "!!ERROR!!  Coda file does not exist: " << fname << ".\n"
@@ -63,12 +63,12 @@ int ManageCodaInput::OpenFile(const std::string fname, const int file_size_min, 
   return 0;
 }
 
-int ManageCodaInput::CloseFile()
+int CodaInputManager::CloseFile()
 {
   return evClose(m_handle);
 }
 
-bool ManageCodaInput::NextCodaEvent(unsigned int& coda_id, int*& words)
+bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
 {
   if (m_go_end) return false;
   int ret = evRead(m_handle, event_words, buflen);
@@ -97,7 +97,7 @@ bool ManageCodaInput::NextCodaEvent(unsigned int& coda_id, int*& words)
   return true;
 }
 
-bool ManageCodaInput::file_exists(const std::string fname)
+bool CodaInputManager::file_exists(const std::string fname)
 {
   FILE *fp = fopen(fname.c_str(), "r");
   if (fp) {

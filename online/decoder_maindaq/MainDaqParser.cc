@@ -1,6 +1,6 @@
 #include <iomanip>
 #include <sstream>
-#include "ManageCodaInput.h"
+#include "CodaInputManager.h"
 #include "MainDaqParser.h"
 using namespace std;
 
@@ -8,7 +8,7 @@ using namespace std;
 
 MainDaqParser::MainDaqParser()
 {
-  coda = new ManageCodaInput();
+  coda = new CodaInputManager();
   list_sd = new SpillDataMap();
   list_ed = new EventDataMap();
   sd_now  = 0; // Will be just a pointer to one object in "list_sd"
@@ -30,7 +30,7 @@ int MainDaqParser::OpenCodaFile(const std::string fname, const int file_size_min
   return coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
 }
 
-bool MainDaqParser::NextPhysicsEvent(EventData*& evt)
+bool MainDaqParser::NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd)
 {
   static EventDataMap::iterator it = list_ed_now->begin();
   if (it == list_ed_now->end()) { // No event in the event buffer
@@ -41,18 +41,22 @@ bool MainDaqParser::NextPhysicsEvent(EventData*& evt)
     it = list_ed_now->begin();
   }
   if (it != list_ed_now->end()) {
-    evt = &it->second;
+    rd = &run_data;
+    sd = sd_now;
+    ed = &it->second;
     it++;
     return true;
   } else {
-    evt = 0;
+    rd = 0;
+    sd = 0;
+    ed = 0;
     return false;
   }
 }
 
 int MainDaqParser::ParseOneSpill()
 {
-  at_bos = false;
+  dec_par.at_bos = false;
   int* event_words = 0;
   while (coda->NextCodaEvent(dec_par.codaID, event_words)) {
     //cout << "NextCodaEvent(): " << dec_par.codaID << " 0x" << hex <<  event_words[1] << dec << endl;
@@ -95,7 +99,7 @@ int MainDaqParser::ParseOneSpill()
       cout << "WARNING:  ParseOneSpill():  ret = " << ret << endl;
       break;
     }
-    if (at_bos) break;
+    if (dec_par.at_bos) break;
   }
   return 0;
 }
@@ -121,7 +125,7 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
     // int evLength     = words[0];
     // int prestartCode = words[1];
     int runTime = words[2];
-    dec_par.runID = words[3];
+    dec_par.runID = run_data.run_id = words[3];
     // int runType = words[4];
 
     cout << "  ProcessCodaPrestart " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << dec_par.sampling << "\n";
@@ -433,7 +437,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 {
   string type_str = (type == TYPE_BOS ? "BOS" : "EOS");
   if (type == TYPE_BOS) {
-    at_bos = true;
+    dec_par.at_bos = true;
     if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
       cout << "Error submitting data.  Exiting...\n";
       return 1;
@@ -875,10 +879,15 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	  for (unsigned int ii = 0; ii < list_chan.size(); ii++) {
 	    HitData hit;
 	    hit.event = evt_id;
+            hit.id    = ++dec_par.hitID;
 	    hit.roc   = dec_par.rocID;
 	    hit.board = boardID;
 	    hit.chan  = list_chan[ii];
 	    hit.time  = time_stop - list_time[ii];
+            short level; // not stored for now
+            if (! dec_par.map_v1495.Find(hit.roc, hit.board, hit.chan, hit.det, hit.ele, level)) {
+              if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hit.roc << " " << hit.board << " " << hit.chan << "\n";
+            }
 	    ed->list_hit_trig.push_back(hit);
 	  }
 	  dec_par.n_1495_good++;
@@ -990,10 +999,14 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
       for (unsigned int ii = 0; ii < list_chan.size(); ii++) {
 	HitData hit;
 	hit.event = evt_id;
+        hit.id    = ++dec_par.hitID;
 	hit.roc   = roc;
 	hit.board = boardID;
 	hit.chan  = list_chan[ii];
 	hit.time  = list_time[ii];
+        if (! dec_par.map_taiwan.Find(hit.roc, hit.board, hit.chan, hit.det, hit.ele)) {
+          if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << hit.roc << " " << hit.board << " " << hit.chan << "\n";
+        }
 	ed->list_hit.push_back(hit);
 	//cout << " HIT " << dec_par.spillID << " " << evt_id << " " << (int)dec_par.rocID << " " << boardID << " " << list_chan[ii] << " " << list_time[ii] << endl;
       }
@@ -1055,7 +1068,7 @@ int MainDaqParser::PackOneSpillData()
 
     unsigned int n_tdc; // expected number of tdc info
     if (dec_par.runID >= 28664) n_tdc = 101; // seen in run 28700
-    else                 n_tdc = 108; // seen in run 28000
+    else                        n_tdc = 108; // seen in run 28000
     // This run range was confirmed by checking n_tdc in the following runs;
     //  * 101 in runs 28680, 28670, 28665, 28664
     //  * 108 in runs 28500, 28600, 28650, 28660, 28661
@@ -1085,35 +1098,6 @@ int MainDaqParser::PackOneSpillData()
     dec_par.n_thit += n_v1495;
     if (dec_par. n_hit_max < n_taiwan) dec_par. n_hit_max = n_taiwan;
     if (dec_par.n_thit_max < n_v1495 ) dec_par.n_thit_max = n_v1495 ;
-
-    /// Push Taiwan-TDC hits into SRawEvent
-    //for (unsigned int ih = 0; ih < n_taiwan; ih++) {
-    //  HitData* hd = &ed->list_hit[ih];
-    //  short  roc   = hd->roc  ;
-    //  short  board = hd->board;
-    //  short  chan  = hd->chan ;
-    //  double time  = hd->time ;
-    //  Hit h;
-    //  if (! dec_par.map_taiwan.Find(roc, board, chan, h.detectorID, h.elementID)) {
-    //    if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << (int)roc << " " << board << " " << (int)chan << "\n";
-    //    continue;
-    //  }
-    //}
-
-    /// Push trigger hits into SRawEvent
-    //for (unsigned int ih = 0; ih < n_v1495; ih++) {
-    //  HitData* hd = &ed->list_hit_trig[ih];
-    //  short  roc   = hd->roc  ;
-    //  short  board = hd->board;
-    //  short  chan  = hd->chan ;
-    //  double time  = hd->time ;
-    //  short  level;
-    //  Hit h;
-    //  if (! dec_par.map_v1495.Find(roc, board, chan, h.detectorID, h.elementID, level)) {
-    //    if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << (int)roc << " " << board << " " << (int)chan << "\n";
-    //    continue;
-    //  }
-    //}
   }
 
   EventDataMap* ptr = list_ed_now;

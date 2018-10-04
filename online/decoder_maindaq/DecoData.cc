@@ -20,7 +20,7 @@ FeeData::FeeData() :
 }
 
 RunData::RunData() : 
-  run_desc(""),
+  run_id(0), run_desc(""),
   n_fee_event(0), n_fee_prescale(0), n_run_desc(0)
 {
   memset(trig_bit, 0, sizeof(trig_bit));
@@ -59,7 +59,7 @@ SpillData::SpillData() :
 //
 
 HitData::HitData() :
-  event(0), roc(0), board(0), chan(0), time(0)
+  event(0), id(0), roc(0), board(0), chan(0), det(0), ele(0), time(0)
 {
   ;
 }

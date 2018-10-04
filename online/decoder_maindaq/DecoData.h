@@ -71,6 +71,7 @@ struct FeeData : public TObject {
 typedef std::vector<FeeData> FeeDataList;
 
 struct RunData : public TObject {
+  int run_id;
   int trig_bit[10];
   int prescale[ 8];
   FeeDataList fee;
@@ -105,13 +106,13 @@ struct SlowControlData {
 typedef std::vector<SlowControlData> SlowControlDataList;
 
 struct ScalerData {
-  unsigned short type ;
-  unsigned int   coda ;
-  unsigned short roc  ;
-  unsigned short board;
-  unsigned short chan ;
-  unsigned int   value;
-  std::string    name ;
+  short type ;
+  int   coda ;
+  short roc  ;
+  short board;
+  short chan ;
+  int   value;
+  std::string name;
 
   ScalerData();
   virtual ~ScalerData() {;}
@@ -150,10 +151,13 @@ typedef std::map<unsigned int, SpillData> SpillDataMap;
 // Event-by-event data
 //
 struct HitData {
-  unsigned int   event;
-  unsigned short roc;
-  unsigned short board;
-  unsigned short chan;
+  int   event;
+  int   id;
+  short roc;
+  short board;
+  short chan;
+  short det;
+  short ele;
   double         time;
   HitData();
   virtual ~HitData() {;}

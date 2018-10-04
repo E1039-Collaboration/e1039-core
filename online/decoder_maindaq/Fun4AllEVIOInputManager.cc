@@ -187,8 +187,8 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   EventData* ed = 0;
-  //SpillData* sd = 0;
-  //RunData  * rd = 0;
+  SpillData* sd = 0;
+  RunData  * rd = 0;
 //  if (save_evt) // if an event was pushed back, copy saved pointer and reset save_evt pointer
 //    {
 //      cerr << "!!ERROR!!  save_evt is not supported yet." << endl;
@@ -203,17 +203,16 @@ int Fun4AllEVIOInputManager::run(const int nevents)
       //unsigned int coda_id = 0;
       //if(parser->coda->NextCodaEvent(coda_id, data_ptr))
       //  evt = new EVIO_Event(data_ptr);
-      parser->NextPhysicsEvent(ed);
+      parser->NextPhysicsEvent(ed, sd, rd);
     }
-  //PrdfNode->setData(evt);
-  if (!ed) // (!evt)
+  if (!ed)
     {
       fileclose();
       goto readagain;
     }
   if (verbosity > 1)
     {
-  		//TODO implement this
+      //TODO implement this
       //cout << ThisName << " EVIO run " << evt->getRunNumber() << ", evt no: " << evt->getEvtSequence() << endl;
     }
   events_total++;
@@ -229,20 +228,23 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 //  syncobject->RunNumber(evt->getRunNumber());
 //  syncobject->EventNumber(evt->getEvtSequence());
 
-  //SQRun* run_header
-  //SQSpillMap* spill_map
-  //SQEvent* event_header
+  if (run_header->get_run_id() == INT_MAX) { // better way to check if initialized??
+    run_header->set_run_id(rd->run_id);
+    run_header->set_spill_count(0); // not implemented
+  }
 
-  run_header->set_run_id(ed->event.runID);
-  run_header->set_spill_count(0); // not implemented
-  SQSpill* spill = spill_map->get(ed->event.spillID);
+  SQSpill* spill = spill_map->get(sd->spill_id);
   if (! spill) {
     spill = new SQSpill_v1();
-    spill->set_spill_id(ed->event.spillID);
-    spill = spill_map->insert(spill); // yes, memory leak
+    spill->set_spill_id(sd->spill_id);
+    spill->set_run_id  (sd->run_id  );
+    spill->set_target_pos(sd->targ_pos);
+    // todo: BOS info
+    // todo: EOS info
+    // todo: Slow control info
+    // todo: Scaler info
+    spill_map->insert(spill);
   }
-  spill->set_run_id    (ed->event.runID);
-  spill->set_target_pos(0); // not implemented
 
   event_header->set_run_id       (ed->event.runID  );
   event_header->set_spill_id     (ed->event.spillID);
@@ -255,9 +257,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   for (HitDataList::iterator it = ed->list_hit.begin(); it != ed->list_hit.end(); it++) {
     HitData* hd = &*it;
     SQHit* hit = new SQHit_v1();
-    hit->set_hit_id     (0); // not implemented yet
-    hit->set_detector_id(hd->roc); // !! temporary value
-    hit->set_element_id (hd->board*100 + hd->chan); // !! temporary value
+    hit->set_hit_id     (hd->id  );
+    hit->set_detector_id(hd->det );
+    hit->set_element_id (hd->ele );
     hit->set_tdc_time   (hd->time);
     hit_vec->push_back(hit);
     delete hit;
@@ -266,9 +268,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   for (HitDataList::iterator it = ed->list_hit_trig.begin(); it != ed->list_hit_trig.end(); it++) {
     HitData* hd = &*it;
     SQHit* hit = new SQHit_v1();
-    hit->set_hit_id     (0); // not implemented yet
-    hit->set_detector_id(hd->roc); // !! temporary value
-    hit->set_element_id (hd->board*100 + hd->chan); // !! temporary value
+    hit->set_hit_id     (hd->id  );
+    hit->set_detector_id(hd->det );
+    hit->set_element_id (hd->ele );
     hit->set_tdc_time   (hd->time);
     trig_hit_vec->push_back(hit);
     delete hit;

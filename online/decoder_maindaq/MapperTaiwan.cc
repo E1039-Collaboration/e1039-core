@@ -133,6 +133,8 @@ bool MapperTaiwan::Find(const short roc, const short board, const short chan,  s
     ele = det_ele->second;
     return true;
   }
+  det = "";
+  ele = 0;
   return false;
 }  
 
@@ -144,6 +146,7 @@ bool MapperTaiwan::Find(const short roc, const short board, const short chan,  s
     det = m_map_name2id[det_str];
     return true;
   }
+  det = ele = 0;
   return false;
 }
 

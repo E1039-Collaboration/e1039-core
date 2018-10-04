@@ -12,7 +12,7 @@ DecoParam::DecoParam() :
   n_hit(0), n_thit(0), n_hit_max(0), n_thit_max(0), n_hit_bad(0),
   n_1495_all(0), n_1495_good(0), n_1495_d1ad(0), n_1495_d2ad(0), n_1495_d3ad(0),
   n_phys_evt_all(0), n_phys_evt_dec(0), 
-  n_flush_evt_all(0), n_flush_evt_ok(0), turn_id_max(0)
+  n_flush_evt_all(0), n_flush_evt_ok(0), at_bos(false), turn_id_max(0)
 {
   ;
 }

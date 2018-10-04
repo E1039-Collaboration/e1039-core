@@ -1,16 +1,15 @@
 #ifndef _MAIN_DAQ_PARSER_H_
 #define _MAIN_DAQ_PARSER_H_
-#include "ManageCodaInput.h"
 #include "DecoData.h"
 #include "DecoParam.h"
+class CodaInputManager;
 
 class MainDaqParser {
   static const int file_size_min = 32768;
   static const int sec_wait      = 15;
   static const int n_wait        = 40;
 
-  ManageCodaInput* coda;
-  bool at_bos;
+  CodaInputManager* coda;
 
   /// Variables for data storage
   RunData run_data;
@@ -72,7 +71,7 @@ public:
   ~MainDaqParser();
 
   int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
-  bool NextPhysicsEvent(EventData*& evt);
+  bool NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd);
   int End();
 
   DecoParam dec_par;

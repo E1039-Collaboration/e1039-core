@@ -39,5 +39,6 @@ bool MapperScaler::Find(const short roc, const short board, const short chan,  s
     name = m_map[key];
     return true;
   }
+  name = "";
   return false;
 }  
