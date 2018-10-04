@@ -884,10 +884,6 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	    hit.board = boardID;
 	    hit.chan  = list_chan[ii];
 	    hit.time  = time_stop - list_time[ii];
-            short level; // not stored for now
-            if (! dec_par.map_v1495.Find(hit.roc, hit.board, hit.chan, hit.det, hit.ele, level)) {
-              if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hit.roc << " " << hit.board << " " << hit.chan << "\n";
-            }
 	    ed->list_hit_trig.push_back(hit);
 	  }
 	  dec_par.n_1495_good++;
@@ -1004,9 +1000,6 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	hit.board = boardID;
 	hit.chan  = list_chan[ii];
 	hit.time  = list_time[ii];
-        if (! dec_par.map_taiwan.Find(hit.roc, hit.board, hit.chan, hit.det, hit.ele)) {
-          if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << hit.roc << " " << hit.board << " " << hit.chan << "\n";
-        }
 	ed->list_hit.push_back(hit);
 	//cout << " HIT " << dec_par.spillID << " " << evt_id << " " << (int)dec_par.rocID << " " << boardID << " " << list_chan[ii] << " " << list_time[ii] << endl;
       }
@@ -1056,14 +1049,19 @@ int MainDaqParser::PackOneSpillData()
   
   dec_par.n_phys_evt_all += list_ed->size();
 
-  for (EventDataMap::iterator it = list_ed->begin(); it != list_ed->end(); it++) {
-    unsigned int evt_id = it->first;
-    if (evt_id == 0) continue; // 1st event?  bad anyway
-    if (dec_par.sampling > 0 && evt_id % dec_par.sampling != 0) continue;
-
-    EventData* ed = &it->second;
-    EventInfo* event  = &ed->event;
-    if (dec_par.turn_id_max > 360000 && event->turnOnset == 0 && event->NIM[2]) continue;
+  /// A part (most?) of lines in this loop had better be moved to
+  /// a SubsysReco module for better function separation.
+  for (EventDataMap::iterator it = list_ed->begin(); it != list_ed->end(); ) {
+    unsigned int evt_id =  it->first;
+    EventData* ed       = &it->second;
+    EventInfo* event    = &ed->event;
+    if (evt_id == 0 || // 1st event?  bad anyway
+        dec_par.sampling > 0 && evt_id % dec_par.sampling != 0 || // sampled out
+        dec_par.turn_id_max > 360000 && event->turnOnset == 0 && event->NIM[2]) { // NIM3 after spill end
+      it = list_ed->erase(it);
+      continue;
+    }
+    it++;
     dec_par.n_phys_evt_dec++;
 
     unsigned int n_tdc; // expected number of tdc info
@@ -1098,6 +1096,22 @@ int MainDaqParser::PackOneSpillData()
     dec_par.n_thit += n_v1495;
     if (dec_par. n_hit_max < n_taiwan) dec_par. n_hit_max = n_taiwan;
     if (dec_par.n_thit_max < n_v1495 ) dec_par.n_thit_max = n_v1495 ;
+
+    /// Run the mapping.  It should be done here (after the event selection)
+    /// since it takes the longest process time per event.
+    for (unsigned int ih = 0; ih < n_taiwan; ih++) {
+      HitData* hd = &ed->list_hit[ih];
+      if (! dec_par.map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
+        if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+      }
+    }
+    for (unsigned int ih = 0; ih < n_v1495; ih++) {
+      HitData* hd = &ed->list_hit_trig[ih];
+      short level; // not stored for now
+      if (! dec_par.map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
+        if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+      }
+    }
   }
 
   EventDataMap* ptr = list_ed_now;

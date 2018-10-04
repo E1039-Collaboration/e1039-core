@@ -21,18 +21,16 @@
 R__LOAD_LIBRARY(libdecoder_maindaq)
 
 int Fun4MainDaq(
-  const int nevent = 10000,
+  const int nevent = 0,
   const char* fn_in  = "/data/e906/run_028700.dat",  
   const char* fn_out = "maindaq.root")
 {
-  int verbosity = 1;
-  
 //  gSystem->Load("libfun4all.so");
 //  gSystem->Load("libevent.so");
 //  gSystem->Load("libdecoder_maindaq.so");
     
   Fun4AllServer* se = Fun4AllServer::instance();
-  se->Verbosity(verbosity);
+  //se->Verbosity(1);
 
   //TestAnalyzer *analyzer = new TestAnalyzer();
   //analyzer->Verbosity(verbosity);
@@ -41,8 +39,8 @@ int Fun4MainDaq(
   //se->registerSubsystem(analyzer);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
-  in->Verbosity(verbosity);
-  in->EventSamplingFactor(10);
+  in->Verbosity(1);
+  in->EventSamplingFactor(100);
   in->DirParam("/data/e906/runs");
   in->fileopen(fn_in);
   se->registerInputManager(in);

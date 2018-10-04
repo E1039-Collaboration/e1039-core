@@ -212,23 +212,21 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
   if (verbosity > 1)
     {
-      //TODO implement this
-      //cout << ThisName << " EVIO run " << evt->getRunNumber() << ", evt no: " << evt->getEvtSequence() << endl;
+      cout << ThisName << ":  run " << rd->run_id << ", spill " << sd->spill_id << ", event " << ed->event.eventID << endl;
     }
   events_total++;
   events_thisfile++;
 
-  //TODO implement these
-//  SetRunNumber(evt->getRunNumber());
-//  mySyncManager->PrdfEvents(events_thisfile);
-//  mySyncManager->SegmentNumber(segment);
-//  mySyncManager->CurrentEvent(evt->getEvtSequence());
-//  syncobject->EventCounter(events_thisfile);
-//  syncobject->SegmentNumber(segment);
-//  syncobject->RunNumber(evt->getRunNumber());
-//  syncobject->EventNumber(evt->getEvtSequence());
+  SetRunNumber                (rd->run_id);
+  mySyncManager->PrdfEvents   (events_thisfile);
+  mySyncManager->SegmentNumber(sd->spill_id);
+  mySyncManager->CurrentEvent (ed->event.eventID);
+  syncobject->EventCounter    (events_thisfile);
+  syncobject->SegmentNumber   (sd->spill_id);
+  syncobject->RunNumber       (rd->run_id);
+  syncobject->EventNumber     (ed->event.eventID);
 
-  if (run_header->get_run_id() == INT_MAX) { // better way to check if initialized??
+  if (run_header->get_run_id() == INT_MAX) { // Any better way to check if initialized??
     run_header->set_run_id(rd->run_id);
     run_header->set_spill_count(0); // not implemented
   }
@@ -239,10 +237,10 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     spill->set_spill_id(sd->spill_id);
     spill->set_run_id  (sd->run_id  );
     spill->set_target_pos(sd->targ_pos);
-    // todo: BOS info
-    // todo: EOS info
-    // todo: Slow control info
-    // todo: Scaler info
+    // todo: Add BOS info
+    // todo: Add EOS info
+    // todo: Add slow control info
+    // todo: Add scaler info
     spill_map->insert(spill);
   }
 
@@ -276,15 +274,6 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     delete hit;
   }
 
-  //cout << "E "
-  //     << " " << ed->event.eventID
-  //     << " " << ed->event.runID
-  //     << " " << ed->event.spillID
-  //     << " " << ed->event.dataQuality
-  //     << " " << ed->event.trigger_bits
-  //     << " " << ed->list_hit.size()
-  //     << " " << ed->list_hit_trig.size()
-  //     << endl;
   // check if the local SubsysReco discards this event
   if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
     {
