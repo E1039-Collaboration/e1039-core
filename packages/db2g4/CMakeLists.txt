@@ -37,7 +37,7 @@ if(G4CONF)
 else()
   message(FATAL_ERROR "-- Detecting Geant4:  not found")
 endif()
-find_package(Geant4 REQUIRED vis_all)
+#find_package(Geant4 REQUIRED vis_all)
 execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
