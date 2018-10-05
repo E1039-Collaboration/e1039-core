@@ -29,8 +29,6 @@ PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string
   targetmag.set_mean_x(0*cm);
   targetmag.set_mean_y(0*cm);
   targetmag.set_mean_z(-300*cm);
-
-  this->identify();
 }
 
 PHFieldSeaQuest::~PHFieldSeaQuest()
@@ -67,17 +65,13 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
   }
 }
 
-void PHFieldSeaQuest::identify() {
-  cout << "PHFieldSeaQuest::identify: " << "-------" << endl;
-  double point[4] = {0, 0, 0, 0};
-  double bfield[3] = {0, 0, 0};
-  point[2] = -300*cm;
-  this->GetFieldValue(point, bfield);
-  cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
-  point[2] = 250*cm;
-  this->GetFieldValue(point, bfield);
-  cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
-  point[2] = 1050*cm;
-  this->GetFieldValue(point, bfield);
-  cout << "{ " << bfield[0] << ", " << bfield[1] << ", " << bfield[2] << " } @ { " << point[0] << ", " << point[1] << ", " << point[2] << " }" << endl;
+void PHFieldSeaQuest::identify(std::ostream& os) const {
+	os << "PHFieldSeaQuest::identify: " << "-------" << endl;
+  double point[4] =   {0, 0, 0, 0};
+  double bfield[3] =  {0, 0, 0};
+
+  for(point[2] = -500*cm; point[2] < 1500*cm; point[2] += 1*cm) {
+  	this->GetFieldValue(point, bfield);
+  	os << point[2]/cm << ", " << bfield[1]/tesla << endl;
+  }
 }

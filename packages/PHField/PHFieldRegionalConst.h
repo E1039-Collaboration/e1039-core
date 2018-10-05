@@ -24,6 +24,8 @@ class PHFieldRegionalConst : public PHField
   //! @param[out] Bfield  field value. In the case of magnetic field, the order is Bx, By, Bz in in Geant4/CLHEP units
   void GetFieldValue(const double Point[4], double *Bfield) const;
 
+  void identify(std::ostream& os = std::cout) const;
+
 	double get_field_val() const {
 		return _field_val;
 	}

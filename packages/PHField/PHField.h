@@ -29,6 +29,8 @@ class PHField : public PHObject
       const double Point[4],
       double *Bfield) const = 0;
 
+  virtual void identify(std::ostream& os = std::cout) const {std::cout << "I am a PHField object!" << std::endl;}
+
   void Verbosity(const int i) { verb_ = i; }
  protected:
   unsigned verb_;

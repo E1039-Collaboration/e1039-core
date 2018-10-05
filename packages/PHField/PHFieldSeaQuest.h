@@ -21,7 +21,7 @@ class PHFieldSeaQuest : public PHField
   //! @param[out] Bfield  field value. In the case of magnetic field, the order is Bx, By, Bz in in Geant4/CLHEP units
   void GetFieldValue(const double Point[4], double *Bfield) const;
 
-  void identify();
+  void identify(std::ostream& os = std::cout) const;
 
  protected:
   float zValues[4];
