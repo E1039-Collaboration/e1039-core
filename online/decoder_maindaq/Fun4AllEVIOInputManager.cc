@@ -8,8 +8,11 @@
 #include <interface_main/SQHitVector_v1.h>
 #include <interface_main/SQEvent_v1.h>
 #include <interface_main/SQRun_v1.h>
-#include <interface_main/SQSpill_v1.h>
+#include <interface_main/SQSpill_v2.h>
 #include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQStringMap.h>
+#include <interface_main/SQScaler_v1.h>
+#include <interface_main/SQSlowCont_v1.h>
  
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllSyncManager.h>
@@ -161,7 +164,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
       cout << "Getting Event from " << Name() << endl;
     }
   //  cout << "running event " << nevents << endl;
-  PHNodeIterator iter(topNode);
+  //PHNodeIterator iter(topNode);
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) {
     return Fun4AllReturnCodes::ABORTEVENT;
@@ -233,14 +236,34 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 
   SQSpill* spill = spill_map->get(sd->spill_id);
   if (! spill) {
-    spill = new SQSpill_v1();
-    spill->set_spill_id(sd->spill_id);
-    spill->set_run_id  (sd->run_id  );
-    spill->set_target_pos(sd->targ_pos);
-    // todo: Add BOS info
-    // todo: Add EOS info
-    // todo: Add slow control info
-    // todo: Add scaler info
+    spill = new SQSpill_v2();
+    spill->set_spill_id    (sd->spill_id);
+    spill->set_run_id      (sd->run_id  );
+    spill->set_target_pos  (sd->targ_pos);
+    spill->set_bos_coda_id (sd->bos_coda_id );
+    spill->set_bos_vme_time(sd->bos_vme_time);
+    spill->set_eos_coda_id (sd->eos_coda_id );
+    spill->set_eos_vme_time(sd->eos_vme_time);
+    for (ScalerDataList::iterator it = sd->list_scaler.begin(); it != sd->list_scaler.end(); it++) {
+      SQScaler_v1 obj;
+      obj.set_name (it->name );
+      obj.set_count(it->value);
+      if (it->type == MainDaqParser::TYPE_BOS) {
+        obj.set_type(SQScaler::BOS);
+        spill->get_bos_scaler_list()->insert(it->name, &obj);
+      } else {
+        obj.set_type(SQScaler::EOS);
+        spill->get_eos_scaler_list()->insert(it->name, &obj);
+      }
+    }
+    for (SlowControlDataList::iterator it = sd->list_slow_cont.begin(); it != sd->list_slow_cont.end(); it++) {
+      SQSlowCont_v1 obj;
+      obj.set_time_stamp(it->ts   );
+      obj.set_name      (it->name );
+      obj.set_value     (it->value);
+      obj.set_type      (it->type );
+      spill->get_slow_cont_list()->insert(it->name, &obj);
+    }
     spill_map->insert(spill);
   }
 

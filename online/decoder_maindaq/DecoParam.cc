@@ -47,11 +47,11 @@ int DecoParam::InitMapper()
 void DecoParam::PrintStat()
 {
   cout << "\nDecoParam::PrintStat():\n"
-       << "Flush events:  all = " << n_flush_evt_all << ", ok = " << n_flush_evt_ok << "\n"
-       << "v1495 events:  all = " << n_1495_all << ", ok = " << n_1495_good
+       << "  Flush events:  all = " << n_flush_evt_all << ", ok = " << n_flush_evt_ok << "\n"
+       << "  v1495 events:  all = " << n_1495_all << ", ok = " << n_1495_good
        << ", 0xd1ad = " << n_1495_d1ad << ", 0xd2ad = " << n_1495_d2ad << ", 0xd3ad = " << n_1495_d3ad << "\n"
-       << "Phys. events: all = " << n_phys_evt_all << ", decoded = " << n_phys_evt_dec << "\n"
-       << "TDC   hits: total = " <<  n_hit << ", max/evt = " <<  n_hit_max << ", bad = " << n_hit_bad << "\n"
-       << "v1495 hits: total = " << n_thit << ", max/evt = " << n_thit_max << "\n"
-       << "Real Time: " << (timeEnd - timeStart) << "\n";
+       << "  Phys. events: all = " << n_phys_evt_all << ", decoded = " << n_phys_evt_dec << "\n"
+       << "  TDC   hits: total = " <<  n_hit << ", max/evt = " <<  n_hit_max << ", bad = " << n_hit_bad << "\n"
+       << "  v1495 hits: total = " << n_thit << ", max/evt = " << n_thit_max << "\n"
+       << "  Real Time: " << (timeEnd - timeStart) << "\n";
 }
