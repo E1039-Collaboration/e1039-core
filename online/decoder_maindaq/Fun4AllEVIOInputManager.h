@@ -6,15 +6,14 @@
 #include <string>
 #include <map>
 
-class Event;
 class PHCompositeNode;
 class SyncObject;
-class ManageCodaInput;
+class MainDaqParser;
 
 class Fun4AllEVIOInputManager : public Fun4AllInputManager
 {
  public:
-   Fun4AllEVIOInputManager(const std::string &name = "DUMMY", const std::string &topnodename = "TOP");
+  Fun4AllEVIOInputManager(const std::string &name = "DUMMY", const std::string &topnodename = "TOP");
   virtual ~Fun4AllEVIOInputManager();
   int fileopen(const std::string &filenam);
   int fileclose();
@@ -27,6 +26,9 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   int GetSyncObject(SyncObject **mastersync);
   int SyncIt(const SyncObject *mastersync);
 
+  void EventSamplingFactor(const int factor);
+  void DirParam(const std::string dir);
+  
  protected:
   int OpenNextFile();
   int segment;
@@ -35,10 +37,8 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   int events_thisfile;
   std::string topNodeName;
   PHCompositeNode *topNode;
-  Event *evt;
-  Event *save_evt;
   SyncObject* syncobject;
-  ManageCodaInput *coda;
+  MainDaqParser* parser;
 };
 
 #endif /* __Fun4AllEVIOInputManager_H_ */
