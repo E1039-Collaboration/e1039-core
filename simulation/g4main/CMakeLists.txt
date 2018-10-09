@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4main CXX C)
 
 include_directories( "${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/")
-cmake_policy(SET CMP0015 OLD)
+if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
+  message("SET CMP0015 OLD")
+  cmake_policy(SET CMP0015 OLD)
+endif()
 link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 
 # source code
