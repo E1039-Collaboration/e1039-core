@@ -4,7 +4,11 @@ project(g4detectors CXX C)
 
 # source code
 include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-cmake_policy(SET CMP0015 OLD)
+if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
+  message("SET CMP0015 OLD")
+  cmake_policy(SET CMP0015 OLD)
+endif()
+link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
@@ -165,8 +169,9 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TrackStatusDecode.cc
 )
 
-target_link_libraries(g4detectors_io -L./ -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
-target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
+target_link_libraries(g4detectors_io -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
+add_dependencies(g4detectors g4detectors_io)
+target_link_libraries(g4detectors    -lg4detectors_io -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
 
 install(TARGETS g4detectors_io  					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4detectors     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

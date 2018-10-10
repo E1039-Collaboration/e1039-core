@@ -16,7 +16,7 @@ endforeach(LinkDefh)
 link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc ${PROJECT_SOURCE_DIR}/*.c)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 # ROOT
@@ -31,15 +31,16 @@ execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -DBIT64      -I$ENV{OFFLINE_MAIN}/include/")
 
 add_library(decoder_maindaq SHARED ${sources} ${dicts})
-target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool -levent -lmyevio)
+target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool -levent)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS decoder_maindaq DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h ${PROJECT_SOURCE_DIR}/evio.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
