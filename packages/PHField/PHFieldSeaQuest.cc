@@ -13,9 +13,14 @@
 using namespace std;
 using namespace CLHEP;  // units
 
-PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name, const double targermag_y):
-		fmag(fmag_name),
-		kmag(kmag_name),
+PHFieldSeaQuest::PHFieldSeaQuest(
+		const std::string &fmag_name,
+		const std::string &kmag_name,
+		const double fmag_scale,
+		const double kmag_scale,
+		const double targermag_y):
+		fmag(fmag_name, fmag_scale),
+		kmag(kmag_name, kmag_scale),
 		targetmag(targermag_y)
 
 {

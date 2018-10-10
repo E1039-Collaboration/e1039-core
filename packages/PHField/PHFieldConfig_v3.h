@@ -22,6 +22,8 @@ class PHFieldConfig_v3 : public PHFieldConfig
   PHFieldConfig_v3(
       const std::string& filename1,
 			const std::string& filename2,
+			const double scale1 = 1.0,
+			const double scale2 = 1.0,
 			const double targetmag_y = 5.0);
 
   //! default constructor for ROOT file IO
@@ -76,6 +78,14 @@ class PHFieldConfig_v3 : public PHFieldConfig
     filename2_ = filename;
   }
 
+  double get_magfield_rescale1() const {
+  	return scale1_;
+  }
+
+  double get_magfield_rescale2() const {
+  	return scale2_;
+  }
+
 	double get_taregetmag_y() const {
 		return _taregetmag_y;
 	}
@@ -88,6 +98,8 @@ class PHFieldConfig_v3 : public PHFieldConfig
   FieldConfigTypes field_config_;
   std::string filename1_;
   std::string filename2_;
+  double scale1_;
+  double scale2_;
   double _taregetmag_y;
 
   ClassDef(PHFieldConfig_v3, 3)

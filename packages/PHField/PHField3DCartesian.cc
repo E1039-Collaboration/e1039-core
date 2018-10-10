@@ -110,7 +110,7 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
     float ROOT_BX, ROOT_BY, ROOT_BZ;
     while (file >> ROOT_X >> ROOT_Y >> ROOT_Z >> ROOT_BX >> ROOT_BY >> ROOT_BZ) {
       trio coord_key(ROOT_X * UNIT_LENGTH, ROOT_Y * UNIT_LENGTH, ROOT_Z * UNIT_LENGTH);
-      trio field_val(ROOT_BX * UNIT_FIELD, ROOT_BY * UNIT_FIELD, ROOT_BZ * UNIT_FIELD);
+      trio field_val(ROOT_BX * magfield_rescale * UNIT_FIELD, ROOT_BY * magfield_rescale * UNIT_FIELD, ROOT_BZ * magfield_rescale * UNIT_FIELD);
     	//cout << ROOT_X << " " << ROOT_Y << " " << ROOT_Z << endl;
     	//cout << ROOT_BX << " " << ROOT_BY << " " << ROOT_BZ << endl;
       xvals.insert(ROOT_X * UNIT_LENGTH);
@@ -134,11 +134,12 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
 //    exit(1);
 //  }
 
-  if (magfield_rescale != 1.0)
-  {
-    cout << "PHField3DCartesian: Rescale not implemented" << endl;
-    exit(1);
-  }
+//  yuhw @ 10/10/18
+//  if (magfield_rescale != 1.0)
+//  {
+//    cout << "PHField3DCartesian: Rescale not implemented" << endl;
+//    exit(1);
+//  }
 
   zmin = *(zvals.begin());
   zmax = *(zvals.rbegin());

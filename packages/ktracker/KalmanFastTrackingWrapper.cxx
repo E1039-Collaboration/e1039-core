@@ -96,7 +96,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 	assert(field);
 
-  if(verbosity >1) {
+  if(verbosity > 2) {
     cout << "PHField check: " << "-------" << endl;
     field->identify();
   }

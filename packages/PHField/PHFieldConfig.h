@@ -62,10 +62,6 @@ class PHFieldConfig : public PHObject
 
   virtual const std::string & get_filename() const;
 
-  virtual const std::string & get_filename1() const {return kInvalid_FileName;}
-
-  virtual const std::string & get_filename2() const {return kInvalid_FileName;};
-
   virtual void set_filename(const std::string& filename);
 
   virtual double get_magfield_rescale() const;
@@ -90,9 +86,17 @@ class PHFieldConfig : public PHObject
   virtual void set_field_mag_z(double fieldMagZ);
 
   //! field value in Tesla for target field model ONLY for PHFieldConfig_v3
-  virtual void set_taregetmag_y(double fieldMagX);
 
   //! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+
+  //! ONLY for PHFieldConfig_v3
+  virtual const std::string & get_filename1() const {return kInvalid_FileName;}
+  virtual const std::string & get_filename2() const {return kInvalid_FileName;}
+
+  virtual double get_magfield_rescale1() const;
+  virtual double get_magfield_rescale2() const;
+
+  virtual void set_taregetmag_y(double fieldMagX);
   virtual double get_taregetmag_y() const;
 
  protected:

@@ -12,7 +12,12 @@
 class PHFieldSeaQuest : public PHField
 {
  public:
-  PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name, const double targermag_y = 5.0);
+  PHFieldSeaQuest(
+  		const std::string &fmag_name,
+			const std::string &kmag_name,
+			const double fmag_scale = 1.0,
+			const double kmag_scale = 1.0,
+			const double targermag_y = 5.0);
   virtual ~PHFieldSeaQuest();
 
   //! access field value

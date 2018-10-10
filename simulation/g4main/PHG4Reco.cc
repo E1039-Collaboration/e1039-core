@@ -292,11 +292,19 @@ int PHG4Reco::InitField(PHCompositeNode *topNode)
   }
   else if (fieldmapfiles.size() == 2)
   {
-  	default_field_cfg.reset(new PHFieldConfig_v3(fieldmapfiles[0], fieldmapfiles[1]));
+  	default_field_cfg.reset(new PHFieldConfig_v3(
+  			fieldmapfiles[0], fieldmapfiles[1], 1.0, 1.0, 5.0
+  	));
+  }
+  else if (fieldmapfiles.size() == 5)
+  {
+  	default_field_cfg.reset(new PHFieldConfig_v3(
+  			fieldmapfiles[0], fieldmapfiles[1], std::stod(fieldmapfiles[2]), std::stod(fieldmapfiles[3]), std::stod(fieldmapfiles[4])
+  	));
   }
 
   if (verbosity > 1) cout << "PHG4Reco::InitField - create magnetic field setup" << endl;
-
+  
   PHField * phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, Verbosity()+1);
   assert(phfield);
 

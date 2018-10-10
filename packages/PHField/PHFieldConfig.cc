@@ -97,6 +97,20 @@ void PHFieldConfig::set_magfield_rescale(double magfieldRescale)
 {
 }
 
+//! field value in Tesla for uniform field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_magfield_rescale1() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+
+//! field value in Tesla for uniform field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_magfield_rescale2() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+
 //! field value in Tesla for uniform field model ONLY for PHFieldConfig_v2
 double PHFieldConfig::get_field_mag_x() const
 {

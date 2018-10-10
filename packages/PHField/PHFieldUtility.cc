@@ -94,6 +94,8 @@ PHFieldUtility::BuildFieldMap(const PHFieldConfig *field_config, const int verbo
   	field = new PHFieldSeaQuest(
         field_config->get_filename1(),
 				field_config->get_filename2(),
+				field_config->get_magfield_rescale1(),
+				field_config->get_magfield_rescale2(),
 				field_config->get_taregetmag_y()
   			);
     break;
