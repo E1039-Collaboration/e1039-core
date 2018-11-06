@@ -270,7 +270,7 @@ void PHG4BNLTargetCoilDetector::Construct(G4LogicalVolume *logicWorld)
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Nb"), 45 * perCent);
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Ti"), 45 * perCent);
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Cu"), 10 * perCent);
-	std::cout<< "DEBUG: " << Coil << std::endl;
+	std::cout<< "PHG4BNLTargetCoilDetector::Construct: " << Coil << std::endl;
 
 	// 1/(0.6/7.87+0.2/7.18+0.15/8.902+0.05/10.22) = 7.95 g/cm3
 	G4Material* SS316L = new G4Material(name = "SS316L", density = 7.95*g/cm3, ncomponents = 4);
@@ -278,7 +278,7 @@ void PHG4BNLTargetCoilDetector::Construct(G4LogicalVolume *logicWorld)
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Cr"), 20 * perCent);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Ni"), 15 * perCent);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Mo"),  5 * perCent);
-	std::cout<< "DEBUG: " << SS316L << std::endl;
+	std::cout<< "PHG4BNLTargetCoilDetector::Construct: " << SS316L << std::endl;
 
 
   G4VisAttributes *cylinder_vis = new G4VisAttributes();

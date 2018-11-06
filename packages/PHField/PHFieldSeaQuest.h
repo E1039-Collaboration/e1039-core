@@ -3,6 +3,7 @@
 
 #include "PHField.h"
 #include "PHField3DCartesian.h"
+#include "PHFieldRegionalConst.h"
 
 #include <map>
 #include <set>
@@ -11,7 +12,12 @@
 class PHFieldSeaQuest : public PHField
 {
  public:
-  PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name);
+  PHFieldSeaQuest(
+  		const std::string &fmag_name,
+			const std::string &kmag_name,
+			const double fmag_scale = 1.0,
+			const double kmag_scale = 1.0,
+			const double targermag_y = 5.0);
   virtual ~PHFieldSeaQuest();
 
   //! access field value
@@ -20,12 +26,15 @@ class PHFieldSeaQuest : public PHField
   //! @param[out] Bfield  field value. In the case of magnetic field, the order is Bx, By, Bz in in Geant4/CLHEP units
   void GetFieldValue(const double Point[4], double *Bfield) const;
 
+  void identify(std::ostream& os = std::cout) const;
+
  protected:
   float zValues[4];
   float kmagZOffset;
 
   PHField3DCartesian fmag;
   PHField3DCartesian kmag;
+  PHFieldRegionalConst targetmag;
 };
 
 #endif  // __PHFIELD3D_H

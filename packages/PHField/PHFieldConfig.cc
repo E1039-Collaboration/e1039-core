@@ -43,6 +43,9 @@ string PHFieldConfig::get_field_config_description() const
   case kField3DCartesian:
     return "3D field map expressed in Cartesian coordinates";
     break;
+  case PHFieldConfig::RegionalConst:
+    return "RegionalConst Field";
+    break;
   case kFieldSeaQuest:
     return "SeaQuest Field: 2 3D Cartesian";
     break;
@@ -97,6 +100,20 @@ void PHFieldConfig::set_magfield_rescale(double magfieldRescale)
 {
 }
 
+//! field value in Tesla for uniform field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_magfield_rescale1() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+
+//! field value in Tesla for uniform field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_magfield_rescale2() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+
 //! field value in Tesla for uniform field model ONLY for PHFieldConfig_v2
 double PHFieldConfig::get_field_mag_x() const
 {
@@ -127,5 +144,17 @@ double PHFieldConfig::get_field_mag_z() const
 
 //! field value in Tesla for uniform field model ONLY for PHFieldConfig_v2
 void PHFieldConfig::set_field_mag_z(double fieldMagZ)
+{
+}
+
+
+//! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+double PHFieldConfig::get_taregetmag_y() const
+{
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
+//! field value in Tesla for target field model ONLY for PHFieldConfig_v3
+void PHFieldConfig::set_taregetmag_y(double fieldMagY)
 {
 }

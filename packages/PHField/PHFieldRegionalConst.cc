@@ -11,12 +11,14 @@
 using namespace std;
 using namespace CLHEP;// units
 
-PHFieldRegionalConst::PHFieldRegionalConst( const string &filename, const int verb, const float magfield_rescale) :
+PHFieldRegionalConst::PHFieldRegionalConst(const double field, const double magfield_rescale, const int verb) :
     PHField(verb),
-		maxy_(4*cm), miny_(-4*cm),
-		maxr_(22.225*cm), minr_(0*cm),
-		field_val_(5*tesla)
+		_mean_x(0*cm), _mean_y(0*cm), _mean_z(0*cm),
+		_maxy(4*cm), _miny(-4*cm),
+		_maxr(6.*cm), _minr(-0.1*cm),
+		_field_val(field*tesla)
 {
+	identify();
 }
 
 void PHFieldRegionalConst::GetFieldValue(const double point[4], double *Bfield ) const
@@ -24,23 +26,26 @@ void PHFieldRegionalConst::GetFieldValue(const double point[4], double *Bfield )
   double x = point[0];
   double y = point[1];
   double z = point[2];
-	double r = sqrt(x*x + z*z);
+	double r = sqrt((x-_mean_x)*(x-_mean_x) + (z-_mean_z)*(z-_mean_z));
 
 	Bfield[0] = 0;
 	Bfield[1] = 0;
 	Bfield[2] = 0;
 
-	if( r > minr_ and r < maxr_ and
-			y > miny_ and y < maxy_) {
-		Bfield[1] = field_val_;
+	if( r > _minr and r < _maxr and
+			y - _mean_y > _miny and y - _mean_y < _maxy) {
+		Bfield[1] = _field_val;
 	}
 
-//	std::cout
-//	<< "PHFieldRegionalConst::GetFieldValue: "
-//	<< "{" << x/cm << ", " << y/cm << ", " << z/cm << ","  << r/cm << "}"
-//	<< "\t {" << Bfield[0]/tesla << ", " << Bfield[1]/tesla << ", " << Bfield[2]/tesla << "}"
-//	<< std::endl;
+	//identify();
 
   return;
 }
 
+void PHFieldRegionalConst::identify(std::ostream& os) const{
+	os
+	<< "PHFieldRegionalConst::identify: "
+	<< "{" << _mean_x/cm << ", " << _mean_y/cm << ", " << _mean_z/cm << "}"
+	<< "\t {" << _field_val/tesla <<  "}"
+	<< endl;
+}

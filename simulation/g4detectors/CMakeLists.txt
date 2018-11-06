@@ -4,6 +4,12 @@ project(g4detectors CXX C)
 
 # source code
 include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
+  message("SET CMP0015 OLD")
+  cmake_policy(SET CMP0015 OLD)
+endif()
+link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
+
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -25,7 +31,7 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
   else()
     message(FATAL_ERROR "-- Detecting Geant4:  not found")
   endif()
-  find_package(Geant4 REQUIRED gdml vis_all)
+  #find_package(Geant4 REQUIRED gdml vis_all)
   execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -136,6 +142,10 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TargetCoilSubsystem.cc
   PHG4TargetCoilSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4TargetCoilSteppingAction.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2Detector.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2Subsystem.cc
+  PHG4TargetCoilV2Subsystem_Dict.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2SteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4BNLTargetCoilDetector.cc
   ${PROJECT_SOURCE_DIR}/PHG4BNLTargetCoilSubsystem.cc
   PHG4BNLTargetCoilSubsystem_Dict.cc
@@ -163,8 +173,9 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TrackStatusDecode.cc
 )
 
-target_link_libraries(g4detectors_io -L./ -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
-target_link_libraries(g4detectors    -L./ -lg4detectors_io -L$ENV{MY_INSALL}/lib -L$ENV{OFFLINE_MAIN}/lib -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
+target_link_libraries(g4detectors_io -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
+add_dependencies(g4detectors g4detectors_io)
+target_link_libraries(g4detectors    -lg4detectors_io -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
 
 install(TARGETS g4detectors_io  					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4detectors     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
@@ -198,6 +209,7 @@ file(GLOB dist_headers
   PHG4CylinderSubsystem.h
   PHG4PolyconSubsystem.h
   PHG4TargetCoilSubsystem.h
+  PHG4TargetCoilV2Subsystem.h
   PHG4BNLTargetCoilSubsystem.h
   PHG4CollimatorSubsystem.h
   PHG4E1039InsensSubsystem.h

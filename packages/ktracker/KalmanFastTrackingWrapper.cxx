@@ -96,6 +96,11 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 	assert(field);
 
+  if(verbosity > 2) {
+    cout << "PHField check: " << "-------" << endl;
+    field->identify();
+  }
+
 	/// init KalmanPrgTrk
 	fastfinder = new KalmanPrgTrk(field, _t_geo_manager);
 	fastfinder->Verbosity(verbosity);

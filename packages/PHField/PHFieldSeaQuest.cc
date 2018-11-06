@@ -13,9 +13,15 @@
 using namespace std;
 using namespace CLHEP;  // units
 
-PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string &kmag_name):
-		fmag(fmag_name),
-		kmag(kmag_name)
+PHFieldSeaQuest::PHFieldSeaQuest(
+		const std::string &fmag_name,
+		const std::string &kmag_name,
+		const double fmag_scale,
+		const double kmag_scale,
+		const double targermag_y):
+		fmag(fmag_name, fmag_scale),
+		kmag(kmag_name, kmag_scale),
+		targetmag(targermag_y)
 
 {
   zValues[0] = -204.0*cm;  // front of fmag field map
@@ -24,6 +30,10 @@ PHFieldSeaQuest::PHFieldSeaQuest(const std::string &fmag_name, const std::string
   zValues[3] = 1572.26*cm; // end of kmag field map
 
   kmagZOffset = 1064.26*cm;
+
+  targetmag.set_mean_x(0*cm);
+  targetmag.set_mean_y(0*cm);
+  targetmag.set_mean_z(-300*cm);
 }
 
 PHFieldSeaQuest::~PHFieldSeaQuest()
@@ -37,7 +47,9 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
 
 	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
-  if (point[2]>zValues[0] && point[2]<zValues[1])
+	if(point[2] < zValues[0]) {
+		targetmag.GetFieldValue(point, Bfield);
+	}else if (point[2]>zValues[0] && point[2]<zValues[1])
   {
     fmag.GetFieldValue( point, Bfield );
   } else if ((point[2]>zValues[2])&&(point[2]<zValues[3])) {
@@ -55,5 +67,16 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
   	Bfield[0] = 0;
   	Bfield[1] = 0;
   	Bfield[2] = 0;
+  }
+}
+
+void PHFieldSeaQuest::identify(std::ostream& os) const {
+	os << "PHFieldSeaQuest::identify: " << "-------" << endl;
+  double point[4] =   {0, 0, 0, 0};
+  double bfield[3] =  {0, 0, 0};
+
+  for(point[2] = -500*cm; point[2] < 1500*cm; point[2] += 1*cm) {
+  	this->GetFieldValue(point, bfield);
+  	os << point[2]/cm << ", " << bfield[1]/tesla << endl;
   }
 }

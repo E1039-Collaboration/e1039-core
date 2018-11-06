@@ -2,8 +2,12 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4main CXX C)
 
-include_directories( "${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include" "$ENV{OFFLINE_MAIN}/include/")
-link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib/")
+include_directories( "${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/")
+if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
+  message("SET CMP0015 OLD")
+  cmake_policy(SET CMP0015 OLD)
+endif()
+link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 
 # source code
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
@@ -27,7 +31,7 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
   else()
     message(FATAL_ERROR "-- Detecting Geant4:  not found")
   endif()
-  find_package(Geant4 REQUIRED gdml vis_all)
+  #find_package(Geant4 REQUIRED gdml vis_all)
   execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -147,7 +151,7 @@ add_library(g4testbench SHARED
 )
 
 target_link_libraries(phg4hit      -lphool -lSubsysReco -lfun4all ${GEANT4_LINK})
-target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc -lxerces-c ${GEANT4_LINK} -lphgeom -lphg4gdml -lphg4hit)
+target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc_io -lxerces-c ${GEANT4_LINK} -lphgeom -lphg4gdml -lphg4hit)
 
 install(TARGETS phg4hit     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4testbench 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

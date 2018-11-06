@@ -87,13 +87,16 @@ PHFieldUtility::BuildFieldMap(const PHFieldConfig *field_config, const int verbo
   case PHFieldConfig::RegionalConst:
     //    return "3D field map expressed in Cartesian coordinates";
     field = new PHFieldRegionalConst(
-        field_config->get_filename(),
-        field_config->get_magfield_rescale());
+    		5.0,
+        1.0);
 		break;
   case PHFieldConfig::kFieldSeaQuest:
   	field = new PHFieldSeaQuest(
         field_config->get_filename1(),
-				field_config->get_filename2()
+				field_config->get_filename2(),
+				field_config->get_magfield_rescale1(),
+				field_config->get_magfield_rescale2(),
+				field_config->get_taregetmag_y()
   			);
     break;
   default:

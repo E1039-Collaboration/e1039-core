@@ -22,11 +22,21 @@ using namespace std;
 
 PHFieldConfig_v3::PHFieldConfig_v3(
     const std::string& filename1,
-		const std::string& filename2):
-				field_config_(kFieldSeaQuest),
-				filename1_(filename1),
-				filename2_(filename2)
+		const std::string& filename2,
+		const double scale1,
+		const double scale2,
+		const double targetmag_y) :
+		field_config_(kFieldSeaQuest),
+		filename1_(filename1),
+		filename2_(filename2),
+		scale1_(scale1),
+		scale2_(scale2),
+		_taregetmag_y(targetmag_y)
 {
+	cout << "PHFieldConfig_v3::PHFieldConfig_v3:" << endl;
+	cout << " from file1 [" << filename1 << "]" << endl;
+	cout << "  and file2 [" << filename2 << "]" << endl;
+	cout << "scale1: " << scale1_ << ", scale2: " << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
 }
 
 PHFieldConfig_v3::~PHFieldConfig_v3()
@@ -51,6 +61,8 @@ void PHFieldConfig_v3::identify(std::ostream& os) const
     os << " Field type of [" << "Sea Quest: " << get_field_config_description().c_str() << "]" << endl;
     os << " from file1 [" << get_filename1() << "]" << endl;
     os << "  and file2 [" << get_filename2() << "]" << endl;
+    os << "scale1: " << scale1_ << ", scale2: " << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
+    os << "scale1: " << get_magfield_rescale1() << ", scale2: " << get_magfield_rescale2() << ", targetmag_y: " << get_taregetmag_y() << endl;
   }
   else
     os << "Empty";
