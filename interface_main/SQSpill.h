@@ -13,6 +13,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+class SQStringMap;
 
 class SQSpill : public PHObject {
 
@@ -42,6 +43,23 @@ public:
   virtual short        get_target_pos() const                               {return std::numeric_limits<short>::max();}
   virtual void         set_target_pos(const short a)                          {}
 
+  virtual int  get_bos_coda_id() const {return std::numeric_limits<int>::max();}
+  virtual void set_bos_coda_id(const int a) {};
+
+  virtual int  get_bos_vme_time() const {return std::numeric_limits<int>::max();}
+  virtual void set_bos_vme_time(const int a) {};
+
+  virtual int  get_eos_coda_id() const {return std::numeric_limits<int>::max();}
+  virtual void set_eos_coda_id(const int a) {};
+
+  virtual int  get_eos_vme_time() const {return std::numeric_limits<int>::max();}
+  virtual void set_eos_vme_time(const int a) {};
+
+  virtual SQStringMap* get_bos_scaler_list() { return 0; }
+  virtual SQStringMap* get_eos_scaler_list() { return 0; }
+
+  virtual SQStringMap* get_slow_cont_list() { return 0; }
+  
 protected:
   SQSpill() {}
 

@@ -56,11 +56,6 @@ enum { BEGIN_SPILL      =  11 };
 enum { END_SPILL        =  12 };
 enum { SPILL_COUNTER    = 129 };
 
-typedef enum {
-  TYPE_BOS = 1,
-  TYPE_EOS = 2
-} SpillType_t;
-
 //
 // Helper function
 //   These are not in CodaInputManager for easier call.

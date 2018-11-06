@@ -67,6 +67,11 @@ class MainDaqParser {
   void SetEventInfo(EventInfo* evt, const int eventID);
 
 public:
+  typedef enum {
+    TYPE_BOS = 1,
+    TYPE_EOS = 2
+  } SpillType_t;
+
   MainDaqParser();
   ~MainDaqParser();
 
