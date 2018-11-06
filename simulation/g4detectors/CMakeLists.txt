@@ -142,6 +142,10 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4TargetCoilSubsystem.cc
   PHG4TargetCoilSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4TargetCoilSteppingAction.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2Detector.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2Subsystem.cc
+  PHG4TargetCoilV2Subsystem_Dict.cc
+  ${PROJECT_SOURCE_DIR}/PHG4TargetCoilV2SteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4BNLTargetCoilDetector.cc
   ${PROJECT_SOURCE_DIR}/PHG4BNLTargetCoilSubsystem.cc
   PHG4BNLTargetCoilSubsystem_Dict.cc
@@ -205,6 +209,7 @@ file(GLOB dist_headers
   PHG4CylinderSubsystem.h
   PHG4PolyconSubsystem.h
   PHG4TargetCoilSubsystem.h
+  PHG4TargetCoilV2Subsystem.h
   PHG4BNLTargetCoilSubsystem.h
   PHG4CollimatorSubsystem.h
   PHG4E1039InsensSubsystem.h

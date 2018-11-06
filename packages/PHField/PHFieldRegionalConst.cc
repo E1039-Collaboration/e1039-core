@@ -18,6 +18,7 @@ PHFieldRegionalConst::PHFieldRegionalConst(const double field, const double magf
 		_maxr(6.*cm), _minr(-0.1*cm),
 		_field_val(field*tesla)
 {
+	identify();
 }
 
 void PHFieldRegionalConst::GetFieldValue(const double point[4], double *Bfield ) const
@@ -36,19 +37,14 @@ void PHFieldRegionalConst::GetFieldValue(const double point[4], double *Bfield )
 		Bfield[1] = _field_val;
 	}
 
-//	identify();
-//	std::cout
-//	<< "PHFieldRegionalConst::GetFieldValue: "
-//	<< "{" << x/cm << ", " << y/cm << ", " << z/cm << ", "  << r/cm << "}"
-//	<< " => {" << Bfield[0]/tesla << ", " << Bfield[1]/tesla << ", " << Bfield[2]/tesla << "}"
-//	<< std::endl;
+	//identify();
 
   return;
 }
 
 void PHFieldRegionalConst::identify(std::ostream& os) const{
 	os
-	<< "PHFieldRegionalConst::GetFieldValue: "
+	<< "PHFieldRegionalConst::identify: "
 	<< "{" << _mean_x/cm << ", " << _mean_y/cm << ", " << _mean_z/cm << "}"
 	<< "\t {" << _field_val/tesla <<  "}"
 	<< endl;

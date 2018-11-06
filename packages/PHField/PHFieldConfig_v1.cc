@@ -51,6 +51,7 @@ void PHFieldConfig_v1::identify(std::ostream& os) const
     os << " Field type of [" << get_field_config_description();
     os << "] from file [" << get_filename();
     os << "] with a scale factor of " << get_magfield_rescale();
+    os << " field_config: " << get_field_config();
   }
   else
     os << "Empty";

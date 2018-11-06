@@ -43,6 +43,9 @@ string PHFieldConfig::get_field_config_description() const
   case kField3DCartesian:
     return "3D field map expressed in Cartesian coordinates";
     break;
+  case PHFieldConfig::RegionalConst:
+    return "RegionalConst Field";
+    break;
   case kFieldSeaQuest:
     return "SeaQuest Field: 2 3D Cartesian";
     break;
