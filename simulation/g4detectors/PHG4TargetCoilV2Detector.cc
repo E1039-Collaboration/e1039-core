@@ -375,7 +375,7 @@ void PHG4TargetCoilV2Detector::Construct(G4LogicalVolume *logicWorld)
 			0,
 			overlapcheck,
 			"SSMainMag",
-			G4Material::GetMaterial("G4_Si"), //G4Material::GetMaterial("G4_Si"),//SS316L,
+			SS316L, //G4Material::GetMaterial("G4_Si"),//SS316L,
 			-(l+gap)/2,
 			ri + 1.01*ts,
 			ro - 1.01*ts,
