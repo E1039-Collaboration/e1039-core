@@ -337,6 +337,20 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			pt[n_particles]  = rec_mom.Pt();
   			eta[n_particles] = rec_mom.Eta();
   			phi[n_particles] = rec_mom.Phi();
+
+  			{
+					double tx, ty, tz;
+					recTrack.getMomentumSt1(tx, ty, tz);
+					px_st1[n_particles] = tx;
+					py_st1[n_particles] = ty;
+					pz_st1[n_particles] = tz;
+  			}
+
+//  			recTrack.getMomentumSt1(
+//  					&px_st1[n_particles],
+//  					&py_st1[n_particles],
+//  					&pz_st1[n_particles]
+//						);
   		}
 
   		if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("single reco. eval finished");
@@ -495,6 +509,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("pt",            pt,                  "pt[n_particles]/F");
   _tout->Branch("eta",           eta,                 "eta[n_particles]/F");
   _tout->Branch("phi",           phi,                 "phi[n_particles]/F");
+  _tout->Branch("px_st1",        px_st1,              "px_st1[n_particles]/F");
+  _tout->Branch("py_st1",        py_st1,              "py_st1[n_particles]/F");
+  _tout->Branch("pz_st1",        pz_st1,              "pz_st1[n_particles]/F");
 
   _tout->Branch("gndimu",        &gndimu,              "gndimu/I");
   _tout->Branch("dimu_gpx",      dimu_gpx,             "dimu_gpx[gndimu]/F");
@@ -566,6 +583,9 @@ int TrkEval::ResetEvalVars() {
     pt[i]         = std::numeric_limits<float>::max();
     eta[i]        = std::numeric_limits<float>::max();
     phi[i]        = std::numeric_limits<float>::max();
+    px_st1[i]     = std::numeric_limits<float>::max();
+    py_st1[i]     = std::numeric_limits<float>::max();
+    pz_st1[i]     = std::numeric_limits<float>::max();
   }
 
   gndimu = 0;

@@ -137,10 +137,12 @@ private:
 	float px[1000];
 	float py[1000];
 	float pz[1000];
-	float pz_st1[1000];
 	float pt[1000];
 	float eta[1000];
 	float phi[1000];
+	float px_st1[1000];
+	float py_st1[1000];
+	float pz_st1[1000];
 
 	int gndimu;
 	float dimu_gpx[1000];
