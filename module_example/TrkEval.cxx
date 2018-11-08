@@ -29,6 +29,8 @@
 #include <phool/getClass.h>
 
 #include <g4main/PHG4TruthInfoContainer.h>
+#include <g4main/PHG4HitContainer.h>
+#include <g4main/PHG4Hit.h>
 #include <g4main/PHG4Particle.h>
 #include <g4main/PHG4HitDefs.h>
 #include <g4main/PHG4VtxPoint.h>
@@ -103,9 +105,19 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
     run_id   = _event_header->get_run_id();
   }
 
+  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_C1X");
+  if (!C1X_hits)
+  {
+    cout << Name() << " Could not locate g4 hit node " << "G4HIT_C1X" << endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
+
 	std::map<int, int> parID_nhits_dc;
 	std::map<int, int> parID_nhits_hodo;
 	std::map<int, int> parID_nhits_prop;
+
+  typedef std::tuple<int, int> ParDetPair;
+  std::map<ParDetPair, int> parID_detID_ihit;
 
 	std::map<int, int> hitID_ihit;
 
@@ -124,6 +136,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 
       if(_truth) {
       	int track_id = hit->get_track_id();
+      	int det_id = hit->get_detector_id();
+      	parID_detID_ihit[std::make_tuple(track_id, det_id)] = ihit;
 
       	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=30) {
         	if(parID_nhits_dc.find(track_id)!=parID_nhits_dc.end())
@@ -269,6 +283,33 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		gphi[n_particles] = mom.Phi();
 
   		int parID = par->get_track_id();
+
+  		// trackID + detID -> SQHit -> PHG4Hit -> momentum
+  		for(int det_id=7; det_id<=12; ++det_id) {
+  			auto iter = parID_detID_ihit.find(std::make_tuple(parID, det_id));
+  			if(iter != parID_detID_ihit.end()) {
+					if(verbosity >= 2) {
+						LogDebug("ihit: " << iter->second);
+					}
+  				SQHit *hit = _hit_vector->at(iter->second);
+					if(verbosity >= 2) {
+						hit->identify();
+					}
+  				if(hit) {
+  					PHG4Hit* g4hit =  C1X_hits->findHit(hit->get_g4hit_id());
+  					if (g4hit) {
+  						if(verbosity >= 2) {
+  							g4hit->identify();
+  						}
+							gpx_st1[n_particles] = g4hit->get_px(0)/1000.;
+							gpy_st1[n_particles] = g4hit->get_py(0)/1000.;
+							gpz_st1[n_particles] = g4hit->get_pz(0)/1000.;
+							break;
+  					}
+  				}
+  			}
+  		}
+
   		gnhits[n_particles] =
   				parID_nhits_dc[parID] +
 					parID_nhits_hodo[parID] +
@@ -328,7 +369,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 					dimu_gpx[gndimu] = vphoton.Px();
 					dimu_gpy[gndimu] = vphoton.Py();
 					dimu_gpz[gndimu] = vphoton.Pz();
-					dimu_gpt[gndimu] = vphoton.Pt();
+					dimu_gpt[gndimu] = vphoton.M();
+					dimu_gmass[gndimu] = vphoton.Pt();
 					dimu_geta[gndimu] = vphoton.Eta();
 					dimu_gphi[gndimu] = vphoton.Phi();
 
@@ -367,6 +409,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 						dimu_py[gndimu] = rec_vphoton.Py();
 						dimu_pz[gndimu] = rec_vphoton.Pz();
 						dimu_pt[gndimu] = rec_vphoton.Pt();
+						dimu_mass[gndimu] = rec_vphoton.M();
 						dimu_eta[gndimu] = rec_vphoton.Eta();
 						dimu_phi[gndimu] = rec_vphoton.Phi();
 					}
@@ -424,6 +467,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("pos",           pos,              "pos[nHits]/F");
 
   _tout->Branch("n_particles",   &n_particles,        "n_particles/I");
+  _tout->Branch("pid",           pid,                 "pid[n_particles]/I");
   _tout->Branch("gvx",           gvx,                 "gvx[n_particles]/F");
   _tout->Branch("gvy",           gvy,                 "gvy[n_particles]/F");
   _tout->Branch("gvz",           gvz,                 "gvz[n_particles]/F");
@@ -433,6 +477,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
   _tout->Branch("gphi",          gphi,                "gphi[n_particles]/F");
+  _tout->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_particles]/F");
+  _tout->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_particles]/F");
+  _tout->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_particles]/F");
   _tout->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
   _tout->Branch("gndc",          gndc,                "gndc[n_particles]/I");
   _tout->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
@@ -454,6 +501,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("dimu_gpy",      dimu_gpy,             "dimu_gpy[gndimu]/F");
   _tout->Branch("dimu_gpz",      dimu_gpz,             "dimu_gpz[gndimu]/F");
   _tout->Branch("dimu_gpt",      dimu_gpt,             "dimu_gpt[gndimu]/F");
+  _tout->Branch("dimu_gmass",    dimu_gmass,           "dimu_gmass[gndimu]/F");
   _tout->Branch("dimu_geta",     dimu_geta,            "dimu_geta[gndimu]/F");
   _tout->Branch("dimu_gphi",     dimu_gphi,            "dimu_gphi[gndimu]/F");
 
@@ -462,6 +510,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("dimu_py",       dimu_py,              "dimu_py[gndimu]/F");
   _tout->Branch("dimu_pz",       dimu_pz,              "dimu_pz[gndimu]/F");
   _tout->Branch("dimu_pt",       dimu_pt,              "dimu_pt[gndimu]/F");
+  _tout->Branch("dimu_mass",     dimu_mass,            "dimu_mass[gndimu]/F");
   _tout->Branch("dimu_eta",      dimu_eta,             "dimu_eta[gndimu]/F");
   _tout->Branch("dimu_phi",      dimu_phi,             "dimu_phi[gndimu]/F");
 
@@ -500,6 +549,9 @@ int TrkEval::ResetEvalVars() {
     geta[i]       = std::numeric_limits<float>::max();
     gphi[i]       = std::numeric_limits<float>::max();
     gnhits[i]     = std::numeric_limits<int>::max();
+    gpx_st1[i]    = std::numeric_limits<float>::max();
+    gpy_st1[i]    = std::numeric_limits<float>::max();
+    gpz_st1[i]    = std::numeric_limits<float>::max();
     gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
@@ -522,6 +574,7 @@ int TrkEval::ResetEvalVars() {
   	dimu_gpy[i]        = std::numeric_limits<float>::max();
   	dimu_gpz[i]        = std::numeric_limits<float>::max();
   	dimu_gpt[i]        = std::numeric_limits<float>::max();
+  	dimu_gmass[i]      = std::numeric_limits<float>::max();
   	dimu_geta[i]       = std::numeric_limits<float>::max();
   	dimu_gphi[i]       = std::numeric_limits<float>::max();
   }
