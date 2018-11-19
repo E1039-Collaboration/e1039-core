@@ -361,7 +361,12 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 				iter2++;
 				for (;iter2 != _truth->GetPrimaryParticleRange().second; ++iter2) {
 					PHG4Particle* par2 = iter2->second;
-					if(par2->get_pid()+par->get_pid()!=0) continue;
+
+					// Un-like charged
+					if(par->get_pid()+par2->get_pid()!=0) continue;
+
+					// same vtx
+					if(par->get_vtx_id() != par2->get_vtx_id()) continue;
 
 					TLorentzVector par1_mom;
 					par1_mom.SetXYZM(
@@ -383,8 +388,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 					dimu_gpx[gndimu] = vphoton.Px();
 					dimu_gpy[gndimu] = vphoton.Py();
 					dimu_gpz[gndimu] = vphoton.Pz();
-					dimu_gpt[gndimu] = vphoton.M();
-					dimu_gmass[gndimu] = vphoton.Pt();
+					dimu_gpt[gndimu] = vphoton.Pt();
+					dimu_gmass[gndimu] = vphoton.M();
 					dimu_geta[gndimu] = vphoton.Eta();
 					dimu_gphi[gndimu] = vphoton.Phi();
 
