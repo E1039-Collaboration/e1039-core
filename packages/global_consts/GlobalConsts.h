@@ -41,8 +41,8 @@
 #define nHodoPlanes 16
 #define nPropPlanes 8
 
-#define FMAGSTR -1.054
-#define KMAGSTR -0.951
+#define FMAGSTR 1.054
+#define KMAGSTR 0.951
 
 #define Z_KMAG_BEND 1064.26
 #define Z_FMAG_BEND 251.4
