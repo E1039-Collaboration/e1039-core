@@ -268,6 +268,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			++iter) {
   		PHG4Particle * par = iter->second;
 
+  		pid[n_particles] = par->get_pid();
+
   		int vtx_id =  par->get_vtx_id();
   		PHG4VtxPoint* vtx = _truth->GetVtx(vtx_id);
   		gvx[n_particles] = vtx->get_x();
@@ -326,6 +328,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
   			int recID = std::get<0>(parID_bestRecID[parID]);
   			SRecTrack recTrack = _recEvent->getTrack(recID);
+  			charge[n_particles] = recTrack.getCharge();
   			TVector3 rec_vtx = recTrack.getTargetPos();
   			vx[n_particles]  = rec_vtx.X();
   			vy[n_particles]  = rec_vtx.Y();
@@ -505,6 +508,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
 
   _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
+  _tout->Branch("charge",        charge,              "charge[n_particles]/I");
   _tout->Branch("vx",            vx,                  "vx[n_particles]/F");
   _tout->Branch("vy",            vy,                  "vy[n_particles]/F");
   _tout->Branch("vz",            vz,                  "vz[n_particles]/F");
@@ -561,6 +565,7 @@ int TrkEval::ResetEvalVars() {
 
   n_particles = 0;
   for(int i=0; i<1000; ++i) {
+    pid[i]        = std::numeric_limits<float>::max();
     gvx[i]        = std::numeric_limits<float>::max();
     gvy[i]        = std::numeric_limits<float>::max();
     gvz[i]        = std::numeric_limits<float>::max();
@@ -579,6 +584,7 @@ int TrkEval::ResetEvalVars() {
     gnprop[i]     = std::numeric_limits<int>::max();
 
     ntruhits[i]   = std::numeric_limits<int>::max();
+    charge[i]     = std::numeric_limits<int>::max();
     vx[i]         = std::numeric_limits<float>::max();
     vy[i]         = std::numeric_limits<float>::max();
     vz[i]         = std::numeric_limits<float>::max();
@@ -602,6 +608,15 @@ int TrkEval::ResetEvalVars() {
   	dimu_gmass[i]      = std::numeric_limits<float>::max();
   	dimu_geta[i]       = std::numeric_limits<float>::max();
   	dimu_gphi[i]       = std::numeric_limits<float>::max();
+
+  	dimu_nrec[i]       = 0;
+  	dimu_px[i]         = std::numeric_limits<float>::max();
+  	dimu_py[i]         = std::numeric_limits<float>::max();
+  	dimu_pz[i]         = std::numeric_limits<float>::max();
+  	dimu_pt[i]         = std::numeric_limits<float>::max();
+  	dimu_mass[i]       = std::numeric_limits<float>::max();
+  	dimu_eta[i]        = std::numeric_limits<float>::max();
+  	dimu_phi[i]        = std::numeric_limits<float>::max();
   }
 
   return 0;
