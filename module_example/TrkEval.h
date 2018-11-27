@@ -131,6 +131,7 @@ private:
 	int gnhodo[1000];
 	int gnprop[1000];
 	int ntruhits[1000];
+	int charge[1000];
 	float vx[1000];
 	float vy[1000];
 	float vz[1000];
