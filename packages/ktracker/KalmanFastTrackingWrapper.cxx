@@ -42,6 +42,7 @@
 #include <stdexcept>
 #include <limits>
 #include <memory>
+#include <fstream>
 
 #include <boost/lexical_cast.hpp>
 
@@ -98,7 +99,9 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 
   if(verbosity > 2) {
     cout << "PHField check: " << "-------" << endl;
-    field->identify();
+    std::ofstream field_scan("field_scan.csv");
+    field->identify(field_scan);
+    field_scan.close();
   }
 
 	/// init KalmanPrgTrk
