@@ -23,19 +23,11 @@ Created: 05-28-2013
 #include "KalmanPrgTrk.h"
 #include "TriggerRoad.h"
 
-//#define _DEBUG_ON
+#define _DEBUG_ON
 
 KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool flag)
 : verbosity(0),
 	enable_KF(flag)
-//	_t_st2(nullptr),
-//	_t_st3(nullptr),
-//	_t_st23(nullptr),
-//	_t_global(nullptr),
-//	_t_global_st1(nullptr),
-//	_t_global_link(nullptr),
-//	_t_global_kalman(nullptr),
-//	_t_kalman(nullptr)
 {
     using namespace std;
 
@@ -44,6 +36,7 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     cout << "========================================" << endl;
 #endif
 
+    _timers.insert(std::make_pair<std::string, PHTimer*>("event", new PHTimer("event")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
@@ -52,15 +45,6 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
-
-//    _t_st2 = new PHTimer("_t_st2");
-//    _t_st3 = new PHTimer("_t_st3");
-//    _t_st23 = new PHTimer("_t_st23");
-//    _t_global = new PHTimer("_t_global");
-//    _t_global_st1 = new PHTimer("_t_global_st1");
-//    _t_global_link = new PHTimer("_t_global_link");
-//    _t_global_kalman = new PHTimer("_t_global_kalman");
-//    _t_kalman = new PHTimer("_t_kalman");
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
@@ -274,6 +258,17 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
 
 #ifdef _DEBUG_ON
         cout << "Station " << i << ": " << xID << "  " << uID << "  " << vID << "  " << u_win[i] << endl;
+
+        cout
+				<< "x_span = " << x_span << endl
+				<< "sintheta_plane = " << sintheta_plane[uID] << endl
+				<< "u_sintheta = " << u_sintheta[i] << endl
+				<< "z_plane_u[i] - z_plane_x[i] = " << z_plane_u[i] - z_plane_x[i] << endl
+				<< "fabs(0.5*x_span*sintheta_plane[uID]) = " << fabs(0.5*x_span*sintheta_plane[uID]) << endl
+				<< "TX_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_costheta[i]) = " << TX_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_costheta[i]) << endl
+				<< "TY_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_sintheta[i]) = " << TY_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_sintheta[i]) << endl
+				<< "2.*spacing = " << 2.*spacing << endl
+				<< "u_factor[i] = " << u_factor[i] << endl;
 #endif
     }
 
@@ -355,6 +350,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
 		iter->second->reset();
 	}
+
+	_timers["event"]->restart();
 
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
@@ -525,6 +522,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
         strack->print();
     }
 #endif
+
+  	_timers["event"]->stop();
 
     return TFEXIT_SUCCESS;
 }
@@ -1203,6 +1202,12 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 
 #ifdef _DEBUG_ON
             LogInfo("V plane window:" << v_min << "  " << v_max);
+
+            std::cout
+						<< "v_win1 = " << v_win1 << std::endl
+						<< "v_win2 = " << v_win2 << std::endl
+						<< "v_win3 = " << v_win3 << std::endl
+						<< "2.*spacing_plane[hitAll[uiter->first].detectorID] = " << 2.*spacing_plane[hitAll[uiter->first].detectorID] << std::endl;
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
@@ -1990,8 +1995,8 @@ void KalmanPrgTrk::resolveLeftRight(KalmanTrack& kmtrk)
 }
 
 void KalmanPrgTrk::printTimers() {
-	std::cout <<"KalmanPrgTrk::printTimers: " << std::endl;
-	std::cout <<"================================================================" << std::endl;
+	std::cout <<"KalmanPrgTrk::printTimers: event: " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
+	std::cout << "================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
@@ -2000,7 +2005,7 @@ void KalmanPrgTrk::printTimers() {
 	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global Kalman               "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout <<"================================================================" << std::endl;
+	std::cout << "================================================================" << std::endl;
 }
 
 void KalmanPrgTrk::chi2fit(int n, double x[], double y[], double& a, double& b)
