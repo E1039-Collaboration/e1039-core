@@ -11,6 +11,7 @@ Created: 05-28-2013
 #include <phool/PHTimer.h>
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <cmath>
 
@@ -24,18 +25,15 @@ Created: 05-28-2013
 #include "TriggerRoad.h"
 
 //#define _DEBUG_ON
+#define _DEBUG_YUHW_
+
+#ifdef _DEBUG_YUHW_
+std::ofstream ktracker_log("ktracker.csv");
+#endif
 
 KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool flag)
 : verbosity(0),
 	enable_KF(flag)
-//	_t_st2(nullptr),
-//	_t_st3(nullptr),
-//	_t_st23(nullptr),
-//	_t_global(nullptr),
-//	_t_global_st1(nullptr),
-//	_t_global_link(nullptr),
-//	_t_global_kalman(nullptr),
-//	_t_kalman(nullptr)
 {
     using namespace std;
 
@@ -44,23 +42,27 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     cout << "========================================" << endl;
 #endif
 
+    _timers.insert(std::make_pair<std::string, PHTimer*>("event", new PHTimer("event")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
+
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit1", new PHTimer("st23_fit1")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_prop", new PHTimer("st23_prop")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit2", new PHTimer("st23_fit2")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_hodo", new PHTimer("st23_hodo")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_lr40", new PHTimer("st23_lr40")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_lr150", new PHTimer("st23_lr150")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_rm_hits", new PHTimer("st23_rm_hits")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_acc", new PHTimer("st23_acc")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("st23_reduce", new PHTimer("st23_reduce")));
+
     _timers.insert(std::make_pair<std::string, PHTimer*>("global", new PHTimer("global")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_st1", new PHTimer("global_st1")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
-    _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
 
-//    _t_st2 = new PHTimer("_t_st2");
-//    _t_st3 = new PHTimer("_t_st3");
-//    _t_st23 = new PHTimer("_t_st23");
-//    _t_global = new PHTimer("_t_global");
-//    _t_global_st1 = new PHTimer("_t_global_st1");
-//    _t_global_link = new PHTimer("_t_global_link");
-//    _t_global_kalman = new PHTimer("_t_global_kalman");
-//    _t_kalman = new PHTimer("_t_kalman");
+    _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
@@ -274,6 +276,17 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
 
 #ifdef _DEBUG_ON
         cout << "Station " << i << ": " << xID << "  " << uID << "  " << vID << "  " << u_win[i] << endl;
+
+        cout
+				<< "x_span = " << x_span << endl
+				<< "sintheta_plane = " << sintheta_plane[uID] << endl
+				<< "u_sintheta = " << u_sintheta[i] << endl
+				<< "z_plane_u[i] - z_plane_x[i] = " << z_plane_u[i] - z_plane_x[i] << endl
+				<< "fabs(0.5*x_span*sintheta_plane[uID]) = " << fabs(0.5*x_span*sintheta_plane[uID]) << endl
+				<< "TX_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_costheta[i]) = " << TX_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_costheta[i]) << endl
+				<< "TY_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_sintheta[i]) = " << TY_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_sintheta[i]) << endl
+				<< "2.*spacing = " << 2.*spacing << endl
+				<< "u_factor[i] = " << u_factor[i] << endl;
 #endif
     }
 
@@ -341,6 +354,10 @@ KalmanPrgTrk::~KalmanPrgTrk()
     if(enable_KF) delete kmfitter;
     delete minimizer[0];
     delete minimizer[1];
+
+#ifdef _DEBUG_YUHW_
+    ktracker_log.close();
+#endif
 }
 
 void KalmanPrgTrk::setRawEventDebug(SRawEvent* event_input)
@@ -355,6 +372,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
 		iter->second->reset();
 	}
+
+	_timers["event"]->restart();
 
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
@@ -526,6 +545,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 #endif
 
+  	_timers["event"]->stop();
+
     return TFEXIT_SUCCESS;
 }
 
@@ -610,10 +631,13 @@ void KalmanPrgTrk::buildBackPartialTracks()
                 }
             }
 
+            if(verbosity>2) _timers["st23_fit1"]->restart();
             //Apply a simple linear fit to get rough estimation of X-Z slope and intersection
             chi2fit(nHitsX2, z_fit, x_fit, a, b);
+            if(verbosity>2) _timers["st23_fit1"]->stop();
             if(fabs(a) > 2.*TX_MAX || fabs(b) > 2.*X0_MAX) continue;
 
+            if(verbosity>2) _timers["st23_prop"]->restart();
             //Project to proportional tubes to see if there is enough
             int nPropHits = 0;
             for(int i = 0; i < 4; ++i)
@@ -629,6 +653,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
                 }
                 if(nPropHits > 0) break;
             }
+            if(verbosity>2) _timers["st23_prop"]->stop();
             if(nPropHits == 0) continue;
 #endif
 
@@ -640,7 +665,17 @@ void KalmanPrgTrk::buildBackPartialTracks()
             LogInfo("Yield this combination:");
             tracklet_23.print();
 #endif
+            if(verbosity>2) _timers["st23_fit2"]->restart();
             fitTracklet(tracklet_23);
+            if(verbosity>2) _timers["st23_fit2"]->stop();
+#ifdef _DEBUG_YUHW_
+            ktracker_log
+						<< tracklet2->tx << ", "
+						<< tracklet3->tx << ", "
+						<< a  << ", "
+						<< b  << ", "
+						<< tracklet_23.chisq  << std::endl;
+#endif
             if(tracklet_23.chisq > 9000.)
             {
 #ifdef _DEBUG_ON
@@ -650,23 +685,31 @@ void KalmanPrgTrk::buildBackPartialTracks()
                 continue;
             }
 
+            if(verbosity>2) _timers["st23_hodo"]->restart();
             if(!hodoMask(tracklet_23))
             {
+            	if(verbosity>2) _timers["st23_hodo"]->stop();
 #ifdef _DEBUG_ON
-                LogInfo("Hodomasking failed!");
+            	LogInfo("Hodomasking failed!");
 #endif
-                continue;
+            	continue;
             }
 #ifdef _DEBUG_ON
             LogInfo("Hodomasking Scucess!");
 #endif
 
 #ifndef COARSE_MODE
+            if(verbosity>2) _timers["st23_lr40"]->restart();
             resolveLeftRight(tracklet_23, 40.);
+            if(verbosity>2) _timers["st23_lr40"]->stop();
+            if(verbosity>2) _timers["st23_lr150"]->restart();
             resolveLeftRight(tracklet_23, 150.);
+            if(verbosity>2) _timers["st23_lr150"]->stop();
 #endif
+            if(verbosity>2) _timers["st23_rm_hits"]->restart();
             ///Remove bad hits if needed
             removeBadHits(tracklet_23);
+            if(verbosity>2) _timers["st23_rm_hits"]->stop();
 
 #ifdef _DEBUG_ON
             LogInfo("New tracklet: ");
@@ -679,11 +722,13 @@ void KalmanPrgTrk::buildBackPartialTracks()
             LogInfo("Quality: " << acceptTracklet(tracklet_23));
 #endif
 
+            if(verbosity>2) _timers["st23_acc"]->restart();
             //If current tracklet is better than the best tracklet up-to-now
             if(acceptTracklet(tracklet_23) && tracklet_23 < tracklet_best)
             {
                 tracklet_best = tracklet_23;
             }
+            if(verbosity>2) _timers["st23_acc"]->stop();
 #ifdef _DEBUG_ON
             else
             {
@@ -692,7 +737,9 @@ void KalmanPrgTrk::buildBackPartialTracks()
 #endif
         }
 
+        if(verbosity>2) _timers["st23_reduce"]->restart();
         if(tracklet_best.isValid()) trackletsInSt[3].push_back(tracklet_best);
+        if(verbosity>2) _timers["st23_reduce"]->stop();
     }
 
     reduceTrackletList(trackletsInSt[3]);
@@ -732,7 +779,6 @@ void KalmanPrgTrk::buildGlobalTracks()
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
-            //_t_global_link->restart();
             Tracklet tracklet_best_prob, tracklet_best_vtx;
             for(std::list<Tracklet>::iterator tracklet1 = trackletsInSt[0].begin(); tracklet1 != trackletsInSt[0].end(); ++tracklet1)
             {
@@ -763,9 +809,7 @@ void KalmanPrgTrk::buildGlobalTracks()
 #if !defined(ALIGNMENT_MODE) && defined(_ENABLE_KF)
                 ///Set vertex information
                 _timers["global_kalman"]->restart();
-                //_t_global_kalman->restart();
                 SRecTrack recTrack = processOneTracklet(tracklet_global);
-                //_t_global_kalman->stop();
                 _timers["global_kalman"]->stop();
                 tracklet_global.chisq_vtx = recTrack.getChisqVertex();
 
@@ -791,7 +835,6 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 #endif
             }
-            //_t_global_link->stop();
             _timers["global_link"]->stop();
 
 
@@ -1203,6 +1246,12 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 
 #ifdef _DEBUG_ON
             LogInfo("V plane window:" << v_min << "  " << v_max);
+
+            std::cout
+						<< "v_win1 = " << v_win1 << std::endl
+						<< "v_win2 = " << v_win2 << std::endl
+						<< "v_win3 = " << v_win3 << std::endl
+						<< "2.*spacing_plane[hitAll[uiter->first].detectorID] = " << 2.*spacing_plane[hitAll[uiter->first].detectorID] << std::endl;
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
@@ -1990,17 +2039,27 @@ void KalmanPrgTrk::resolveLeftRight(KalmanTrack& kmtrk)
 }
 
 void KalmanPrgTrk::printTimers() {
-	std::cout <<"KalmanPrgTrk::printTimers: " << std::endl;
-	std::cout <<"================================================================" << std::endl;
+	std::cout <<"KalmanPrgTrk::printTimers: event: " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
+	std::cout << "================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_fit1                   "<<_timers["st23_fit1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_fit2                   "<<_timers["st23_fit2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_hodo                   "<<_timers["st23_hodo"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_lr40                   "<<_timers["st23_lr40"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_lr150                  "<<_timers["st23_lr150"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_rm_hits                "<<_timers["st23_rm_hits"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_acc                    "<<_timers["st23_acc"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_reduce                 "<<_timers["st23_reduce"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global St1                  "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "  Global Kalman               "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "    Link Kalman                 "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout <<"================================================================" << std::endl;
+	std::cout << "================================================================" << std::endl;
 }
 
 void KalmanPrgTrk::chi2fit(int n, double x[], double y[], double& a, double& b)

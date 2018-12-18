@@ -6,15 +6,13 @@
 #include <vector>
 #include <string>
 #include <map>
+
+#ifndef __CINT__
 #include <boost/array.hpp>
+#include <Geant4/G4ThreeVector.hh>
+#endif
 
 #include <TSpline.h>
-
-#include <Geant4/G4String.hh>
-#include <Geant4/G4ThreeVector.hh>
-
-//#include "DPMCRawEvent.h"
-//#include "DPVirtualHit.h"
 
 class PHG4Hit;
 class SQHit;
@@ -31,8 +29,10 @@ public:
 	//!calculates all the derived variables
 	void preCalculation();
 
+#ifndef __CINT__
 	//!intercepts with a 3-D straight line
 	bool intercept(double tx, double ty, double x0, double y0, G4ThreeVector& pos, double& w);
+#endif
 
 	//!@name X, Y, U, V conversion
 	//@{
@@ -56,8 +56,8 @@ public:
 
 public:
 	int detectorID;
-	G4String detectorGroupName;     //large detector group that this plane belongs to
-	G4String detectorName;          //its own specific name
+	std::string detectorGroupName;     //large detector group that this plane belongs to
+	std::string detectorName;          //its own specific name
 
 	//!@name geometric specifications
 	//@{
@@ -103,8 +103,11 @@ class DPDigitizer : public SubsysReco
 {
 public:
 	DPDigitizer(const std::string &name = "DPDigitizer", const int verbo = 0);
-
   virtual ~DPDigitizer();
+
+#ifndef __CINT__
+	int Init(PHCompositeNode *topNode);
+#endif
 
   //! module initialization
   int InitRun(PHCompositeNode *topNode);
@@ -119,10 +122,10 @@ public:
 	bool realize(SQHit& dHit);
 
 	//!get the detectorID by detectorName
-	int getDetectorID(G4String detectorName) { return map_detectorID[detectorName]; }
+	int getDetectorID(std::string detectorName) { return map_detectorID[detectorName]; }
 
 	//!get the detectorName by detectorID
-	G4String getDetectorName(int detectorID) { return digiPlanes[detectorID].detectorName; }
+	std::string getDetectorName(int detectorID) { return digiPlanes[detectorID].detectorName; }
 
 	//!Get the trigger level by detectorID
 	int getTriggerLv(int detectorID) { return digiPlanes[detectorID].triggerLv; }
@@ -136,13 +139,15 @@ public:
 private:
 
 	//!array of digi planes
-	boost::array<DPDigiPlane, NDETPLANES+1> digiPlanes;
+	//boost::array<DPDigiPlane, NDETPLANES+1> digiPlanes;
+
+	std::vector<DPDigiPlane> digiPlanes;
 
 	//!map from geant sensitive detector name to the list of detectorIDs
-	std::map<G4String, std::vector<int> > map_groupID;
+	std::map<std::string, std::vector<int> > map_groupID;
 
 	//!map from detectorName to detectorID
-	std::map<G4String, int> map_detectorID;
+	std::map<std::string, int> map_detectorID;
 
 	//!
 	std::map<std::string, std::string> map_g4name_group;

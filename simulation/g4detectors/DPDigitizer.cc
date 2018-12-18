@@ -27,7 +27,9 @@
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 
+#ifndef __CINT__
 #include <boost/lexical_cast.hpp>
+#endif
 
 #define LogDebug(exp)       std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
 
@@ -184,11 +186,12 @@ string DPDigitizer::toGroupName(string in) {
 	return "";
 }
 
-DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
-		SubsysReco(name),
-		p_geomSvc(nullptr)
+#ifndef __CINT__
+int DPDigitizer::Init(PHCompositeNode *topNode)
 {
-	Verbosity(verbo);
+	for(int i=0; i<NDETPLANES+1; ++i) {
+		digiPlanes.push_back(DPDigiPlane());
+	}
 
 	//init map_dname_group
 	map_dname_group["D1U"]      = "D1";
@@ -452,6 +455,16 @@ DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
       }
     }
   };
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+#endif
+
+DPDigitizer::DPDigitizer(const std::string &name, const int verbo) :
+		SubsysReco(name),
+		p_geomSvc(nullptr)
+{
+	Verbosity(verbo);
 }
 
 DPDigitizer::~DPDigitizer() {

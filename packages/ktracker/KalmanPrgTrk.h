@@ -107,7 +107,8 @@ public:
     std::list<SRecTrack>& getSRecTracks() { return stracks; }
     std::list<PropSegment>& getPropSegments(int i) { return propSegs[i]; }
 
-    ///Tool, a simple-minded chi square fit
+    /// Tool, a simple-minded chi square fit
+    /// Y = a*X + b
     void chi2fit(int n, double x[], double y[], double& a, double& b);
 
 private:
@@ -205,15 +206,6 @@ private:
     const bool enable_KF;
 
     std::map< std::string, PHTimer* > _timers;
-
-//    PHTimer* _t_st2;
-//    PHTimer* _t_st3;
-//    PHTimer* _t_st23;
-//    PHTimer* _t_global;
-//    PHTimer* _t_global_st1;
-//    PHTimer* _t_global_link;
-//    PHTimer* _t_global_kalman;
-//    PHTimer* _t_kalman;
 
 };
 
