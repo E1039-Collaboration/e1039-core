@@ -116,6 +116,8 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 	std::map<int, int> parID_nhits_hodo;
 	std::map<int, int> parID_nhits_prop;
 
+	std::map<int, std::map<int, int> > parID_detid_elmid;
+
   typedef std::tuple<int, int> ParDetPair;
   std::map<ParDetPair, int> parID_detID_ihit;
 
@@ -138,6 +140,15 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       	int track_id = hit->get_track_id();
       	int det_id = hit->get_detector_id();
       	parID_detID_ihit[std::make_tuple(track_id, det_id)] = ihit;
+
+      	auto detid_elmid_iter = parID_detid_elmid.find(track_id);
+      	if(detid_elmid_iter != parID_detid_elmid.end()) {
+      		detid_elmid_iter->second.insert(std::pair<int, int>(det_id, hit->get_element_id()));
+      	} else {
+      		std::map<int, int> detid_elmid;
+      		detid_elmid.insert(std::pair<int, int>(det_id, hit->get_element_id()));
+      		parID_detid_elmid[track_id] = detid_elmid;
+      	}
 
       	if(hit->get_detector_id() >= 1 and hit->get_detector_id() <=30) {
         	if(parID_nhits_dc.find(track_id)!=parID_nhits_dc.end())
@@ -320,6 +331,16 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   		gndc[n_particles] = parID_nhits_dc[parID];
   		gnhodo[n_particles] = parID_nhits_hodo[parID];
   		gnprop[n_particles] = parID_nhits_prop[parID];
+
+  		for(auto detid_elmid : parID_detid_elmid[parID]) {
+  			int detid = detid_elmid.first;
+  			int elmid = detid_elmid.second;
+  			if(detid>=55) {
+  				LogWarning("detid>=55");
+  				continue;
+  			}
+  			gelmid[n_particles][detid] = elmid;
+  		}
 
   		if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("particle eval finished");
 
@@ -506,6 +527,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gndc",          gndc,                "gndc[n_particles]/I");
   _tout->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
   _tout->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
+  _tout->Branch("gelmid",        gelmid,              "gelmid[n_particles][54]/I");
 
   _tout->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
   _tout->Branch("charge",        charge,              "charge[n_particles]/I");
@@ -582,6 +604,10 @@ int TrkEval::ResetEvalVars() {
     gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
+
+    for(int j=0; j<55; ++j) {
+    	gelmid[i][j] = std::numeric_limits<int>::max();
+    }
 
     ntruhits[i]   = std::numeric_limits<int>::max();
     charge[i]     = std::numeric_limits<int>::max();

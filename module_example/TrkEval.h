@@ -145,6 +145,8 @@ private:
 	float py_st1[1000];
 	float pz_st1[1000];
 
+	int gelmid[1000][55];
+
 	int gndimu;
 	float dimu_gpx[1000];
 	float dimu_gpy[1000];
