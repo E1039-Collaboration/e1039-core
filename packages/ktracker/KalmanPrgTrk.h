@@ -15,6 +15,7 @@ Created: 08-27-2018
 #include <list>
 #include <vector>
 #include <map>
+#include <set>
 
 #include <Math/Factory.h>
 #include <Math/Minimizer.h>
@@ -31,6 +32,9 @@ class TGeoManager;
 
 class PHField;
 class PHTimer;
+
+class TFile;
+class TNtuple;
 
 class KalmanPrgTrk
 {
@@ -203,9 +207,44 @@ private:
     JobOptsSvc* p_jobOptsSvc;
 
     //Flag for enable Kalman fitting
-    const bool enable_KF;
+    const bool _enable_KF;
+
+    // Dictionary search
+    const bool _enable_DS;
+
+    typedef std::tuple<unsigned int, unsigned int> TrackletKey;
+    const TrackletKey _error_key;
+
+    typedef std::tuple<TrackletKey, TrackletKey> PartTrackKey;
+
+    void print(TrackletKey key);
+    void print(PartTrackKey key);
+
+    enum STATION { DC1, DC2, DC3p, DC3m};
+
+    std::set<TrackletKey> _db_st2;
+    std::set<TrackletKey> _db_st3;
+    std::set<PartTrackKey> _db_st23;
+
+    int LoadPatternDB (const std::string fname);
+
+    TrackletKey EncodeTrackletKey (
+    		STATION,
+    		const unsigned int X, const unsigned int Xp,
+				const unsigned int U, const unsigned int Up,
+				const unsigned int V, const unsigned int Vp);
+
+
+  	std::map<unsigned int, unsigned int> _detid_view;
+    TrackletKey GetTrackletKey (const Tracklet tracklet, const STATION station);
 
     std::map< std::string, PHTimer* > _timers;
+
+    /// Analysis mode
+    bool _ana_mode;
+    TFile *_fana;
+    TNtuple *_tana;
+
 
 };
 
