@@ -670,8 +670,8 @@ void KalmanPrgTrk::buildBackPartialTracks()
             if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
 
             // Pattern dictionary search
-            _timers["search_db"]->restart();
             if(_enable_DS) {
+              _timers["search_db"]->restart();
             	auto key2  = GetTrackletKey(*tracklet2, DC2);
             	auto key3p = GetTrackletKey(*tracklet3, DC3p);
             	auto key3m = GetTrackletKey(*tracklet3, DC3m);
@@ -683,9 +683,9 @@ void KalmanPrgTrk::buildBackPartialTracks()
 
             	print(key23);
 
+              _timers["search_db"]->stop();
             	if(_db_st23.find(key23)==_db_st23.end()) continue;
             }
-            _timers["search_db"]->stop();
 
 #ifndef ALIGNMENT_MODE
             //Extract the X hits from station-2 tracke
@@ -2274,6 +2274,13 @@ int KalmanPrgTrk::LoadPatternDB(const std::string fname) {
 		<< " St3 size: " << _db_st3.size()
 		<< " St23 size: " << _db_st23.size()
 		<< std::endl;
+
+    int i=0;
+    for (auto iter : _db_st23) {
+      print(iter);
+      ++i;
+      //if(i>100) break;
+    }
 	}
 
 	return 0;
