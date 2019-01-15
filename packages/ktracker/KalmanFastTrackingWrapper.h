@@ -84,6 +84,22 @@ public:
 		_geom_file_name = geomFileName;
 	}
 
+	bool is_enable_DS() const {
+		return _enable_DS;
+	}
+
+	void set_enable_DS(bool enableDs) {
+		_enable_DS = enableDs;
+	}
+
+	bool is_enable_KF() const {
+		return _enable_KF;
+	}
+
+	void set_enable_KF(bool enableKf) {
+		_enable_KF = enableKf;
+	}
+
 private:
 
 	int InitField(PHCompositeNode *topNode);
@@ -93,6 +109,9 @@ private:
 	int MakeNodes(PHCompositeNode *topNode);
 
 	int GetNodes(PHCompositeNode *topNode);
+
+	bool _enable_KF;
+	bool _enable_DS;
 
 	SRawEvent* BuildSRawEvent();
 

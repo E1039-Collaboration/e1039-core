@@ -39,7 +39,12 @@ class TNtuple;
 class KalmanPrgTrk
 {
 public:
-    explicit KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool flag = true);
+    explicit KalmanPrgTrk(
+    		const PHField* field,
+				const TGeoManager *geom,
+				bool enable_KF = true,
+				bool enable_DS = false);
+
     ~KalmanPrgTrk();
 
     //

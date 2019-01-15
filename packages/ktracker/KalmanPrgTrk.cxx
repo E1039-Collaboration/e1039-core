@@ -34,10 +34,14 @@ Created: 05-28-2013
 std::ofstream ktracker_log("ktracker.csv");
 #endif
 
-KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool flag)
+KalmanPrgTrk::KalmanPrgTrk(
+		const PHField* field,
+		const TGeoManager *geom,
+		bool enable_KF,
+		bool enable_DS)
 : verbosity(10),
-	_enable_KF(flag),
-	_enable_DS(false),
+	_enable_KF(enable_KF),
+	_enable_DS(enable_DS),
 	_error_key(std::make_tuple(0,0))
 {
     using namespace std;
