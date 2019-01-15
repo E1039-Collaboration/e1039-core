@@ -2303,12 +2303,12 @@ int KalmanPrgTrk::LoadPatternDB(const std::string fname) {
 		<< " St23 size: " << _db_st23.size()
 		<< std::endl;
 
-    int i=0;
-    for (auto iter : _db_st23) {
-      print(iter);
-      ++i;
-      //if(i>100) break;
-    }
+    //int i=0;
+    //for (auto iter : _db_st23) {
+    //  print(iter);
+    //  ++i;
+    //  //if(i>100) break;
+    //}
 	}
 
 	return 0;
