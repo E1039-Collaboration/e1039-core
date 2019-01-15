@@ -100,17 +100,17 @@ KalmanPrgTrk::KalmanPrgTrk(
 
   		_detid_view.insert(std::make_pair(22, 0));
   		_detid_view.insert(std::make_pair(21, 1));
-  		_detid_view.insert(std::make_pair(20, 2));
-  		_detid_view.insert(std::make_pair(19, 3));
-  		_detid_view.insert(std::make_pair(24, 4));
-  		_detid_view.insert(std::make_pair(23, 5));
+  		_detid_view.insert(std::make_pair(23, 2));
+  		_detid_view.insert(std::make_pair(24, 3));
+  		_detid_view.insert(std::make_pair(20, 4));
+  		_detid_view.insert(std::make_pair(19, 5));
 
   		_detid_view.insert(std::make_pair(28, 0));
   		_detid_view.insert(std::make_pair(27, 1));
-  		_detid_view.insert(std::make_pair(26, 2));
-  		_detid_view.insert(std::make_pair(25, 3));
-  		_detid_view.insert(std::make_pair(30, 4));
-  		_detid_view.insert(std::make_pair(29, 5));
+  		_detid_view.insert(std::make_pair(30, 2));
+  		_detid_view.insert(std::make_pair(29, 3));
+  		_detid_view.insert(std::make_pair(26, 4));
+  		_detid_view.insert(std::make_pair(25, 5));
     }
     _timers["load_db"]->stop();
 
@@ -2309,9 +2309,9 @@ KalmanPrgTrk::TrackletKey KalmanPrgTrk::EncodeTrackletKey(
 	k1 |= (X  << 16);
 	k1 |= (U  << 8);
 	k1 |= (V  << 0);
-	k2 |= (Xp << 16);
-	k2 |= (Up << 8);
-	k2 |= (Vp << 0);
+//	k2 |= (Xp << 16);
+//	k2 |= (Up << 8);
+//	k2 |= (Vp << 0);
 
 	return std::make_tuple(k1, k2);
 }
