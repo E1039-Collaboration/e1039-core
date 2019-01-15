@@ -2251,23 +2251,29 @@ int KalmanPrgTrk::LoadPatternDB(const std::string fname) {
 			unsigned int D3mUp  = elmid[ipar][29];
 			unsigned int D3mU   = elmid[ipar][30];
 
-			// Multi key3
-			for (int iX = -1; iX<2; ++iX ) {
-				for (int iU = -1; iU<2; ++iU ) {
-					for (int iV = -1; iV<2; ++iV ) {
-						TrackletKey key2  = EncodeTrackletKey(DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
-						TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX+iX, D3pXp, D3pU+iU, D3pUp, D3pV+iV, D3pVp);
-						TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX+iX, D3mXp, D3mU+iU, D3mUp, D3mV+iV, D3mVp);
+			// Multi key
+			for (int iX2 = -1; iX2<2; ++iX2 ) {
+				for (int iU2 = -1; iU2<2; ++iU2 ) {
+					for (int iV2 = -1; iV2<2; ++iV2 ) {
+						for (int iX3 = -1; iX3<2; ++iX3 ) {
+							for (int iU3 = -1; iU3<2; ++iU3 ) {
+								for (int iV3 = -1; iV3<2; ++iV3 ) {
+									TrackletKey key2  = EncodeTrackletKey(DC2,  D2X +iX2, D2Xp,  D2U +iU2, D2Up,  D2V +iV2, D2Vp);
+									TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX+iX3, D3pXp, D3pU+iU3, D3pUp, D3pV+iV3, D3pVp);
+									TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX+iX3, D3mXp, D3mU+iU3, D3mUp, D3mV+iV3, D3mVp);
 
-						if(key2  != _error_key) _db_st2.insert(key2);
-						if(key3p != _error_key) _db_st3.insert(key3p);
-						if(key3m != _error_key) _db_st3.insert(key3m);
+									if(key2  != _error_key) _db_st2.insert(key2);
+									if(key3p != _error_key) _db_st3.insert(key3p);
+									if(key3m != _error_key) _db_st3.insert(key3m);
 
-						if(key2  != _error_key and key3p != _error_key)
-							_db_st23.insert(std::make_tuple(key2,key3p));
+									if(key2  != _error_key and key3p != _error_key)
+										_db_st23.insert(std::make_tuple(key2,key3p));
 
-						if(key2  != _error_key and key3m != _error_key)
-							_db_st23.insert(std::make_tuple(key2,key3m));
+									if(key2  != _error_key and key3m != _error_key)
+										_db_st23.insert(std::make_tuple(key2,key3m));
+								}
+							}
+						}
 					}
 				}
 			}
