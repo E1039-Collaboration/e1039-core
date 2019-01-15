@@ -16,6 +16,7 @@ Created: 08-27-2018
 #include <vector>
 #include <map>
 #include <set>
+#include <tuple>
 
 #include <Math/Factory.h>
 #include <Math/Minimizer.h>
@@ -217,6 +218,7 @@ private:
     // Dictionary search
     const bool _enable_DS;
 
+    //typedef std::tuple<unsigned char, unsigned char, unsigned char, unsigned char> TrackletKey;
     typedef std::tuple<unsigned int, unsigned int> TrackletKey;
     const TrackletKey _error_key;
 
@@ -230,6 +232,16 @@ private:
     std::set<TrackletKey> _db_st2;
     std::set<TrackletKey> _db_st3;
     std::set<PartTrackKey> _db_st23;
+
+//    struct TrackletKeyComp {
+//    	bool operator()(const TrackletKey& k1, const TrackletKey& k2) const {
+//    		if (std::get<0>(k1) < std::get<0>(k2)) return true;
+//    		else if (std::get<0>(k1) < std::get<0>(k2)-1) return true;
+//    		else if (std::get<1>(k1) < std::get<1>(k2)-1) return true;
+//    		else if (std::get<2>(k1) < std::get<2>(k2)-1) return true;
+//    		return false;
+//    	}
+//    };
 
     int LoadPatternDB (const std::string fname);
 

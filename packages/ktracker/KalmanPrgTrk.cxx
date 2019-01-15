@@ -2251,19 +2251,41 @@ int KalmanPrgTrk::LoadPatternDB(const std::string fname) {
 			unsigned int D3mUp  = elmid[ipar][29];
 			unsigned int D3mU   = elmid[ipar][30];
 
-			TrackletKey key2  = EncodeTrackletKey(DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
-			TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX, D3pXp, D3pU, D3pUp, D3pV, D3pVp);
-			TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX, D3mXp, D3mU, D3mUp, D3mV, D3mVp);
+			// Multi key3
+			for (int iX = -1; iX<2; ++iX ) {
+				for (int iU = -1; iU<2; ++iU ) {
+					for (int iV = -1; iV<2; ++iV ) {
+						TrackletKey key2  = EncodeTrackletKey(DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
+						TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX+iX, D3pXp, D3pU+iU, D3pUp, D3pV+iV, D3pVp);
+						TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX+iX, D3mXp, D3mU+iU, D3mUp, D3mV+iV, D3mVp);
 
-			if(key2  != _error_key) _db_st2.insert(key2);
-			if(key3p != _error_key) _db_st3.insert(key3p);
-			if(key3m != _error_key) _db_st3.insert(key3m);
+						if(key2  != _error_key) _db_st2.insert(key2);
+						if(key3p != _error_key) _db_st3.insert(key3p);
+						if(key3m != _error_key) _db_st3.insert(key3m);
 
-			if(key2  != _error_key and key3p != _error_key)
-				_db_st23.insert(std::make_tuple(key2,key3p));
+						if(key2  != _error_key and key3p != _error_key)
+							_db_st23.insert(std::make_tuple(key2,key3p));
 
-			if(key2  != _error_key and key3m != _error_key)
-				_db_st23.insert(std::make_tuple(key2,key3m));
+						if(key2  != _error_key and key3m != _error_key)
+							_db_st23.insert(std::make_tuple(key2,key3m));
+					}
+				}
+			}
+
+			// Single key
+//			TrackletKey key2  = EncodeTrackletKey(DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
+//			TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX, D3pXp, D3pU, D3pUp, D3pV, D3pVp);
+//			TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX, D3mXp, D3mU, D3mUp, D3mV, D3mVp);
+//
+//			if(key2  != _error_key) _db_st2.insert(key2);
+//			if(key3p != _error_key) _db_st3.insert(key3p);
+//			if(key3m != _error_key) _db_st3.insert(key3m);
+//
+//			if(key2  != _error_key and key3p != _error_key)
+//				_db_st23.insert(std::make_tuple(key2,key3p));
+//
+//			if(key2  != _error_key and key3m != _error_key)
+//				_db_st23.insert(std::make_tuple(key2,key3m));
 		}
 	}
 
