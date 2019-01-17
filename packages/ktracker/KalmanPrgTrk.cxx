@@ -7,6 +7,13 @@ Author: Kun Liu, liuk@fnal.gov
 Created: 05-28-2013
 */
 
+
+//#include "KalmanFitter.h"
+#include "KalmanPrgTrk.h"
+#include "TriggerRoad.h"
+#include "PatternDBUtil.h"
+
+
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
 
@@ -22,10 +29,6 @@ Created: 05-28-2013
 #include <TMatrixD.h>
 #include <TFile.h>
 #include <TNtuple.h>
-
-//#include "KalmanFitter.h"
-#include "KalmanPrgTrk.h"
-#include "TriggerRoad.h"
 
 //#define _DEBUG_ON
 #define _DEBUG_YUHW_
@@ -66,6 +69,7 @@ KalmanPrgTrk::KalmanPrgTrk(
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_acc", new PHTimer("st23_acc")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_reduce", new PHTimer("st23_reduce")));
 
+    _timers.insert(std::make_pair<std::string, PHTimer*>("build_db", new PHTimer("build_db")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("load_db", new PHTimer("load_db")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("search_db", new PHTimer("search_db")));
 
@@ -87,8 +91,21 @@ KalmanPrgTrk::KalmanPrgTrk(
     }
 
     //Load Patter DB from file
+    PatternDBUtil::Verbosity(10);
+    _timers["build_db"]->restart();
+    PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB.root");
+    _timers["build_db"]->stop();
     _timers["load_db"]->restart();
-    if(_enable_DS) {
+    PatternDB* pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
+    _timers["load_db"]->stop();
+
+  	std::cout <<"KalmanPrgTrk::KalmanPrgTrk: St23 size: "<< pattern_db->St23.size() << std::endl;
+  	std::cout << "================================================================" << std::endl;
+  	std::cout << "Build DB                    "<<_timers["build_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+  	std::cout << "Load DB                     "<<_timers["load_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+  	std::cout << "================================================================" << std::endl;
+
+  	if(_enable_DS) {
     	LoadPatternDB("pattern_db.root");
 
   		_detid_view.insert(std::make_pair(16, 0));
@@ -112,7 +129,6 @@ KalmanPrgTrk::KalmanPrgTrk(
   		_detid_view.insert(std::make_pair(26, 4));
   		_detid_view.insert(std::make_pair(25, 5));
     }
-    _timers["load_db"]->stop();
 
     //Initialize minuit minimizer
     minimizer[0] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Simplex");
@@ -2156,7 +2172,6 @@ void KalmanPrgTrk::printTimers() {
 	std::cout << "  st23_reduce                 "<<_timers["st23_reduce"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 
-	std::cout << "Load DB                     "<<_timers["load_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Search DB                   "<<_timers["search_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 
 	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
