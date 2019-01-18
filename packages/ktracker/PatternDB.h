@@ -31,6 +31,27 @@ public:
 		return false;
 	}
 
+	friend ostream & operator << (ostream &out, const TrackletKey &key) {
+		std::cout
+		<<"TrackletKey: "
+		<< " {"
+		<< ((key.k0>>24) & 255) << ", "
+		<< ((key.k0>>16) & 255) << ", "
+		<< ((key.k0>>8) & 255) << ", "
+		<< ((key.k0) & 255)
+		<< "} "
+		<< " {"
+		<< ((key.k1>>24) & 255) << ", "
+		<< ((key.k1>>16) & 255) << ", "
+		<< ((key.k1>>8) & 255) << ", "
+		<< ((key.k1) & 255)
+		<< "} "
+		<< " {" << key.k0 << ", " << key.k1 << "} "
+		<< std::endl;
+
+		return out;
+	}
+
 	ClassDef(TrackletKey, 1);
 };
 
@@ -49,6 +70,16 @@ public:
 		return false;
 	}
 
+	friend ostream & operator << (ostream &out, const PartTrackKey &key) {
+		std::cout
+		<<"PartTrackKey: " << std::endl
+		<< key.k0
+		<< key.k1
+		<< std::endl;
+
+		return out;
+	}
+
 	ClassDef(PartTrackKey, 1);
 };
 
@@ -58,7 +89,6 @@ public:
 
   //typedef std::tuple<unsigned int, unsigned int> TrackletKey;
   //typedef std::tuple<TrackletKey, TrackletKey> PartTrackKey;
-
 
   const static TrackletKey ERR_KEY;
 
@@ -73,8 +103,8 @@ public:
   virtual int               isValid() const;
   virtual PatternDB*        Clone() const {return (new PatternDB(*this));}
 
-  static void print(const TrackletKey &k);
-  static void print(const PartTrackKey &k);
+  //static void print(const TrackletKey &k);
+  //static void print(const PartTrackKey &k);
 
   void print();
 

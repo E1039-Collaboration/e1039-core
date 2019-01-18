@@ -9,6 +9,30 @@
 
 int PatternDBUtil::verbosity = 0;
 
+
+std::map<unsigned int, unsigned int> PatternDBUtil::_detid_view = {
+		{16, 0},
+		{15, 1},
+		{17, 2},
+		{18, 3},
+		{13, 4},
+		{14, 5},
+
+		{22, 0},
+		{21, 1},
+		{23, 2},
+		{24, 3},
+		{20, 4},
+		{19, 5},
+
+		{28, 0},
+		{27, 1},
+		{30, 2},
+		{29, 3},
+		{26, 4},
+		{25, 5}
+};
+
 int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fout) {
 
 	if(verbosity >= 2) {
@@ -170,4 +194,36 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 
 	//return std::make_tuple(k1, k2);
 	return TrackletKey(k1, k2);
+}
+
+TrackletKey PatternDBUtil::GetTrackletKey(
+		const Tracklet tracklet,
+		const PatternDB::STATION station) {
+
+	if(station > PatternDB::DC3m or station < PatternDB::DC2) return PatternDB::ERR_KEY;
+
+	std::vector<unsigned int> elmids;
+	elmids.resize(6);
+
+	for (auto ptr_hit = tracklet.hits.begin();
+			ptr_hit != tracklet.hits.end(); ++ptr_hit) {
+		auto hit = &ptr_hit->hit;
+		if (hit->index < 0) continue;
+		unsigned int det_id = hit->detectorID;
+		if(station==PatternDB::DC2  and !(det_id>=13 and det_id<=18)) continue;
+		if(station==PatternDB::DC3p and !(det_id>=19 and det_id<=24)) continue;
+		if(station==PatternDB::DC3m and !(det_id>=25 and det_id<=30)) continue;
+
+		elmids[_detid_view[det_id]] = hit->elementID;
+	}
+
+	return EncodeTrackletKey(
+			station,
+			elmids[0],
+			elmids[1],
+			elmids[2],
+			elmids[3],
+			elmids[4],
+			elmids[5]
+			);
 }

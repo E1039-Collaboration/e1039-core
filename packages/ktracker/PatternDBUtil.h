@@ -11,6 +11,9 @@ Created: 08-27-2018
 #define _PatternDBUtil_H
 
 #include "PatternDB.h"
+#include "FastTracklet.h"
+
+#include <map>
 
 class PatternDBUtil
 {
@@ -25,6 +28,10 @@ class PatternDBUtil
   		const unsigned int X, const unsigned int Xp,
 			const unsigned int U, const unsigned int Up,
 			const unsigned int V, const unsigned int Vp);
+
+	static TrackletKey GetTrackletKey(
+			const Tracklet tracklet,
+			const PatternDB::STATION station);
 
 	static int Verbosity() {
 		return PatternDBUtil::verbosity;
@@ -41,6 +48,8 @@ class PatternDBUtil
 
 
 	private:
+
+	static std::map<unsigned int, unsigned int> _detid_view;
 
 	static int verbosity;
 };

@@ -28,6 +28,7 @@ Created: 08-27-2018
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
+#include "PatternDB.h"
 
 class TGeoManager;
 
@@ -218,6 +219,7 @@ private:
     // Dictionary search
     const bool _enable_DS;
 
+    /*
     //typedef std::tuple<unsigned char, unsigned char, unsigned char, unsigned char> TrackletKey;
     typedef std::tuple<unsigned int, unsigned int> TrackletKey;
     const TrackletKey _error_key;
@@ -233,16 +235,6 @@ private:
     std::set<TrackletKey> _db_st3;
     std::set<PartTrackKey> _db_st23;
 
-//    struct TrackletKeyComp {
-//    	bool operator()(const TrackletKey& k1, const TrackletKey& k2) const {
-//    		if (std::get<0>(k1) < std::get<0>(k2)) return true;
-//    		else if (std::get<0>(k1) < std::get<0>(k2)-1) return true;
-//    		else if (std::get<1>(k1) < std::get<1>(k2)-1) return true;
-//    		else if (std::get<2>(k1) < std::get<2>(k2)-1) return true;
-//    		return false;
-//    	}
-//    };
-
     int LoadPatternDB (const std::string fname);
 
     TrackletKey EncodeTrackletKey (
@@ -252,8 +244,12 @@ private:
 				const unsigned int V, const unsigned int Vp);
 
 
-  	std::map<unsigned int, unsigned int> _detid_view;
     TrackletKey GetTrackletKey (const Tracklet tracklet, const STATION station);
+
+  	std::map<unsigned int, unsigned int> _detid_view;
+  	*/
+
+  	PatternDB* _pattern_db;
 
     std::map< std::string, PHTimer* > _timers;
 
