@@ -121,7 +121,7 @@ public:
 
   const static TrackletKey ERR_KEY;
 
-  enum STATION { DC1, DC2, DC3p, DC3m};
+  enum STATION { DC1, DC2, DC3p, DC3m, ERROR_STATION};
 
 	PatternDB();
   virtual ~PatternDB() {}

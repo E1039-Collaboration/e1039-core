@@ -1420,6 +1420,31 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
+            	if(_enable_DS) {
+            		bool matched = false;
+
+            		int X = hitAll[xiter->first].elementID;
+            		int U = hitAll[uiter->first].elementID;
+            		int V = hitAll[viter->first].elementID;
+
+            		PatternDB::STATION station = PatternDB::ERROR_STATION;
+            		if(stationID==2) station = PatternDB::DC1;
+            		if(stationID==3) station = PatternDB::DC2;
+            		if(stationID==4) station = PatternDB::DC3p;
+            		if(stationID==5) station = PatternDB::DC3m;
+
+            		TrackletKey key = PatternDBUtil::EncodeTrackletKey(station, X, 0, U, 0, V, 0);
+
+            		if(station == PatternDB::DC1
+            				and _pattern_db->St1.find(key)!=_pattern_db->St1.end()) matched = true;
+            		if(station == PatternDB::DC2
+            				and _pattern_db->St2.find(key)!=_pattern_db->St2.end()) matched = true;
+            		if( ( station == PatternDB::DC3p or station == PatternDB::DC3m )
+            				and _pattern_db->St3.find(key)!=_pattern_db->St3.end()) matched = true;
+
+            		if(!matched) continue;
+            	}
+
                 double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
 #ifdef _DEBUG_ON
                 LogInfo("Trying V hits " << viter->first << "  " << viter->second << "  " << hitAll[viter->first].elementID << " at " << v_pos);
