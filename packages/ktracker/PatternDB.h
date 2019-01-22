@@ -74,13 +74,42 @@ public:
 		std::cout
 		<<"PartTrackKey: " << std::endl
 		<< key.k0
-		<< key.k1
-		<< std::endl;
+		<< key.k1;
 
 		return out;
 	}
 
 	ClassDef(PartTrackKey, 1);
+};
+
+class GlobTrackKey : public TObject{
+public:
+	GlobTrackKey(): k0 (TrackletKey()), k1(TrackletKey()), k2(TrackletKey()) {}
+	GlobTrackKey(const TrackletKey & i0, const TrackletKey & i1, const TrackletKey & i2) : k0(i0), k1(i1), k2(i2) {}
+	TrackletKey k0;
+	TrackletKey k1;
+	TrackletKey k2;
+
+	bool operator == (const GlobTrackKey & k) const {if (k0==k.k0 and k1==k.k1 and k2==k.k2) return true; return false;}
+	bool operator != (const GlobTrackKey & k) const {if (k0==k.k0 and k1==k.k1 and k2==k.k2) return false; return true;}
+	bool operator < (const GlobTrackKey & k) const {
+		if (k0<k.k0) return true;
+		else if(k0==k.k0 and k1<k.k1) return true;
+		else if(k0==k.k0 and k1==k.k1 and k2<k.k2) return true;
+		return false;
+	}
+
+	friend ostream & operator << (ostream &out, const GlobTrackKey &key) {
+		std::cout
+		<<"GlobTrackKey: " << std::endl
+		<< key.k0
+		<< key.k1
+		<< key.k2;
+
+		return out;
+	}
+
+	ClassDef(GlobTrackKey, 1);
 };
 
 class PatternDB : public PHObject {
@@ -111,6 +140,7 @@ public:
   std::set<TrackletKey>     St2;
   std::set<TrackletKey>     St3;
   std::set<PartTrackKey>    St23;
+  std::set<GlobTrackKey>    St123;
 
   ClassDef(PatternDB, 1);
 };
