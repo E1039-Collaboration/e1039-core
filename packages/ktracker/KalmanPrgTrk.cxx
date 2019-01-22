@@ -50,6 +50,7 @@ KalmanPrgTrk::KalmanPrgTrk(
 #if _DBIMP_ == 1
 , _error_key(std::make_tuple(0,0))
 #endif
+, _pattern_db(nullptr)
 {
     using namespace std;
 
@@ -121,13 +122,21 @@ KalmanPrgTrk::KalmanPrgTrk(
   		_detid_view.insert(std::make_pair(26, 4));
   		_detid_view.insert(std::make_pair(25, 5));
 #elif _DBIMP_ == 2
-			PatternDBUtil::Verbosity(10);
-			_timers["build_db"]->restart();
-			PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB.root");
-			_timers["build_db"]->stop();
 			_timers["load_db"]->restart();
 			_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
 			_timers["load_db"]->stop();
+			if(_pattern_db) {
+				std::cout <<"KalmanPrgTrk::KalmanPrgTrk: DB loaded. St23 size: "<< _pattern_db->St23.size() << std::endl;
+			} else {
+				std::cout <<"KalmanPrgTrk::KalmanPrgTrk: DB NOT loaded. Try to build. " << std::endl;
+				PatternDBUtil::Verbosity(10);
+				_timers["build_db"]->restart();
+				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB.root");
+				_timers["build_db"]->stop();
+				_timers["load_db"]->restart();
+				_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
+				_timers["load_db"]->stop();
+			}
 #endif
 
 			std::cout <<"KalmanPrgTrk::KalmanPrgTrk: St23 size: "<< _pattern_db->St23.size() << std::endl;
