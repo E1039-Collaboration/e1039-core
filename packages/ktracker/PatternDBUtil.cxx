@@ -6,6 +6,7 @@
 
 #define LogInfo(message) std::cout << "DEBUG: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
 
+#define _DEBUG_
 
 int PatternDBUtil::verbosity = 0;
 
@@ -35,6 +36,18 @@ std::map<unsigned int, unsigned int> PatternDBUtil::_detid_view = {
 
 int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fout) {
 
+#ifdef _DEBUG_
+	TFile *feval = TFile::Open("PatternDBUtilEval.root","recreate");
+	TTree *Teval = new TTree("T","PatternDBUtilEval");
+	int ntrack = 0;
+	float acc_prob = 0;
+	Teval->Branch("ntrack",   &ntrack,   "ntrack/I");
+	Teval->Branch("acc_prob", &acc_prob, "acc_prob/F");
+
+	int nacc = 0;
+	const int interval = 1000;
+#endif
+
 	if(verbosity >= 2) {
 		LogInfo("PatternDBUtil::BuildPatternDB from " << fin);
 	}
@@ -59,8 +72,14 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 	PatternDB db;
 
+#ifdef _DEBUG_
+	ntrack = 0;
+	nacc = 0;
+#endif
+
 	for(int ientry=0;ientry<T->GetEntries();++ientry) {
 		T->GetEntry(ientry);
+
 		for(int ipar=0; ipar<n_particles; ++ipar) {
 			unsigned int D2V  = elmid[ipar][13];
 			unsigned int D2Vp = elmid[ipar][14];
@@ -84,48 +103,62 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 			unsigned int D3mU   = elmid[ipar][30];
 
 			// Multi key
-			for (int iX2 = -1; iX2<2; ++iX2 ) {
-				for (int iU2 = -1; iU2<2; ++iU2 ) {
-					for (int iV2 = -1; iV2<2; ++iV2 ) {
-						for (int iX3 = -1; iX3<2; ++iX3 ) {
-							for (int iU3 = -1; iU3<2; ++iU3 ) {
-								for (int iV3 = -1; iV3<2; ++iV3 ) {
-									TrackletKey key2  = EncodeTrackletKey(PatternDB::DC2,  D2X +iX2, D2Xp,  D2U +iU2, D2Up,  D2V +iV2, D2Vp);
-									TrackletKey key3p = EncodeTrackletKey(PatternDB::DC3p, D3pX+iX3, D3pXp, D3pU+iU3, D3pUp, D3pV+iV3, D3pVp);
-									TrackletKey key3m = EncodeTrackletKey(PatternDB::DC3m, D3mX+iX3, D3mXp, D3mU+iU3, D3mUp, D3mV+iV3, D3mVp);
+//			for (int iX2 = -1; iX2<2; ++iX2 ) {
+//				for (int iU2 = -1; iU2<2; ++iU2 ) {
+//					for (int iV2 = -1; iV2<2; ++iV2 ) {
+//						for (int iX3 = -1; iX3<2; ++iX3 ) {
+//							for (int iU3 = -1; iU3<2; ++iU3 ) {
+//								for (int iV3 = -1; iV3<2; ++iV3 ) {
+//									TrackletKey key2  = EncodeTrackletKey(PatternDB::DC2,  D2X +iX2, D2Xp,  D2U +iU2, D2Up,  D2V +iV2, D2Vp);
+//									TrackletKey key3p = EncodeTrackletKey(PatternDB::DC3p, D3pX+iX3, D3pXp, D3pU+iU3, D3pUp, D3pV+iV3, D3pVp);
+//									TrackletKey key3m = EncodeTrackletKey(PatternDB::DC3m, D3mX+iX3, D3mXp, D3mU+iU3, D3mUp, D3mV+iV3, D3mVp);
+//
+//									if(key2  != PatternDB::ERR_KEY) db.St2.insert(key2);
+//									if(key3p != PatternDB::ERR_KEY) db.St3.insert(key3p);
+//									if(key3m != PatternDB::ERR_KEY) db.St3.insert(key3m);
+//
+//									if(key2  != PatternDB::ERR_KEY and key3p != PatternDB::ERR_KEY)
+//										//db_st23.insert(std::make_tuple(key2,key3p));
+//										db.St23.insert(PartTrackKey(key2,key3p));
+//
+//									if(key2  != PatternDB::ERR_KEY and key3m != PatternDB::ERR_KEY)
+//										//db_st23.insert(std::make_tuple(key2,key3m));
+//										db.St23.insert(PartTrackKey(key2,key3m));
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
 
-									if(key2  != PatternDB::ERR_KEY) db.St2.insert(key2);
-									if(key3p != PatternDB::ERR_KEY) db.St3.insert(key3p);
-									if(key3m != PatternDB::ERR_KEY) db.St3.insert(key3m);
 
-									if(key2  != PatternDB::ERR_KEY and key3p != PatternDB::ERR_KEY)
-										//db_st23.insert(std::make_tuple(key2,key3p));
-										db.St23.insert(PartTrackKey(key2,key3p));
-
-									if(key2  != PatternDB::ERR_KEY and key3m != PatternDB::ERR_KEY)
-										//db_st23.insert(std::make_tuple(key2,key3m));
-										db.St23.insert(PartTrackKey(key2,key3m));
-								}
-							}
-						}
-					}
-				}
-			}
-
+#ifdef _DEBUG_
+		auto size = db.St23.size();
+#endif
 			// Single key
-//			TrackletKey key2  = EncodeTrackletKey(DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
-//			TrackletKey key3p = EncodeTrackletKey(DC3p, D3pX, D3pXp, D3pU, D3pUp, D3pV, D3pVp);
-//			TrackletKey key3m = EncodeTrackletKey(DC3m, D3mX, D3mXp, D3mU, D3mUp, D3mV, D3mVp);
-//
-//			if(key2  != PatternDB::ERR_KEY) _db_st2.insert(key2);
-//			if(key3p != PatternDB::ERR_KEY) _db_st3.insert(key3p);
-//			if(key3m != PatternDB::ERR_KEY) _db_st3.insert(key3m);
-//
-//			if(key2  != PatternDB::ERR_KEY and key3p != PatternDB::ERR_KEY)
-//				_db_st23.insert(std::make_tuple(key2,key3p));
-//
-//			if(key2  != PatternDB::ERR_KEY and key3m != PatternDB::ERR_KEY)
-//				_db_st23.insert(std::make_tuple(key2,key3m));
+			TrackletKey key2  = EncodeTrackletKey(PatternDB::DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
+			TrackletKey key3p = EncodeTrackletKey(PatternDB::DC3p, D3pX, D3pXp, D3pU, D3pUp, D3pV, D3pVp);
+			TrackletKey key3m = EncodeTrackletKey(PatternDB::DC3m, D3mX, D3mXp, D3mU, D3mUp, D3mV, D3mVp);
+
+			if(key2  != PatternDB::ERR_KEY) db.St2.insert(key2);
+			if(key3p != PatternDB::ERR_KEY) db.St3.insert(key3p);
+			if(key3m != PatternDB::ERR_KEY) db.St3.insert(key3m);
+
+			if(key2  != PatternDB::ERR_KEY and key3p != PatternDB::ERR_KEY)
+				db.St23.insert(PartTrackKey(key2,key3p));
+
+			if(key2  != PatternDB::ERR_KEY and key3m != PatternDB::ERR_KEY)
+				db.St23.insert(PartTrackKey(key2,key3m));
+
+#ifdef _DEBUG_
+		if(db.St23.size()>size) ++nacc;
+		if(ntrack%interval==0) {
+			acc_prob = 1.*nacc/interval;
+			Teval->Fill();
+			nacc = 0;
+		}
+		++ntrack;
+#endif
 		}
 	}
 
@@ -140,6 +173,11 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	db.Write();
 	f_out->Close();
 
+#ifdef _DEBUG_
+	feval->cd();
+	Teval->Write();
+	feval->Close();
+#endif
 	return 0;
 }
 
