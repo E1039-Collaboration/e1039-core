@@ -59,11 +59,15 @@ KalmanPrgTrk::KalmanPrgTrk(
     cout << "========================================" << endl;
 #endif
 
+    _timers.insert(std::make_pair<std::string, PHTimer*>("build_db", new PHTimer("build_db")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("load_db", new PHTimer("load_db")));
+
     _timers.insert(std::make_pair<std::string, PHTimer*>("event", new PHTimer("event")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_23", new PHTimer("search_db_23")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit1", new PHTimer("st23_fit1")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_prop", new PHTimer("st23_prop")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit2", new PHTimer("st23_fit2")));
@@ -74,11 +78,8 @@ KalmanPrgTrk::KalmanPrgTrk(
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_acc", new PHTimer("st23_acc")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_reduce", new PHTimer("st23_reduce")));
 
-    _timers.insert(std::make_pair<std::string, PHTimer*>("build_db", new PHTimer("build_db")));
-    _timers.insert(std::make_pair<std::string, PHTimer*>("load_db", new PHTimer("load_db")));
-    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db", new PHTimer("search_db")));
-
     _timers.insert(std::make_pair<std::string, PHTimer*>("global", new PHTimer("global")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_glb", new PHTimer("search_db_glb")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_st1", new PHTimer("global_st1")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
@@ -517,9 +518,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 
     //Build tracklets in station 2, 3+, 3-
     _timers["st2"]->restart();
-    //_t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
-    //_t_st2->stop();
     _timers["st2"]->stop();
 
     if(verbosity >= 2) {
@@ -535,10 +534,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 
     _timers["st3"]->restart();
-    //_t_st3->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
-    //_t_st3->stop();
     _timers["st3"]->stop();
 
     if(verbosity >= 2) {
@@ -555,9 +552,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 
     //Build back partial tracks in station 2, 3+ and 3-
     _timers["st23"]->restart();
-    //_t_st23->restart();
     buildBackPartialTracks();
-    //_t_st23->stop();
     _timers["st23"]->stop();
 
     if(verbosity >= 2) {
@@ -574,9 +569,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
     _timers["global"]->restart();
-    //_t_global->restart();
     buildGlobalTracks();
-    //_t_global->stop();
     _timers["global"]->stop();
 
     if(verbosity >= 2) {
@@ -612,13 +605,11 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 
     //Build kalman tracks
     _timers["kalman"]->restart();
-    //_t_kalman->restart();
     for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
     }
-    //_t_kalman->stop();
     _timers["kalman"]->stop();
 
 #ifdef _DEBUG_ON
@@ -703,7 +694,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
 
             // Pattern dictionary search
             if(_enable_DS) {
-              _timers["search_db"]->restart();
+              _timers["search_db_23"]->restart();
               bool matched = false;
 #if _DBIMP_ == 1
             	auto key2  = GetTrackletKey(*tracklet2, DC2);
@@ -727,10 +718,10 @@ void KalmanPrgTrk::buildBackPartialTracks()
             	else if(key2!=PatternDB::ERR_KEY and key3m!=PatternDB::ERR_KEY) {key23 = PartTrackKey(key2, key3m);}
             	else continue;
 
-            	std::cout << key23;
+            	//std::cout << key23;
             	if(_pattern_db->St23.find(key23)!=_pattern_db->St23.end()) matched = true;
 #endif
-              _timers["search_db"]->stop();
+              _timers["search_db_23"]->stop();
             	if(!matched) continue;
             }
 
@@ -919,9 +910,7 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 
             _timers["global_st1"]->restart();
-            //_t_global_st1->restart();
             buildTrackletsInStation(i+1, 0, pos_exp, window);
-            //_t_global_st1->stop();
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
@@ -935,20 +924,13 @@ void KalmanPrgTrk::buildGlobalTracks()
 
                 // Pattern dictionary search
                 if(_enable_DS) {
-                  _timers["search_db"]->restart();
+                  _timers["search_db_glb"]->restart();
                   bool matched = false;
 
                 	auto key1  = PatternDBUtil::GetTrackletKey(*tracklet1, PatternDB::DC1);
                 	auto key2  = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC2);
                 	auto key3p = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3p);
                 	auto key3m = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3m);
-
-                	#ifdef _DEBUG_YUHW_
-                	std::cout << key1;
-                	std::cout << key2;
-                	std::cout << key3p;
-                	std::cout << key3m;
-                	#endif
 
                 	GlobTrackKey key123;
                 	if(
@@ -963,10 +945,10 @@ void KalmanPrgTrk::buildGlobalTracks()
                 		key123 = GlobTrackKey(key1, key2, key3m);
                 	} else continue;
 
-                	std::cout << key123;
+                	//std::cout << key123;
                 	if(_pattern_db->St123.find(key123)!=_pattern_db->St123.end()) matched = true;
 
-                  _timers["search_db"]->stop();
+                  _timers["search_db_glb"]->stop();
                 	if(!matched) continue;
                 }
 
@@ -2229,6 +2211,7 @@ void KalmanPrgTrk::printTimers() {
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 
 	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_fit1                   "<<_timers["st23_fit1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_fit2                   "<<_timers["st23_fit2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
@@ -2240,10 +2223,9 @@ void KalmanPrgTrk::printTimers() {
 	std::cout << "  st23_reduce                 "<<_timers["st23_reduce"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 
-	std::cout << "Search DB                   "<<_timers["search_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-
 	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global St1                  "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_glb"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "    Link Kalman                 "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;

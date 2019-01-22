@@ -86,7 +86,8 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	nacc = 0;
 #endif
 
-	for(int ientry=0;ientry<T->GetEntries();++ientry) {
+	//for(int ientry=0;ientry<T->GetEntries();++ientry) {
+	for(int ientry=0;ientry<10000;++ientry) {
 		T->GetEntry(ientry);
 
 		for(int ipar=0; ipar<n_particles; ++ipar) {
@@ -126,7 +127,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 #ifdef _MULTI_KEY_
 			// Multi key
-			for (int iX1 = -1; iX1<2; ++iX1 ) {
+			for (int iX1 = 0; iX1<1; ++iX1 ) {
 				for (int iU1 = 0; iU1<1; ++iU1 ) {
 					for (int iV1 = 0; iV1<1; ++iV1 ) {
 						for (int iX2 = -1; iX2<2; ++iX2 ) {
@@ -157,7 +158,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 													//db_st23.insert(std::make_tuple(key2,key3m));
 													db.St23.insert(PartTrackKey(key2,key3m));
 													if(key1 != PatternDB::ERR_KEY) {
-														db.St123.insert(GlobTrackKey(key1,key2,key3p));
+														db.St123.insert(GlobTrackKey(key1,key2,key3m));
 													}
 												}
 											}
