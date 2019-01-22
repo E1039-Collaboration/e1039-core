@@ -137,6 +137,7 @@ public:
 
   void print();
 
+  std::set<TrackletKey>     St1;
   std::set<TrackletKey>     St2;
   std::set<TrackletKey>     St3;
   std::set<PartTrackKey>    St23;

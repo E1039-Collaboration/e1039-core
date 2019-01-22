@@ -11,14 +11,17 @@ PatternDB::PatternDB()
 void PatternDB::identify(std::ostream& os) const {
 	os
 	<< "PatternDB::identify: "
+	<< " St1 size: " << St1.size()
 	<< " St2 size: " << St2.size()
 	<< " St3 size: " << St3.size()
 	<< " St23 size: " << St23.size()
+	<< " St123 size: " << St123.size()
 	<< std::endl;
 }
 
 int PatternDB::isValid() const {
 	if (
+			St1.size()>0 or
 			St2.size()>0 or
 			St3.size()>0 or
 			St23.size()>0
@@ -75,7 +78,7 @@ int PatternDB::isValid() const {
 void PatternDB::print() {
 	identify();
 	int i=0;
-	for(auto key : St23) {
+	for(auto key : St123) {
 		std::cout << key;
 		++i;
 		if(i>100) break;

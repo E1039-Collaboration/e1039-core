@@ -933,6 +933,43 @@ void KalmanPrgTrk::buildGlobalTracks()
                 tracklet1->print();
 #endif
 
+                // Pattern dictionary search
+                if(_enable_DS) {
+                  _timers["search_db"]->restart();
+                  bool matched = false;
+
+                	auto key1  = PatternDBUtil::GetTrackletKey(*tracklet1, PatternDB::DC1);
+                	auto key2  = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC2);
+                	auto key3p = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3p);
+                	auto key3m = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3m);
+
+                	#ifdef _DEBUG_YUHW_
+                	std::cout << key1;
+                	std::cout << key2;
+                	std::cout << key3p;
+                	std::cout << key3m;
+                	#endif
+
+                	GlobTrackKey key123;
+                	if(
+                			key1!=PatternDB::ERR_KEY
+                			and key2!=PatternDB::ERR_KEY
+											and key3p!=PatternDB::ERR_KEY) {
+                		key123 = GlobTrackKey(key1, key2, key3p);
+                	} else if (
+                			key1!=PatternDB::ERR_KEY
+                			and key2!=PatternDB::ERR_KEY
+											and key3m!=PatternDB::ERR_KEY) {
+                		key123 = GlobTrackKey(key1, key2, key3m);
+                	} else continue;
+
+                	std::cout << key123;
+                	if(_pattern_db->St123.find(key123)!=_pattern_db->St123.end()) matched = true;
+
+                  _timers["search_db"]->stop();
+                	if(!matched) continue;
+                }
+
                 Tracklet tracklet_global = (*tracklet23) * (*tracklet1);
                 fitTracklet(tracklet_global);
                 if(!hodoMask(tracklet_global)) continue;
