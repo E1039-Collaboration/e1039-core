@@ -64,6 +64,7 @@ KalmanPrgTrk::KalmanPrgTrk(
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("event", new PHTimer("event")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_2", new PHTimer("search_db_2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
@@ -1420,18 +1421,20 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
-            	if(_enable_DS) {
-            		bool matched = false;
-
-            		int X = hitAll[xiter->first].elementID;
-            		int U = hitAll[uiter->first].elementID;
-            		int V = hitAll[viter->first].elementID;
+            	if(false) {
+            		if(stationID==3)
+                  _timers["search_db_2"]->restart();
 
             		PatternDB::STATION station = PatternDB::ERROR_STATION;
             		if(stationID==2) station = PatternDB::DC1;
             		if(stationID==3) station = PatternDB::DC2;
             		if(stationID==4) station = PatternDB::DC3p;
             		if(stationID==5) station = PatternDB::DC3m;
+            		bool matched = false;
+
+            		int X = hitAll[xiter->first].elementID;
+            		int U = hitAll[uiter->first].elementID;
+            		int V = hitAll[viter->first].elementID;
 
             		TrackletKey key = PatternDBUtil::EncodeTrackletKey(station, X, 0, U, 0, V, 0);
 
@@ -1441,6 +1444,9 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
             				and _pattern_db->St2.find(key)!=_pattern_db->St2.end()) matched = true;
             		if( ( station == PatternDB::DC3p or station == PatternDB::DC3m )
             				and _pattern_db->St3.find(key)!=_pattern_db->St3.end()) matched = true;
+
+            		if(stationID==3)
+                  _timers["search_db_2"]->stop();
 
             		if(!matched) continue;
             	}
@@ -2232,6 +2238,7 @@ void KalmanPrgTrk::printTimers() {
 	std::cout <<"KalmanPrgTrk::printTimers: event: " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
 	std::cout << "================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 

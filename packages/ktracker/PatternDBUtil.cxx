@@ -8,7 +8,7 @@
 
 #define _DEBUG_
 
-#define _MULTI_KEY_
+//#define _MULTI_KEY_
 
 int PatternDBUtil::verbosity = 0;
 
@@ -49,11 +49,23 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	TFile *feval = TFile::Open("PatternDBUtilEval.root","recreate");
 	TTree *Teval = new TTree("T","PatternDBUtilEval");
 	int ntrack = 0;
-	float acc_prob = 0;
+	float acc_prob_1 = 0;
+	float acc_prob_2 = 0;
+	float acc_prob_3 = 0;
+	float acc_prob_23 = 0;
+	float acc_prob_123 = 0;
 	Teval->Branch("ntrack",   &ntrack,   "ntrack/I");
-	Teval->Branch("acc_prob", &acc_prob, "acc_prob/F");
+	Teval->Branch("acc_prob_1", &acc_prob_1, "acc_prob_1/F");
+	Teval->Branch("acc_prob_2", &acc_prob_2, "acc_prob_2/F");
+	Teval->Branch("acc_prob_3", &acc_prob_3, "acc_prob_3/F");
+	Teval->Branch("acc_prob_23", &acc_prob_23, "acc_prob_23/F");
+	Teval->Branch("acc_prob_123", &acc_prob_123, "acc_prob_123/F");
 
-	int nacc = 0;
+	int nacc_1 = 0;
+	int nacc_2 = 0;
+	int nacc_3 = 0;
+	int nacc_23 = 0;
+	int nacc_123 = 0;
 	const int interval = 1000;
 #endif
 
@@ -83,11 +95,15 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 #ifdef _DEBUG_
 	ntrack = 0;
-	nacc = 0;
+	nacc_1 = 0;
+	nacc_2 = 0;
+	nacc_3 = 0;
+	nacc_23 = 0;
+	nacc_123 = 0;
 #endif
 
-	//for(int ientry=0;ientry<T->GetEntries();++ientry) {
-	for(int ientry=0;ientry<10000;++ientry) {
+	for(int ientry=0;ientry<T->GetEntries();++ientry) {
+	//for(int ientry=0;ientry<10000;++ientry) {
 		T->GetEntry(ientry);
 
 		for(int ipar=0; ipar<n_particles; ++ipar) {
@@ -122,7 +138,11 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 
 #ifdef _DEBUG_
-			auto size = db.St23.size();
+			auto size_1   = db.St1.size();
+			auto size_2   = db.St2.size();
+			auto size_3   = db.St3.size();
+			auto size_23  = db.St23.size();
+			auto size_123 = db.St123.size();
 #endif
 
 #ifdef _MULTI_KEY_
@@ -198,14 +218,34 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 #endif
 
 #ifdef _DEBUG_
-			if(db.St23.size()>size) ++nacc;
+
+			if(db.St1.size()>size_1) ++nacc_1;
+			if(db.St2.size()>size_2) ++nacc_2;
+			if(db.St3.size()>size_3) ++nacc_3;
+			if(db.St23.size()>size_23) ++nacc_23;
+			if(db.St123.size()>size_123) ++nacc_123;
+
 			if(ntrack%interval==0) {
-				acc_prob = 1.*nacc/interval;
+				acc_prob_1 = 1.*nacc_1/interval;
+				acc_prob_2 = 1.*nacc_2/interval;
+				acc_prob_3 = 1.*nacc_3/interval;
+				acc_prob_23 = 1.*nacc_23/interval;
+				acc_prob_123 = 1.*nacc_123/interval;
+
 				Teval->Fill();
-				nacc = 0;
+
+	      nacc_1 = 0;
+	      nacc_2 = 0;
+	      nacc_3 = 0;
+	      nacc_23 = 0;
+	      nacc_123 = 0;
 
 				LogInfo("ntrack: "<< ntrack);
-				LogInfo("acc_prob: "<< acc_prob);
+				LogInfo("acc_prob_1: "<< acc_prob_1);
+				LogInfo("acc_prob_2: "<< acc_prob_2);
+				LogInfo("acc_prob_3: "<< acc_prob_3);
+				LogInfo("acc_prob_23: "<< acc_prob_23);
+				LogInfo("acc_prob_123: "<< acc_prob_123);
 			}
 			++ntrack;
 #endif
