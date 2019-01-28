@@ -19,7 +19,7 @@ class PatternDBUtil
 {
 	public:
 
-	static int BuildPatternDB (const std::string & fin, const std::string & fout);
+	static int BuildPatternDB (const std::string & fin, const std::string & fout, PatternDB & db);
 
 	static PatternDB* LoadPatternDB (const std::string & fin);
 

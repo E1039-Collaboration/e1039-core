@@ -43,7 +43,7 @@ std::map<unsigned int, unsigned int> PatternDBUtil::_detid_view = {
 		{25, 5}
 };
 
-int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fout) {
+int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fout, PatternDB& db) {
 
 #ifdef _DEBUG_
 	TFile *feval = TFile::Open("PatternDBUtilEval.root","recreate");
@@ -91,7 +91,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	T->SetBranchAddress("n_particles", &n_particles);
 	T->SetBranchAddress("gelmid", &elmid);
 
-	PatternDB db;
+	//PatternDB db;
 
 #ifdef _DEBUG_
 	ntrack = 0;
@@ -300,14 +300,14 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 		const unsigned int V, const unsigned int Vp) {
 
 	// TODO add range check
-//	if(
-//			ST > PatternDB::DC3m or ST < PatternDB::DC1 or
-//			X > 255 or Xp > 255 or
-//			U > 255 or Up > 255 or
-//			V > 255 or Vp > 255
-//			) {
-//		return PatternDB::ERR_KEY;
-//	}
+	if(
+			ST > PatternDB::DC3m or ST < PatternDB::DC1 or
+			X > 255 or Xp > 255 or
+			U > 255 or Up > 255 or
+			V > 255 or Vp > 255
+			) {
+		return PatternDB::ERR_KEY;
+	}
 
 	if(X == 0 and U == 0 and V == 0) {
 		return PatternDB::ERR_KEY;

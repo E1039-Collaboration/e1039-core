@@ -133,10 +133,11 @@ KalmanPrgTrk::KalmanPrgTrk(
 				std::cout <<"KalmanPrgTrk::KalmanPrgTrk: DB NOT loaded. Try to build. " << std::endl;
 				PatternDBUtil::Verbosity(10);
 				_timers["build_db"]->restart();
-				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB.root");
+        _pattern_db = new PatternDB();
+				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_bad.root", *_pattern_db);
 				_timers["build_db"]->stop();
 				_timers["load_db"]->restart();
-				_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
+				//_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
 				_timers["load_db"]->stop();
 			}
 #endif
@@ -694,7 +695,8 @@ void KalmanPrgTrk::buildBackPartialTracks()
             if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
 
             // Pattern dictionary search
-            if(_enable_DS) {
+            if(//false and
+              _enable_DS) {
               _timers["search_db_23"]->restart();
               bool matched = false;
 #if _DBIMP_ == 1
@@ -719,7 +721,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
             	else if(key2!=PatternDB::ERR_KEY and key3m!=PatternDB::ERR_KEY) {key23 = PartTrackKey(key2, key3m);}
             	else continue;
 
-            	//std::cout << key23;
+              //LogInfo(key23);
             	if(_pattern_db->St23.find(key23)!=_pattern_db->St23.end()) matched = true;
 #endif
               _timers["search_db_23"]->stop();
@@ -924,7 +926,8 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 
                 // Pattern dictionary search
-                if(_enable_DS) {
+                if(//false and
+                  _enable_DS) {
                   _timers["search_db_glb"]->restart();
                   bool matched = false;
 
@@ -1421,7 +1424,8 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
-            	if(false) {
+            	if(//false and
+                 _enable_DS) {
             		if(stationID==3)
                   _timers["search_db_2"]->restart();
 
