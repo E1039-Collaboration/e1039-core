@@ -300,28 +300,20 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 		const unsigned int V, const unsigned int Vp) {
 
 	// TODO add range check
+//	if(
+//			ST > PatternDB::DC3m or ST < PatternDB::DC1 or
+//			X > 255 or Xp > 255 or
+//			U > 255 or Up > 255 or
+//			V > 255 or Vp > 255
+//			) {
+//		return PatternDB::ERR_KEY;
+//	}
 
-	if(
-			ST > PatternDB::DC3m or ST < PatternDB::DC1 or
-			X > 255 or Xp > 255 or
-			U > 255 or Up > 255 or
-			V > 255 or Vp > 255
-			) {
+	if(X == 0 and U == 0 and V == 0) {
 		return PatternDB::ERR_KEY;
 	}
 
-	unsigned int k1 = 0;
-	unsigned int k2 = 0;
-	k1 |= (ST << 24);
-	k1 |= (X  << 16);
-	k1 |= (U  << 8);
-	k1 |= (V  << 0);
-//	k2 |= (Xp << 16);
-//	k2 |= (Up << 8);
-//	k2 |= (Vp << 0);
-
-	//return std::make_tuple(k1, k2);
-	return TrackletKey(k1, k2);
+	return TrackletKey(ST, X, U, V);
 }
 
 TrackletKey PatternDBUtil::GetTrackletKey(

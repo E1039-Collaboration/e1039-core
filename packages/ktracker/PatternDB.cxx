@@ -2,8 +2,7 @@
 
 ClassImp(PatternDB)
 
-//const TrackletKey PatternDB::ERR_KEY = std::make_tuple(0,0);
-const TrackletKey PatternDB::ERR_KEY = TrackletKey(0,0);
+const TrackletKey PatternDB::ERR_KEY = TrackletKey(0,0,0,0);
 
 PatternDB::PatternDB()
 {}

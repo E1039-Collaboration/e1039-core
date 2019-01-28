@@ -18,35 +18,48 @@
 
 class TrackletKey : public TObject{
 public:
-	TrackletKey() : k0(0), k1(0) {}
-	TrackletKey(const unsigned int i0, const unsigned int i1) : k0(i0), k1(i1){}
-	unsigned int k0;
-	unsigned int k1;
+	TrackletKey() : St(0), X(0), U(0), V(0) {}
+	TrackletKey(const unsigned char st, const unsigned char x, const unsigned char u, const unsigned char v) : St(st), X(x), U(u), V(v){}
+	unsigned char St;
+	unsigned char X;
+	unsigned char U;
+	unsigned char V;
 
-	bool operator == (const TrackletKey & k) const {if (k0==k.k0 and k1==k.k1) return true; return false;}
-	bool operator != (const TrackletKey & k) const {if (k0==k.k0 and k1==k.k1) return false; return true;}
+	bool operator == (const TrackletKey & k) const {
+		if (St == k.St
+				and abs (X - k.X) < 2
+				and abs (U - k.U) < 2
+				and abs (V - k.V) < 2
+				) return true;
+		return false;
+	}
+
+	bool operator != (const TrackletKey & k) const {
+		if (St == k.St
+				and abs (X - k.X) < 2
+				and abs (U - k.U) < 2
+				and abs (V - k.V) < 2
+				) return false;
+		return true;
+	}
+
 	bool operator < (const TrackletKey & k) const {
-		if (k0<k.k0) return true;
-		else if(k0==k.k0 and k1<k.k1) return true;
+		if (St<k.St) return true;
+		else if(St==k.St and X<k.X-1) return true;
+		else if(St==k.St and abs(X-k.X)<2 and U<k.U-1) return true;
+		else if(St==k.St and abs(X-k.X)<2 and abs(U-k.U)<2 and V<k.V-1) return true;
 		return false;
 	}
 
 	friend ostream & operator << (ostream &out, const TrackletKey &key) {
 		std::cout
 		<<"TrackletKey: "
-		<< " {"
-		<< ((key.k0>>24) & 255) << ", "
-		<< ((key.k0>>16) & 255) << ", "
-		<< ((key.k0>>8) & 255) << ", "
-		<< ((key.k0) & 255)
-		<< "} "
-		<< " {"
-		<< ((key.k1>>24) & 255) << ", "
-		<< ((key.k1>>16) & 255) << ", "
-		<< ((key.k1>>8) & 255) << ", "
-		<< ((key.k1) & 255)
-		<< "} "
-		<< " {" << key.k0 << ", " << key.k1 << "} "
+		<< " { "
+		<< (unsigned int)key.St
+		<< ", " << (unsigned int)key.X
+		<< ", " << (unsigned int)key.U
+		<< ", " << (unsigned int)key.V
+		<< " } "
 		<< std::endl;
 
 		return out;
