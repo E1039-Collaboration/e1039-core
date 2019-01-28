@@ -215,6 +215,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 						db.St123.insert(GlobTrackKey(key1,key2,key3m));
 					}
 			}
+
 #endif
 
 #ifdef _DEBUG_
@@ -258,9 +259,56 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 		db.print();
 	}
 
+
+
 	TFile *f_out = TFile::Open(fout.c_str(), "recreate");
+
+	TTree *T_out_St1 = new TTree("St1","St1");
+	TrackletKey *b_St1 = new TrackletKey();
+	T_out_St1->Branch("key",&b_St1);
+	for(auto key : db.St1) {
+		b_St1 = &key;
+		T_out_St1->Fill();
+	}
+
+	TTree *T_out_St2 = new TTree("St2","St2");
+	TrackletKey *b_St2 = new TrackletKey();
+	T_out_St2->Branch("key",&b_St2);
+	for(auto key : db.St2) {
+		b_St2 = &key;
+		T_out_St2->Fill();
+	}
+
+	TTree *T_out_St3 = new TTree("St3","St3");
+	TrackletKey *b_St3 = new TrackletKey();
+	T_out_St3->Branch("key",&b_St3);
+	for(auto key : db.St3) {
+		b_St3 = &key;
+		T_out_St3->Fill();
+	}
+
+	TTree *T_out_St23 = new TTree("St23","St23");
+	PartTrackKey *b_St23 = new PartTrackKey();
+	T_out_St23->Branch("key",&b_St23);
+	for(auto key : db.St23) {
+		b_St23 = &key;
+		T_out_St23->Fill();
+	}
+
+	TTree *T_out_St123 = new TTree("St123","St123");
+	GlobTrackKey *b_St123 = new GlobTrackKey();
+	T_out_St123->Branch("key",&b_St123);
+	for(auto key : db.St123) {
+		b_St123 = &key;
+		T_out_St123->Fill();
+	}
+
 	f_out->cd();
-	db.Write();
+	T_out_St1->Write();
+	T_out_St2->Write();
+	T_out_St3->Write();
+	T_out_St23->Write();
+	T_out_St123->Write();
 	f_out->Close();
 
 #ifdef _DEBUG_
