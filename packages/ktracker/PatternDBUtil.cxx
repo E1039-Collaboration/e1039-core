@@ -330,7 +330,62 @@ PatternDB* PatternDBUtil::LoadPatternDB(const std::string& fin) {
 		return nullptr;
 	}
 
-	PatternDB* db = (PatternDB*) f_in->Get("PatternDB");
+	PatternDB* db = new PatternDB();
+
+	TTree *St1   = (TTree*) f_in->Get("St1");
+	if(St1) {
+		TrackletKey *key = new TrackletKey();
+		St1->SetBranchAddress("key", &key);
+		for(int ientry=0;ientry<St1->GetEntries();++ientry) {
+			St1->GetEntry(ientry);
+			db->St1.insert(db->St1.end(), *key);
+		}
+		delete key;
+	}
+
+	TTree *St2   = (TTree*) f_in->Get("St2");
+	if(St2) {
+		TrackletKey *key = new TrackletKey();
+		St2->SetBranchAddress("key", &key);
+		for(int ientry=0;ientry<St2->GetEntries();++ientry) {
+			St2->GetEntry(ientry);
+			db->St2.insert(db->St2.end(), *key);
+		}
+		delete key;
+	}
+
+	TTree *St3   = (TTree*) f_in->Get("St3");
+	if(St3) {
+		TrackletKey *key = new TrackletKey();
+		St3->SetBranchAddress("key", &key);
+		for(int ientry=0;ientry<St3->GetEntries();++ientry) {
+			St3->GetEntry(ientry);
+			db->St3.insert(db->St3.end(), *key);
+		}
+		delete key;
+	}
+
+	TTree *St23  = (TTree*) f_in->Get("St23");
+	if(St23) {
+		PartTrackKey *key = new PartTrackKey();
+		St23->SetBranchAddress("key", &key);
+		for(int ientry=0;ientry<St23->GetEntries();++ientry) {
+			St23->GetEntry(ientry);
+			db->St23.insert(db->St23.end(), *key);
+		}
+		delete key;
+	}
+
+	TTree *St123 = (TTree*) f_in->Get("St123");
+	if(St123) {
+		GlobTrackKey *key = new GlobTrackKey();
+		St123->SetBranchAddress("key", &key);
+		for(int ientry=0;ientry<St123->GetEntries();++ientry) {
+			St123->GetEntry(ientry);
+			db->St123.insert(db->St123.end(), *key);
+		}
+		delete key;
+	}
 
 	if(verbosity >= 2) {
 		LogInfo("PatternDBUtil::LoadPatternDB from " << fin);

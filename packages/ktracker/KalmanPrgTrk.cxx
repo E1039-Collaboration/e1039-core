@@ -124,6 +124,7 @@ KalmanPrgTrk::KalmanPrgTrk(
   		_detid_view.insert(std::make_pair(26, 4));
   		_detid_view.insert(std::make_pair(25, 5));
 #elif _DBIMP_ == 2
+			PatternDBUtil::Verbosity(10);
 			_timers["load_db"]->restart();
 			_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
 			_timers["load_db"]->stop();
@@ -131,7 +132,6 @@ KalmanPrgTrk::KalmanPrgTrk(
 				std::cout <<"KalmanPrgTrk::KalmanPrgTrk: DB loaded. St23 size: "<< _pattern_db->St23.size() << std::endl;
 			} else {
 				std::cout <<"KalmanPrgTrk::KalmanPrgTrk: DB NOT loaded. Try to build. " << std::endl;
-				PatternDBUtil::Verbosity(10);
 				_timers["build_db"]->restart();
         _pattern_db = new PatternDB();
 				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_bad.root", *_pattern_db);
