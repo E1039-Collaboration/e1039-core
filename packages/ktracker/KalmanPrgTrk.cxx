@@ -926,7 +926,7 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 
                 // Pattern dictionary search
-                if(//false and
+                if(false and
                   _enable_DS) {
                   _timers["search_db_glb"]->restart();
                   bool matched = false;
@@ -1424,7 +1424,7 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
-            	if(//false and
+            	if(false and
                  _enable_DS) {
             		if(stationID==3)
                   _timers["search_db_2"]->restart();
