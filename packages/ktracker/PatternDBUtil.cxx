@@ -371,7 +371,7 @@ PatternDB* PatternDBUtil::LoadPatternDB(const std::string& fin) {
 		St23->SetBranchAddress("key", &key);
 		for(int ientry=0;ientry<St23->GetEntries();++ientry) {
 			St23->GetEntry(ientry);
-			db->St23.insert(db->St23.end(), *key);
+			db->St23.insert(db->St23.end(), PartTrackKey(*key));
 		}
 		delete key;
 	}

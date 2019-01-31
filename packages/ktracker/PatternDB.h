@@ -20,6 +20,9 @@ class TrackletKey : public TObject{
 public:
 	TrackletKey() : St(0), X(0), U(0), V(0) {}
 	TrackletKey(const unsigned char st, const unsigned char x, const unsigned char u, const unsigned char v) : St(st), X(x), U(u), V(v){}
+	TrackletKey(const TrackletKey& k) :
+		St(k.St), X(k.X), U(k.U), V(k.V){}
+
 	unsigned char St;
 	unsigned char X;
 	unsigned char U;
@@ -72,6 +75,9 @@ class PartTrackKey : public TObject{
 public:
 	PartTrackKey(): k0 (TrackletKey()), k1(TrackletKey()) {}
 	PartTrackKey(const TrackletKey & i0, const TrackletKey & i1) : k0(i0), k1(i1) {}
+	PartTrackKey(const PartTrackKey& k) :
+		k0(k.k0), k1(k.k1) {}
+
 	TrackletKey k0;
 	TrackletKey k1;
 
@@ -99,6 +105,9 @@ class GlobTrackKey : public TObject{
 public:
 	GlobTrackKey(): k0 (TrackletKey()), k1(TrackletKey()), k2(TrackletKey()) {}
 	GlobTrackKey(const TrackletKey & i0, const TrackletKey & i1, const TrackletKey & i2) : k0(i0), k1(i1), k2(i2) {}
+	GlobTrackKey(const GlobTrackKey& k) :
+		k0(k.k0), k1(k.k1), k2(k.k2) {}
+
 	TrackletKey k0;
 	TrackletKey k1;
 	TrackletKey k2;
