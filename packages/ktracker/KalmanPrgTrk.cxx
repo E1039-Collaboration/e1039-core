@@ -43,10 +43,10 @@ KalmanPrgTrk::KalmanPrgTrk(
 		const PHField* field,
 		const TGeoManager *geom,
 		bool enable_KF,
-		bool enable_DS)
+		int  DS_level)
 : verbosity(10)
 ,_enable_KF(enable_KF)
-,_enable_DS(enable_DS)
+,_DS_level(DS_level)
 #if _DBIMP_ == 1
 , _error_key(std::make_tuple(0,0))
 #endif
@@ -100,7 +100,7 @@ KalmanPrgTrk::KalmanPrgTrk(
     //Load Patter DB from file
 
 
-  	if(_enable_DS) {
+  	if(_DS_level > KalmanPrgTrk::NO_DS) {
 #if _DBIMP_ == 1
 			LoadPatternDB("pattern_db.root");
   		_detid_view.insert(std::make_pair(16, 0));
@@ -695,8 +695,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
             if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
 
             // Pattern dictionary search
-            if(//false and
-              _enable_DS) {
+            if(_DS_level >= KalmanPrgTrk::ST23_DS) {
               _timers["search_db_23"]->restart();
               bool matched = false;
 #if _DBIMP_ == 1
@@ -926,8 +925,7 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 
                 // Pattern dictionary search
-                if(false and
-                  _enable_DS) {
+                if(_DS_level >= KalmanPrgTrk::ST123_DS) {
                   _timers["search_db_glb"]->restart();
                   bool matched = false;
 
@@ -1424,8 +1422,7 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
-            	if(false and
-                 _enable_DS) {
+            	if(_DS_level >= KalmanPrgTrk::IN_ST_DS) {
             		if(stationID==3)
                   _timers["search_db_2"]->restart();
 

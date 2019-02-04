@@ -5,10 +5,10 @@
  *      Author: yuhw@nmsu.edu
  */
 
-
 #include "KalmanFastTrackingWrapper.h"
-#include "KalmanFastTracking.h"
+
 #include "KalmanPrgTrk.h"
+#include "KalmanFastTracking.h"
 #include "EventReducer.h"
 
 #include <phfield/PHFieldConfig_v3.h>
@@ -57,7 +57,7 @@ using namespace std;
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
 _enable_KF(true),
-_enable_DS(false),
+_DS_level(KalmanPrgTrk::NO_DS),
 _hit_container_type("Vector"),
 _event(0),
 _run_header(nullptr),
@@ -107,7 +107,7 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
   }
 
 	/// init KalmanPrgTrk
-	fastfinder = new KalmanPrgTrk(field, _t_geo_manager, _enable_KF, _enable_DS);
+	fastfinder = new KalmanPrgTrk(field, _t_geo_manager, _enable_KF, _DS_level);
 	fastfinder->Verbosity(verbosity);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal

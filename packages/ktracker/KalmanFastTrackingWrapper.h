@@ -24,7 +24,7 @@
 #include <map>
 //#include <algorithm>
 
-class KalmanFastTracking;
+//class KalmanFastTracking;
 class KalmanPrgTrk;
 class EventReducer;
 class SRawEvent;
@@ -84,12 +84,12 @@ public:
 		_geom_file_name = geomFileName;
 	}
 
-	bool is_enable_DS() const {
-		return _enable_DS;
+	int get_DS_level() const {
+		return _DS_level;
 	}
 
-	void set_enable_DS(bool enableDs) {
-		_enable_DS = enableDs;
+	void set_DS_level(int DS) {
+		_DS_level = DS;
 	}
 
 	bool is_enable_KF() const {
@@ -111,7 +111,7 @@ private:
 	int GetNodes(PHCompositeNode *topNode);
 
 	bool _enable_KF;
-	bool _enable_DS;
+	int _DS_level;
 
 	SRawEvent* BuildSRawEvent();
 

@@ -12,23 +12,24 @@ Created: 08-27-2018
 
 #include "GlobalConsts.h"
 
-#include <list>
-#include <vector>
-#include <map>
-#include <set>
-#include <tuple>
-
-#include <Math/Factory.h>
-#include <Math/Minimizer.h>
-#include <Math/Functor.h>
-
 #include "jobopts_svc/JobOptsSvc.h"
 #include "geom_svc/GeomSvc.h"
+
 #include "SRawEvent.h"
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
 #include "PatternDB.h"
+
+#include <list>
+#include <vector>
+#include <map>
+#include <set>
+//#include <tuple>
+
+#include <Math/Factory.h>
+#include <Math/Minimizer.h>
+#include <Math/Functor.h>
 
 class TGeoManager;
 
@@ -41,86 +42,89 @@ class TNtuple;
 class KalmanPrgTrk
 {
 public:
-    explicit KalmanPrgTrk(
-    		const PHField* field,
-				const TGeoManager *geom,
-				bool enable_KF = true,
-				bool enable_DS = false);
 
-    ~KalmanPrgTrk();
+  enum DS_LEVEL {NO_DS, ST23_DS, ST123_DS, IN_ST_DS};
 
-    //
-    void Verbosity(const int a) {verbosity = a;}
-    int Verbosity() const {return verbosity;}
-    void printTimers();
+	explicit KalmanPrgTrk(
+			const PHField* field,
+			const TGeoManager *geom,
+			bool enable_KF = true,
+			int DS_level = KalmanPrgTrk::NO_DS);
 
-    //Set the input event
-    int setRawEvent(SRawEvent* event_input);
-    void setRawEventDebug(SRawEvent* event_input);
+	~KalmanPrgTrk();
 
-    //Event quality cut
-    bool acceptEvent(SRawEvent* rawEvent);
+	//
+	void Verbosity(const int a) {verbosity = a;}
+	int Verbosity() const {return verbosity;}
+	void printTimers();
 
-    ///Tracklet finding stuff
-    //Build tracklets in a station
-    void buildTrackletsInStation(int stationID, int listID, double* pos_exp = NULL, double* window = NULL);
+	//Set the input event
+	int setRawEvent(SRawEvent* event_input);
+	void setRawEventDebug(SRawEvent* event_input);
 
-    //Build back partial tracks using tracklets in station 2 & 3
-    void buildBackPartialTracks();
+	//Event quality cut
+	bool acceptEvent(SRawEvent* rawEvent);
 
-    //Build global tracks by connecting station 23 tracklets and station 1 tracklets
-    void buildGlobalTracks();
+	///Tracklet finding stuff
+	//Build tracklets in a station
+	void buildTrackletsInStation(int stationID, int listID, double* pos_exp = NULL, double* window = NULL);
 
-    //Fit tracklets
-    int fitTracklet(Tracklet& tracklet);
+	//Build back partial tracks using tracklets in station 2 & 3
+	void buildBackPartialTracks();
 
-    //Check the quality of tracklet, number of hits
-    bool acceptTracklet(Tracklet& tracklet);
-    bool hodoMask(Tracklet& tracklet);
-    bool muonID_comp(Tracklet& tracklet);
-    bool muonID_search(Tracklet& tracklet);
-    bool muonID_hodoAid(Tracklet& tracklet);
+	//Build global tracks by connecting station 23 tracklets and station 1 tracklets
+	void buildGlobalTracks();
 
-    void buildPropSegments();
+	//Fit tracklets
+	int fitTracklet(Tracklet& tracklet);
 
-    //Resolve left-right when possible
-    void resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, int& LR2);
-    void resolveLeftRight(Tracklet& tracklet, double threshold);
-    void resolveSingleLeftRight(Tracklet& tracklet);
+	//Check the quality of tracklet, number of hits
+	bool acceptTracklet(Tracklet& tracklet);
+	bool hodoMask(Tracklet& tracklet);
+	bool muonID_comp(Tracklet& tracklet);
+	bool muonID_search(Tracklet& tracklet);
+	bool muonID_hodoAid(Tracklet& tracklet);
 
-    //Remove bad hit if needed
-    void removeBadHits(Tracklet& tracklet);
+	void buildPropSegments();
 
-    //Reduce the list of tracklets, returns the number of elements reduced
-    int reduceTrackletList(std::list<Tracklet>& tracklets);
+	//Resolve left-right when possible
+	void resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, int& LR2);
+	void resolveLeftRight(Tracklet& tracklet, double threshold);
+	void resolveSingleLeftRight(Tracklet& tracklet);
 
-    //Get exp postion and window using sagitta method in station 1
-    void getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID);
-    void getExtrapoWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID);
+	//Remove bad hit if needed
+	void removeBadHits(Tracklet& tracklet);
 
-    //Print the distribution of tracklets at detector back/front
-    void printAtDetectorBack(int stationID, std::string outputFileName);
+	//Reduce the list of tracklets, returns the number of elements reduced
+	int reduceTrackletList(std::list<Tracklet>& tracklets);
 
-    ///Track fitting stuff
-    //Convert Tracklet to KalmanTrack and solve left-right problem, and eventually to a SRecTrack
-    SRecTrack processOneTracklet(Tracklet& tracklet);
+	//Get exp postion and window using sagitta method in station 1
+	void getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID);
+	void getExtrapoWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID);
 
-    //Use Kalman fitter to fit a track
-    bool fitTrack(KalmanTrack& kmtrk);
+	//Print the distribution of tracklets at detector back/front
+	void printAtDetectorBack(int stationID, std::string outputFileName);
 
-    //Resolve left right by Kalman fitting results
-    void resolveLeftRight(KalmanTrack& kmtrk);
+	///Track fitting stuff
+	//Convert Tracklet to KalmanTrack and solve left-right problem, and eventually to a SRecTrack
+	SRecTrack processOneTracklet(Tracklet& tracklet);
 
-    ///Final output
-    std::list<Tracklet>& getFinalTracklets() { return trackletsInSt[4]; }
-    std::list<Tracklet>& getBackPartials() { return trackletsInSt[3]; }
-    std::list<Tracklet>& getTrackletList(int i) { return trackletsInSt[i]; }
-    std::list<SRecTrack>& getSRecTracks() { return stracks; }
-    std::list<PropSegment>& getPropSegments(int i) { return propSegs[i]; }
+	//Use Kalman fitter to fit a track
+	bool fitTrack(KalmanTrack& kmtrk);
 
-    /// Tool, a simple-minded chi square fit
-    /// Y = a*X + b
-    void chi2fit(int n, double x[], double y[], double& a, double& b);
+	//Resolve left right by Kalman fitting results
+	void resolveLeftRight(KalmanTrack& kmtrk);
+
+	///Final output
+	std::list<Tracklet>& getFinalTracklets() { return trackletsInSt[4]; }
+	std::list<Tracklet>& getBackPartials() { return trackletsInSt[3]; }
+	std::list<Tracklet>& getTrackletList(int i) { return trackletsInSt[i]; }
+	std::list<SRecTrack>& getSRecTracks() { return stracks; }
+	std::list<PropSegment>& getPropSegments(int i) { return propSegs[i]; }
+
+	/// Tool, a simple-minded chi square fit
+	/// Y = a*X + b
+	void chi2fit(int n, double x[], double y[], double& a, double& b);
 
 private:
 
@@ -217,7 +221,7 @@ private:
     const bool _enable_KF;
 
     // Dictionary search
-    const bool _enable_DS;
+    const int _DS_level;
 
     /*
     //typedef std::tuple<unsigned char, unsigned char, unsigned char, unsigned char> TrackletKey;
