@@ -54,6 +54,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	float acc_prob_3 = 0;
 	float acc_prob_23 = 0;
 	float acc_prob_123 = 0;
+
 	Teval->Branch("ntrack",   &ntrack,   "ntrack/I");
 	Teval->Branch("acc_prob_1", &acc_prob_1, "acc_prob_1/F");
 	Teval->Branch("acc_prob_2", &acc_prob_2, "acc_prob_2/F");
@@ -66,7 +67,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	int nacc_3 = 0;
 	int nacc_23 = 0;
 	int nacc_123 = 0;
-	const int interval = 1000;
+	const int interval = 50;
 #endif
 
 	if(verbosity >= 2) {
@@ -86,10 +87,12 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	}
 
 	int n_particles = 0;
+	int gndc = 0;
 	int elmid [1000][55];
 
 	T->SetBranchAddress("n_particles", &n_particles);
 	T->SetBranchAddress("gelmid", &elmid);
+	T->SetBranchAddress("gndc", &gndc);
 
 	//PatternDB db;
 
@@ -105,6 +108,8 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	for(int ientry=0;ientry<T->GetEntries();++ientry) {
 	//for(int ientry=0;ientry<10000;++ientry) {
 		T->GetEntry(ientry);
+
+		if(!(gndc>17)) continue;
 
 		for(int ipar=0; ipar<n_particles; ++ipar) {
 
