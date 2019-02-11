@@ -314,6 +314,10 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   						if(verbosity >= 2) {
   							g4hit->identify();
   						}
+							gx_st1[n_particles]  = g4hit->get_x(0)/10.;
+							gy_st1[n_particles]  = g4hit->get_y(0)/10.;
+							gz_st1[n_particles]  = g4hit->get_z(0)/10.;
+
 							gpx_st1[n_particles] = g4hit->get_px(0)/1000.;
 							gpy_st1[n_particles] = g4hit->get_py(0)/1000.;
 							gpz_st1[n_particles] = g4hit->get_pz(0)/1000.;
@@ -368,6 +372,11 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 					px_st1[n_particles] = tx;
 					py_st1[n_particles] = ty;
 					pz_st1[n_particles] = tz;
+					double x, y;
+					recTrack.getPositionSt1(x, y);
+					x_st1[n_particles] = x;
+					y_st1[n_particles] = y;
+
   			}
 
 //  			recTrack.getMomentumSt1(
@@ -520,6 +529,9 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
   _tout->Branch("geta",          geta,                "geta[n_particles]/F");
   _tout->Branch("gphi",          gphi,                "gphi[n_particles]/F");
+  _tout->Branch("gx_st1",        gx_st1,              "gx_st1[n_particles]/F");
+  _tout->Branch("gy_st1",        gy_st1,              "gy_st1[n_particles]/F");
+  _tout->Branch("gz_st1",        gz_st1,              "gz_st1[n_particles]/F");
   _tout->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_particles]/F");
   _tout->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_particles]/F");
   _tout->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_particles]/F");
@@ -540,6 +552,8 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("pt",            pt,                  "pt[n_particles]/F");
   _tout->Branch("eta",           eta,                 "eta[n_particles]/F");
   _tout->Branch("phi",           phi,                 "phi[n_particles]/F");
+  _tout->Branch("x_st1",         x_st1,               "x_st1[n_particles]/F");
+  _tout->Branch("y_st1",         y_st1,               "y_st1[n_particles]/F");
   _tout->Branch("px_st1",        px_st1,              "px_st1[n_particles]/F");
   _tout->Branch("py_st1",        py_st1,              "py_st1[n_particles]/F");
   _tout->Branch("pz_st1",        pz_st1,              "pz_st1[n_particles]/F");
@@ -598,6 +612,9 @@ int TrkEval::ResetEvalVars() {
     geta[i]       = std::numeric_limits<float>::max();
     gphi[i]       = std::numeric_limits<float>::max();
     gnhits[i]     = std::numeric_limits<int>::max();
+    gx_st1[i]     = std::numeric_limits<float>::max();
+    gy_st1[i]     = std::numeric_limits<float>::max();
+    gz_st1[i]     = std::numeric_limits<float>::max();
     gpx_st1[i]    = std::numeric_limits<float>::max();
     gpy_st1[i]    = std::numeric_limits<float>::max();
     gpz_st1[i]    = std::numeric_limits<float>::max();
@@ -620,6 +637,8 @@ int TrkEval::ResetEvalVars() {
     pt[i]         = std::numeric_limits<float>::max();
     eta[i]        = std::numeric_limits<float>::max();
     phi[i]        = std::numeric_limits<float>::max();
+    x_st1[i]     = std::numeric_limits<float>::max();
+    y_st1[i]     = std::numeric_limits<float>::max();
     px_st1[i]     = std::numeric_limits<float>::max();
     py_st1[i]     = std::numeric_limits<float>::max();
     pz_st1[i]     = std::numeric_limits<float>::max();

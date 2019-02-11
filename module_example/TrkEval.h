@@ -120,6 +120,9 @@ private:
 	float gpx[1000];
 	float gpy[1000];
 	float gpz[1000];
+	float gx_st1[1000];
+	float gy_st1[1000];
+	float gz_st1[1000];
 	float gpx_st1[1000];
 	float gpy_st1[1000];
 	float gpz_st1[1000];
@@ -141,6 +144,8 @@ private:
 	float pt[1000];
 	float eta[1000];
 	float phi[1000];
+	float x_st1[1000];
+	float y_st1[1000];
 	float px_st1[1000];
 	float py_st1[1000];
 	float pz_st1[1000];
