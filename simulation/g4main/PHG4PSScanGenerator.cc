@@ -367,9 +367,11 @@ int PHG4PSScanGenerator::process_event(PHCompositeNode *topNode) {
 				int npy = (_py_max - _py_min)/_py_step + 1;
 				int npz = (_pz_max - _pz_min)/_pz_step + 1;
 
-				int ipz = _event / (npx*npy);
-				int ipy = ( _event % (npx*npy) ) / npx;
-				int ipx = ( _event % (npx*npy) ) % npx;
+				int ibin = _event % (npx*npy*npz);
+
+				int ipz = ibin / (npx*npy);
+				int ipy = ( ibin % (npx*npy) ) / npx;
+				int ipx = ( ibin % (npx*npy) ) % npx;
 
 				px = _px_step*ipx + _px_min;
 				py = _py_step*ipy + _py_min;
