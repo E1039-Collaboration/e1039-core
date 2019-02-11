@@ -314,9 +314,9 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
   						if(verbosity >= 2) {
   							g4hit->identify();
   						}
-							gx_st1[n_particles]  = g4hit->get_x(0)/10.;
-							gy_st1[n_particles]  = g4hit->get_y(0)/10.;
-							gz_st1[n_particles]  = g4hit->get_z(0)/10.;
+							gx_st1[n_particles]  = g4hit->get_x(0);
+							gy_st1[n_particles]  = g4hit->get_y(0);
+							gz_st1[n_particles]  = g4hit->get_z(0);
 
 							gpx_st1[n_particles] = g4hit->get_px(0)/1000.;
 							gpy_st1[n_particles] = g4hit->get_py(0)/1000.;
