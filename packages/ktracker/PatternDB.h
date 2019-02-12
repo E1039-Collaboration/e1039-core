@@ -28,31 +28,11 @@ public:
 	unsigned char U;
 	unsigned char V;
 
-	bool operator == (const TrackletKey & k) const {
-		if (St == k.St
-				and abs (X - k.X) < 2
-				and abs (U - k.U) < 2
-				and abs (V - k.V) < 2
-				) return true;
-		return false;
-	}
+	bool operator == (const TrackletKey & k) const;
 
-	bool operator != (const TrackletKey & k) const {
-		if (St == k.St
-				and abs (X - k.X) < 2
-				and abs (U - k.U) < 2
-				and abs (V - k.V) < 2
-				) return false;
-		return true;
-	}
+	bool operator != (const TrackletKey & k) const;
 
-	bool operator < (const TrackletKey & k) const {
-		if (St<k.St) return true;
-		else if(St==k.St and X<k.X-1) return true;
-		else if(St==k.St and abs(X-k.X)<2 and U<k.U-1) return true;
-		else if(St==k.St and abs(X-k.X)<2 and abs(U-k.U)<2 and V<k.V-1) return true;
-		return false;
-	}
+	bool operator < (const TrackletKey & k) const;
 
 	friend ostream & operator << (ostream &out, const TrackletKey &key) {
 		std::cout

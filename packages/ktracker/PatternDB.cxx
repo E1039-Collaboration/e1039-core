@@ -1,8 +1,47 @@
 #include "PatternDB.h"
 
+// matching resolution 1: exact; 2: nearest neighbor; ...
+#define _RESOLUTION_ 2
+#define _RESOLUTION3_ 3
+
+ClassImp(TrackletKey)
 ClassImp(PatternDB)
 
 const TrackletKey PatternDB::ERR_KEY = TrackletKey(0,0,0,0);
+
+bool TrackletKey::operator == (const TrackletKey & k) const {
+	if (St == k.St
+			and abs (X - k.X) < _RESOLUTION_
+			and abs (U - k.U) < _RESOLUTION_
+			and abs (V - k.V) < _RESOLUTION_
+			) return true;
+	return false;
+}
+
+bool TrackletKey::operator != (const TrackletKey & k) const {
+	if (St == k.St
+			and abs (X - k.X) < _RESOLUTION_
+			and abs (U - k.U) < _RESOLUTION_
+			and abs (V - k.V) < _RESOLUTION_
+			) return false;
+	return true;
+}
+
+bool TrackletKey::operator < (const TrackletKey & k) const {
+	if (St<k.St) return true;
+	else if(St==k.St) {
+		if(St==PatternDB::DC1 or St==PatternDB::DC2) {
+			if(X<k.X-(_RESOLUTION_-1)) return true;
+			else if(St==k.St and abs(X-k.X)<_RESOLUTION_ and U<k.U-(_RESOLUTION_-1)) return true;
+			else if(St==k.St and abs(X-k.X)<_RESOLUTION_ and abs(U-k.U)<_RESOLUTION_ and V<k.V-(_RESOLUTION_-1)) return true;
+		}	else if(St==PatternDB::DC3p or St==PatternDB::DC3m) {
+			if(X<k.X-(_RESOLUTION3_-1)) return true;
+			else if(St==k.St and abs(X-k.X)<_RESOLUTION3_ and U<k.U-(_RESOLUTION3_-1)) return true;
+			else if(St==k.St and abs(X-k.X)<_RESOLUTION3_ and abs(U-k.U)<_RESOLUTION3_ and V<k.V-(_RESOLUTION3_-1)) return true;
+		}
+	}
+	return false;
+}
 
 PatternDB::PatternDB()
 {}
