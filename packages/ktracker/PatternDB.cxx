@@ -1,8 +1,11 @@
 #include "PatternDB.h"
 
+#include <cmath>
+
 // matching resolution 1: exact; 2: nearest neighbor; ...
-#define _RESOLUTION_ 2
-#define _RESOLUTION3_ 3
+#define _RESOLUTION1_ 1
+#define _RESOLUTION2_ 1
+#define _RESOLUTION3_ 1
 
 ClassImp(TrackletKey)
 ClassImp(PatternDB)
@@ -10,36 +13,66 @@ ClassImp(PatternDB)
 const TrackletKey PatternDB::ERR_KEY = TrackletKey(0,0,0,0);
 
 bool TrackletKey::operator == (const TrackletKey & k) const {
-	if (St == k.St
-			and abs (X - k.X) < _RESOLUTION_
-			and abs (U - k.U) < _RESOLUTION_
-			and abs (V - k.V) < _RESOLUTION_
+
+//	if(St==0 and X==78 and U==104 and V==93) {
+//		std::cout << "TrackletKey::operator == " << std::endl;
+//		std::cout << k << std::endl;
+//	}
+
+	if (St == PatternDB::DC1
+			and St == k.St
+			and abs(X - k.X) < _RESOLUTION1_
+			and abs(U - k.U) < _RESOLUTION1_
+			and abs(V - k.V) < _RESOLUTION1_
 			) return true;
+	if (St == PatternDB::DC2
+			and St == k.St
+			and abs(X - k.X) < _RESOLUTION2_
+			and abs(U - k.U) < _RESOLUTION2_
+			and abs(V - k.V) < _RESOLUTION2_
+			) return true;
+	if ( (St == PatternDB::DC3p or St == PatternDB::DC3m)
+			and St == k.St
+			and abs(X - k.X) < _RESOLUTION3_
+			and abs(U - k.U) < _RESOLUTION3_
+			and abs(V - k.V) < _RESOLUTION3_
+			) return true;
+
 	return false;
 }
 
 bool TrackletKey::operator != (const TrackletKey & k) const {
-	if (St == k.St
-			and abs (X - k.X) < _RESOLUTION_
-			and abs (U - k.U) < _RESOLUTION_
-			and abs (V - k.V) < _RESOLUTION_
-			) return false;
+	if ((*this) == k) return false;
 	return true;
 }
 
 bool TrackletKey::operator < (const TrackletKey & k) const {
-	if (St<k.St) return true;
-	else if(St==k.St) {
-		if(St==PatternDB::DC1 or St==PatternDB::DC2) {
-			if(X<k.X-(_RESOLUTION_-1)) return true;
-			else if(St==k.St and abs(X-k.X)<_RESOLUTION_ and U<k.U-(_RESOLUTION_-1)) return true;
-			else if(St==k.St and abs(X-k.X)<_RESOLUTION_ and abs(U-k.U)<_RESOLUTION_ and V<k.V-(_RESOLUTION_-1)) return true;
-		}	else if(St==PatternDB::DC3p or St==PatternDB::DC3m) {
-			if(X<k.X-(_RESOLUTION3_-1)) return true;
-			else if(St==k.St and abs(X-k.X)<_RESOLUTION3_ and U<k.U-(_RESOLUTION3_-1)) return true;
-			else if(St==k.St and abs(X-k.X)<_RESOLUTION3_ and abs(U-k.U)<_RESOLUTION3_ and V<k.V-(_RESOLUTION3_-1)) return true;
-		}
+
+	if((*this) == k) return false;
+	else {
+		if (St<k.St) return true;
+		else if(St==k.St and X<k.X) return true;
+		else if(St==k.St and X==k.X and U<k.U) return true;
+		else if(St==k.St and X==k.X and U==k.U and V<k.V) return true;
 	}
+
+//	if (St<k.St) return true;
+//	else if(St==k.St) {
+//		if(St==PatternDB::DC1) {
+//			if(X<k.X-(_RESOLUTION1_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION1_ and U<k.U-(_RESOLUTION1_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION1_ and abs(U-k.U)<_RESOLUTION1_ and V<k.V-(_RESOLUTION1_-1)) return true;
+//		} else if(St==PatternDB::DC2) {
+//			if(X<k.X-(_RESOLUTION2_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION2_ and U<k.U-(_RESOLUTION2_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION2_ and abs(U-k.U)<_RESOLUTION2_ and V<k.V-(_RESOLUTION2_-1)) return true;
+//		}	else if(St==PatternDB::DC3p or St==PatternDB::DC3m) {
+//			if(X<k.X-(_RESOLUTION3_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION3_ and U<k.U-(_RESOLUTION3_-1)) return true;
+//			else if(abs(X-k.X)<_RESOLUTION3_ and abs(U-k.U)<_RESOLUTION3_ and V<k.V-(_RESOLUTION3_-1)) return true;
+//		}
+//	}
+
 	return false;
 }
 
@@ -116,9 +149,9 @@ int PatternDB::isValid() const {
 void PatternDB::print() {
 	identify();
 	int i=0;
-	for(auto key : St123) {
+	for(auto key : St1) {
 		std::cout << key;
 		++i;
-		if(i>100) break;
+		//if(i>100) break;
 	}
 }

@@ -10,6 +10,8 @@
 
 //#define _MULTI_KEY_
 
+#define _RESOLUTION_ 3
+
 int PatternDBUtil::verbosity = 0;
 
 
@@ -67,7 +69,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	int nacc_3 = 0;
 	int nacc_23 = 0;
 	int nacc_123 = 0;
-	const int interval = 50;
+	const int interval = 1000;
 #endif
 
 	if(verbosity >= 2) {
@@ -105,8 +107,11 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	nacc_123 = 0;
 #endif
 
+//	TrackletKey key  = EncodeTrackletKey(PatternDB::DC1, 94, 0, 116, 0, 112, 0);
+//	db.St1.insert(key);
+
+	//for(int ientry=0;ientry<0;++ientry) {
 	for(int ientry=0;ientry<T->GetEntries();++ientry) {
-	//for(int ientry=0;ientry<10000;++ientry) {
 		T->GetEntry(ientry);
 
 		if(!(gndc>17)) continue;
@@ -231,7 +236,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 			if(db.St23.size()>size_23) ++nacc_23;
 			if(db.St123.size()>size_123) ++nacc_123;
 
-			if(ntrack%interval==0) {
+			if(ntrack>0 and ntrack%interval==0) {
 				acc_prob_1 = 1.*nacc_1/interval;
 				acc_prob_2 = 1.*nacc_2/interval;
 				acc_prob_3 = 1.*nacc_3/interval;
@@ -263,6 +268,32 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 		LogInfo("db_st23.size(): " << db.St23.size());
 		db.print();
 	}
+
+	//TODO remove this debug code
+//	if(true) {
+//		LogInfo("");
+//		unsigned int e[3] = {78, 104, 93};
+//		//unsigned int e[3] = {77, 102, 91};
+//		TrackletKey tmp = PatternDBUtil::EncodeTrackletKey(PatternDB::DC1, e[0], 0, e[1], 0, e[2], 0);
+//		std::cout << tmp;
+//
+//		if(db.St1.find(tmp)!=db.St1.end())
+//			std::cout << "Found!" << std::endl;
+//		else
+//			std::cout << "Not Found!" << std::endl;
+//
+//		auto size = db.St1.size();
+//		db.St1.insert(tmp);
+//		if(db.St1.size()>size)
+//			std::cout << "Inserted!" << std::endl;
+//		else
+//			std::cout << "Not Inserted!" << std::endl;
+//
+//		if(db.St1.find(tmp)!=db.St1.end())
+//			std::cout << "Found!" << std::endl;
+//		else
+//			std::cout << "Not Found!" << std::endl;
+//	}
 
 
 
@@ -421,7 +452,7 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 		return PatternDB::ERR_KEY;
 	}
 
-	return TrackletKey(ST, X, U, V);
+	return TrackletKey(ST, X/_RESOLUTION_, U/_RESOLUTION_, V/_RESOLUTION_);
 }
 
 TrackletKey PatternDBUtil::GetTrackletKey(

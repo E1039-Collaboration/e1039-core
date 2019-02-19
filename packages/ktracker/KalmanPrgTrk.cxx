@@ -724,7 +724,12 @@ void KalmanPrgTrk::buildBackPartialTracks()
             	if(_pattern_db->St23.find(key23)!=_pattern_db->St23.end()) matched = true;
 #endif
               _timers["search_db_23"]->stop();
-            	if(!matched) continue;
+            	if(!matched) {
+            		if(Verbosity() > 2) {
+            			LogInfo("St23 Pattern NOT Found!");
+            		}
+            		continue;
+            	}
             }
 
 #ifndef ALIGNMENT_MODE
@@ -951,7 +956,12 @@ void KalmanPrgTrk::buildGlobalTracks()
                 	if(_pattern_db->St123.find(key123)!=_pattern_db->St123.end()) matched = true;
 
                   _timers["search_db_glb"]->stop();
-                	if(!matched) continue;
+                	if(!matched) {
+                		if(Verbosity() > 2) {
+                			LogInfo("St123 Pattern NOT Found!");
+                		}
+                		//continue;
+                	}
                 }
 
                 Tracklet tracklet_global = (*tracklet23) * (*tracklet1);
@@ -1439,17 +1449,68 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 
             		TrackletKey key = PatternDBUtil::EncodeTrackletKey(station, X, 0, U, 0, V, 0);
 
+            		//TODO remove this debug code
+//            		if(false) {
+//            			LogInfo("");
+//
+//            			int e[3] = {78, 104, 93};
+//            			TrackletKey tmp = PatternDBUtil::EncodeTrackletKey(PatternDB::DC1, e[0], 0, e[1], 0, e[2], 0);
+//            			std::cout << tmp;
+//
+//									if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
+//										std::cout << "Found!" << std::endl;
+//									else
+//										std::cout << "Not Found!" << std::endl;
+//
+//            			auto size = _pattern_db->St1.size();
+//            			_pattern_db->St1.insert(tmp);
+//									if(_pattern_db->St1.size()>size)
+//										std::cout << "Inserted!" << std::endl;
+//									else
+//										std::cout << "Not Inserted!" << std::endl;
+//
+//									if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
+//										std::cout << "Found!" << std::endl;
+//									else
+//										std::cout << "Not Found!" << std::endl;
+//
+////            			for(int i=0; i<1; ++i) {
+////            				for(int j=-3; j<4; ++j) {
+////            					for(int k=-3; k<4; ++k) {
+////												tmp = PatternDBUtil::EncodeTrackletKey(PatternDB::DC1, e[0]+i, 0, e[1]+j, 0, e[2]+k, 0);
+////												std::cout << tmp;
+////												if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
+////													std::cout << "Found!" << std::endl;
+////												else
+////													std::cout << "Not Found!" << std::endl;
+////            					}
+////            				}
+////            			}
+//            		}
+
             		if(station == PatternDB::DC1
             				and _pattern_db->St1.find(key)!=_pattern_db->St1.end()) matched = true;
-            		if(station == PatternDB::DC2
+            		else if(station == PatternDB::DC2
             				and _pattern_db->St2.find(key)!=_pattern_db->St2.end()) matched = true;
-            		if( ( station == PatternDB::DC3p or station == PatternDB::DC3m )
+            		else if( ( station == PatternDB::DC3p or station == PatternDB::DC3m )
             				and _pattern_db->St3.find(key)!=_pattern_db->St3.end()) matched = true;
 
             		if(stationID==3)
                   _timers["search_db_2"]->stop();
 
-            		if(!matched) continue;
+            		//TODO remove this debug code
+//            		LogInfo(key);
+//            		if(!matched) {
+//            			LogInfo("Not matched!");
+//            			//if(station != PatternDB::DC1) continue;
+//            		}
+
+            		if(!matched) {
+              		if(Verbosity() > 2) {
+              			LogInfo("St" << PatternDB::DC1 << " Pattern NOT Found!");
+              		}
+            			continue;
+            		}
             	}
 
                 double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
