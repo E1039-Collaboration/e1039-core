@@ -725,7 +725,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
 #endif
               _timers["search_db_23"]->stop();
             	if(!matched) {
-            		if(Verbosity() > 2) {
+            		if(Verbosity() > 20) {
             			LogInfo("St23 Pattern NOT Found!");
             		}
             		continue;
@@ -957,10 +957,10 @@ void KalmanPrgTrk::buildGlobalTracks()
 
                   _timers["search_db_glb"]->stop();
                 	if(!matched) {
-                		if(Verbosity() > 2) {
+                		if(Verbosity() > 20) {
                 			LogInfo("St123 Pattern NOT Found!");
                 		}
-                		//continue;
+                		continue;
                 	}
                 }
 
@@ -1506,8 +1506,8 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 //            		}
 
             		if(!matched) {
-              		if(Verbosity() > 2) {
-              			LogInfo("St" << PatternDB::DC1 << " Pattern NOT Found!");
+              		if(Verbosity() > 20) {
+              			LogInfo("St" << station << " Pattern NOT Found!");
               		}
             			continue;
             		}

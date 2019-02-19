@@ -10,7 +10,7 @@
 
 //#define _MULTI_KEY_
 
-#define _RESOLUTION_ 3
+#define _RESOLUTION_ 2
 
 int PatternDBUtil::verbosity = 0;
 

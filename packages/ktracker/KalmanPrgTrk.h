@@ -43,7 +43,8 @@ class KalmanPrgTrk
 {
 public:
 
-  enum DS_LEVEL {NO_DS, ST23_DS, ST123_DS, IN_ST_DS};
+  //enum DS_LEVEL {NO_DS, ST23_DS, ST123_DS, IN_ST_DS};
+  enum DS_LEVEL {NO_DS, IN_ST_DS, ST23_DS, ST123_DS};
 
 	explicit KalmanPrgTrk(
 			const PHField* field,
