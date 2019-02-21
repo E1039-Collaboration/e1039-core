@@ -33,12 +33,6 @@ Created: 05-28-2013
 //#define _DEBUG_ON
 #define _DEBUG_YUHW_
 
-#ifdef _DEBUG_YUHW_
-std::ofstream ktracker_log("ktracker.csv");
-#endif
-
-#define _DBIMP_ 2
-
 KalmanPrgTrk::KalmanPrgTrk(
 		const PHField* field,
 		const TGeoManager *geom,
@@ -47,9 +41,6 @@ KalmanPrgTrk::KalmanPrgTrk(
 : verbosity(10)
 ,_enable_KF(enable_KF)
 ,_DS_level(DS_level)
-#if _DBIMP_ == 1
-, _error_key(std::make_tuple(0,0))
-#endif
 , _pattern_db(nullptr)
 {
     using namespace std;
@@ -101,29 +92,7 @@ KalmanPrgTrk::KalmanPrgTrk(
 
 
   	if(_DS_level > KalmanPrgTrk::NO_DS) {
-#if _DBIMP_ == 1
-			LoadPatternDB("pattern_db.root");
-  		_detid_view.insert(std::make_pair(16, 0));
-  		_detid_view.insert(std::make_pair(15, 1));
-  		_detid_view.insert(std::make_pair(17, 2));
-  		_detid_view.insert(std::make_pair(18, 3));
-  		_detid_view.insert(std::make_pair(13, 4));
-  		_detid_view.insert(std::make_pair(14, 5));
 
-  		_detid_view.insert(std::make_pair(22, 0));
-  		_detid_view.insert(std::make_pair(21, 1));
-  		_detid_view.insert(std::make_pair(23, 2));
-  		_detid_view.insert(std::make_pair(24, 3));
-  		_detid_view.insert(std::make_pair(20, 4));
-  		_detid_view.insert(std::make_pair(19, 5));
-
-  		_detid_view.insert(std::make_pair(28, 0));
-  		_detid_view.insert(std::make_pair(27, 1));
-  		_detid_view.insert(std::make_pair(30, 2));
-  		_detid_view.insert(std::make_pair(29, 3));
-  		_detid_view.insert(std::make_pair(26, 4));
-  		_detid_view.insert(std::make_pair(25, 5));
-#elif _DBIMP_ == 2
 			PatternDBUtil::Verbosity(10);
 			_timers["load_db"]->restart();
 			_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
@@ -140,7 +109,6 @@ KalmanPrgTrk::KalmanPrgTrk(
 				//_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
 				_timers["load_db"]->stop();
 			}
-#endif
 
 			std::cout <<"KalmanPrgTrk::KalmanPrgTrk: St23 size: "<< _pattern_db->St23.size() << std::endl;
     	std::cout << "================================================================" << std::endl;
@@ -423,13 +391,15 @@ KalmanPrgTrk::KalmanPrgTrk(
     s_detectorID[1] = p_geomSvc->getDetectorID("D2Up");
     s_detectorID[2] = p_geomSvc->getDetectorID("D2Vp");
 
-    _ana_mode = true;
-    _fana = TFile::Open("ktracker_ana.root","recreate");
-    _tana = new TNtuple("T","kTracker Ana",
-    		"st2_tx:st2_x0:st2_ty:st2_y0:st2_chi2:"
-    		"st3_tx:st3_x0:st3_ty:st3_y0:st3_chi2:"
-    		"st23i_tx:st23i_x0:"
-    		"st23f_tx:st23f_x0:st23f_ty:st23f_y0:st23f_chi2");
+    _ana_mode = false;
+    if(_ana_mode) {
+			_fana = TFile::Open("ktracker_ana.root","recreate");
+			_tana = new TNtuple("T","kTracker Ana",
+					"st2_tx:st2_x0:st2_ty:st2_y0:st2_chi2:"
+					"st3_tx:st3_x0:st3_ty:st3_y0:st3_chi2:"
+					"st23i_tx:st23i_x0:"
+					"st23f_tx:st23f_x0:st23f_ty:st23f_y0:st23f_chi2");
+    }
 }
 
 KalmanPrgTrk::~KalmanPrgTrk()
@@ -438,13 +408,11 @@ KalmanPrgTrk::~KalmanPrgTrk()
     delete minimizer[0];
     delete minimizer[1];
 
-    _fana->cd();
-    _tana->Write();
-    _fana->Close();
-
-#ifdef _DEBUG_YUHW_
-    ktracker_log.close();
-#endif
+    if(_ana_mode) {
+			_fana->cd();
+			_tana->Write();
+			_fana->Close();
+    }
 }
 
 void KalmanPrgTrk::setRawEventDebug(SRawEvent* event_input)
@@ -673,6 +641,14 @@ void KalmanPrgTrk::buildBackPartialTracks()
     double a, b;
 #endif
 
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"fail_DS", 0},
+				{"out", 0}
+    };
+#endif
+
     for(std::list<Tracklet>::iterator tracklet3 = trackletsInSt[2].begin(); tracklet3 != trackletsInSt[2].end(); ++tracklet3)
     {
 #ifndef ALIGNMENT_MODE
@@ -693,24 +669,14 @@ void KalmanPrgTrk::buildBackPartialTracks()
         for(std::list<Tracklet>::iterator tracklet2 = trackletsInSt[1].begin(); tracklet2 != trackletsInSt[1].end(); ++tracklet2)
         {
             if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
-
+#ifdef _DEBUG_YUHW_
+            counter["in"]++;
+#endif
             // Pattern dictionary search
             if(_DS_level >= KalmanPrgTrk::ST23_DS) {
               _timers["search_db_23"]->restart();
               bool matched = false;
-#if _DBIMP_ == 1
-            	auto key2  = GetTrackletKey(*tracklet2, DC2);
-            	auto key3p = GetTrackletKey(*tracklet3, DC3p);
-            	auto key3m = GetTrackletKey(*tracklet3, DC3m);
 
-            	PartTrackKey key23;
-            	if(key2!=_error_key and key3p!=_error_key) {key23 = std::make_tuple(key2, key3p);}
-            	else if(key2!=_error_key and key3m!=_error_key) {key23 = std::make_tuple(key2, key3m);}
-            	else continue;
-
-            	print(key23);
-            	if(_db_st23.find(key23)!=_db_st23.end()) matched = true;
-#elif _DBIMP_ == 2
             	auto key2  = PatternDBUtil::GetTrackletKey(*tracklet2, PatternDB::DC2);
             	auto key3p = PatternDBUtil::GetTrackletKey(*tracklet3, PatternDB::DC3p);
             	auto key3m = PatternDBUtil::GetTrackletKey(*tracklet3, PatternDB::DC3m);
@@ -722,12 +688,15 @@ void KalmanPrgTrk::buildBackPartialTracks()
 
               //LogInfo(key23);
             	if(_pattern_db->St23.find(key23)!=_pattern_db->St23.end()) matched = true;
-#endif
+
               _timers["search_db_23"]->stop();
             	if(!matched) {
             		if(Verbosity() > 20) {
             			LogInfo("St23 Pattern NOT Found!");
             		}
+#ifdef _DEBUG_YUHW_
+            		counter["fail_DS"]++;
+#endif
             		continue;
             	}
             }
@@ -783,43 +752,29 @@ void KalmanPrgTrk::buildBackPartialTracks()
             if(verbosity>2) _timers["st23_fit2"]->restart();
             fitTracklet(tracklet_23);
             if(verbosity>2) _timers["st23_fit2"]->stop();
-#ifdef _DEBUG_YUHW_
-            ktracker_log
-						<< tracklet2->tx << ", "
-						<< tracklet2->x0 << ", "
-						<< tracklet2->ty << ", "
-						<< tracklet2->y0 << ", "
-						<< tracklet3->tx << ", "
-						<< tracklet3->x0 << ", "
-						<< tracklet3->ty << ", "
-						<< tracklet3->y0 << ", "
-						<< a  << ", "
-						<< b  << ", "
-						<< tracklet_23.tx << ", "
-						<< tracklet_23.x0 << ", "
-						<< tracklet_23.ty << ", "
-						<< tracklet_23.y0 << ", "
-						<< tracklet_23.chisq  << std::endl;
-#endif
-            float tana_data[] = {
-            		tracklet2->tx,
-    						tracklet2->x0,
-    						tracklet2->ty,
-    						tracklet2->y0,
-								tracklet2->chisq,
-    						tracklet3->tx,
-    						tracklet3->x0,
-    						tracklet3->ty,
-    						tracklet3->y0,
-								tracklet3->chisq,
-    						a,
-    						b,
-    						tracklet_23.tx,
-    						tracklet_23.x0,
-    						tracklet_23.ty,
-    						tracklet_23.y0,
-    						tracklet_23.chisq};
-            _tana->Fill(tana_data);
+
+            if(_ana_mode) {
+							float tana_data[] = {
+									tracklet2->tx,
+									tracklet2->x0,
+									tracklet2->ty,
+									tracklet2->y0,
+									tracklet2->chisq,
+									tracklet3->tx,
+									tracklet3->x0,
+									tracklet3->ty,
+									tracklet3->y0,
+									tracklet3->chisq,
+									a,
+									b,
+									tracklet_23.tx,
+									tracklet_23.x0,
+									tracklet_23.ty,
+									tracklet_23.y0,
+									tracklet_23.chisq};
+							_tana->Fill(tana_data);
+            }
+
             if(tracklet_23.chisq > 9000.)
             {
 #ifdef _DEBUG_ON
@@ -872,6 +827,9 @@ void KalmanPrgTrk::buildBackPartialTracks()
             {
                 tracklet_best = tracklet_23;
             }
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             if(verbosity>2) _timers["st23_acc"]->stop();
 #ifdef _DEBUG_ON
             else
@@ -885,6 +843,13 @@ void KalmanPrgTrk::buildBackPartialTracks()
         if(tracklet_best.isValid()) trackletsInSt[3].push_back(tracklet_best);
         if(verbosity>2) _timers["st23_reduce"]->stop();
     }
+
+#ifdef _DEBUG_YUHW_
+  	LogInfo("");
+    for (auto iter : counter) {
+    	std::cout << iter.first << ": " << iter.second << std::endl;
+    }
+#endif
 
     reduceTrackletList(trackletsInSt[3]);
     trackletsInSt[3].sort();
@@ -1390,6 +1355,14 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
         return;
     }
 
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"fail_DS", 0},
+				{"out", 0}
+    };
+#endif
+
     //X-U combination first, then add V pairs
     for(std::list<SRawEvent::hit_pair>::iterator xiter = pairs_X.begin(); xiter != pairs_X.end(); ++xiter)
     {
@@ -1432,6 +1405,9 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
+#ifdef _DEBUG_YUHW_
+            	counter["in"]++;
+#endif
             	if(_DS_level >= KalmanPrgTrk::IN_ST_DS) {
             		if(stationID==3)
                   _timers["search_db_2"]->restart();
@@ -1509,6 +1485,9 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
               		if(Verbosity() > 20) {
               			LogInfo("St" << station << " Pattern NOT Found!");
               		}
+#ifdef _DEBUG_YUHW_
+              		counter["fail_DS"]++;
+#endif
             			continue;
             		}
             	}
@@ -1577,6 +1556,9 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
                 if(acceptTracklet(tracklet_new))
                 {
                     trackletsInSt[listID].push_back(tracklet_new);
+#ifdef _DEBUG_YUHW_
+                    counter["out"]++;
+#endif
                 }
 #ifdef _DEBUG_ON
                 else
@@ -1587,6 +1569,13 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
             }
         }
     }
+
+#ifdef _DEBUG_YUHW_
+  	LogInfo("");
+    for (auto iter : counter) {
+    	std::cout << iter.first << ": " << iter.second << std::endl;
+    }
+#endif
 
     //Reduce the tracklet list and add dummy hits
     //reduceTrackletList(trackletsInSt[listID]);

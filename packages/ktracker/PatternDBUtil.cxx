@@ -8,9 +8,9 @@
 
 #define _DEBUG_
 
-//#define _MULTI_KEY_
-
-#define _RESOLUTION_ 2
+#define _RESOLUTION1_ 2
+#define _RESOLUTION2_ 2
+#define _RESOLUTION3_ 3
 
 int PatternDBUtil::verbosity = 0;
 
@@ -155,52 +155,6 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 			auto size_123 = db.St123.size();
 #endif
 
-#ifdef _MULTI_KEY_
-			// Multi key
-			for (int iX1 = 0; iX1<1; ++iX1 ) {
-				for (int iU1 = 0; iU1<1; ++iU1 ) {
-					for (int iV1 = 0; iV1<1; ++iV1 ) {
-						for (int iX2 = -1; iX2<2; ++iX2 ) {
-							for (int iU2 = -1; iU2<2; ++iU2 ) {
-								for (int iV2 = -1; iV2<2; ++iV2 ) {
-									for (int iX3 = -1; iX3<2; ++iX3 ) {
-										for (int iU3 = -1; iU3<2; ++iU3 ) {
-											for (int iV3 = -1; iV3<2; ++iV3 ) {
-												TrackletKey key1  = EncodeTrackletKey(PatternDB::DC1,  D1X +iX1, D1Xp,  D1U +iU1, D1Up,  D1V +iV1, D1Vp);
-												TrackletKey key2  = EncodeTrackletKey(PatternDB::DC2,  D2X +iX2, D2Xp,  D2U +iU2, D2Up,  D2V +iV2, D2Vp);
-												TrackletKey key3p = EncodeTrackletKey(PatternDB::DC3p, D3pX+iX3, D3pXp, D3pU+iU3, D3pUp, D3pV+iV3, D3pVp);
-												TrackletKey key3m = EncodeTrackletKey(PatternDB::DC3m, D3mX+iX3, D3mXp, D3mU+iU3, D3mUp, D3mV+iV3, D3mVp);
-
-												if(key1  != PatternDB::ERR_KEY) db.St1.insert(key1);
-												if(key2  != PatternDB::ERR_KEY) db.St2.insert(key2);
-												if(key3p != PatternDB::ERR_KEY) db.St3.insert(key3p);
-												if(key3m != PatternDB::ERR_KEY) db.St3.insert(key3m);
-
-												if(key2  != PatternDB::ERR_KEY and key3p != PatternDB::ERR_KEY) {
-													//db_st23.insert(std::make_tuple(key2,key3p));
-													db.St23.insert(PartTrackKey(key2,key3p));
-													if(key1 != PatternDB::ERR_KEY) {
-														db.St123.insert(GlobTrackKey(key1,key2,key3p));
-													}
-												}
-
-												if(key2  != PatternDB::ERR_KEY and key3m != PatternDB::ERR_KEY) {
-													//db_st23.insert(std::make_tuple(key2,key3m));
-													db.St23.insert(PartTrackKey(key2,key3m));
-													if(key1 != PatternDB::ERR_KEY) {
-														db.St123.insert(GlobTrackKey(key1,key2,key3m));
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-#else
 			// Single key
 			TrackletKey key1  = EncodeTrackletKey(PatternDB::DC1, D1X, D1Xp, D1U, D1Up, D1V, D1Vp);
 			TrackletKey key2  = EncodeTrackletKey(PatternDB::DC2, D2X, D2Xp, D2U, D2Up, D2V, D2Vp);
@@ -225,8 +179,6 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 						db.St123.insert(GlobTrackKey(key1,key2,key3m));
 					}
 			}
-
-#endif
 
 #ifdef _DEBUG_
 
@@ -452,7 +404,12 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 		return PatternDB::ERR_KEY;
 	}
 
-	return TrackletKey(ST, X/_RESOLUTION_, U/_RESOLUTION_, V/_RESOLUTION_);
+	if(ST == PatternDB::DC1)
+		return TrackletKey(ST, X/_RESOLUTION1_, U/_RESOLUTION1_, V/_RESOLUTION1_);
+	else if(ST == PatternDB::DC2)
+		return TrackletKey(ST, X/_RESOLUTION2_, U/_RESOLUTION2_, V/_RESOLUTION2_);
+	else
+		return TrackletKey(ST, X/_RESOLUTION3_, U/_RESOLUTION3_, V/_RESOLUTION3_);
 }
 
 TrackletKey PatternDBUtil::GetTrackletKey(
