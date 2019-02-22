@@ -1,5 +1,5 @@
 /*
-KalmanPrgTrk.h
+KalmanDSTrk.h
 
 Fast tracking utility of Kalman filter track, used to improve the tracking speed and also for online monitoring
 
@@ -7,8 +7,8 @@ Author: Kun Liu, liuk@fnal.gov, Haiwang Yu, yuhw@nmsu.edu
 Created: 08-27-2018
 */
 
-#ifndef _KalmanPrgTrk_H
-#define _KalmanPrgTrk_H
+#ifndef _KalmanDSTrk_H
+#define _KalmanDSTrk_H
 
 #include "GlobalConsts.h"
 
@@ -39,20 +39,20 @@ class PHTimer;
 class TFile;
 class TNtuple;
 
-class KalmanPrgTrk
+class KalmanDSTrk
 {
 public:
 
   //enum DS_LEVEL {NO_DS, ST23_DS, ST123_DS, IN_ST_DS};
   enum DS_LEVEL {NO_DS, IN_ST_DS, ST23_DS, ST123_DS};
 
-	explicit KalmanPrgTrk(
+	explicit KalmanDSTrk(
 			const PHField* field,
 			const TGeoManager *geom,
 			bool enable_KF = true,
-			int DS_level = KalmanPrgTrk::NO_DS);
+			int DS_level = KalmanDSTrk::NO_DS);
 
-	~KalmanPrgTrk();
+	~KalmanDSTrk();
 
 	//
 	void Verbosity(const int a) {verbosity = a;}
@@ -266,4 +266,4 @@ private:
 
 };
 
-#endif /*_KalmanPrgTrk_H*/
+#endif /*_KalmanDSTrk_H*/

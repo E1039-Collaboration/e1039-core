@@ -7,7 +7,7 @@
 
 #include "KalmanFastTrackingWrapper.h"
 
-#include "KalmanPrgTrk.h"
+#include "KalmanDSTrk.h"
 #include "KalmanFastTracking.h"
 #include "EventReducer.h"
 
@@ -57,7 +57,7 @@ using namespace std;
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
 _enable_KF(true),
-_DS_level(KalmanPrgTrk::NO_DS),
+_DS_level(KalmanDSTrk::NO_DS),
 _hit_container_type("Vector"),
 _event(0),
 _run_header(nullptr),
@@ -106,8 +106,8 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
     field_scan.close();
   }
 
-	/// init KalmanPrgTrk
-	fastfinder = new KalmanPrgTrk(field, _t_geo_manager, _enable_KF, _DS_level);
+	/// init KalmanDSTrk
+	fastfinder = new KalmanDSTrk(field, _t_geo_manager, _enable_KF, _DS_level);
 	fastfinder->Verbosity(verbosity);
 
   TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
