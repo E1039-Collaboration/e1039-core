@@ -644,7 +644,7 @@ void KalmanDSTrk::buildBackPartialTracks()
 #ifdef _DEBUG_YUHW_
     std::map<std::string, int> counter = {
     		{"in", 0},
-				{"fail_DS", 0},
+				{"DS", 0},
 				{"out", 0}
     };
 #endif
@@ -694,11 +694,12 @@ void KalmanDSTrk::buildBackPartialTracks()
             		if(Verbosity() > 20) {
             			LogInfo("St23 Pattern NOT Found!");
             		}
-#ifdef _DEBUG_YUHW_
-            		counter["fail_DS"]++;
-#endif
             		continue;
             	}
+
+#ifdef _DEBUG_YUHW_
+            	counter["DS"]++;
+#endif
             }
 
 #ifndef ALIGNMENT_MODE
@@ -846,9 +847,10 @@ void KalmanDSTrk::buildBackPartialTracks()
 
 #ifdef _DEBUG_YUHW_
   	LogInfo("");
-    for (auto iter : counter) {
-    	std::cout << iter.first << ": " << iter.second << std::endl;
-    }
+  	std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
 #endif
 
     reduceTrackletList(trackletsInSt[3]);
@@ -1358,7 +1360,7 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
 #ifdef _DEBUG_YUHW_
     std::map<std::string, int> counter = {
     		{"in", 0},
-				{"fail_DS", 0},
+				{"DS", 0},
 				{"out", 0}
     };
 #endif
@@ -1485,11 +1487,11 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
               		if(Verbosity() > 20) {
               			LogInfo("St" << station << " Pattern NOT Found!");
               		}
-#ifdef _DEBUG_YUHW_
-              		counter["fail_DS"]++;
-#endif
             			continue;
             		}
+#ifdef _DEBUG_YUHW_
+              	counter["DS"]++;
+#endif
             	}
 
                 double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
@@ -1570,11 +1572,13 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
         }
     }
 
+
 #ifdef _DEBUG_YUHW_
   	LogInfo("");
-    for (auto iter : counter) {
-    	std::cout << iter.first << ": " << iter.second << std::endl;
-    }
+  	std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
 #endif
 
     //Reduce the tracklet list and add dummy hits
