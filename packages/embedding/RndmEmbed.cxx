@@ -45,6 +45,7 @@
 #include <stdexcept>
 #include <limits>
 #include <tuple>
+#include <memory>
 
 // gsl
 #include <gsl/gsl_randist.h>
