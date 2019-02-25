@@ -8,7 +8,7 @@
 
 #define _DEBUG_
 
-#define _RESOLUTION1_ 2
+#define _RESOLUTION1_ 1
 #define _RESOLUTION2_ 2
 #define _RESOLUTION3_ 3
 
@@ -444,3 +444,37 @@ TrackletKey PatternDBUtil::GetTrackletKey(
 			elmids[5]
 			);
 }
+
+TrackletKey PatternDBUtil::GetTrackletKey(
+		const std::vector< std::pair<unsigned int, unsigned int> >& det_elem_pairs,
+		const PatternDB::STATION& station) {
+	if(station > PatternDB::DC3m or station < PatternDB::DC1) return PatternDB::ERR_KEY;
+
+	std::vector<unsigned int> elmids;
+	elmids.resize(6);
+
+	for (auto pair : det_elem_pairs) {
+		unsigned int det_id = pair.first;
+		if(station==PatternDB::DC1  and !(det_id>=7 and det_id<=12)) continue;
+		if(station==PatternDB::DC2  and !(det_id>=13 and det_id<=18)) continue;
+		if(station==PatternDB::DC3p and !(det_id>=19 and det_id<=24)) continue;
+		if(station==PatternDB::DC3m and !(det_id>=25 and det_id<=30)) continue;
+
+		elmids[_detid_view[det_id]] = pair.second;
+	}
+
+	return EncodeTrackletKey(
+			station,
+			elmids[0],
+			elmids[1],
+			elmids[2],
+			elmids[3],
+			elmids[4],
+			elmids[5]
+			);
+}
+
+
+
+
+

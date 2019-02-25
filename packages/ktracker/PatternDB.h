@@ -42,8 +42,7 @@ public:
 		<< ", " << (unsigned int)key.X
 		<< ", " << (unsigned int)key.U
 		<< ", " << (unsigned int)key.V
-		<< " } "
-		<< std::endl;
+		<< " } ";
 
 		return out;
 	}

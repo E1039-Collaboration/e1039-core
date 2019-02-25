@@ -12,6 +12,7 @@ Created: 08-27-2018
 
 #include "PatternDB.h"
 #include "FastTracklet.h"
+//#include "SRawEvent.h"
 
 #include <map>
 
@@ -32,6 +33,10 @@ class PatternDBUtil
 	static TrackletKey GetTrackletKey(
 			const Tracklet tracklet,
 			const PatternDB::STATION station);
+
+	static TrackletKey GetTrackletKey(
+			const std::vector< std::pair<unsigned int, unsigned int> > & det_elem_pairs,
+			const PatternDB::STATION &station);
 
 	static int Verbosity() {
 		return PatternDBUtil::verbosity;

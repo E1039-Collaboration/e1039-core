@@ -859,6 +859,15 @@ void KalmanDSTrk::buildBackPartialTracks()
 
 void KalmanDSTrk::buildGlobalTracks()
 {
+
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"DS", 0},
+				{"out", 0}
+    };
+#endif
+
     double pos_exp[3], window[3];
     for(std::list<Tracklet>::iterator tracklet23 = trackletsInSt[3].begin(); tracklet23 != trackletsInSt[3].end(); ++tracklet23)
     {
@@ -896,6 +905,9 @@ void KalmanDSTrk::buildGlobalTracks()
                 tracklet1->print();
 #endif
 
+#ifdef _DEBUG_YUHW_
+                counter["in"]++;
+#endif
                 // Pattern dictionary search
                 if(_DS_level >= KalmanDSTrk::ST123_DS) {
                   _timers["search_db_glb"]->restart();
@@ -923,12 +935,25 @@ void KalmanDSTrk::buildGlobalTracks()
                 	if(_pattern_db->St123.find(key123)!=_pattern_db->St123.end()) matched = true;
 
                   _timers["search_db_glb"]->stop();
+
+
+              		if(Verbosity() > 20) {
+              			std::cout << key123;
+              			if(matched) {
+                			std::cout<< "St123 Pattern Found!";
+              			} else {
+                			std::cout<< "St123 Pattern NOT Found!";
+              			}
+              			std::cout << std::endl;
+              		}
+
                 	if(!matched) {
-                		if(Verbosity() > 20) {
-                			LogInfo("St123 Pattern NOT Found!");
-                		}
                 		continue;
                 	}
+
+#ifdef _DEBUG_YUHW_
+                	counter["DS"]++;
+#endif
                 }
 
                 Tracklet tracklet_global = (*tracklet23) * (*tracklet1);
@@ -1025,12 +1050,18 @@ void KalmanDSTrk::buildGlobalTracks()
 #ifdef _DEBUG_ON
             LogInfo("Choose merged tracklet");
 #endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             trackletsInSt[4].push_back(tracklet_merge);
         }
         else if(tracklet_best[0].isValid() && tracklet_best[0] < tracklet_best[1])
         {
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-0");
+#endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
 #endif
             trackletsInSt[4].push_back(tracklet_best[0]);
         }
@@ -1039,10 +1070,20 @@ void KalmanDSTrk::buildGlobalTracks()
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-1");
 #endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             trackletsInSt[4].push_back(tracklet_best[1]);
         }
     }
 
+#ifdef _DEBUG_YUHW_
+		LogInfo("");
+		std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
+#endif
     trackletsInSt[4].sort();
 }
 
@@ -1342,7 +1383,7 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
         pairs_V = rawEvent->getPartialHitPairsInSuperDetector(superIDs[sID][2], pos_exp[2], window[2]);
     }
 
-#ifdef _DEBUG_ON
+#ifdef _DEBUG_ON_
     LogInfo("Hit pairs in this event: ");
     for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_X.begin(); iter != pairs_X.end(); ++iter) LogInfo("X :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
     for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_U.begin(); iter != pairs_U.end(); ++iter) LogInfo("U :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
@@ -1421,50 +1462,16 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
             		if(stationID==5) station = PatternDB::DC3m;
             		bool matched = false;
 
-            		int X = hitAll[xiter->first].elementID;
-            		int U = hitAll[uiter->first].elementID;
-            		int V = hitAll[viter->first].elementID;
+            		std::vector< std::pair<unsigned int, unsigned int> > det_elem_pairs;
 
-            		TrackletKey key = PatternDBUtil::EncodeTrackletKey(station, X, 0, U, 0, V, 0);
+            		det_elem_pairs.push_back({hitAll[xiter->first].detectorID,  hitAll[xiter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[xiter->second].detectorID, hitAll[xiter->second].elementID});
+            		det_elem_pairs.push_back({hitAll[uiter->first].detectorID,  hitAll[uiter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[uiter->second].detectorID, hitAll[uiter->second].elementID});
+            		det_elem_pairs.push_back({hitAll[viter->first].detectorID,  hitAll[viter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[viter->second].detectorID, hitAll[viter->second].elementID});
 
-            		//TODO remove this debug code
-//            		if(false) {
-//            			LogInfo("");
-//
-//            			int e[3] = {78, 104, 93};
-//            			TrackletKey tmp = PatternDBUtil::EncodeTrackletKey(PatternDB::DC1, e[0], 0, e[1], 0, e[2], 0);
-//            			std::cout << tmp;
-//
-//									if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
-//										std::cout << "Found!" << std::endl;
-//									else
-//										std::cout << "Not Found!" << std::endl;
-//
-//            			auto size = _pattern_db->St1.size();
-//            			_pattern_db->St1.insert(tmp);
-//									if(_pattern_db->St1.size()>size)
-//										std::cout << "Inserted!" << std::endl;
-//									else
-//										std::cout << "Not Inserted!" << std::endl;
-//
-//									if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
-//										std::cout << "Found!" << std::endl;
-//									else
-//										std::cout << "Not Found!" << std::endl;
-//
-////            			for(int i=0; i<1; ++i) {
-////            				for(int j=-3; j<4; ++j) {
-////            					for(int k=-3; k<4; ++k) {
-////												tmp = PatternDBUtil::EncodeTrackletKey(PatternDB::DC1, e[0]+i, 0, e[1]+j, 0, e[2]+k, 0);
-////												std::cout << tmp;
-////												if(_pattern_db->St1.find(tmp)!=_pattern_db->St1.end())
-////													std::cout << "Found!" << std::endl;
-////												else
-////													std::cout << "Not Found!" << std::endl;
-////            					}
-////            				}
-////            			}
-//            		}
+            		TrackletKey key = PatternDBUtil::GetTrackletKey(det_elem_pairs, station);
 
             		if(station == PatternDB::DC1
             				and _pattern_db->St1.find(key)!=_pattern_db->St1.end()) matched = true;
@@ -1476,19 +1483,29 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
             		if(stationID==3)
                   _timers["search_db_2"]->stop();
 
-            		//TODO remove this debug code
-//            		LogInfo(key);
-//            		if(!matched) {
-//            			LogInfo("Not matched!");
-//            			//if(station != PatternDB::DC1) continue;
-//            		}
+            		if(Verbosity() > 20) {
+            			std::cout
+									<< hitAll[xiter->first].index << ", "
+									<< hitAll[xiter->second].index << ", "
+									<< hitAll[uiter->first].index << ", "
+									<< hitAll[uiter->second].index << ", "
+									<< hitAll[viter->first].index << ", "
+									<< hitAll[viter->second].index
+									<< std::endl;
+
+            			std::cout << key;
+            			if(matched) {
+              			std::cout<< "St" << station << " Pattern Found!";
+            			} else {
+              			std::cout<< "St" << station << " Pattern NOT Found!";
+            			}
+            			std::cout << std::endl;
+            		}
 
             		if(!matched) {
-              		if(Verbosity() > 20) {
-              			LogInfo("St" << station << " Pattern NOT Found!");
-              		}
             			continue;
             		}
+
 #ifdef _DEBUG_YUHW_
               	counter["DS"]++;
 #endif
@@ -1571,7 +1588,6 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
             }
         }
     }
-
 
 #ifdef _DEBUG_YUHW_
   	LogInfo("");

@@ -150,7 +150,7 @@ void PatternDB::print() {
 	identify();
 	int i=0;
 	for(auto key : St1) {
-		std::cout << key;
+		std::cout << key << std::endl;
 		++i;
 		//if(i>100) break;
 	}
