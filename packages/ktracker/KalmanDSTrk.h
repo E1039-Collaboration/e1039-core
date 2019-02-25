@@ -261,7 +261,11 @@ private:
     /// Analysis mode
     bool _ana_mode;
     TFile *_fana;
-    TNtuple *_tana;
+    TNtuple *_tana_St1;
+    TNtuple *_tana_St2;
+    TNtuple *_tana_St3;
+    TNtuple *_tana_St23;
+    TNtuple *_tana_St123;
 
 
 };

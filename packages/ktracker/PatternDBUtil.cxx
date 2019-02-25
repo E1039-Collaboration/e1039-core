@@ -8,9 +8,9 @@
 
 #define _DEBUG_
 
-#define _RESOLUTION1_ 1
+#define _RESOLUTION1_ 2
 #define _RESOLUTION2_ 2
-#define _RESOLUTION3_ 3
+#define _RESOLUTION3_ 2
 
 int PatternDBUtil::verbosity = 0;
 

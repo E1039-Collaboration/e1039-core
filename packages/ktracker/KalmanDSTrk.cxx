@@ -391,14 +391,14 @@ KalmanDSTrk::KalmanDSTrk(
     s_detectorID[1] = p_geomSvc->getDetectorID("D2Up");
     s_detectorID[2] = p_geomSvc->getDetectorID("D2Vp");
 
-    _ana_mode = false;
+    _ana_mode = true;
     if(_ana_mode) {
 			_fana = TFile::Open("ktracker_ana.root","recreate");
-			_tana = new TNtuple("T","kTracker Ana",
-					"st2_tx:st2_x0:st2_ty:st2_y0:st2_chi2:"
-					"st3_tx:st3_x0:st3_ty:st3_y0:st3_chi2:"
-					"st23i_tx:st23i_x0:"
-					"st23f_tx:st23f_x0:st23f_ty:st23f_y0:st23f_chi2");
+			_tana_St1   = new TNtuple("St1",  "St1",   "in:DS:out");
+			_tana_St2   = new TNtuple("St2",  "St2",   "in:DS:out");
+			_tana_St3   = new TNtuple("St3",  "St3",   "in:DS:out");
+			_tana_St23  = new TNtuple("St23", "St23",  "in:DS:out:time");
+			_tana_St123 = new TNtuple("St123","St123", "in:DS:out:time");
     }
 }
 
@@ -410,7 +410,11 @@ KalmanDSTrk::~KalmanDSTrk()
 
     if(_ana_mode) {
 			_fana->cd();
-			_tana->Write();
+			_tana_St1->Write();
+			_tana_St2->Write();
+			_tana_St3->Write();
+			_tana_St23->Write();
+			_tana_St123->Write();
 			_fana->Close();
     }
 }
@@ -521,9 +525,7 @@ int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
     }
 
     //Build back partial tracks in station 2, 3+ and 3-
-    _timers["st23"]->restart();
     buildBackPartialTracks();
-    _timers["st23"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
@@ -538,9 +540,7 @@ int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
     }
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
-    _timers["global"]->restart();
     buildGlobalTracks();
-    _timers["global"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets Global: " << trackletsInSt[4].size());
@@ -634,6 +634,7 @@ bool KalmanDSTrk::acceptEvent(SRawEvent* rawEvent)
 
 void KalmanDSTrk::buildBackPartialTracks()
 {
+  _timers["st23"]->restart();
 #ifndef ALIGNMENT_MODE
     //Temporary container for a simple chisq fit
     int nHitsX2, nHitsX3;
@@ -754,28 +755,6 @@ void KalmanDSTrk::buildBackPartialTracks()
             fitTracklet(tracklet_23);
             if(verbosity>2) _timers["st23_fit2"]->stop();
 
-            if(_ana_mode) {
-							float tana_data[] = {
-									tracklet2->tx,
-									tracklet2->x0,
-									tracklet2->ty,
-									tracklet2->y0,
-									tracklet2->chisq,
-									tracklet3->tx,
-									tracklet3->x0,
-									tracklet3->ty,
-									tracklet3->y0,
-									tracklet3->chisq,
-									a,
-									b,
-									tracklet_23.tx,
-									tracklet_23.x0,
-									tracklet_23.ty,
-									tracklet_23.y0,
-									tracklet_23.chisq};
-							_tana->Fill(tana_data);
-            }
-
             if(tracklet_23.chisq > 9000.)
             {
 #ifdef _DEBUG_ON
@@ -845,20 +824,33 @@ void KalmanDSTrk::buildBackPartialTracks()
         if(verbosity>2) _timers["st23_reduce"]->stop();
     }
 
+    reduceTrackletList(trackletsInSt[3]);
+    trackletsInSt[3].sort();
+
+    _timers["st23"]->stop();
+
 #ifdef _DEBUG_YUHW_
   	LogInfo("");
   	std::cout
 		<< counter["in"] << " => "
 		<< counter["DS"] << " => "
 		<< counter["out"] << std::endl;
-#endif
 
-    reduceTrackletList(trackletsInSt[3]);
-    trackletsInSt[3].sort();
+    if(_ana_mode) {
+			float tana_data[] = {
+					counter["in"],
+					counter["DS"],
+					counter["out"],
+					_timers["st23"]->get_accumulated_time()/1000.
+			};
+			_tana_St23->Fill(tana_data);
+    }
+#endif
 }
 
 void KalmanDSTrk::buildGlobalTracks()
 {
+  _timers["global"]->restart();
 
 #ifdef _DEBUG_YUHW_
     std::map<std::string, int> counter = {
@@ -1077,14 +1069,27 @@ void KalmanDSTrk::buildGlobalTracks()
         }
     }
 
+    trackletsInSt[4].sort();
+
+    _timers["global"]->stop();
+
 #ifdef _DEBUG_YUHW_
 		LogInfo("");
 		std::cout
 		<< counter["in"] << " => "
 		<< counter["DS"] << " => "
 		<< counter["out"] << std::endl;
+
+		if(_ana_mode) {
+			float tana_data[] = {
+					counter["in"],
+					counter["DS"],
+					counter["out"],
+					_timers["global"]->get_accumulated_time()/1000.
+			};
+			_tana_St123->Fill(tana_data);
+		}
 #endif
-    trackletsInSt[4].sort();
 }
 
 void KalmanDSTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
@@ -1595,6 +1600,17 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
 		<< counter["in"] << " => "
 		<< counter["DS"] << " => "
 		<< counter["out"] << std::endl;
+
+    if(_ana_mode) {
+			float tana_data[] = {
+					counter["in"],
+					counter["DS"],
+					counter["out"],
+			};
+			if(stationID==2) _tana_St1->Fill(tana_data);
+			if(stationID==3) _tana_St2->Fill(tana_data);
+			if(stationID==4||stationID==5) _tana_St3->Fill(tana_data);
+    }
 #endif
 
     //Reduce the tracklet list and add dummy hits
