@@ -98,6 +98,7 @@ int RndmEmbed::process_event(PHCompositeNode* topNode) {
 
   gsl_rng* RandomGenerator = gsl_rng_alloc(gsl_rng_mt19937);
   unsigned int seed = PHRandomSeed();  // fixed seed is handled in this funtcion
+  //seed = 128;
 	//std::cout << Name() << " random seed: " << seed << std::endl;
   gsl_rng_set(RandomGenerator, seed);
 
@@ -117,23 +118,62 @@ int RndmEmbed::process_event(PHCompositeNode* topNode) {
   		bool acc = gsl_ran_flat(RandomGenerator, 0, 1) < noise_rate ? true : false;
   		if(!acc) continue;
 
-  		double drift = plane.spacing * gsl_ran_flat(RandomGenerator, -1, 1);
+  		{
+				double drift = plane.spacing * gsl_ran_flat(RandomGenerator, -1, 1);
 
-      auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
-      auto digiHit = up_digiHit.get();
+				auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
+				auto digiHit = up_digiHit.get();
 
-      digiHit->set_detector_id(detector_id);
-      digiHit->set_element_id(element_id);
-      digiHit->set_drift_distance(drift);
+				digiHit->set_hit_id(_hit_vector->size());
 
-      digiHit->set_track_id(std::numeric_limits<int>::max());
-      digiHit->set_g4hit_id(std::numeric_limits<int>::max());
+				digiHit->set_detector_id(detector_id);
+				digiHit->set_element_id(element_id);
+				digiHit->set_drift_distance(drift);
 
-      digiHit->set_truth_x(std::numeric_limits<float>::max());
-      digiHit->set_truth_y(std::numeric_limits<float>::max());
-      digiHit->set_truth_z(std::numeric_limits<float>::max());
+				digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
 
-      _hit_vector->push_back(digiHit);
+				// FIXME figure this out
+				digiHit->set_in_time(1);
+				digiHit->set_hodo_mask(1);
+
+				digiHit->set_track_id(std::numeric_limits<int>::max());
+				digiHit->set_g4hit_id(std::numeric_limits<int>::max());
+
+				digiHit->set_truth_x(std::numeric_limits<float>::max());
+				digiHit->set_truth_y(std::numeric_limits<float>::max());
+				digiHit->set_truth_z(std::numeric_limits<float>::max());
+
+				_hit_vector->push_back(digiHit);
+  		}
+
+  		{
+				double drift = plane.spacing * gsl_ran_flat(RandomGenerator, -1, 1);
+
+				auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
+				auto digiHit = up_digiHit.get();
+
+				digiHit->set_hit_id(_hit_vector->size());
+
+				digiHit->set_detector_id(detector_id+1);
+				digiHit->set_element_id(element_id);
+				digiHit->set_drift_distance(drift);
+
+				digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+
+				// FIXME figure this out
+				digiHit->set_in_time(1);
+				digiHit->set_hodo_mask(1);
+
+				digiHit->set_track_id(std::numeric_limits<int>::max());
+				digiHit->set_g4hit_id(std::numeric_limits<int>::max());
+
+				digiHit->set_truth_x(std::numeric_limits<float>::max());
+				digiHit->set_truth_y(std::numeric_limits<float>::max());
+				digiHit->set_truth_z(std::numeric_limits<float>::max());
+
+				_hit_vector->push_back(digiHit);
+  		}
+
   	}
   }
 
