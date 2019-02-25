@@ -103,6 +103,7 @@ private:
 	int n_hits;
 	int hit_id[10000];
 	int detector_id[10000];
+	int element_id[10000];
 	float drift_distance[10000];
 	float pos[10000];
 	float detector_z[10000];

@@ -135,6 +135,7 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
       pos[n_hits]            = hit->get_pos();
       detector_z[n_hits]     = p_geomSvc->getPlanePosition(hit->get_detector_id());
       detector_id[n_hits]    = hit->get_detector_id();
+      element_id[n_hits]     = hit->get_element_id();
 
       if(_truth) {
       	int track_id = hit->get_track_id();
@@ -510,6 +511,7 @@ int TrkEval::InitEvalTree() {
   _tout->Branch("nHits",         &n_hits,          "nHits/I");
   _tout->Branch("hitID",         hit_id,           "hitID[nHits]/I");
   _tout->Branch("detectorID",    detector_id,      "detectorID[nHits]/I");
+  _tout->Branch("elementID",     element_id,       "elementID[nHits]/I");
   _tout->Branch("detectorZ",     detector_z,       "detectorZ[nHits]/F");
   _tout->Branch("truth_x",       truth_x,          "truth_x[nHits]/F");
   _tout->Branch("truth_y",       truth_y,          "truth_y[nHits]/F");
@@ -589,6 +591,7 @@ int TrkEval::ResetEvalVars() {
   n_hits = 0;
   for(int i=0; i<10000; ++i) {
     detector_id[i]    = std::numeric_limits<short>::max();
+    element_id[i]     = std::numeric_limits<short>::max();
     drift_distance[i] = std::numeric_limits<float>::max();
     pos[i]            = std::numeric_limits<float>::max();
     detector_z[i]     = std::numeric_limits<float>::max();
