@@ -4,9 +4,10 @@ if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     export OFFLINE_MAIN=/opt/e1039-share/inst
     export MY_INSTALL=~/tmp/e1039-core
 
-    export         PATH=$MY_INSTALL/bin:$OFFLINE_MAIN/bin:$PATH
-    export        CPATH=$MY_INSTALL/include:$OFFLINE_MAIN/include:$CPATH
-    export LIBRARY_PATH=$MY_INSTALL/lib:$OFFLINE_MAIN/lib:$LIBRARY_PATH
+    export            PATH=$MY_INSTALL/bin:$OFFLINE_MAIN/bin:$PATH
+    export           CPATH=$MY_INSTALL/include:$OFFLINE_MAIN/include:$CPATH
+    export    LIBRARY_PATH=$MY_INSTALL/lib:$OFFLINE_MAIN/lib:$LIBRARY_PATH
+    export LD_LIBRARY_PATH=$MY_INSTALL/lib:$OFFLINE_MAIN/lib:$LD_LIBRARY_PATH
     
 else
     echo "Using the non-host-specific setting.  This might not work on your environment."
