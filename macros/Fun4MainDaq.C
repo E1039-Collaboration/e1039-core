@@ -10,12 +10,22 @@
      scp -p  e906-gat6.fnal.gov:/data3/data/mainDAQ/run_$RUN6.dat $DIR_LOCAL
      scp -pr e906-gat6.fnal.gov:/data2/production/runs/run_$RUN6  $DIR_LOCAL/runs
  */
-int Fun4MainDaq(
-  const int nevent = 0,
-  const char* fn_in  = "/data/e906/run_028700.dat",  
-  const char* fn_out = "maindaq.root")
+R__LOAD_LIBRARY(libdecoder_maindaq)
+
+int Fun4MainDaq(const int nevent = 0, const int run = 28700)
 {
-  gSystem->Load("libdecoder_maindaq.so");
+  //gSystem->Load("libdecoder_maindaq.so");
+  //const char* dir_in  = "/data/e906",
+  const char* dir_in  = "/data2/analysis/kenichi/e1039";
+  const char* dir_out = ".";
+
+  ostringstream oss;
+  oss << setfill('0') 
+      << dir_in << "/run_" << setw(6) << run << ".dat";
+  string fn_in = oss.str();
+  oss.str("");
+  oss << dir_out << "/run_" << setw(6) << run << ".root";
+  string fn_out = oss.str();
 
   Fun4AllServer* se = Fun4AllServer::instance();
   //se->Verbosity(1);
@@ -23,7 +33,8 @@ int Fun4MainDaq(
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(1);
   in->EventSamplingFactor(100);
-  in->DirParam("/data/e906/runs");
+  in->DirParam("/data2/production/runs");
+  //in->DirParam("/data/e906/runs");
   in->fileopen(fn_in);
   se->registerInputManager(in);
 
