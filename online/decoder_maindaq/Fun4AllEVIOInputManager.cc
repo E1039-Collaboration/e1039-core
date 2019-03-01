@@ -490,3 +490,7 @@ void Fun4AllEVIOInputManager::DirParam(const std::string dir)
   parser->dec_par.dir_param = dir;
 }
 
+void Fun4AllEVIOInputManager::PretendSpillInterval(const int sec)
+{
+  parser->dec_par.time_wait = sec;
+}

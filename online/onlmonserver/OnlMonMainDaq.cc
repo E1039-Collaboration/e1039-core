@@ -1,11 +1,11 @@
-/*
- * AnaMainDaq.C
- *
- *  Created on: Oct 29, 2017
- *      Author: yuhw
- */
+/// OnlMonMainDaq.C
 #include <iomanip>
 #include <TH1D.h>
+#include <TSocket.h>
+#include <TClass.h>
+#include <TMessage.h>
+#include <TCanvas.h>
+#include <TPaveText.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQSpillMap.h>
 #include <interface_main/SQSpill.h>
@@ -20,26 +20,28 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <onlmonserver/OnlMonServer.h>
-#include "AnaMainDaq.h"
+#include "OnlMonMainDaq.h"
 using namespace std;
 
-AnaMainDaq::AnaMainDaq(const std::string& name) : SubsysReco(name)
+OnlMonMainDaq::OnlMonMainDaq(const std::string& name) : OnlMonClient(name)
 {
   ;
 }
 
-int AnaMainDaq::Init(PHCompositeNode* topNode)
+int OnlMonMainDaq::Init(PHCompositeNode* topNode)
 {
+  h1_tgt      = new TH1D("h1_tgt", ";Target position; N of spills", 9, -0.5, 8.5);
   h1_evt_qual = new TH1D("h1_evt_qual", ";Event-quality bit;N of events", 33, -0.5, 32.5);
 
-  Fun4AllHistoManager* hm = new Fun4AllHistoManager("MainDaq");
+  Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
   OnlMonServer::instance()->registerHistoManager(hm);
+  hm->registerHisto(h1_tgt);
   hm->registerHisto(h1_evt_qual);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int AnaMainDaq::InitRun(PHCompositeNode* topNode)
+int OnlMonMainDaq::InitRun(PHCompositeNode* topNode)
 {
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
@@ -50,7 +52,7 @@ int AnaMainDaq::InitRun(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int AnaMainDaq::process_event(PHCompositeNode* topNode)
+int OnlMonMainDaq::process_event(PHCompositeNode* topNode)
 {
   SQSpillMap*     spill_map = findNode::getClass<SQSpillMap >(topNode, "SQSpillMap");
   SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
@@ -62,28 +64,59 @@ int AnaMainDaq::process_event(PHCompositeNode* topNode)
   if (event_header->get_spill_id() != spill_id_pre) {
     spill_id_pre = event_header->get_spill_id();
     SQSpill* spi = spill_map->get(spill_id_pre);
-    PrintSpill(spi);
+    //PrintSpill(spi);
+    h1_tgt->Fill(spi->get_target_pos());
   }
 
-  static int n_evt_print = 0;
-  if (n_evt_print++ < 3) PrintEvent(event_header, hit_vec, trig_hit_vec);
+  //static int n_evt_print = 0;
+  //if (n_evt_print++ < 3) PrintEvent(event_header, hit_vec, trig_hit_vec);
 
   int dq_evt = event_header->get_data_quality();
   if (dq_evt == 0) h1_evt_qual->Fill(32);
   for (int bit = 0; bit < 32; bit++) {
     if ((dq_evt > bit) & 0x1) h1_evt_qual->Fill(bit);
   }
-
   
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int AnaMainDaq::End(PHCompositeNode* topNode)
+int OnlMonMainDaq::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-void AnaMainDaq::PrintSpill(SQSpill* spi)
+int OnlMonMainDaq::DrawMonitor()
+{
+  h1_tgt      = FindMonHist("h1_tgt");
+  h1_evt_qual = FindMonHist("h1_evt_qual");
+
+  pad_title->cd();
+  TPaveText* title = new TPaveText(.02, .02, .98, .98);
+  title->AddText(Name().c_str());
+  title->Draw();
+
+  pad_main->cd();
+  pad_main->SetGrid();
+  pad_main->Divide(1, 2);
+
+  pad_main->cd(1);
+  if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
+  h1_evt_qual->Draw();
+
+  pad_main->cd(2);
+  h1_tgt->Draw();
+
+  pad_msg->cd();
+  TPaveText* msg = new TPaveText(.02, .02, .98, .98);
+  msg->SetFillColor(kGreen);
+  msg->AddText("Always Okay ;^D");
+  msg->Draw();
+  
+  return 0;
+}
+
+
+void OnlMonMainDaq::PrintSpill(SQSpill* spi)
 {
   cout << "SQSpill:  "
        << "  " << spi->get_spill_id    ()
@@ -113,7 +146,7 @@ void AnaMainDaq::PrintSpill(SQSpill* spi)
   }
 }
 
-void AnaMainDaq::PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit)
+void OnlMonMainDaq::PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit)
 {
   cout << "SQEvent:  "
        << "  " << evt->get_run_id       ()

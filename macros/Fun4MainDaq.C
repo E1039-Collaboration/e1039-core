@@ -10,6 +10,8 @@
      scp -p  e906-gat6.fnal.gov:/data3/data/mainDAQ/run_$RUN6.dat $DIR_LOCAL
      scp -pr e906-gat6.fnal.gov:/data2/production/runs/run_$RUN6  $DIR_LOCAL/runs
  */
+R__LOAD_LIBRARY(libinterface_main)
+R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
 
 int Fun4MainDaq(const int nevent = 0, const int run = 28700)
@@ -18,6 +20,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   //const char* dir_in  = "/data/e906",
   const char* dir_in  = "/data2/analysis/kenichi/e1039";
   const char* dir_out = ".";
+  const bool is_online = true;
 
   ostringstream oss;
   oss << setfill('0') 
@@ -27,12 +30,16 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   oss << dir_out << "/run_" << setw(6) << run << ".root";
   string fn_out = oss.str();
 
-  Fun4AllServer* se = Fun4AllServer::instance();
+  //Fun4AllServer* se = Fun4AllServer::instance();
+  OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(1);
   in->EventSamplingFactor(100);
+  if (is_online) {
+    in->PretendSpillInterval(55);
+  }
   in->DirParam("/data2/production/runs");
   //in->DirParam("/data/e906/runs");
   in->fileopen(fn_in);
@@ -41,8 +48,12 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
   se->registerOutputManager(out);
 
-  SubsysReco* ana = new AnaMainDaq();
-  se->registerSubsystem(ana);
+  if (is_online) { // Register the online-monitoring clients
+    se->StartServer();
+
+    OnlMonClient* ana = new OnlMonMainDaq();
+    se->registerSubsystem(ana);
+  }
 
   se->run(nevent);
   se->End();
