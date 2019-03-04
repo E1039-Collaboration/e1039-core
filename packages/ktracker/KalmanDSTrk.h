@@ -61,6 +61,7 @@ public:
 
 	//Set the input event
 	int setRawEvent(SRawEvent* event_input);
+	int setRawEventWorker(SRawEvent* event_input);
 	void setRawEventDebug(SRawEvent* event_input);
 
 	//Event quality cut
@@ -261,6 +262,7 @@ private:
     /// Analysis mode
     bool _ana_mode;
     TFile *_fana;
+    TNtuple *_tana_Event;
     TNtuple *_tana_St1;
     TNtuple *_tana_St2;
     TNtuple *_tana_St3;
@@ -268,6 +270,7 @@ private:
     TNtuple *_tana_St123;
 
 
+    int _event;
 };
 
 #endif /*_KalmanDSTrk_H*/

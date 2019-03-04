@@ -395,12 +395,19 @@ KalmanDSTrk::KalmanDSTrk(
     _ana_mode = true;
     if(_ana_mode) {
 			_fana = TFile::Open("ktracker_ana.root","recreate");
+			_tana_Event = new TNtuple("Event",  "Event",
+					"NSt2:NSt3:NSt23:NGlobal:NKalman:"
+					"TSt2:TSt3:TSt23:TGlobal:TKalman:"
+					"TEvent"
+			);
 			_tana_St1   = new TNtuple("St1",  "St1",   "in:DS:out");
 			_tana_St2   = new TNtuple("St2",  "St2",   "in:DS:out");
 			_tana_St3   = new TNtuple("St3",  "St3",   "in:DS:out");
 			_tana_St23  = new TNtuple("St23", "St23",  "in:DS:out:time");
 			_tana_St123 = new TNtuple("St123","St123", "in:DS:out:time");
     }
+
+    _event = 0;
 }
 
 KalmanDSTrk::~KalmanDSTrk()
@@ -411,6 +418,7 @@ KalmanDSTrk::~KalmanDSTrk()
 
     if(_ana_mode) {
 			_fana->cd();
+			_tana_Event->Write();
 			_tana_St1->Write();
 			_tana_St2->Write();
 			_tana_St3->Write();
@@ -426,15 +434,44 @@ void KalmanDSTrk::setRawEventDebug(SRawEvent* event_input)
     hitAll = event_input->getAllHits();
 }
 
+
 int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
 {
-	//
+	// reset all timers
 	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
 		iter->second->reset();
 	}
 
 	_timers["event"]->restart();
+	int ret = this->setRawEventWorker(event_input);
+	_timers["event"]->stop();
 
+
+  if(_ana_mode) {
+  	float data[] = {
+  			trackletsInSt[1].size(), // St2
+  			trackletsInSt[2].size(), // St3
+  			trackletsInSt[3].size(), // St23
+  			trackletsInSt[4].size(), // Global
+				stracks.size(),
+				_timers["st2"]->get_accumulated_time()/1000.,
+				_timers["st3"]->get_accumulated_time()/1000.,
+				_timers["st23"]->get_accumulated_time()/1000.,
+				_timers["global"]->get_accumulated_time()/1000.,
+				_timers["kalman"]->get_accumulated_time()/1000.,
+				_timers["event"]->get_accumulated_time()/1000.,
+  	};
+
+  	_tana_Event->Fill(data);
+  }
+
+  ++_event;
+
+	return ret;
+}
+
+int KalmanDSTrk::setRawEventWorker(SRawEvent* event_input)
+{
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
     stracks.clear();
@@ -590,8 +627,6 @@ int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
         strack->print();
     }
 #endif
-
-  	_timers["event"]->stop();
 
     return TFEXIT_SUCCESS;
 }
@@ -2324,7 +2359,9 @@ void KalmanDSTrk::resolveLeftRight(KalmanTrack& kmtrk)
 }
 
 void KalmanDSTrk::printTimers() {
-	std::cout <<"KalmanDSTrk::printTimers: event: " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
+	std::cout
+		<<"KalmanDSTrk::printTimers: event: " << _event
+		<< ": " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
 	std::cout << "================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Search DB                   "<<_timers["search_db_2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
