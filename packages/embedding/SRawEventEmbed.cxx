@@ -96,6 +96,7 @@ int SRawEventEmbed::InitRun(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
+  _srawevent = new SRawEvent();
 	_tin->SetBranchAddress("rawEvent", &_srawevent);
 
 	return Fun4AllReturnCodes::EVENT_OK;
@@ -114,14 +115,20 @@ int SRawEventEmbed::process_event(PHCompositeNode* topNode) {
   }
 
   // Next entry until triggered, warp using
+  //_fin->cd();
   while (true) {
+    try {
+      _tin->GetEntry(_tree_entry);
+  	  ++_tree_entry;
+    } catch (...) {
+      LogInfo("FAIL: _tin->GetEntry(_tree_entry);");
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
     if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
     	LogInfo("_event: " << _event);
     	LogInfo("_tree_entry: " << _tree_entry);
     	LogInfo(_srawevent);
     }
-    _tin->GetEntry(_tree_entry);
-  	++_tree_entry;
     if(!_srawevent) {
       LogInfo("!_srawevent");
       continue;
