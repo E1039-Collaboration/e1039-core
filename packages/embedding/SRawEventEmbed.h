@@ -115,6 +115,7 @@ private:
 	SQHitVector *_hit_vector;
 
 	std::string _in_name;
+	TFile* _fin;
 	TTree* _tin;
 	int _tree_entry;
 	int _trigger_bit;

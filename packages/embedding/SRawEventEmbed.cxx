@@ -84,13 +84,13 @@ int SRawEventEmbed::InitRun(PHCompositeNode* topNode) {
 	int ret = GetNodes(topNode);
 	if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
-	TFile *fin = TFile::Open(_in_name.c_str(), "READ");
-	if(!fin) {
+	_fin = TFile::Open(_in_name.c_str(), "READ");
+	if(!_fin) {
 		LogInfo("!fin");
 		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	_tin = (TTree*) fin->Get("save");
+	_tin = (TTree*) _fin->Get("save");
 	if(!_tin) {
 		LogInfo("!_tin");
 		return Fun4AllReturnCodes::ABORTRUN;
