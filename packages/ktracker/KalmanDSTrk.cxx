@@ -16,6 +16,7 @@ Created: 05-28-2013
 
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
+#include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
 #include <fstream>
@@ -597,7 +598,8 @@ int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
 
 bool KalmanDSTrk::acceptEvent(SRawEvent* rawEvent)
 {
-#ifdef _DEBUG_ON
+
+	if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
     LogInfo("D0: " << rawEvent->getNHitsInD0());
     LogInfo("D1: " << rawEvent->getNHitsInD1());
     LogInfo("D2: " << rawEvent->getNHitsInD2());
@@ -610,26 +612,26 @@ bool KalmanDSTrk::acceptEvent(SRawEvent* rawEvent)
     LogInfo("Prop:" << rawEvent->getNPropHitsAll());
     LogInfo("NRoadsPos: " << rawEvent->getNRoadsPos());
     LogInfo("NRoadsNeg: " << rawEvent->getNRoadsNeg());
-#endif
+	}
 
-    if(rawEvent->getNHitsInD0() > 350) return false;
-    if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
-    if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
-    if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
-    if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
+	if(rawEvent->getNHitsInD0() > 350) return false;
+	if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
+	if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
+	if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
+	if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
 
-    /*
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]) > 10) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]) > 10) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]) > 10) return false;
-    if(rawEvent->getNPropHitsAll() > 300) return false;
+	/*
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]) > 10) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]) > 10) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]) > 10) return false;
+	if(rawEvent->getNPropHitsAll() > 300) return false;
 
-    if(rawEvent->getNRoadsPos() > 5) return false;
-    if(rawEvent->getNRoadsNeg() > 5) return false;
-    */
+	if(rawEvent->getNRoadsPos() > 5) return false;
+	if(rawEvent->getNRoadsNeg() > 5) return false;
+	*/
 
-    return true;
+	return true;
 }
 
 void KalmanDSTrk::buildBackPartialTracks()
