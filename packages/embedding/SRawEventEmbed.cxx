@@ -122,7 +122,11 @@ int SRawEventEmbed::process_event(PHCompositeNode* topNode) {
     }
     _tin->GetEntry(_tree_entry);
   	++_tree_entry;
-  	if ((_srawevent->getTriggerBits()&_trigger_bit) > 0) break;
+    if(!_srawevent) {
+      LogInfo("!_srawevent");
+      continue;
+    }
+  	if((_srawevent->getTriggerBits()&_trigger_bit) > 0) break;
   	if(_tree_entry >=  _tin->GetEntries()) _tree_entry=0;
   }
 
