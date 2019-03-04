@@ -396,8 +396,8 @@ KalmanDSTrk::KalmanDSTrk(
     if(_ana_mode) {
 			_fana = TFile::Open("ktracker_ana.root","recreate");
 			_tana_Event = new TNtuple("Event",  "Event",
-					"NSt2:NSt3:NSt23:NGlobal:NKalman:"
-					"TSt2:TSt3:TSt23:TGlobal:TKalman:"
+					"NSt2:NSt3:NSt23:NSt1:NGlobal:NKalman:"
+					"TSt2:TSt3:TSt23:TGKalman:TGlobal:TKalman:"
 					"TEvent"
 			);
 			_tana_St1   = new TNtuple("St1",  "St1",   "in:DS:out");
@@ -448,18 +448,20 @@ int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
 
 
   if(_ana_mode) {
-  	float data[] = {
-  			trackletsInSt[1].size(), // St2
-  			trackletsInSt[2].size(), // St3
-  			trackletsInSt[3].size(), // St23
-  			trackletsInSt[4].size(), // Global
-				stracks.size(),
-				_timers["st2"]->get_accumulated_time()/1000.,
-				_timers["st3"]->get_accumulated_time()/1000.,
-				_timers["st23"]->get_accumulated_time()/1000.,
-				_timers["global"]->get_accumulated_time()/1000.,
-				_timers["kalman"]->get_accumulated_time()/1000.,
-				_timers["event"]->get_accumulated_time()/1000.,
+		float data[] = {
+			static_cast<float>(trackletsInSt[1].size()), // St2
+			static_cast<float>(trackletsInSt[2].size()), // St3
+			static_cast<float>(trackletsInSt[3].size()), // St23
+			static_cast<float>(trackletsInSt[0].size()), // St1
+			static_cast<float>(trackletsInSt[4].size()), // Global
+			static_cast<float>(stracks.size()),
+			static_cast<float>(_timers["st2"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["st3"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["st23"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["global_kalman"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["global"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["kalman"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["event"]->get_accumulated_time()/1000.),
   	};
 
   	_tana_Event->Fill(data);
@@ -875,10 +877,10 @@ void KalmanDSTrk::buildBackPartialTracks()
 
     if(_ana_mode) {
 			float tana_data[] = {
-					counter["in"],
-					counter["DS"],
-					counter["out"],
-					_timers["st23"]->get_accumulated_time()/1000.
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"]),
+					static_cast<float>(_timers["st23"]->get_accumulated_time()/1000.)
 			};
 			_tana_St23->Fill(tana_data);
     }
@@ -1119,10 +1121,10 @@ void KalmanDSTrk::buildGlobalTracks()
 
 		if(_ana_mode) {
 			float tana_data[] = {
-					counter["in"],
-					counter["DS"],
-					counter["out"],
-					_timers["global"]->get_accumulated_time()/1000.
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"]),
+					static_cast<float>(_timers["global"]->get_accumulated_time()/1000.)
 			};
 			_tana_St123->Fill(tana_data);
 		}
@@ -1640,9 +1642,9 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
 
     if(_ana_mode) {
 			float tana_data[] = {
-					counter["in"],
-					counter["DS"],
-					counter["out"],
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"])
 			};
 			if(stationID==2) _tana_St1->Fill(tana_data);
 			if(stationID==3) _tana_St2->Fill(tana_data);
