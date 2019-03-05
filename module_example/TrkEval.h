@@ -76,6 +76,9 @@ private:
 
 	int GetNodes(PHCompositeNode *topNode);
 
+	int TruthEval(PHCompositeNode *topNode);
+	int RecoEval(PHCompositeNode *topNode);
+
 	std::string _hit_container_type;
 
 	size_t _event;
@@ -92,7 +95,8 @@ private:
 	SRecEvent* _recEvent;
 
 	std::string _out_name;
-	TTree* _tout;
+	TTree* _tout_truth;
+	TTree* _tout_reco;
 
 	int run_id;
 	int spill_id;
@@ -135,6 +139,7 @@ private:
 	int gnhodo[1000];
 	int gnprop[1000];
 	int ntruhits[1000];
+	int nhits[1000];
 	int charge[1000];
 	float vx[1000];
 	float vy[1000];
