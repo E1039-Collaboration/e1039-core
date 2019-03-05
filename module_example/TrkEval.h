@@ -117,7 +117,9 @@ private:
 	float truth_z[10000];
 	float truth_pos[10000];
 
-	int n_particles;
+	int n_tracks;
+	int rec_id[1000];
+	int par_id[1000];
 	int pid[1000];
 	float gvx[1000];
 	float gvy[1000];

@@ -219,10 +219,6 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 				}
 			}
 
-//			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
-//				hit->identify();
-//			}
-
 			// TODO better way to exclude hodo and prop hits?
 			// this is try to exclude hodo and prop hits
 			if(hit->get_detector_id() > 30) continue;
@@ -268,6 +264,7 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 			recID_bestParID[recID] = std::make_tuple(parID, nHit);
 	}
 
+	// Fill Reco Tree
 	for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
 		SRecTrack recTrack = _recEvent->getTrack(itrack);
 
@@ -275,56 +272,60 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 			cout << "--------- itrack: " << itrack << " ---------"<< endl;
 		}
 
-		nhits[n_particles] = recTrack.getNHits();
-		charge[n_particles] = recTrack.getCharge();
+		nhits[n_tracks] = recTrack.getNHits();
+		charge[n_tracks] = recTrack.getCharge();
 		TVector3 rec_vtx = recTrack.getTargetPos();
-		vx[n_particles]  = rec_vtx.X();
-		vy[n_particles]  = rec_vtx.Y();
-		vz[n_particles]  = rec_vtx.Z();
+		vx[n_tracks]  = rec_vtx.X();
+		vy[n_tracks]  = rec_vtx.Y();
+		vz[n_tracks]  = rec_vtx.Z();
 		TVector3 rec_mom = recTrack.getTargetMom();
-		px[n_particles]  = rec_mom.Px();
-		py[n_particles]  = rec_mom.Py();
-		pz[n_particles]  = rec_mom.Pz();
-		pt[n_particles]  = rec_mom.Pt();
-		eta[n_particles] = rec_mom.Eta();
-		phi[n_particles] = rec_mom.Phi();
+		px[n_tracks]  = rec_mom.Px();
+		py[n_tracks]  = rec_mom.Py();
+		pz[n_tracks]  = rec_mom.Pz();
+		pt[n_tracks]  = rec_mom.Pt();
+		eta[n_tracks] = rec_mom.Eta();
+		phi[n_tracks] = rec_mom.Phi();
 
 		{
 			double tx, ty, tz;
 			recTrack.getMomentumSt1(tx, ty, tz);
-			px_st1[n_particles] = tx;
-			py_st1[n_particles] = ty;
-			pz_st1[n_particles] = tz;
+			px_st1[n_tracks] = tx;
+			py_st1[n_tracks] = ty;
+			pz_st1[n_tracks] = tz;
 			double x, y;
 			recTrack.getPositionSt1(x, y);
-			x_st1[n_particles] = x;
-			y_st1[n_particles] = y;
+			x_st1[n_tracks] = x;
+			y_st1[n_tracks] = y;
 
 		}
 
 		int trackID = itrack;
 
+		rec_id[n_tracks] = trackID;
+
 		if(recID_bestParID.find(trackID)!=recID_bestParID.end()) {
-			ntruhits[n_particles] = std::get<1>(recID_bestParID[trackID]);
+			ntruhits[n_tracks] = std::get<1>(recID_bestParID[trackID]);
 			int parID = std::get<0>(recID_bestParID[trackID]);
 
 			PHG4Particle * par = _truth->GetParticle(parID);
 
-			pid[n_particles] = par->get_pid();
+			par_id[n_tracks] = parID;
+
+			pid[n_tracks] = par->get_pid();
 
 			int vtx_id =  par->get_vtx_id();
 			PHG4VtxPoint* vtx = _truth->GetVtx(vtx_id);
-			gvx[n_particles] = vtx->get_x();
-			gvy[n_particles] = vtx->get_y();
-			gvz[n_particles] = vtx->get_z();
+			gvx[n_tracks] = vtx->get_x();
+			gvy[n_tracks] = vtx->get_y();
+			gvz[n_tracks] = vtx->get_z();
 
 			TVector3 mom(par->get_px(), par->get_py(), par->get_pz());
-			gpx[n_particles] = par->get_px();
-			gpy[n_particles] = par->get_py();
-			gpz[n_particles] = par->get_pz();
-			gpt[n_particles] = mom.Pt();
-			geta[n_particles] = mom.Eta();
-			gphi[n_particles] = mom.Phi();
+			gpx[n_tracks] = par->get_px();
+			gpy[n_tracks] = par->get_py();
+			gpz[n_tracks] = par->get_pz();
+			gpt[n_tracks] = mom.Pt();
+			geta[n_tracks] = mom.Eta();
+			gphi[n_tracks] = mom.Phi();
 
 			// trackID + detID -> SQHit -> PHG4Hit -> momentum
 			for(int det_id=7; det_id<=12; ++det_id) {
@@ -343,29 +344,29 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 							if(verbosity >= 2) {
 								g4hit->identify();
 							}
-							gx_st1[n_particles]  = g4hit->get_x(0);
-							gy_st1[n_particles]  = g4hit->get_y(0);
-							gz_st1[n_particles]  = g4hit->get_z(0);
+							gx_st1[n_tracks]  = g4hit->get_x(0);
+							gy_st1[n_tracks]  = g4hit->get_y(0);
+							gz_st1[n_tracks]  = g4hit->get_z(0);
 
-							gpx_st1[n_particles] = g4hit->get_px(0)/1000.;
-							gpy_st1[n_particles] = g4hit->get_py(0)/1000.;
-							gpz_st1[n_particles] = g4hit->get_pz(0)/1000.;
+							gpx_st1[n_tracks] = g4hit->get_px(0)/1000.;
+							gpy_st1[n_tracks] = g4hit->get_py(0)/1000.;
+							gpz_st1[n_tracks] = g4hit->get_pz(0)/1000.;
 							break;
 						}
 					}
 				}
 			}
-  		gnhits[n_particles] =
+  		gnhits[n_tracks] =
   				parID_nhits_dc[parID] +
 					parID_nhits_hodo[parID] +
 					parID_nhits_prop[parID];
 
-  		gndc[n_particles] = parID_nhits_dc[parID];
-  		gnhodo[n_particles] = parID_nhits_hodo[parID];
-  		gnprop[n_particles] = parID_nhits_prop[parID];
+  		gndc[n_tracks] = parID_nhits_dc[parID];
+  		gnhodo[n_tracks] = parID_nhits_hodo[parID];
+  		gnprop[n_tracks] = parID_nhits_prop[parID];
 		}
-		++n_particles;
-		if(n_particles>=1000) break;
+		++n_tracks;
+		if(n_tracks>=1000) break;
 	}
 
   if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) LogInfo("parID_recID_nHit mapping finished");
@@ -576,23 +577,25 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   			++iter) {
   		PHG4Particle * par = iter->second;
 
-  		pid[n_particles] = par->get_pid();
+  		pid[n_tracks] = par->get_pid();
 
   		int vtx_id =  par->get_vtx_id();
   		PHG4VtxPoint* vtx = _truth->GetVtx(vtx_id);
-  		gvx[n_particles] = vtx->get_x();
-  		gvy[n_particles] = vtx->get_y();
-  		gvz[n_particles] = vtx->get_z();
+  		gvx[n_tracks] = vtx->get_x();
+  		gvy[n_tracks] = vtx->get_y();
+  		gvz[n_tracks] = vtx->get_z();
 
   		TVector3 mom(par->get_px(), par->get_py(), par->get_pz());
-  		gpx[n_particles] = par->get_px();
-  		gpy[n_particles] = par->get_py();
-  		gpz[n_particles] = par->get_pz();
-  		gpt[n_particles] = mom.Pt();
-  		geta[n_particles] = mom.Eta();
-  		gphi[n_particles] = mom.Phi();
+  		gpx[n_tracks] = par->get_px();
+  		gpy[n_tracks] = par->get_py();
+  		gpz[n_tracks] = par->get_pz();
+  		gpt[n_tracks] = mom.Pt();
+  		geta[n_tracks] = mom.Eta();
+  		gphi[n_tracks] = mom.Phi();
 
   		int parID = par->get_track_id();
+
+			par_id[n_tracks] = parID;
 
   		// trackID + detID -> SQHit -> PHG4Hit -> momentum
   		for(int det_id=7; det_id<=12; ++det_id) {
@@ -611,27 +614,27 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   						if(verbosity >= 2) {
   							g4hit->identify();
   						}
-							gx_st1[n_particles]  = g4hit->get_x(0);
-							gy_st1[n_particles]  = g4hit->get_y(0);
-							gz_st1[n_particles]  = g4hit->get_z(0);
+							gx_st1[n_tracks]  = g4hit->get_x(0);
+							gy_st1[n_tracks]  = g4hit->get_y(0);
+							gz_st1[n_tracks]  = g4hit->get_z(0);
 
-							gpx_st1[n_particles] = g4hit->get_px(0)/1000.;
-							gpy_st1[n_particles] = g4hit->get_py(0)/1000.;
-							gpz_st1[n_particles] = g4hit->get_pz(0)/1000.;
+							gpx_st1[n_tracks] = g4hit->get_px(0)/1000.;
+							gpy_st1[n_tracks] = g4hit->get_py(0)/1000.;
+							gpz_st1[n_tracks] = g4hit->get_pz(0)/1000.;
 							break;
   					}
   				}
   			}
   		}
 
-  		gnhits[n_particles] =
+  		gnhits[n_tracks] =
   				parID_nhits_dc[parID] +
 					parID_nhits_hodo[parID] +
 					parID_nhits_prop[parID];
 
-  		gndc[n_particles] = parID_nhits_dc[parID];
-  		gnhodo[n_particles] = parID_nhits_hodo[parID];
-  		gnprop[n_particles] = parID_nhits_prop[parID];
+  		gndc[n_tracks] = parID_nhits_dc[parID];
+  		gnhodo[n_tracks] = parID_nhits_hodo[parID];
+  		gnprop[n_tracks] = parID_nhits_prop[parID];
 
   		for(auto detid_elmid : parID_detid_elmid[parID]) {
   			int detid = detid_elmid.first;
@@ -640,47 +643,48 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   				LogWarning("detid>=55");
   				continue;
   			}
-  			gelmid[n_particles][detid] = elmid;
+  			gelmid[n_tracks][detid] = elmid;
   		}
 
   		if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) LogInfo("particle eval finished");
 
-  		ntruhits[n_particles] = 0;
+  		ntruhits[n_tracks] = 0;
   		if(parID_bestRecID.find(parID)!=parID_bestRecID.end()) {
-  			ntruhits[n_particles] = std::get<1>(parID_bestRecID[parID]);
+  			ntruhits[n_tracks] = std::get<1>(parID_bestRecID[parID]);
   			int recID = std::get<0>(parID_bestRecID[parID]);
+  			rec_id[n_tracks] = parID;
   			SRecTrack recTrack = _recEvent->getTrack(recID);
-  			nhits[n_particles]  = recTrack.getNHits();
-  			charge[n_particles] = recTrack.getCharge();
+  			nhits[n_tracks]  = recTrack.getNHits();
+  			charge[n_tracks] = recTrack.getCharge();
   			TVector3 rec_vtx = recTrack.getTargetPos();
-  			vx[n_particles]  = rec_vtx.X();
-  			vy[n_particles]  = rec_vtx.Y();
-  			vz[n_particles]  = rec_vtx.Z();
+  			vx[n_tracks]  = rec_vtx.X();
+  			vy[n_tracks]  = rec_vtx.Y();
+  			vz[n_tracks]  = rec_vtx.Z();
   			TVector3 rec_mom = recTrack.getTargetMom();
-  			px[n_particles]  = rec_mom.Px();
-  			py[n_particles]  = rec_mom.Py();
-  			pz[n_particles]  = rec_mom.Pz();
-  			pt[n_particles]  = rec_mom.Pt();
-  			eta[n_particles] = rec_mom.Eta();
-  			phi[n_particles] = rec_mom.Phi();
+  			px[n_tracks]  = rec_mom.Px();
+  			py[n_tracks]  = rec_mom.Py();
+  			pz[n_tracks]  = rec_mom.Pz();
+  			pt[n_tracks]  = rec_mom.Pt();
+  			eta[n_tracks] = rec_mom.Eta();
+  			phi[n_tracks] = rec_mom.Phi();
 
   			{
 					double tx, ty, tz;
 					recTrack.getMomentumSt1(tx, ty, tz);
-					px_st1[n_particles] = tx;
-					py_st1[n_particles] = ty;
-					pz_st1[n_particles] = tz;
+					px_st1[n_tracks] = tx;
+					py_st1[n_tracks] = ty;
+					pz_st1[n_tracks] = tz;
 					double x, y;
 					recTrack.getPositionSt1(x, y);
-					x_st1[n_particles] = x;
-					y_st1[n_particles] = y;
+					x_st1[n_tracks] = x;
+					y_st1[n_tracks] = y;
 
   			}
 
 //  			recTrack.getMomentumSt1(
-//  					&px_st1[n_particles],
-//  					&py_st1[n_particles],
-//  					&pz_st1[n_particles]
+//  					&px_st1[n_tracks],
+//  					&py_st1[n_tracks],
+//  					&pz_st1[n_tracks]
 //						);
   		}
 
@@ -771,8 +775,8 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
 
 			if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) LogInfo("dimu reco. eval finished");
 
-  		++n_particles;
-  		if(n_particles>=1000) break;
+  		++n_tracks;
+  		if(n_tracks>=1000) break;
   	}
   }
 
@@ -817,46 +821,48 @@ int TrkEval::InitEvalTree() {
   _tout_truth->Branch("driftDistance", drift_distance,   "driftDistance[nHits]/F");
   _tout_truth->Branch("pos",           pos,              "pos[nHits]/F");
 
-  _tout_truth->Branch("n_particles",   &n_particles,        "n_particles/I");
-  _tout_truth->Branch("pid",           pid,                 "pid[n_particles]/I");
-  _tout_truth->Branch("gvx",           gvx,                 "gvx[n_particles]/F");
-  _tout_truth->Branch("gvy",           gvy,                 "gvy[n_particles]/F");
-  _tout_truth->Branch("gvz",           gvz,                 "gvz[n_particles]/F");
-  _tout_truth->Branch("gpx",           gpx,                 "gpx[n_particles]/F");
-  _tout_truth->Branch("gpy",           gpy,                 "gpy[n_particles]/F");
-  _tout_truth->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
-  _tout_truth->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
-  _tout_truth->Branch("geta",          geta,                "geta[n_particles]/F");
-  _tout_truth->Branch("gphi",          gphi,                "gphi[n_particles]/F");
-  _tout_truth->Branch("gx_st1",        gx_st1,              "gx_st1[n_particles]/F");
-  _tout_truth->Branch("gy_st1",        gy_st1,              "gy_st1[n_particles]/F");
-  _tout_truth->Branch("gz_st1",        gz_st1,              "gz_st1[n_particles]/F");
-  _tout_truth->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_particles]/F");
-  _tout_truth->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_particles]/F");
-  _tout_truth->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_particles]/F");
-  _tout_truth->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
-  _tout_truth->Branch("gndc",          gndc,                "gndc[n_particles]/I");
-  _tout_truth->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
-  _tout_truth->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
-  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_particles][54]/I");
+  _tout_truth->Branch("n_tracks",      &n_tracks,           "n_tracks/I");
+  _tout_truth->Branch("par_id",        par_id,              "par_id[n_tracks]/I");
+  _tout_truth->Branch("rec_id",        rec_id,              "rec_id[n_tracks]/I");
+  _tout_truth->Branch("pid",           pid,                 "pid[n_tracks]/I");
+  _tout_truth->Branch("gvx",           gvx,                 "gvx[n_tracks]/F");
+  _tout_truth->Branch("gvy",           gvy,                 "gvy[n_tracks]/F");
+  _tout_truth->Branch("gvz",           gvz,                 "gvz[n_tracks]/F");
+  _tout_truth->Branch("gpx",           gpx,                 "gpx[n_tracks]/F");
+  _tout_truth->Branch("gpy",           gpy,                 "gpy[n_tracks]/F");
+  _tout_truth->Branch("gpz",           gpz,                 "gpz[n_tracks]/F");
+  _tout_truth->Branch("gpt",           gpt,                 "gpt[n_tracks]/F");
+  _tout_truth->Branch("geta",          geta,                "geta[n_tracks]/F");
+  _tout_truth->Branch("gphi",          gphi,                "gphi[n_tracks]/F");
+  _tout_truth->Branch("gx_st1",        gx_st1,              "gx_st1[n_tracks]/F");
+  _tout_truth->Branch("gy_st1",        gy_st1,              "gy_st1[n_tracks]/F");
+  _tout_truth->Branch("gz_st1",        gz_st1,              "gz_st1[n_tracks]/F");
+  _tout_truth->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_tracks]/F");
+  _tout_truth->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_tracks]/F");
+  _tout_truth->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_tracks]/F");
+  _tout_truth->Branch("gnhits",        gnhits,              "gnhits[n_tracks]/I");
+  _tout_truth->Branch("gndc",          gndc,                "gndc[n_tracks]/I");
+  _tout_truth->Branch("gnhodo",        gnhodo,              "gnhodo[n_tracks]/I");
+  _tout_truth->Branch("gnprop",        gnprop,              "gnprop[n_tracks]/I");
+  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_tracks][54]/I");
 
-  _tout_truth->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
-  _tout_truth->Branch("nhits",         nhits,               "nhits[n_particles]/I");
-  _tout_truth->Branch("charge",        charge,              "charge[n_particles]/I");
-  _tout_truth->Branch("vx",            vx,                  "vx[n_particles]/F");
-  _tout_truth->Branch("vy",            vy,                  "vy[n_particles]/F");
-  _tout_truth->Branch("vz",            vz,                  "vz[n_particles]/F");
-  _tout_truth->Branch("px",            px,                  "px[n_particles]/F");
-  _tout_truth->Branch("py",            py,                  "py[n_particles]/F");
-  _tout_truth->Branch("pz",            pz,                  "pz[n_particles]/F");
-  _tout_truth->Branch("pt",            pt,                  "pt[n_particles]/F");
-  _tout_truth->Branch("eta",           eta,                 "eta[n_particles]/F");
-  _tout_truth->Branch("phi",           phi,                 "phi[n_particles]/F");
-  _tout_truth->Branch("x_st1",         x_st1,               "x_st1[n_particles]/F");
-  _tout_truth->Branch("y_st1",         y_st1,               "y_st1[n_particles]/F");
-  _tout_truth->Branch("px_st1",        px_st1,              "px_st1[n_particles]/F");
-  _tout_truth->Branch("py_st1",        py_st1,              "py_st1[n_particles]/F");
-  _tout_truth->Branch("pz_st1",        pz_st1,              "pz_st1[n_particles]/F");
+  _tout_truth->Branch("ntruhits",      ntruhits,            "ntruhits[n_tracks]/I");
+  _tout_truth->Branch("nhits",         nhits,               "nhits[n_tracks]/I");
+  _tout_truth->Branch("charge",        charge,              "charge[n_tracks]/I");
+  _tout_truth->Branch("vx",            vx,                  "vx[n_tracks]/F");
+  _tout_truth->Branch("vy",            vy,                  "vy[n_tracks]/F");
+  _tout_truth->Branch("vz",            vz,                  "vz[n_tracks]/F");
+  _tout_truth->Branch("px",            px,                  "px[n_tracks]/F");
+  _tout_truth->Branch("py",            py,                  "py[n_tracks]/F");
+  _tout_truth->Branch("pz",            pz,                  "pz[n_tracks]/F");
+  _tout_truth->Branch("pt",            pt,                  "pt[n_tracks]/F");
+  _tout_truth->Branch("eta",           eta,                 "eta[n_tracks]/F");
+  _tout_truth->Branch("phi",           phi,                 "phi[n_tracks]/F");
+  _tout_truth->Branch("x_st1",         x_st1,               "x_st1[n_tracks]/F");
+  _tout_truth->Branch("y_st1",         y_st1,               "y_st1[n_tracks]/F");
+  _tout_truth->Branch("px_st1",        px_st1,              "px_st1[n_tracks]/F");
+  _tout_truth->Branch("py_st1",        py_st1,              "py_st1[n_tracks]/F");
+  _tout_truth->Branch("pz_st1",        pz_st1,              "pz_st1[n_tracks]/F");
 
   _tout_truth->Branch("gndimu",        &gndimu,              "gndimu/I");
   _tout_truth->Branch("dimu_gpx",      dimu_gpx,             "dimu_gpx[gndimu]/F");
@@ -879,46 +885,48 @@ int TrkEval::InitEvalTree() {
   _tout_reco = new TTree("Reco", "Reco Eval");
 
   _tout_reco->Branch("krecstat",      &krecstat,           "krecstat/I");
-  _tout_reco->Branch("n_particles",   &n_particles,        "n_particles/I");
-  _tout_reco->Branch("pid",           pid,                 "pid[n_particles]/I");
-  _tout_reco->Branch("gvx",           gvx,                 "gvx[n_particles]/F");
-  _tout_reco->Branch("gvy",           gvy,                 "gvy[n_particles]/F");
-  _tout_reco->Branch("gvz",           gvz,                 "gvz[n_particles]/F");
-  _tout_reco->Branch("gpx",           gpx,                 "gpx[n_particles]/F");
-  _tout_reco->Branch("gpy",           gpy,                 "gpy[n_particles]/F");
-  _tout_reco->Branch("gpz",           gpz,                 "gpz[n_particles]/F");
-  _tout_reco->Branch("gpt",           gpt,                 "gpt[n_particles]/F");
-  _tout_reco->Branch("geta",          geta,                "geta[n_particles]/F");
-  _tout_reco->Branch("gphi",          gphi,                "gphi[n_particles]/F");
-  _tout_reco->Branch("gx_st1",        gx_st1,              "gx_st1[n_particles]/F");
-  _tout_reco->Branch("gy_st1",        gy_st1,              "gy_st1[n_particles]/F");
-  _tout_reco->Branch("gz_st1",        gz_st1,              "gz_st1[n_particles]/F");
-  _tout_reco->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_particles]/F");
-  _tout_reco->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_particles]/F");
-  _tout_reco->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_particles]/F");
-  _tout_reco->Branch("gnhits",        gnhits,              "gnhits[n_particles]/I");
-  _tout_reco->Branch("gndc",          gndc,                "gndc[n_particles]/I");
-  _tout_reco->Branch("gnhodo",        gnhodo,              "gnhodo[n_particles]/I");
-  _tout_reco->Branch("gnprop",        gnprop,              "gnprop[n_particles]/I");
-  //_tout_reco->Branch("gelmid",        gelmid,              "gelmid[n_particles][54]/I");
+  _tout_reco->Branch("n_tracks",      &n_tracks,           "n_tracks/I");
+  _tout_reco->Branch("par_id",        par_id,              "par_id[n_tracks]/I");
+  _tout_reco->Branch("rec_id",        rec_id,              "rec_id[n_tracks]/I");
+  _tout_reco->Branch("pid",           pid,                 "pid[n_tracks]/I");
+  _tout_reco->Branch("gvx",           gvx,                 "gvx[n_tracks]/F");
+  _tout_reco->Branch("gvy",           gvy,                 "gvy[n_tracks]/F");
+  _tout_reco->Branch("gvz",           gvz,                 "gvz[n_tracks]/F");
+  _tout_reco->Branch("gpx",           gpx,                 "gpx[n_tracks]/F");
+  _tout_reco->Branch("gpy",           gpy,                 "gpy[n_tracks]/F");
+  _tout_reco->Branch("gpz",           gpz,                 "gpz[n_tracks]/F");
+  _tout_reco->Branch("gpt",           gpt,                 "gpt[n_tracks]/F");
+  _tout_reco->Branch("geta",          geta,                "geta[n_tracks]/F");
+  _tout_reco->Branch("gphi",          gphi,                "gphi[n_tracks]/F");
+  _tout_reco->Branch("gx_st1",        gx_st1,              "gx_st1[n_tracks]/F");
+  _tout_reco->Branch("gy_st1",        gy_st1,              "gy_st1[n_tracks]/F");
+  _tout_reco->Branch("gz_st1",        gz_st1,              "gz_st1[n_tracks]/F");
+  _tout_reco->Branch("gpx_st1",       gpx_st1,             "gpx_st1[n_tracks]/F");
+  _tout_reco->Branch("gpy_st1",       gpy_st1,             "gpy_st1[n_tracks]/F");
+  _tout_reco->Branch("gpz_st1",       gpz_st1,             "gpz_st1[n_tracks]/F");
+  _tout_reco->Branch("gnhits",        gnhits,              "gnhits[n_tracks]/I");
+  _tout_reco->Branch("gndc",          gndc,                "gndc[n_tracks]/I");
+  _tout_reco->Branch("gnhodo",        gnhodo,              "gnhodo[n_tracks]/I");
+  _tout_reco->Branch("gnprop",        gnprop,              "gnprop[n_tracks]/I");
+  //_tout_reco->Branch("gelmid",        gelmid,              "gelmid[n_tracks][54]/I");
 
-  _tout_reco->Branch("ntruhits",      ntruhits,            "ntruhits[n_particles]/I");
-  _tout_reco->Branch("nhits",         nhits,               "nhits[n_particles]/I");
-  _tout_reco->Branch("charge",        charge,              "charge[n_particles]/I");
-  _tout_reco->Branch("vx",            vx,                  "vx[n_particles]/F");
-  _tout_reco->Branch("vy",            vy,                  "vy[n_particles]/F");
-  _tout_reco->Branch("vz",            vz,                  "vz[n_particles]/F");
-  _tout_reco->Branch("px",            px,                  "px[n_particles]/F");
-  _tout_reco->Branch("py",            py,                  "py[n_particles]/F");
-  _tout_reco->Branch("pz",            pz,                  "pz[n_particles]/F");
-  _tout_reco->Branch("pt",            pt,                  "pt[n_particles]/F");
-  _tout_reco->Branch("eta",           eta,                 "eta[n_particles]/F");
-  _tout_reco->Branch("phi",           phi,                 "phi[n_particles]/F");
-  _tout_reco->Branch("x_st1",         x_st1,               "x_st1[n_particles]/F");
-  _tout_reco->Branch("y_st1",         y_st1,               "y_st1[n_particles]/F");
-  _tout_reco->Branch("px_st1",        px_st1,              "px_st1[n_particles]/F");
-  _tout_reco->Branch("py_st1",        py_st1,              "py_st1[n_particles]/F");
-  _tout_reco->Branch("pz_st1",        pz_st1,              "pz_st1[n_particles]/F");
+  _tout_reco->Branch("ntruhits",      ntruhits,            "ntruhits[n_tracks]/I");
+  _tout_reco->Branch("nhits",         nhits,               "nhits[n_tracks]/I");
+  _tout_reco->Branch("charge",        charge,              "charge[n_tracks]/I");
+  _tout_reco->Branch("vx",            vx,                  "vx[n_tracks]/F");
+  _tout_reco->Branch("vy",            vy,                  "vy[n_tracks]/F");
+  _tout_reco->Branch("vz",            vz,                  "vz[n_tracks]/F");
+  _tout_reco->Branch("px",            px,                  "px[n_tracks]/F");
+  _tout_reco->Branch("py",            py,                  "py[n_tracks]/F");
+  _tout_reco->Branch("pz",            pz,                  "pz[n_tracks]/F");
+  _tout_reco->Branch("pt",            pt,                  "pt[n_tracks]/F");
+  _tout_reco->Branch("eta",           eta,                 "eta[n_tracks]/F");
+  _tout_reco->Branch("phi",           phi,                 "phi[n_tracks]/F");
+  _tout_reco->Branch("x_st1",         x_st1,               "x_st1[n_tracks]/F");
+  _tout_reco->Branch("y_st1",         y_st1,               "y_st1[n_tracks]/F");
+  _tout_reco->Branch("px_st1",        px_st1,              "px_st1[n_tracks]/F");
+  _tout_reco->Branch("py_st1",        py_st1,              "py_st1[n_tracks]/F");
+  _tout_reco->Branch("pz_st1",        pz_st1,              "pz_st1[n_tracks]/F");
 
   return 0;
 }
@@ -944,9 +952,11 @@ int TrkEval::ResetEvalVars() {
     truth_pos[i]     = std::numeric_limits<float>::max();
   }
 
-  n_particles = 0;
+  n_tracks = 0;
   for(int i=0; i<1000; ++i) {
-    pid[i]        = std::numeric_limits<float>::max();
+    rec_id[i]     = std::numeric_limits<int>::max();
+    par_id[i]     = std::numeric_limits<int>::max();
+    pid[i]        = std::numeric_limits<int>::max();
     gvx[i]        = std::numeric_limits<float>::max();
     gvy[i]        = std::numeric_limits<float>::max();
     gvz[i]        = std::numeric_limits<float>::max();
