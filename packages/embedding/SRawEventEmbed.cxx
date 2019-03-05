@@ -63,6 +63,7 @@ _event(0),
 _hit_map(nullptr),
 _hit_vector(nullptr),
 _in_name("digit_016070_R007.root"),
+_in_tree_name("save"),
 _tin(nullptr),
 _tree_entry(0),
 _trigger_bit(-1),
@@ -90,7 +91,7 @@ int SRawEventEmbed::InitRun(PHCompositeNode* topNode) {
 		return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	_tin = (TTree*) _fin->Get("save");
+	_tin = (TTree*) _fin->Get(_in_tree_name.c_str());
 	if(!_tin) {
 		LogInfo("!_tin");
 		return Fun4AllReturnCodes::ABORTRUN;

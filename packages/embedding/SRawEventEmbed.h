@@ -100,6 +100,14 @@ public:
 		_trigger_bit = triggerBit;
 	}
 
+	const std::string& get_in_tree_name() const {
+		return _in_tree_name;
+	}
+
+	void set_in_tree_name(const std::string& inTreeName) {
+		_in_tree_name = inTreeName;
+	}
+
 private:
 
 	int GetNodes(PHCompositeNode *topNode);
@@ -115,6 +123,7 @@ private:
 	SQHitVector *_hit_vector;
 
 	std::string _in_name;
+	std::string _in_tree_name;
 	TFile* _fin;
 	TTree* _tin;
 	int _tree_entry;
