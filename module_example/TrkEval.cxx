@@ -224,6 +224,8 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 			if(hit->get_detector_id() > 30) continue;
 
 			int parID = hit->get_track_id();
+      if(parID > 9999) continue;
+
 			ParRecoPair key = std::make_tuple(parID, itrack);
 
 			if(parID_recID_nHit.find(key)!=parID_recID_nHit.end())
@@ -536,6 +538,8 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   			if(hit->get_detector_id() > 30) continue;
 
   			int parID = hit->get_track_id();
+        if(parID > 9999) continue;
+
   			ParRecoPair key = std::make_tuple(parID, itrack);
 
       	if(parID_recID_nHit.find(key)!=parID_recID_nHit.end())
