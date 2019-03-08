@@ -32,7 +32,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool -lg4testbench -lktracker")
 add_library(embedding SHARED ${sources} ${dicts})
-target_link_libraries(embedding -L$ENV{OFFLINE_MAIN}/lib -lgeom_svc -linterface_main -lfun4all -lphool)
+target_link_libraries(embedding -L$ENV{OFFLINE_MAIN}/lib -lgeom_svc -linterface_main -lfun4all -lphool -lktracker)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
