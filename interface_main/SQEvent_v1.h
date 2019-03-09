@@ -50,6 +50,7 @@ public:
 
 	virtual bool get_trigger(const SQEvent::TriggerMask i) const {return (_trigger&(1<<i)) > 0 ;}
 	virtual void set_trigger(const SQEvent::TriggerMask i, const bool a) {a ? (_trigger |= (1<<i)) : (_trigger &= ~(1<<i)) ;}
+	virtual void reset_trigger(){_trigger = 0;}
 
 	virtual int get_raw_matrix(const unsigned short i) const {
 		if(i<5) return _raw_matrix[i];
