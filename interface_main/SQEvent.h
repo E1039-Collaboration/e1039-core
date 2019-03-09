@@ -61,6 +61,7 @@ public:
 
 	virtual bool get_trigger(const SQEvent::TriggerMask i) const = 0;
 	virtual void set_trigger(const SQEvent::TriggerMask i, const bool a) = 0;
+	virtual void reset_trigger() = 0;
 
 	virtual int get_raw_matrix(const unsigned short i) const = 0;
 	virtual void set_raw_matrix(const unsigned short i, const bool a) = 0;
