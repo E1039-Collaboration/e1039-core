@@ -100,6 +100,14 @@ public:
 		_enable_KF = enableKf;
 	}
 
+	bool is_enable_event_reducer() const {
+		return _enable_event_reducer;
+	}
+
+	void set_enable_event_reducer(bool enableEventReducer) {
+		_enable_event_reducer = enableEventReducer;
+	}
+
 private:
 
 	int InitField(PHCompositeNode *topNode);
@@ -111,6 +119,7 @@ private:
 	int GetNodes(PHCompositeNode *topNode);
 
 	bool _enable_KF;
+	bool _enable_event_reducer;
 	int _DS_level;
 
 	SRawEvent* BuildSRawEvent();

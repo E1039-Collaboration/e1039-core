@@ -110,15 +110,17 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
 	fastfinder = new KalmanDSTrk(field, _t_geo_manager, _enable_KF, _DS_level);
 	fastfinder->Verbosity(verbosity);
 
-  TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
-  if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
-  if(p_jobOptsSvc->m_sagittaReducer) opt = opt + "s";
-  if(p_jobOptsSvc->m_updateAlignment) opt = opt + "e";
-  if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
-  if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
-  if(p_jobOptsSvc->m_realization) opt = opt + "r";
+	if(_enable_event_reducer) {
+		TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
+		if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
+		if(p_jobOptsSvc->m_sagittaReducer) opt = opt + "s";
+		if(p_jobOptsSvc->m_updateAlignment) opt = opt + "e";
+		if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
+		if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
+		if(p_jobOptsSvc->m_realization) opt = opt + "r";
 
-  eventReducer = new EventReducer(opt);
+		eventReducer = new EventReducer(opt);
+	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -254,7 +256,7 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
     sraw_event->insertHit(h);
 
     // FIXME just for the meeting, figure this out fast!
-    if(!_triggerhit_vector and h.detectorID >= 31) {
+    if(!_triggerhit_vector and h.detectorID >= 31 and h.detectorID <= 46) {
     	sraw_event->insertTriggerHit(h);
     }
 	}
@@ -304,8 +306,7 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	auto up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
 	SRawEvent* sraw_event = up_raw_event.get();
 
-  // TODO temp solution
-  if(_event_header) {
+  if(_enable_event_reducer){
 	  eventReducer->reduceEvent(sraw_event);
   }
 
