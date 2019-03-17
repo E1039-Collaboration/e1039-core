@@ -1,11 +1,10 @@
-/*
-KalmanDSTrk.h
-
-Fast tracking utility of Kalman filter track, used to improve the tracking speed and also for online monitoring
-
-Author: Kun Liu, liuk@fnal.gov, Haiwang Yu, yuhw@nmsu.edu
-Created: 08-27-2018
-*/
+/**
+ * \class KalmanDSTrk
+ * \brief Pattern Dictionary Filter built based on Kun Liu's ktracker
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
 
 #ifndef _KalmanDSTrk_H
 #define _KalmanDSTrk_H

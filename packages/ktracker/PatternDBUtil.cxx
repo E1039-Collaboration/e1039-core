@@ -1,3 +1,10 @@
+/**
+ * \class PatternDBUtil
+ * \brief PatternDB utilities
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
 
 #include "PatternDBUtil.h"
 

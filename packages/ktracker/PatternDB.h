@@ -1,8 +1,9 @@
-/*
- * PatternDB.h
+/**
+ * \class PatternDB
+ * \brief PatternDB interface objects
+ * \author Haiwang Yu, yuhw@nmsu.edu
  *
- *  Created on: Oct 29, 2017
- *      Author: yuhw
+ * Created: 08-27-2018
  */
 
 #ifndef _H_PatternDB_H_

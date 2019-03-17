@@ -1,3 +1,11 @@
+/**
+ * \class PatternDB
+ * \brief PatternDB interface objects
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
+
 #include "PatternDB.h"
 
 #include <cmath>

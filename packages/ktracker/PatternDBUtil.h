@@ -1,11 +1,10 @@
-/*
-PatternDBUtil.h
-
-PatternDB utilities
-
-Author: Haiwang Yu, yuhw@nmsu.edu
-Created: 08-27-2018
-*/
+/**
+ * \class PatternDBUtil
+ * \brief PatternDB utilities
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
 
 #ifndef _PatternDBUtil_H
 #define _PatternDBUtil_H

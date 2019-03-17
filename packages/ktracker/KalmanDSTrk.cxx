@@ -1,11 +1,10 @@
-/*
-KalmanDSTrk.cxx
-
-Implementation of class Tracklet, KalmanDSTrk
-
-Author: Kun Liu, liuk@fnal.gov
-Created: 05-28-2013
-*/
+/**
+ * \class KalmanDSTrk
+ * \brief Pattern Dictionary Filter built based on Kun Liu's ktracker
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
 
 
 //#include "KalmanFitter.h"
