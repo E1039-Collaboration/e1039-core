@@ -1,8 +1,9 @@
-/*
- * TrkEval.h
+/**
+ * \class TrkEval
+ * \brief General purposed evaluation module
+ * \author Haiwang Yu, yuhw@nmsu.edu
  *
- *  Created on: Oct 29, 2017
- *      Author: yuhw@nmsu.edu
+ * Created: 08-27-2018
  */
 
 #ifndef _H_TrkEval_H_
