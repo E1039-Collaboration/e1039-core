@@ -57,6 +57,7 @@ using namespace std;
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
 _enable_KF(true),
+_enable_event_reducer(false),
 _DS_level(KalmanDSTrk::NO_DS),
 _hit_container_type("Vector"),
 _event(0),
