@@ -118,6 +118,8 @@ private:
 
 	int GetNodes(PHCompositeNode *topNode);
 
+	int ReMaskHits(SRawEvent *sraw_event);
+
 	bool _enable_KF;
 	bool _enable_event_reducer;
 	int _DS_level;

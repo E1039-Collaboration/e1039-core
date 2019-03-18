@@ -166,6 +166,34 @@ int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
+int KalmanFastTrackingWrapper::ReMaskHits(SRawEvent* sraw_event) {
+
+	std::map<int, size_t> m_hitid_ihit;
+
+	//if use hit vector, index first
+	for(size_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
+		SQHit* sq_hit = _hit_vector->at(ihit);
+		m_hitid_ihit[sq_hit->get_hit_id()] = ihit;
+		sq_hit->set_hodo_mask(false);
+	}
+
+	for( Hit hit : sraw_event->getAllHits()) {
+		size_t ihit = m_hitid_ihit[hit.index];
+		SQHit* sq_hit = _hit_vector->at(ihit);
+		if(Verbosity() > 5) {
+			LogInfo("");
+			std::cout	<< hit.isHodoMask() << sq_hit->is_hodo_mask() << std::endl;
+		}
+		sq_hit->set_hodo_mask(true);
+		if(Verbosity() > 5) {
+			LogInfo("");
+			std::cout	<< hit.isHodoMask() << sq_hit->is_hodo_mask() << std::endl;
+		}
+	}
+
+	return 0;
+}
+
 SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
 	SRawEvent* sraw_event = new SRawEvent();
 
@@ -309,6 +337,7 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
   if(_enable_event_reducer){
 	  eventReducer->reduceEvent(sraw_event);
+		ReMaskHits(sraw_event);
   }
 
 	_rawEvent = sraw_event;
