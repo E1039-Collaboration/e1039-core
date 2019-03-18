@@ -76,7 +76,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	int nacc_3 = 0;
 	int nacc_23 = 0;
 	int nacc_123 = 0;
-	const int interval = 1000;
+	const int interval = 100;
 #endif
 
 	if(verbosity >= 2) {
@@ -89,17 +89,17 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 		return -1;
 	}
 
-	TTree *T = (TTree*) f_in->Get("T");
+	TTree *T = (TTree*) f_in->Get("Truth");
 	if(!T) {
 		LogInfo("TTree T not found in " << fin);
 		return -1;
 	}
 
 	int n_particles = 0;
-	int gndc = 0;
+	int gndc[1000];
 	int elmid [1000][55];
 
-	T->SetBranchAddress("n_particles", &n_particles);
+	T->SetBranchAddress("n_tracks", &n_particles);
 	T->SetBranchAddress("gelmid", &elmid);
 	T->SetBranchAddress("gndc", &gndc);
 
@@ -121,9 +121,9 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	for(int ientry=0;ientry<T->GetEntries();++ientry) {
 		T->GetEntry(ientry);
 
-		if(!(gndc>17)) continue;
-
 		for(int ipar=0; ipar<n_particles; ++ipar) {
+
+			if(!(gndc[ipar]>17)) continue;
 
 			unsigned int D1V  = elmid[ipar][7];
 			unsigned int D1Vp = elmid[ipar][8];

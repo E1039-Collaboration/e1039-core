@@ -90,8 +90,10 @@ int TrkEval::process_event(PHCompositeNode* topNode) {
 	ret = TruthEval(topNode);
 	if (ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
-	ret = RecoEval(topNode);
-	if (ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+	if(_recEvent) {
+		ret = RecoEval(topNode);
+		if (ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+	}
 
 	++_event;
 
@@ -1075,7 +1077,7 @@ int TrkEval::GetNodes(PHCompositeNode* topNode) {
   _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
   if (!_recEvent) {
     LogError("!_recEvent");
-    return Fun4AllReturnCodes::ABORTEVENT;
+    //return Fun4AllReturnCodes::ABORTEVENT;
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
