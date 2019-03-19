@@ -76,7 +76,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	int nacc_3 = 0;
 	int nacc_23 = 0;
 	int nacc_123 = 0;
-	const int interval = 100;
+	const int interval = 1000;
 #endif
 
 	if(verbosity >= 2) {
