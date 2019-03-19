@@ -109,6 +109,7 @@ private:
 	int hit_id[10000];
 	int detector_id[10000];
 	int element_id[10000];
+	int hodo_mask[10000];
 	float drift_distance[10000];
 	float pos[10000];
 	float detector_z[10000];

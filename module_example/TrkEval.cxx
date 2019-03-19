@@ -440,6 +440,7 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
       detector_z[n_hits]     = p_geomSvc->getPlanePosition(hit->get_detector_id());
       detector_id[n_hits]    = hit->get_detector_id();
       element_id[n_hits]     = hit->get_element_id();
+      hodo_mask[n_hits]      = hit->is_hodo_mask();
 
       if(_truth) {
       	int track_id = hit->get_track_id();
@@ -822,6 +823,7 @@ int TrkEval::InitEvalTree() {
   _tout_truth->Branch("hitID",         hit_id,           "hitID[nHits]/I");
   _tout_truth->Branch("detectorID",    detector_id,      "detectorID[nHits]/I");
   _tout_truth->Branch("elementID",     element_id,       "elementID[nHits]/I");
+  _tout_truth->Branch("hodo_mask",     hodo_mask,        "hodo_mask[nHits]/I");
   _tout_truth->Branch("detectorZ",     detector_z,       "detectorZ[nHits]/F");
   _tout_truth->Branch("truth_x",       truth_x,          "truth_x[nHits]/F");
   _tout_truth->Branch("truth_y",       truth_y,          "truth_y[nHits]/F");
@@ -951,6 +953,7 @@ int TrkEval::ResetEvalVars() {
   for(int i=0; i<10000; ++i) {
     detector_id[i]    = std::numeric_limits<short>::max();
     element_id[i]     = std::numeric_limits<short>::max();
+    hodo_mask[i]      = std::numeric_limits<short>::max();
     drift_distance[i] = std::numeric_limits<float>::max();
     pos[i]            = std::numeric_limits<float>::max();
     detector_z[i]     = std::numeric_limits<float>::max();
