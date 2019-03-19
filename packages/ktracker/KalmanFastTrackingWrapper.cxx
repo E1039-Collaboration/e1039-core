@@ -180,15 +180,7 @@ int KalmanFastTrackingWrapper::ReMaskHits(SRawEvent* sraw_event) {
 	for( Hit hit : sraw_event->getAllHits()) {
 		size_t ihit = m_hitid_ihit[hit.index];
 		SQHit* sq_hit = _hit_vector->at(ihit);
-		if(Verbosity() > 5) {
-			LogInfo("");
-			std::cout	<< hit.isHodoMask() << sq_hit->is_hodo_mask() << std::endl;
-		}
 		sq_hit->set_hodo_mask(true);
-		if(Verbosity() > 5) {
-			LogInfo("");
-			std::cout	<< hit.isHodoMask() << sq_hit->is_hodo_mask() << std::endl;
-		}
 	}
 
 	return 0;
