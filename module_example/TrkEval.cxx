@@ -122,10 +122,10 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
     run_id   = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_C1X");
+  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
   if (!C1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_C1X" << endl;
+    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
@@ -409,10 +409,10 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
     run_id   = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_C1X");
+  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
   if (!C1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_C1X" << endl;
+    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
@@ -431,6 +431,11 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
     n_hits = 0;
     for(int ihit=0; ihit<_hit_vector->size(); ++ihit) {
     	SQHit *hit = _hit_vector->at(ihit);
+
+      if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+      	LogInfo(hit->get_detector_id());
+      	hit->identify();
+      }
 
     	int hitID = hit->get_hit_id();
     	hit_id[n_hits]         = hitID;
