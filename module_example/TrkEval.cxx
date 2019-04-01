@@ -486,12 +486,30 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
       	truth_z[n_hits] = hit->get_truth_z();
 
       	double uVec[3] = {
-      			p_geomSvc->getCostheta(hit->get_detector_id()),
-						p_geomSvc->getSintheta(hit->get_detector_id()),
-						0
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[0],
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[1],
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[2]
       	};
+
       	truth_pos[n_hits] =
-      			truth_x[n_hits]*uVec[0] + truth_y[n_hits]*uVec[1];
+//      			(truth_x[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).xc)*uVec[0] +
+//      			(truth_y[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).yc)*uVec[1] +
+//      			(truth_z[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).zc)*uVec[2];
+  			(truth_x[n_hits])*uVec[0] +
+  			(truth_y[n_hits])*uVec[1] +
+  			(truth_z[n_hits]-p_geomSvc->getPlane(hit->get_detector_id()).zc)*uVec[2];
+
+        if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+        	LogInfo("");
+        	std::cout << truth_pos[n_hits] << " => { "
+        			<< truth_x[n_hits] << ", "
+        			<< truth_y[n_hits] << ", "
+							<< truth_z[n_hits] << "} {"
+							<< uVec[0] << ", "
+							<< uVec[1] << ", "
+							<< uVec[2] << "}"
+							<< std::endl;
+        }
 
       	//LogDebug("detector_id: " << detector_id[n_hits]);
       }
