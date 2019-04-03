@@ -21,15 +21,15 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
-#    online/decoder_maindaq
-#    packages/Half
-#    packages/vararray
-#    database/pdbcal/base
-#    database/PHParameter
-#    packages/PHGeometry
-#    packages/PHField
-#    generators/phhepmc
-#    generators/PHPythia8
+    online/decoder_maindaq
+    packages/Half
+    packages/vararray
+    database/pdbcal/base
+    database/PHParameter
+    packages/PHGeometry
+    packages/PHField
+    generators/phhepmc
+    generators/PHPythia8
 #    simulation/g4decayer
 #    simulation/g4gdml
 #    simulation/g4main
