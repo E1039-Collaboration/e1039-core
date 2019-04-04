@@ -30,17 +30,17 @@ else
     packages/PHField
     generators/phhepmc
     generators/PHPythia8
-#    simulation/g4decayer
-#    simulation/g4gdml
-#    simulation/g4main
-#    simulation/g4detectors
-#    simulation/g4dst
-#    simulation/g4eval
-#    packages/db2g4
-#    packages/PHGenFitPkg/GenFitExp
-#    packages/PHGenFitPkg/PHGenFit
-#    packages/ktracker
-#    module_example
+    simulation/g4decayer
+    simulation/g4gdml
+    simulation/g4main
+    simulation/g4detectors
+    simulation/g4dst
+    simulation/g4eval
+    packages/db2g4
+    packages/PHGenFitPkg/GenFitExp
+    packages/PHGenFitPkg/PHGenFit
+    packages/ktracker
+    module_example
 	)
 fi
 
@@ -61,3 +61,5 @@ do
 done
 
 cd $build
+
+exit
