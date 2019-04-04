@@ -62,4 +62,3 @@ done
 
 cd $build
 
-exit
