@@ -187,6 +187,7 @@ file(GLOB dist_headers
   PHG4BlockCellGeomContainer.h
   PHG4BlockGeom.h
   PHG4BlockGeomContainer.h
+  PHG4BlockSubsystem.h
   PHG4Cell.h
   PHG4Cellv1.h
   PHG4Cellv2.h
@@ -221,6 +222,7 @@ file(GLOB dist_headers
   PHG4Parameters.h
   PHG4ParametersContainer.h
   PHG4StepStatusDecode.h
+  DPDigitizer.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)

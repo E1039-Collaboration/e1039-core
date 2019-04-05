@@ -184,6 +184,7 @@ file(GLOB dist_headers
   PHG4Reco.h
   PHG4RegionInformation.h
   PHG4SimpleEventGenerator.h
+  PHG4ParticleGun.h
   PHG4PSScanGenerator.h
   PHG4Shower.h
   PHG4Showerv1.h

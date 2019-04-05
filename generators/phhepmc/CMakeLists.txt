@@ -4,7 +4,7 @@ project(phhepmc CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
+link_directories("$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
