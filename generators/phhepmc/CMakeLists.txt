@@ -4,7 +4,7 @@ project(phhepmc CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
+link_directories("$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -36,7 +36,6 @@ add_custom_command (
   $ENV{OFFLINE_MAIN}/include/HepMC/*.h
   ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
 	)
-
 
 # ROOT
 find_program(ROOTCONF "root-config")
@@ -94,5 +93,10 @@ file(GLOB dist_headers
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
-
-
+# The same method as "database/pdbcal/base".
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm phhepmc phhepmc_io)
+endif()

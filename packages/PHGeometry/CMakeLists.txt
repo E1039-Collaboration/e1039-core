@@ -10,12 +10,15 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 # ROOT dict generation
 file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 file(GLOB dicts "")
+file(GLOB pcms "")
 foreach(LinkDefh ${LinkDefhs})
 	message("LinkDefh: " ${LinkDefh})
 	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${LinkDefh})
 	string(REPLACE "LinkDef.h" "_Dict.cc" DictC ${DictC})
+	string(REPLACE ".cc" "_rdict.pcm" DictPcm ${DictC})
 	list(APPEND dicts ${DictC})
+	list(APPEND pcms  ${DictPcm})
   message("Dicth: " ${Dicth})
   message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
@@ -65,5 +68,11 @@ file(GLOB dist_headers
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up ${pcms} ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm phgeom phgeom_io)
+endif()
 
 
