@@ -59,7 +59,18 @@ install(TARGETS g4eval DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
+file(GLOB dist_headers
+  PHG4DSTReader.h
+)
+
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
+# Install the pcm files in case of ROOT 6.
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm g4eval)
+endif()
 
 

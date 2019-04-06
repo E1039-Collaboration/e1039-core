@@ -35,7 +35,7 @@ public:
 
 	bool operator < (const TrackletKey & k) const;
 
-	friend ostream & operator << (ostream &out, const TrackletKey &key) {
+	friend std::ostream & operator << (std::ostream &out, const TrackletKey &key) {
 		std::cout
 		<<"TrackletKey: "
 		<< " { "
@@ -69,7 +69,7 @@ public:
 		return false;
 	}
 
-	friend ostream & operator << (ostream &out, const PartTrackKey &key) {
+	friend std::ostream & operator << (std::ostream &out, const PartTrackKey &key) {
 		std::cout
 		<<"PartTrackKey: " << std::endl
 		<< key.k0
@@ -101,7 +101,7 @@ public:
 		return false;
 	}
 
-	friend ostream & operator << (ostream &out, const GlobTrackKey &key) {
+	friend std::ostream & operator << (std::ostream &out, const GlobTrackKey &key) {
 		std::cout
 		<<"GlobTrackKey: " << std::endl
 		<< key.k0
