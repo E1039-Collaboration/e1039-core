@@ -1,52 +1,65 @@
-/*
-KalmanPrgTrk.cxx
+/**
+ * \class KalmanDSTrk
+ * \brief Pattern Dictionary Filter built based on Kun Liu's ktracker
+ * \author Haiwang Yu, yuhw@nmsu.edu
+ *
+ * Created: 08-27-2018
+ */
 
-Implementation of class Tracklet, KalmanPrgTrk
 
-Author: Kun Liu, liuk@fnal.gov
-Created: 05-28-2013
-*/
+//#include "KalmanFitter.h"
+#include "KalmanDSTrk.h"
+#include "TriggerRoad.h"
+#include "PatternDBUtil.h"
+
 
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
+#include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
 #include <TBox.h>
 #include <TMatrixD.h>
-
-//#include "KalmanFitter.h"
-#include "KalmanPrgTrk.h"
-#include "TriggerRoad.h"
+#include <TFile.h>
+#include <TNtuple.h>
 
 //#define _DEBUG_ON
 #define _DEBUG_YUHW_
 
-#ifdef _DEBUG_YUHW_
-std::ofstream ktracker_log("ktracker.csv");
-#endif
-
-KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool flag)
-: verbosity(0),
-	enable_KF(flag)
+KalmanDSTrk::KalmanDSTrk(
+		const PHField* field,
+		const TGeoManager *geom,
+		bool enable_KF,
+		int  DS_level)
+: verbosity(10)
+,_enable_KF(enable_KF)
+,_DS_level(DS_level)
+, _pattern_db(nullptr)
 {
     using namespace std;
 
 #ifdef _DEBUG_ON
-    cout << "Initialization of KalmanPrgTrk ..." << endl;
+    cout << "Initialization of KalmanDSTrk ..." << endl;
     cout << "========================================" << endl;
 #endif
 
+    _timers.insert(std::make_pair<std::string, PHTimer*>("build_db", new PHTimer("build_db")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("load_db", new PHTimer("load_db")));
+
     _timers.insert(std::make_pair<std::string, PHTimer*>("event", new PHTimer("event")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_2", new PHTimer("search_db_2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23", new PHTimer("st23")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_23", new PHTimer("search_db_23")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit1", new PHTimer("st23_fit1")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_prop", new PHTimer("st23_prop")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_fit2", new PHTimer("st23_fit2")));
@@ -58,6 +71,7 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     _timers.insert(std::make_pair<std::string, PHTimer*>("st23_reduce", new PHTimer("st23_reduce")));
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("global", new PHTimer("global")));
+    _timers.insert(std::make_pair<std::string, PHTimer*>("search_db_glb", new PHTimer("search_db_glb")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_st1", new PHTimer("global_st1")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
@@ -68,10 +82,39 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     p_jobOptsSvc = JobOptsSvc::instance();
 
     //Initialize Kalman fitter
-    if(enable_KF)
+    if(_enable_KF)
     {
         kmfitter = new KalmanFitter(field, geom);
         kmfitter->setControlParameter(50, 0.001);
+    }
+
+    //Load Patter DB from file
+
+
+  	if(_DS_level > KalmanDSTrk::NO_DS) {
+
+			PatternDBUtil::Verbosity(10);
+			_timers["load_db"]->restart();
+			_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
+			_timers["load_db"]->stop();
+			if(_pattern_db) {
+				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB loaded. St23 size: "<< _pattern_db->St23.size() << std::endl;
+			} else {
+				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB NOT loaded. Try to build. " << std::endl;
+				_timers["build_db"]->restart();
+        _pattern_db = new PatternDB();
+				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_bad.root", *_pattern_db);
+				_timers["build_db"]->stop();
+				_timers["load_db"]->restart();
+				//_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
+				_timers["load_db"]->stop();
+			}
+
+			std::cout <<"KalmanDSTrk::KalmanDSTrk: St23 size: "<< _pattern_db->St23.size() << std::endl;
+    	std::cout << "================================================================" << std::endl;
+    	std::cout << "Build DB                    "<<_timers["build_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+    	std::cout << "Load DB                     "<<_timers["load_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+    	std::cout << "================================================================" << std::endl;
     }
 
     //Initialize minuit minimizer
@@ -347,34 +390,89 @@ KalmanPrgTrk::KalmanPrgTrk(const PHField* field, const TGeoManager *geom, bool f
     s_detectorID[0] = p_geomSvc->getDetectorID("D2X");
     s_detectorID[1] = p_geomSvc->getDetectorID("D2Up");
     s_detectorID[2] = p_geomSvc->getDetectorID("D2Vp");
+
+    _ana_mode = true;
+    if(_ana_mode) {
+			_fana = TFile::Open("ktracker_ana.root","recreate");
+			_tana_Event = new TNtuple("Event",  "Event",
+					"NSt2:NSt3:NSt23:NSt1:NGlobal:NKalman:"
+					"TSt2:TSt3:TSt23:TGKalman:TGlobal:TKalman:"
+					"TEvent"
+			);
+			_tana_St1   = new TNtuple("St1",  "St1",   "in:DS:out");
+			_tana_St2   = new TNtuple("St2",  "St2",   "in:DS:out");
+			_tana_St3   = new TNtuple("St3",  "St3",   "in:DS:out");
+			_tana_St23  = new TNtuple("St23", "St23",  "in:DS:out:time");
+			_tana_St123 = new TNtuple("St123","St123", "in:DS:out:time");
+    }
+
+    _event = 0;
 }
 
-KalmanPrgTrk::~KalmanPrgTrk()
+KalmanDSTrk::~KalmanDSTrk()
 {
-    if(enable_KF) delete kmfitter;
+    if(_enable_KF) delete kmfitter;
     delete minimizer[0];
     delete minimizer[1];
 
-#ifdef _DEBUG_YUHW_
-    ktracker_log.close();
-#endif
+    if(_ana_mode) {
+			_fana->cd();
+			_tana_Event->Write();
+			_tana_St1->Write();
+			_tana_St2->Write();
+			_tana_St3->Write();
+			_tana_St23->Write();
+			_tana_St123->Write();
+			_fana->Close();
+    }
 }
 
-void KalmanPrgTrk::setRawEventDebug(SRawEvent* event_input)
+void KalmanDSTrk::setRawEventDebug(SRawEvent* event_input)
 {
     rawEvent = event_input;
     hitAll = event_input->getAllHits();
 }
 
-int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
+
+int KalmanDSTrk::setRawEvent(SRawEvent* event_input)
 {
-	//
+	// reset all timers
 	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
 		iter->second->reset();
 	}
 
 	_timers["event"]->restart();
+	int ret = this->setRawEventWorker(event_input);
+	_timers["event"]->stop();
 
+
+  if(_ana_mode) {
+		float data[] = {
+			static_cast<float>(trackletsInSt[1].size()), // St2
+			static_cast<float>(trackletsInSt[2].size()), // St3
+			static_cast<float>(trackletsInSt[3].size()), // St23
+			static_cast<float>(trackletsInSt[0].size()), // St1
+			static_cast<float>(trackletsInSt[4].size()), // Global
+			static_cast<float>(stracks.size()),
+			static_cast<float>(_timers["st2"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["st3"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["st23"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["global_kalman"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["global"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["kalman"]->get_accumulated_time()/1000.),
+			static_cast<float>(_timers["event"]->get_accumulated_time()/1000.),
+  	};
+
+  	_tana_Event->Fill(data);
+  }
+
+  ++_event;
+
+	return ret;
+}
+
+int KalmanDSTrk::setRawEventWorker(SRawEvent* event_input)
+{
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
     stracks.clear();
@@ -433,9 +531,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 
     //Build tracklets in station 2, 3+, 3-
     _timers["st2"]->restart();
-    //_t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
-    //_t_st2->stop();
     _timers["st2"]->stop();
 
     if(verbosity >= 2) {
@@ -451,10 +547,8 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 
     _timers["st3"]->restart();
-    //_t_st3->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
-    //_t_st3->stop();
     _timers["st3"]->stop();
 
     if(verbosity >= 2) {
@@ -470,11 +564,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 
     //Build back partial tracks in station 2, 3+ and 3-
-    _timers["st23"]->restart();
-    //_t_st23->restart();
     buildBackPartialTracks();
-    //_t_st23->stop();
-    _timers["st23"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
@@ -489,11 +579,7 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
-    _timers["global"]->restart();
-    //_t_global->restart();
     buildGlobalTracks();
-    //_t_global->stop();
-    _timers["global"]->stop();
 
     if(verbosity >= 2) {
     	LogInfo("NTracklets Global: " << trackletsInSt[4].size());
@@ -524,17 +610,15 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
 #endif
 
     if(trackletsInSt[4].empty()) return TFEXIT_FAIL_GLOABL;
-    if(!enable_KF) return TFEXIT_SUCCESS;
+    if(!_enable_KF) return TFEXIT_SUCCESS;
 
     //Build kalman tracks
     _timers["kalman"]->restart();
-    //_t_kalman->restart();
     for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
     }
-    //_t_kalman->stop();
     _timers["kalman"]->stop();
 
 #ifdef _DEBUG_ON
@@ -545,14 +629,13 @@ int KalmanPrgTrk::setRawEvent(SRawEvent* event_input)
     }
 #endif
 
-  	_timers["event"]->stop();
-
     return TFEXIT_SUCCESS;
 }
 
-bool KalmanPrgTrk::acceptEvent(SRawEvent* rawEvent)
+bool KalmanDSTrk::acceptEvent(SRawEvent* rawEvent)
 {
-#ifdef _DEBUG_ON
+
+	if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
     LogInfo("D0: " << rawEvent->getNHitsInD0());
     LogInfo("D1: " << rawEvent->getNHitsInD1());
     LogInfo("D2: " << rawEvent->getNHitsInD2());
@@ -565,35 +648,44 @@ bool KalmanPrgTrk::acceptEvent(SRawEvent* rawEvent)
     LogInfo("Prop:" << rawEvent->getNPropHitsAll());
     LogInfo("NRoadsPos: " << rawEvent->getNRoadsPos());
     LogInfo("NRoadsNeg: " << rawEvent->getNRoadsNeg());
-#endif
+	}
 
-    if(rawEvent->getNHitsInD0() > 350) return false;
-    if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
-    if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
-    if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
-    if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
+	if(rawEvent->getNHitsInD0() > 350) return false;
+	if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
+	if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
+	if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
+	if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
 
-    /*
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]) > 10) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]) > 10) return false;
-    if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]) > 10) return false;
-    if(rawEvent->getNPropHitsAll() > 300) return false;
+	/*
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]) > 10) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]) > 10) return false;
+	if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]) > 10) return false;
+	if(rawEvent->getNPropHitsAll() > 300) return false;
 
-    if(rawEvent->getNRoadsPos() > 5) return false;
-    if(rawEvent->getNRoadsNeg() > 5) return false;
-    */
+	if(rawEvent->getNRoadsPos() > 5) return false;
+	if(rawEvent->getNRoadsNeg() > 5) return false;
+	*/
 
-    return true;
+	return true;
 }
 
-void KalmanPrgTrk::buildBackPartialTracks()
+void KalmanDSTrk::buildBackPartialTracks()
 {
+  _timers["st23"]->restart();
 #ifndef ALIGNMENT_MODE
     //Temporary container for a simple chisq fit
     int nHitsX2, nHitsX3;
     double z_fit[4], x_fit[4];
     double a, b;
+#endif
+
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"DS", 0},
+				{"out", 0}
+    };
 #endif
 
     for(std::list<Tracklet>::iterator tracklet3 = trackletsInSt[2].begin(); tracklet3 != trackletsInSt[2].end(); ++tracklet3)
@@ -616,6 +708,38 @@ void KalmanPrgTrk::buildBackPartialTracks()
         for(std::list<Tracklet>::iterator tracklet2 = trackletsInSt[1].begin(); tracklet2 != trackletsInSt[1].end(); ++tracklet2)
         {
             if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
+#ifdef _DEBUG_YUHW_
+            counter["in"]++;
+#endif
+            // Pattern dictionary search
+            if(_DS_level >= KalmanDSTrk::ST23_DS) {
+              _timers["search_db_23"]->restart();
+              bool matched = false;
+
+            	auto key2  = PatternDBUtil::GetTrackletKey(*tracklet2, PatternDB::DC2);
+            	auto key3p = PatternDBUtil::GetTrackletKey(*tracklet3, PatternDB::DC3p);
+            	auto key3m = PatternDBUtil::GetTrackletKey(*tracklet3, PatternDB::DC3m);
+
+            	PartTrackKey key23;
+            	if(key2!=PatternDB::ERR_KEY and key3p!=PatternDB::ERR_KEY) {key23 = PartTrackKey(key2, key3p);}
+            	else if(key2!=PatternDB::ERR_KEY and key3m!=PatternDB::ERR_KEY) {key23 = PartTrackKey(key2, key3m);}
+            	else continue;
+
+              //LogInfo(key23);
+            	if(_pattern_db->St23.find(key23)!=_pattern_db->St23.end()) matched = true;
+
+              _timers["search_db_23"]->stop();
+            	if(!matched) {
+            		if(Verbosity() > 20) {
+            			LogInfo("St23 Pattern NOT Found!");
+            		}
+            		continue;
+            	}
+
+#ifdef _DEBUG_YUHW_
+            	counter["DS"]++;
+#endif
+            }
 
 #ifndef ALIGNMENT_MODE
             //Extract the X hits from station-2 tracke
@@ -668,14 +792,7 @@ void KalmanPrgTrk::buildBackPartialTracks()
             if(verbosity>2) _timers["st23_fit2"]->restart();
             fitTracklet(tracklet_23);
             if(verbosity>2) _timers["st23_fit2"]->stop();
-#ifdef _DEBUG_YUHW_
-            ktracker_log
-						<< tracklet2->tx << ", "
-						<< tracklet3->tx << ", "
-						<< a  << ", "
-						<< b  << ", "
-						<< tracklet_23.chisq  << std::endl;
-#endif
+
             if(tracklet_23.chisq > 9000.)
             {
 #ifdef _DEBUG_ON
@@ -728,6 +845,9 @@ void KalmanPrgTrk::buildBackPartialTracks()
             {
                 tracklet_best = tracklet_23;
             }
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             if(verbosity>2) _timers["st23_acc"]->stop();
 #ifdef _DEBUG_ON
             else
@@ -744,10 +864,40 @@ void KalmanPrgTrk::buildBackPartialTracks()
 
     reduceTrackletList(trackletsInSt[3]);
     trackletsInSt[3].sort();
+
+    _timers["st23"]->stop();
+
+#ifdef _DEBUG_YUHW_
+  	LogInfo("");
+  	std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
+
+    if(_ana_mode) {
+			float tana_data[] = {
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"]),
+					static_cast<float>(_timers["st23"]->get_accumulated_time()/1000.)
+			};
+			_tana_St23->Fill(tana_data);
+    }
+#endif
 }
 
-void KalmanPrgTrk::buildGlobalTracks()
+void KalmanDSTrk::buildGlobalTracks()
 {
+  _timers["global"]->restart();
+
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"DS", 0},
+				{"out", 0}
+    };
+#endif
+
     double pos_exp[3], window[3];
     for(std::list<Tracklet>::iterator tracklet23 = trackletsInSt[3].begin(); tracklet23 != trackletsInSt[3].end(); ++tracklet23)
     {
@@ -773,9 +923,7 @@ void KalmanPrgTrk::buildGlobalTracks()
 #endif
 
             _timers["global_st1"]->restart();
-            //_t_global_st1->restart();
             buildTrackletsInStation(i+1, 0, pos_exp, window);
-            //_t_global_st1->stop();
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
@@ -786,6 +934,57 @@ void KalmanPrgTrk::buildGlobalTracks()
                 LogInfo("With this station 1 track:");
                 tracklet1->print();
 #endif
+
+#ifdef _DEBUG_YUHW_
+                counter["in"]++;
+#endif
+                // Pattern dictionary search
+                if(_DS_level >= KalmanDSTrk::ST123_DS) {
+                  _timers["search_db_glb"]->restart();
+                  bool matched = false;
+
+                	auto key1  = PatternDBUtil::GetTrackletKey(*tracklet1, PatternDB::DC1);
+                	auto key2  = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC2);
+                	auto key3p = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3p);
+                	auto key3m = PatternDBUtil::GetTrackletKey(*tracklet23, PatternDB::DC3m);
+
+                	GlobTrackKey key123;
+                	if(
+                			key1!=PatternDB::ERR_KEY
+                			and key2!=PatternDB::ERR_KEY
+											and key3p!=PatternDB::ERR_KEY) {
+                		key123 = GlobTrackKey(key1, key2, key3p);
+                	} else if (
+                			key1!=PatternDB::ERR_KEY
+                			and key2!=PatternDB::ERR_KEY
+											and key3m!=PatternDB::ERR_KEY) {
+                		key123 = GlobTrackKey(key1, key2, key3m);
+                	} else continue;
+
+                	//std::cout << key123;
+                	if(_pattern_db->St123.find(key123)!=_pattern_db->St123.end()) matched = true;
+
+                  _timers["search_db_glb"]->stop();
+
+
+              		if(Verbosity() > 20) {
+              			std::cout << key123;
+              			if(matched) {
+                			std::cout<< "St123 Pattern Found!";
+              			} else {
+                			std::cout<< "St123 Pattern NOT Found!";
+              			}
+              			std::cout << std::endl;
+              		}
+
+                	if(!matched) {
+                		continue;
+                	}
+
+#ifdef _DEBUG_YUHW_
+                	counter["DS"]++;
+#endif
+                }
 
                 Tracklet tracklet_global = (*tracklet23) * (*tracklet1);
                 fitTracklet(tracklet_global);
@@ -881,12 +1080,18 @@ void KalmanPrgTrk::buildGlobalTracks()
 #ifdef _DEBUG_ON
             LogInfo("Choose merged tracklet");
 #endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             trackletsInSt[4].push_back(tracklet_merge);
         }
         else if(tracklet_best[0].isValid() && tracklet_best[0] < tracklet_best[1])
         {
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-0");
+#endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
 #endif
             trackletsInSt[4].push_back(tracklet_best[0]);
         }
@@ -895,14 +1100,37 @@ void KalmanPrgTrk::buildGlobalTracks()
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-1");
 #endif
+#ifdef _DEBUG_YUHW_
+            counter["out"]++;
+#endif
             trackletsInSt[4].push_back(tracklet_best[1]);
         }
     }
 
     trackletsInSt[4].sort();
+
+    _timers["global"]->stop();
+
+#ifdef _DEBUG_YUHW_
+		LogInfo("");
+		std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
+
+		if(_ana_mode) {
+			float tana_data[] = {
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"]),
+					static_cast<float>(_timers["global"]->get_accumulated_time()/1000.)
+			};
+			_tana_St123->Fill(tana_data);
+		}
+#endif
 }
 
-void KalmanPrgTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
+void KalmanDSTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
 {
 #ifdef _DEBUG_ON
     LogInfo("Left right for this track..");
@@ -1010,7 +1238,7 @@ void KalmanPrgTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
     if(isUpdated) fitTracklet(tracklet);
 }
 
-void KalmanPrgTrk::resolveSingleLeftRight(Tracklet& tracklet)
+void KalmanDSTrk::resolveSingleLeftRight(Tracklet& tracklet)
 {
 #ifdef _DEBUG_ON
     LogInfo("Single left right for this track..");
@@ -1033,7 +1261,7 @@ void KalmanPrgTrk::resolveSingleLeftRight(Tracklet& tracklet)
     if(isUpdated) fitTracklet(tracklet);
 }
 
-void KalmanPrgTrk::removeBadHits(Tracklet& tracklet)
+void KalmanDSTrk::removeBadHits(Tracklet& tracklet)
 {
 #ifdef _DEBUG_ON
     LogInfo("Removing hits for this track..");
@@ -1133,7 +1361,7 @@ void KalmanPrgTrk::removeBadHits(Tracklet& tracklet)
     }
 }
 
-void KalmanPrgTrk::resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, int& LR2)
+void KalmanDSTrk::resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, int& LR2)
 {
     LR1 = 0;
     LR2 = 0;
@@ -1173,7 +1401,7 @@ void KalmanPrgTrk::resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, int& LR
     //LogInfo("Final: " << LR1 << "  " << LR2);
 }
 
-void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* pos_exp, double* window)
+void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos_exp, double* window)
 {
 #ifdef _DEBUG_ON
     LogInfo("Building tracklets in station " << stationID);
@@ -1198,7 +1426,7 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
         pairs_V = rawEvent->getPartialHitPairsInSuperDetector(superIDs[sID][2], pos_exp[2], window[2]);
     }
 
-#ifdef _DEBUG_ON
+#ifdef _DEBUG_ON_
     LogInfo("Hit pairs in this event: ");
     for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_X.begin(); iter != pairs_X.end(); ++iter) LogInfo("X :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
     for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_U.begin(); iter != pairs_U.end(); ++iter) LogInfo("U :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
@@ -1212,6 +1440,14 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
         return;
     }
+
+#ifdef _DEBUG_YUHW_
+    std::map<std::string, int> counter = {
+    		{"in", 0},
+				{"DS", 0},
+				{"out", 0}
+    };
+#endif
 
     //X-U combination first, then add V pairs
     for(std::list<SRawEvent::hit_pair>::iterator xiter = pairs_X.begin(); xiter != pairs_X.end(); ++xiter)
@@ -1255,6 +1491,69 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
 #endif
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
+#ifdef _DEBUG_YUHW_
+            	counter["in"]++;
+#endif
+            	if(_DS_level >= KalmanDSTrk::IN_ST_DS) {
+            		if(stationID==3)
+                  _timers["search_db_2"]->restart();
+
+            		PatternDB::STATION station = PatternDB::ERROR_STATION;
+            		if(stationID==2) station = PatternDB::DC1;
+            		if(stationID==3) station = PatternDB::DC2;
+            		if(stationID==4) station = PatternDB::DC3p;
+            		if(stationID==5) station = PatternDB::DC3m;
+            		bool matched = false;
+
+            		std::vector< std::pair<unsigned int, unsigned int> > det_elem_pairs;
+
+            		det_elem_pairs.push_back({hitAll[xiter->first].detectorID,  hitAll[xiter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[xiter->second].detectorID, hitAll[xiter->second].elementID});
+            		det_elem_pairs.push_back({hitAll[uiter->first].detectorID,  hitAll[uiter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[uiter->second].detectorID, hitAll[uiter->second].elementID});
+            		det_elem_pairs.push_back({hitAll[viter->first].detectorID,  hitAll[viter->first].elementID});
+            		det_elem_pairs.push_back({hitAll[viter->second].detectorID, hitAll[viter->second].elementID});
+
+            		TrackletKey key = PatternDBUtil::GetTrackletKey(det_elem_pairs, station);
+
+            		if(station == PatternDB::DC1
+            				and _pattern_db->St1.find(key)!=_pattern_db->St1.end()) matched = true;
+            		else if(station == PatternDB::DC2
+            				and _pattern_db->St2.find(key)!=_pattern_db->St2.end()) matched = true;
+            		else if( ( station == PatternDB::DC3p or station == PatternDB::DC3m )
+            				and _pattern_db->St3.find(key)!=_pattern_db->St3.end()) matched = true;
+
+            		if(stationID==3)
+                  _timers["search_db_2"]->stop();
+
+            		if(Verbosity() > 20) {
+            			std::cout
+									<< hitAll[xiter->first].index << ", "
+									<< hitAll[xiter->second].index << ", "
+									<< hitAll[uiter->first].index << ", "
+									<< hitAll[uiter->second].index << ", "
+									<< hitAll[viter->first].index << ", "
+									<< hitAll[viter->second].index
+									<< std::endl;
+
+            			std::cout << key;
+            			if(matched) {
+              			std::cout<< "St" << station << " Pattern Found!";
+            			} else {
+              			std::cout<< "St" << station << " Pattern NOT Found!";
+            			}
+            			std::cout << std::endl;
+            		}
+
+            		if(!matched) {
+            			continue;
+            		}
+
+#ifdef _DEBUG_YUHW_
+              	counter["DS"]++;
+#endif
+            	}
+
                 double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
 #ifdef _DEBUG_ON
                 LogInfo("Trying V hits " << viter->first << "  " << viter->second << "  " << hitAll[viter->first].elementID << " at " << v_pos);
@@ -1319,6 +1618,9 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
                 if(acceptTracklet(tracklet_new))
                 {
                     trackletsInSt[listID].push_back(tracklet_new);
+#ifdef _DEBUG_YUHW_
+                    counter["out"]++;
+#endif
                 }
 #ifdef _DEBUG_ON
                 else
@@ -1329,6 +1631,25 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
             }
         }
     }
+
+#ifdef _DEBUG_YUHW_
+  	LogInfo("");
+  	std::cout
+		<< counter["in"] << " => "
+		<< counter["DS"] << " => "
+		<< counter["out"] << std::endl;
+
+    if(_ana_mode) {
+			float tana_data[] = {
+					static_cast<float>(counter["in"]),
+					static_cast<float>(counter["DS"]),
+					static_cast<float>(counter["out"])
+			};
+			if(stationID==2) _tana_St1->Fill(tana_data);
+			if(stationID==3) _tana_St2->Fill(tana_data);
+			if(stationID==4||stationID==5) _tana_St3->Fill(tana_data);
+    }
+#endif
 
     //Reduce the tracklet list and add dummy hits
     //reduceTrackletList(trackletsInSt[listID]);
@@ -1345,7 +1666,7 @@ void KalmanPrgTrk::buildTrackletsInStation(int stationID, int listID, double* po
     }
 }
 
-bool KalmanPrgTrk::acceptTracklet(Tracklet& tracklet)
+bool KalmanDSTrk::acceptTracklet(Tracklet& tracklet)
 {
     //Tracklet itself is okay with enough hits (4-out-of-6) and small chi square
     if(!tracklet.isValid())
@@ -1375,7 +1696,7 @@ bool KalmanPrgTrk::acceptTracklet(Tracklet& tracklet)
     return true;
 }
 
-bool KalmanPrgTrk::hodoMask(Tracklet& tracklet)
+bool KalmanDSTrk::hodoMask(Tracklet& tracklet)
 {
     //LogInfo(tracklet.stationID);
     int nHodoHits = 0;
@@ -1426,7 +1747,7 @@ bool KalmanPrgTrk::hodoMask(Tracklet& tracklet)
     return true;
 }
 
-bool KalmanPrgTrk::muonID_search(Tracklet& tracklet)
+bool KalmanDSTrk::muonID_search(Tracklet& tracklet)
 {
     //Set the cut value on multiple scattering
     //multiple scattering: sigma = 0.0136*sqrt(L/L0)*(1. + 0.038*ln(L/L0))/P, L = 1m, L0 = 1.76cm
@@ -1498,7 +1819,7 @@ bool KalmanPrgTrk::muonID_search(Tracklet& tracklet)
     return false;
 }
 
-bool KalmanPrgTrk::muonID_comp(Tracklet& tracklet)
+bool KalmanDSTrk::muonID_comp(Tracklet& tracklet)
 {
     //Set the cut value on multiple scattering
     //multiple scattering: sigma = 0.0136*sqrt(L/L0)*(1. + 0.038*ln(L/L0))/P, L = 1m, L0 = 1.76cm
@@ -1555,7 +1876,7 @@ bool KalmanPrgTrk::muonID_comp(Tracklet& tracklet)
     return true;
 }
 
-bool KalmanPrgTrk::muonID_hodoAid(Tracklet& tracklet)
+bool KalmanDSTrk::muonID_hodoAid(Tracklet& tracklet)
 {
     double win = 0.03;
     double factor = 5.;
@@ -1604,7 +1925,7 @@ bool KalmanPrgTrk::muonID_hodoAid(Tracklet& tracklet)
     return true;
 }
 
-void KalmanPrgTrk::buildPropSegments()
+void KalmanDSTrk::buildPropSegments()
 {
 #ifdef _DEBUG_ON
     LogInfo("Building prop. tube segments");
@@ -1669,7 +1990,7 @@ void KalmanPrgTrk::buildPropSegments()
 }
 
 
-int KalmanPrgTrk::fitTracklet(Tracklet& tracklet)
+int KalmanDSTrk::fitTracklet(Tracklet& tracklet)
 {
     tracklet_curr = tracklet;
 
@@ -1711,7 +2032,7 @@ int KalmanPrgTrk::fitTracklet(Tracklet& tracklet)
     return status;
 }
 
-int KalmanPrgTrk::reduceTrackletList(std::list<Tracklet>& tracklets)
+int KalmanDSTrk::reduceTrackletList(std::list<Tracklet>& tracklets)
 {
     std::list<Tracklet> targetList;
 
@@ -1748,7 +2069,7 @@ int KalmanPrgTrk::reduceTrackletList(std::list<Tracklet>& tracklets)
     return 0;
 }
 
-void KalmanPrgTrk::getExtrapoWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID)
+void KalmanDSTrk::getExtrapoWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID)
 {
     if(tracklet.stationID != nStations-1)
     {
@@ -1776,7 +2097,7 @@ void KalmanPrgTrk::getExtrapoWindowsInSt1(Tracklet& tracklet, double* pos_exp, d
     }
 }
 
-void KalmanPrgTrk::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID)
+void KalmanDSTrk::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_exp, double* window, int st1ID)
 {
     if(tracklet.stationID != nStations-1)
     {
@@ -1824,7 +2145,7 @@ void KalmanPrgTrk::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_exp, d
     }
 }
 
-void KalmanPrgTrk::printAtDetectorBack(int stationID, std::string outputFileName)
+void KalmanDSTrk::printAtDetectorBack(int stationID, std::string outputFileName)
 {
     TCanvas c1;
 
@@ -1868,7 +2189,7 @@ void KalmanPrgTrk::printAtDetectorBack(int stationID, std::string outputFileName
     c1.SaveAs(outputFileName.c_str());
 }
 
-SRecTrack KalmanPrgTrk::processOneTracklet(Tracklet& tracklet)
+SRecTrack KalmanDSTrk::processOneTracklet(Tracklet& tracklet)
 {
     //tracklet.print();
     KalmanTrack kmtrk;
@@ -1985,7 +2306,7 @@ SRecTrack KalmanPrgTrk::processOneTracklet(Tracklet& tracklet)
     }
 }
 
-bool KalmanPrgTrk::fitTrack(KalmanTrack& kmtrk)
+bool KalmanDSTrk::fitTrack(KalmanTrack& kmtrk)
 {
     if(kmtrk.getNodeList().empty()) return false;
 
@@ -1998,7 +2319,7 @@ bool KalmanPrgTrk::fitTrack(KalmanTrack& kmtrk)
     return true;
 }
 
-void KalmanPrgTrk::resolveLeftRight(KalmanTrack& kmtrk)
+void KalmanDSTrk::resolveLeftRight(KalmanTrack& kmtrk)
 {
     bool isUpdated = false;
 
@@ -2038,12 +2359,18 @@ void KalmanPrgTrk::resolveLeftRight(KalmanTrack& kmtrk)
     if(isUpdated) fitTrack(kmtrk);
 }
 
-void KalmanPrgTrk::printTimers() {
-	std::cout <<"KalmanPrgTrk::printTimers: event: " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
+void KalmanDSTrk::printTimers() {
+	std::cout
+		<<"KalmanDSTrk::printTimers: event: " << _event
+		<< ": " << _timers["event"]->get_accumulated_time()/1000. << " sec" << std::endl;
 	std::cout << "================================================================" << std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+
 	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_fit1                   "<<_timers["st23_fit1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_fit2                   "<<_timers["st23_fit2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
@@ -2054,15 +2381,17 @@ void KalmanPrgTrk::printTimers() {
 	std::cout << "  st23_acc                    "<<_timers["st23_acc"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_reduce                 "<<_timers["st23_reduce"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  st23_prop                   "<<_timers["st23_prop"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+
 	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global St1                  "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Search DB                   "<<_timers["search_db_glb"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "    Link Kalman                 "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "================================================================" << std::endl;
 }
 
-void KalmanPrgTrk::chi2fit(int n, double x[], double y[], double& a, double& b)
+void KalmanDSTrk::chi2fit(int n, double x[], double y[], double& a, double& b)
 {
     double sum = 0.;
     double sx = 0.;
@@ -2093,3 +2422,14 @@ void KalmanPrgTrk::chi2fit(int n, double x[], double y[], double& a, double& b)
     a = (sum*sxy - sx*sy)/det;
     b = (sy*sxx - sxy*sx)/det;
 }
+
+
+
+
+
+
+
+
+
+
+

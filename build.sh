@@ -62,7 +62,3 @@ do
 done
 
 cd $build
-if [ -e $src/copy_rdict_pcm.sh ] ; then
-    $src/copy_rdict_pcm.sh
-fi
-

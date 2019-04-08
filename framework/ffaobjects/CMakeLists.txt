@@ -20,6 +20,10 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/libffaobjects_LinkDef.h
 	)
 
+file(GLOB pcms "")
+list(APPEND pcms "libffaobjects_Dict_rdict.pcm")
+
+
 # source code
 include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
@@ -50,3 +54,10 @@ file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
+
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up ${pcms} ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm ffaobjects)
+endif()
