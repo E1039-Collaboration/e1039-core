@@ -19,7 +19,7 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <onlmonserver/OnlMonServer.h>
+#include "OnlMonServer.h"
 #include "OnlMonMainDaq.h"
 using namespace std;
 
@@ -74,7 +74,7 @@ int OnlMonMainDaq::process_event(PHCompositeNode* topNode)
   int dq_evt = event_header->get_data_quality();
   if (dq_evt == 0) h1_evt_qual->Fill(32);
   for (int bit = 0; bit < 32; bit++) {
-    if ((dq_evt > bit) & 0x1) h1_evt_qual->Fill(bit);
+    if ((dq_evt >> bit) & 0x1) h1_evt_qual->Fill(bit);
   }
   
   return Fun4AllReturnCodes::EVENT_OK;

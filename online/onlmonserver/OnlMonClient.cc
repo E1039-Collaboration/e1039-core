@@ -9,7 +9,7 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <onlmonserver/OnlMonServer.h>
+#include "OnlMonServer.h"
 #include "OnlMonClient.h"
 using namespace std;
 
