@@ -19,9 +19,11 @@ struct DecoParam {
   std::string dir_param;
   int sampling;
   int verbose;
+  int time_wait; //< waiting time in second to pretend the online data flow.
   MapperTaiwan map_taiwan;
   MapperV1495  map_v1495;
   MapperScaler map_scaler;
+
 
   ///
   /// Monitoring parameters

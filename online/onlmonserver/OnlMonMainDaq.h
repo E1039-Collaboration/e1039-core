@@ -1,30 +1,28 @@
-/*
- * AnaMainDaq.h
- *
- *  Created on: Oct 29, 2017
- *      Author: yuhw
- */
-#ifndef _H_AnaMainDaq_H_
-#define _H_AnaMainDaq_H_
-#include <fun4all/SubsysReco.h>
+/// OnlMonMainDaq
+#ifndef _ONL_MON_MAIN_DAQ__H_
+#define _ONL_MON_MAIN_DAQ__H_
+#include "OnlMonClient.h"
 class SQSpill;
 class SQEvent;
 class SQHitVector;
-class TH1;
 
-class AnaMainDaq: public SubsysReco {
+class OnlMonMainDaq: public OnlMonClient {
+  TH1* h1_tgt;
+  TH1* h1_evt_qual;
+
  public:
-  AnaMainDaq(const std::string &name = "AnaMainDaq");
-  virtual ~AnaMainDaq() {}
+  OnlMonMainDaq(const std::string &name = "OnlMonMainDaq");
+  virtual ~OnlMonMainDaq() {}
   int Init(PHCompositeNode *topNode);
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
+
+  int DrawMonitor();
+
  private:
   void PrintSpill(SQSpill* spi);
   void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
-
-  TH1* h1_evt_qual;
 };
 
-#endif /* _H_AnaMainDaq_H_ */
+#endif /* _ONL_MON_MAIN_DAQ__H_ */
