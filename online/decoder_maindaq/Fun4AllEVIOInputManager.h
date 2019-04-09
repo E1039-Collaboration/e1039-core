@@ -28,6 +28,7 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
 
   void EventSamplingFactor(const int factor);
   void DirParam(const std::string dir);
+  void PretendSpillInterval(const int sec);
   
  protected:
   int OpenNextFile();

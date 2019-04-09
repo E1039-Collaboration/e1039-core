@@ -36,11 +36,11 @@ static int NUMMONIPORT=5;
 
 int setup_server()
 {
-  cout << "setup_server being called" << endl;
+  cout << "OnlMonServer::setup(): start" << endl;
   //  gBenchmark->Start("phnxmon");
   OnlMonServer *se = OnlMonServer::instance();
-  se->GetMutex(mutex);
-  pthread_mutex_lock(&mutex);
+  //se->GetMutex(mutex);
+  //pthread_mutex_lock(&mutex);
 #if defined(SERVER) || defined(ROOTTHREAD)
 
   pthread_t ThreadId = 0;
@@ -60,19 +60,25 @@ int setup_server()
 
     }
 #endif
-  pthread_mutex_unlock(&mutex);
-
+  //pthread_mutex_unlock(&mutex);
+  cout << "OnlMonServer::setup(): end" << endl;
   return 0;
 }
 
 static void *server(void *arg)
 {
+  cout << "OnlMonServer::CreateThread(): start" << endl;
   OnlMonServer *se = OnlMonServer::instance();
   int MoniPort = MONIPORT;
   //  int thread_arg[5];
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
+
+  //Fun4AllHistoManager* hm = new Fun4AllHistoManager("D1");
+  //se->registerHistoManager(hm);
+
   TH1 *h1 = new TH1F("serverhisto","serverhisto info histo",2,0,1);
   se->registerHisto(h1);
+
   TServerSocket *ss = NULL;
   sleep(5);
   do
@@ -99,15 +105,18 @@ static void *server(void *arg)
     }
   while (!ss->IsValid()); // from do{}while
 
+  cout << "OnlMonServer::RemoveSockets():" << endl;
   // root keeps a list of sockets and tries to close them when quitting.
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
-  sleep(10);
-  pthread_mutex_unlock(&mutex);
+  sleep(5);
+  //pthread_mutex_unlock(&mutex);
+
  again:
+  cout << "OnlMonServer::WaitForConnection():" << endl;
   TSocket *s0 = ss->Accept();
   if (!s0)
     {
@@ -127,11 +136,11 @@ static void *server(void *arg)
       adr.Print();
     }
   //  cout << "try locking mutex" << endl;
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
   //cout << "got mutex" << endl;
   handleconnection(s0);
   //cout << "try releasing mutex" << endl;
-  pthread_mutex_unlock(&mutex);
+  //pthread_mutex_unlock(&mutex);
   //cout << "mutex released" << endl;
   delete s0;
   /*
@@ -159,6 +168,7 @@ handleconnection(void *arg)
   TSocket *s0 = (TSocket *) arg;
 
   OnlMonServer *se = OnlMonServer::instance();
+
   /*
     int val;
     s0->GetOption(kSendBuffer, val);
@@ -170,6 +180,7 @@ handleconnection(void *arg)
   TMessage outgoing(kMESS_OBJECT);
   while (1)
     {
+      cout << "OnlMonServer::handleconnection(): while loop." << endl;
       if (se->Verbosity() > 2)
         {
           cout << "Waiting for message" << endl;
@@ -177,7 +188,7 @@ handleconnection(void *arg)
       s0->Recv(mess);
       if (! mess)
         {
-          cout << "Broken Connection, closing socket" << endl;
+          //cout << "Broken Connection, closing socket" << endl;
           break;
         }
       if (mess->What() == kMESS_STRING)
@@ -185,6 +196,7 @@ handleconnection(void *arg)
 
           char str[64];
           mess->ReadString(str, 64);
+          string strpp = str; // to be unified with str...
           delete mess;
           mess = 0;
           if (se->Verbosity() > 2)
@@ -240,14 +252,35 @@ handleconnection(void *arg)
             }
           else if (!strcmp(str, "ALL"))
             {
+              Fun4AllHistoManager* hm = se->getHistoManager("MainDaq");
               if (se->Verbosity() > 2)
                 {
-                  cout << "number of histos: " << endl; //se->nHistos() << endl;
+                  cout << "number of histos: " << hm->nHistos() << endl;
                 }
-//              for (unsigned int i = 0; i < se->nHistos(); i++)
-              for (unsigned int i = 0; i < 1; i++)
+              for (unsigned int i = 0; i < hm->nHistos(); i++)
                 {
-                  TH1 *histo = (TH1 *) se->getHisto(i);
+                  TH1 *histo = (TH1 *) hm->getHisto(i);
+                  if (histo)
+                    {
+                      outgoing.Reset();
+                      outgoing.WriteObject(histo);
+                      s0->Send(outgoing);
+                      outgoing.Reset();
+                      s0->Recv(mess);
+                      delete mess;
+                      mess = 0;
+                    }
+                }
+              s0->Send("Finished");
+            }
+          else if (strpp.substr(0, 7) == "SUBSYS:")
+            {
+              string name_subsys = strpp.substr(7);
+              Fun4AllHistoManager* hm = se->getHistoManager(name_subsys);
+              cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
+              for (unsigned int i = 0; i < hm->nHistos(); i++)
+                {
+                  TH1 *histo = (TH1 *) hm->getHisto(i);
                   if (histo)
                     {
                       outgoing.Reset();
@@ -341,4 +374,67 @@ void send_test_message()
 //  TMessage *mess;
   sock.Send("Test");
   sock.Close();
+}
+
+void receive_hist_all()
+{
+  TSocket sock("localhost", MONIPORT);
+  sock.Send("ALL");
+
+  TMessage *mess = NULL;
+  while (true) { // incoming hist
+    sock.Recv(mess);
+    if (!mess) {
+      break;
+    } else if (mess->What() == kMESS_STRING) {
+      char str[200];
+      mess->ReadString(str, 200);
+      delete mess;
+      mess = 0;
+      if (!strcmp(str, "Finished")) break;
+    } else if (mess->What() == kMESS_OBJECT) {
+      TClass* cla = mess->GetClass();
+      TH1*    obj = (TH1*)mess->ReadObject(cla);
+      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
+      obj->Print();
+      delete mess;
+      mess = 0;
+      sock.Send("got it");
+    }
+  }
+  sock.Close();
+}
+
+
+int monitor_subsys(const char* name, std::vector<TH1*>& hist_list)
+{
+  ostringstream oss;
+  oss << "SUBSYS:" << name;
+
+  TSocket sock("localhost", MONIPORT);
+  sock.Send(oss.str().c_str());
+
+  TMessage *mess = NULL;
+  while (true) { // incoming hist
+    sock.Recv(mess);
+    if (!mess) {
+      break;
+    } else if (mess->What() == kMESS_STRING) {
+      char str[200];
+      mess->ReadString(str, 200);
+      delete mess;
+      mess = 0;
+      if (!strcmp(str, "Finished")) break;
+    } else if (mess->What() == kMESS_OBJECT) {
+      TClass* cla = mess->GetClass();
+      TH1*    obj = (TH1*)mess->ReadObject(cla);
+      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
+      hist_list.push_back( (TH1*)obj->Clone() );
+      delete mess;
+      mess = 0;
+      sock.Send("NEXT"); // Any text is ok for now
+    }
+  }
+  sock.Close();
+  return 0;
 }

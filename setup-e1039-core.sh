@@ -2,7 +2,7 @@
 if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     source /opt/e1039-share/this-share.sh
     export OFFLINE_MAIN=$DIR_E1039_SHARE/inst
-    export MY_INSTALL=~/tmp/e1039-core-dev-root6
+    export MY_INSTALL=~/tmp/e1039-core
 
     export            PATH=$MY_INSTALL/bin:$PATH
     export           CPATH=$MY_INSTALL/include:$CPATH

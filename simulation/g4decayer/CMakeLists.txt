@@ -32,7 +32,7 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 
 
 set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ -I${GEANT4_PREFIX}/include/"
+  "${CMAKE_CXX_FLAGS} -std=c++11 -I$ENV{OFFLINE_MAIN}/include/ -I${GEANT4_PREFIX}/include/"
 )
 
 add_library(g4decayer SHARED

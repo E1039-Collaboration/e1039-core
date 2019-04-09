@@ -21,6 +21,7 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    online/onlmonserver
     online/decoder_maindaq
     packages/Half
     packages/vararray
@@ -61,4 +62,3 @@ do
 done
 
 cd $build
-

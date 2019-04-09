@@ -56,6 +56,14 @@ bool MainDaqParser::NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& r
 
 int MainDaqParser::ParseOneSpill()
 {
+  static bool call_1st = true;
+  if (call_1st) call_1st = false;
+  else if (dec_par.time_wait > 0) {
+    cout << "...sleep(" << dec_par.time_wait << ") to pretend waiting for next spill..." << endl;
+    sleep(dec_par.time_wait);
+    cout << "...done." << endl;
+  }
+
   dec_par.at_bos = false;
   int* event_words = 0;
   while (coda->NextCodaEvent(dec_par.codaID, event_words)) {

@@ -1,7 +1,7 @@
 #pragma once
 #include "HistoServer.h"
+#include <vector>
 #include <fun4all/Fun4AllServer.h>
-
 #include <pthread.h>
 
 class Fun4AllInputManager;
@@ -26,6 +26,8 @@ class OnlMonServer : public Fun4AllServer
   void SetThreadId(pthread_t &id) {serverthreadid = id;}
 #endif
   void testmsg() {send_test_message();}
+  void testhist() {receive_hist_all();}
+  int MonitorSubsys(const char* name, std::vector<TH1*>& hist_list) { return monitor_subsys(name, hist_list); }
  protected:
   OnlMonServer(const std::string &name = "OnlMonServer");
 #ifndef __CINT__
