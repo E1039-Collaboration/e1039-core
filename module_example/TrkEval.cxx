@@ -122,10 +122,10 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
     run_id   = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_C1X");
+  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
   if (!C1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_C1X" << endl;
+    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
@@ -409,10 +409,10 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
     run_id   = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_C1X");
+  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
   if (!C1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_C1X" << endl;
+    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
@@ -431,6 +431,11 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
     n_hits = 0;
     for(int ihit=0; ihit<_hit_vector->size(); ++ihit) {
     	SQHit *hit = _hit_vector->at(ihit);
+
+      if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+      	LogInfo(hit->get_detector_id());
+      	hit->identify();
+      }
 
     	int hitID = hit->get_hit_id();
     	hit_id[n_hits]         = hitID;
@@ -481,12 +486,30 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
       	truth_z[n_hits] = hit->get_truth_z();
 
       	double uVec[3] = {
-      			p_geomSvc->getCostheta(hit->get_detector_id()),
-						p_geomSvc->getSintheta(hit->get_detector_id()),
-						0
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[0],
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[1],
+      			p_geomSvc->getPlane(hit->get_detector_id()).uVec[2]
       	};
+
       	truth_pos[n_hits] =
-      			truth_x[n_hits]*uVec[0] + truth_y[n_hits]*uVec[1];
+//      			(truth_x[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).xc)*uVec[0] +
+//      			(truth_y[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).yc)*uVec[1] +
+//      			(truth_z[n_hits] - p_geomSvc->getPlane(hit->get_detector_id()).zc)*uVec[2];
+  			(truth_x[n_hits])*uVec[0] +
+  			(truth_y[n_hits])*uVec[1] +
+  			(truth_z[n_hits]-p_geomSvc->getPlane(hit->get_detector_id()).zc)*uVec[2];
+
+        if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+        	LogInfo("");
+        	std::cout << truth_pos[n_hits] << " => { "
+        			<< truth_x[n_hits] << ", "
+        			<< truth_y[n_hits] << ", "
+							<< truth_z[n_hits] << "} {"
+							<< uVec[0] << ", "
+							<< uVec[1] << ", "
+							<< uVec[2] << "}"
+							<< std::endl;
+        }
 
       	//LogDebug("detector_id: " << detector_id[n_hits]);
       }

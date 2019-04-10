@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 #include <regex>
+#include <vector>
 
 #include <Geant4/G4SystemOfUnits.hh>
 #include <Geant4/Randomize.hh>
@@ -109,7 +110,7 @@ void DPDigiPlane::preCalculation()
     nVec[2] = uVec[0]*vVec[1] - vVec[0]*uVec[1];
 }
 
-bool DPDigiPlane::intercept(double tx, double ty, double x0, double y0, G4ThreeVector& pos, double& w)
+bool DPDigiPlane::intercept(double tx, double ty, double x0, double y0, double z0, G4ThreeVector& pos, double& w)
 {
     //Refer to http://geomalgorithms.com/a05-_intersect-1.html
     //double u[3] = {tx, ty, 1};
@@ -119,19 +120,20 @@ bool DPDigiPlane::intercept(double tx, double ty, double x0, double y0, G4ThreeV
     //double w[3] = p0[3] - v0[3];
 
     double det = tx*nVec[0] + ty*nVec[1] + nVec[2];
-    double dpos[3] = {x0 - xc, y0 - yc, -zc};
+    double dpos[3] = {x0 - xc, y0 - yc, z0 -zc};
     double si = -(nVec[0]*dpos[0] + nVec[1]*dpos[1] + nVec[2]*dpos[2])/det;
 
     pos[0] = x0 + tx*si;
     pos[1] = y0 + ty*si;
-    pos[2] = si;
+    pos[2] = z0 + si;
 
     //original
     //double vcp[3] = {vVec[1] - vVec[2]*ty, vVec[2]*tx - vVec[0], vVec[0]*ty - vVec[1]*tx};
     //w = (vcp[0]*dpos[0] + vcp[1]*dpos[1] + vcp[2]*dpos[2])/det;
 
     //yuhw
-    w = uVec[0]*(pos[0]-xc) + uVec[1]*(pos[1]-yc) + uVec[2]*(pos[2]-zc);
+    //w = uVec[0]*(pos[0]-xc) + uVec[1]*(pos[1]-yc) + uVec[2]*(pos[2]-zc);
+    w = uVec[0]*(pos[0]) + uVec[1]*(pos[1]) + uVec[2]*(pos[2]-zc);
 
     return isInPlane(pos[0], pos[1], pos[2]);
 }
@@ -253,8 +255,8 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 	map_dname_group["P2V1b"]     = "P2X";
 
 	//! init map_g4name_group
-  map_g4name_group["C1X"] = "D1";
-  map_g4name_group["C2X"] = "D2";
+  map_g4name_group["D1X"] = "D1";
+  map_g4name_group["2X"] = "D2";
   map_g4name_group["C3T"] = "D3p";
   map_g4name_group["C3B"] = "D3m";
 
@@ -276,40 +278,64 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 	map_g4name_group["P2H"] = "P2Y";
 	map_g4name_group["P2V"] = "P2X";
 
-//  map_g4name_group["P1H"] = "P1H";
-//  map_g4name_group["P2V"] = "P2V";
-//  map_g4name_group["P2H"] = "P2H";
-//  map_g4name_group["P1V"] = "P1V";
-
 
 	p_geomSvc = GeomSvc::instance();
 
-//  const char* mysqlServer = "e906-db1.fnal.gov";
-//  const int mysqlPort = 3306;
-//  const char* geometrySchema = "user_liuk_geometry_DPTrigger";
+  map_groupID.clear();
+  map_detectorID.clear();
 
-  const char* mysqlServer = "seaquestdb01.fnal.gov";
-  const int mysqlPort = 3310;
-  const char* geometrySchema = "geometry_G17_run3";
-  const char* login = "seaguest";
-  const char* password = "qqbar2mu+mu-";
+#define NEW
+#ifdef NEW
+  for(unsigned int index = 1; index < 55; ++index)
+  {
+    digiPlanes[index].detectorID = index;
 
-  const char* detectorEffResol = "";
+    digiPlanes[index].detectorName  = p_geomSvc->getDetectorName(index);
+    digiPlanes[index].spacing       = p_geomSvc->getPlaneSpacing(index);
+    digiPlanes[index].cellWidth     = p_geomSvc->getCellWidth(index);
+    digiPlanes[index].overlap       = p_geomSvc->getPlane(index).overlap;
+    digiPlanes[index].nElements     = p_geomSvc->getPlane(index).nElements;
+    digiPlanes[index].angleFromVert = p_geomSvc->getPlane(index).angleFromVert;
 
-  //Load basic setup
+    digiPlanes[index].xPrimeOffset  = p_geomSvc->getPlane(index).xoffset;
+    digiPlanes[index].xc            = p_geomSvc->getPlane(index).xc;
+    digiPlanes[index].yc            = p_geomSvc->getPlane(index).yc;
+    digiPlanes[index].zc            = p_geomSvc->getPlane(index).zc;
+    digiPlanes[index].planeWidth    = p_geomSvc->getPlaneScaleX(index);
+    digiPlanes[index].planeHeight   = p_geomSvc->getPlaneScaleY(index);
+
+    digiPlanes[index].rX            = p_geomSvc->getPlane(index).rX;
+    digiPlanes[index].rY            = p_geomSvc->getPlane(index).rY;
+    digiPlanes[index].rZ            = p_geomSvc->getPlane(index).rZ;
+
+//    digiPlanes[index].rX = 0;
+//    digiPlanes[index].rY = 0;
+//    digiPlanes[index].rZ = 0;
+
+    digiPlanes[index].detectorGroupName = p_geomSvc->getDetectorGroupName(digiPlanes[index].detectorName);
+
+    digiPlanes[index].preCalculation();
+
+    //TODO: implement RT/eff/resolution here
+    digiPlanes[index].efficiency.resize(digiPlanes[index].nElements+1, 1.);
+    digiPlanes[index].resolution.resize(digiPlanes[index].nElements+1, 0.);
+
+    map_groupID[digiPlanes[index].detectorGroupName].push_back(index);
+    map_detectorID[digiPlanes[index].detectorName] = digiPlanes[index].detectorID;
+  }
+#else
+	const char* mysqlServer = "seaquestdb01.fnal.gov";
+	const int mysqlPort = 3310;
+	const char* geometrySchema = "geometry_G17_run3";
+	const char* login = "seaguest";
+	const char* password = "qqbar2mu+mu-";
+
   char query[500];
-
-  //user_liuk_geometry_DPTrigger
-//  sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
-//                 "xPrimeOffset,x0+deltaX,y0+deltaY,z0+deltaZ,planeWidth,planeHeight,theta_x+rotX,"
-//                 "theta_y+rotY,theta_z+rotZ,Planes.detectorID,Planes.detectorGroupName,triggerLv "
-//                 "FROM %s.Planes,%s.Alignments WHERE Planes.detectorName=Alignments.detectorName",
-//								 geometrySchema, geometrySchema);
 
   //geometry_G17_run3
   sprintf(query, "SELECT Planes.detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
-                 "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,"
-                 "theta_y,theta_z,Planes.detectorID "
+                 "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,"
+                 "theta_x,theta_y,theta_z,Planes.detectorID "
                  "FROM %s.Planes",
 								 geometrySchema);
 
@@ -319,9 +345,6 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 	if(Verbosity() > 2) {
 		LogInfo(query);
 	}
-
-  map_groupID.clear();
-  map_detectorID.clear();
 
   unsigned int nRows = res->GetRowCount();
   for(unsigned int i = 0; i < nRows; ++i)
@@ -335,21 +358,28 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
       }
 
       digiPlanes[index].detectorID = index;
+
       digiPlanes[index].detectorName = row->GetField(0);
       digiPlanes[index].spacing = boost::lexical_cast<double>(row->GetField(1));
       digiPlanes[index].cellWidth = boost::lexical_cast<double>(row->GetField(2));
       digiPlanes[index].overlap = boost::lexical_cast<double>(row->GetField(3));
       digiPlanes[index].nElements = boost::lexical_cast<int>(row->GetField(4));
       digiPlanes[index].angleFromVert = boost::lexical_cast<double>(row->GetField(5));
+
       digiPlanes[index].xPrimeOffset = boost::lexical_cast<double>(row->GetField(6));
       digiPlanes[index].xc = boost::lexical_cast<double>(row->GetField(7));
       digiPlanes[index].yc = boost::lexical_cast<double>(row->GetField(8));
       digiPlanes[index].zc = boost::lexical_cast<double>(row->GetField(9));
       digiPlanes[index].planeWidth = boost::lexical_cast<double>(row->GetField(10));
       digiPlanes[index].planeHeight = boost::lexical_cast<double>(row->GetField(11));
+
       digiPlanes[index].rX = boost::lexical_cast<double>(row->GetField(12));
       digiPlanes[index].rY = boost::lexical_cast<double>(row->GetField(13));
       digiPlanes[index].rZ = boost::lexical_cast<double>(row->GetField(14));
+
+      digiPlanes[index].rX = 0;
+      digiPlanes[index].rY = 0;
+      digiPlanes[index].rZ = 0;
 
       //std::string groupName = toGroupName(digiPlanes[index].detectorName);
       if(Verbosity() >= 2)
@@ -434,8 +464,10 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 
   delete res;
   delete server;
+#endif /*NEW*/
 
   //Load the detector realization setup
+  const char* detectorEffResol = "";
   std::ifstream fin(detectorEffResol);
   if(fin) {
     std::string line;
@@ -481,10 +513,17 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
   // calculate the central position in each detector group, then linearly extrapolate the hits
   // to each individual plane, this is assuming there is no magnetic field in the detector, or
   // the bending is negligible
+
   double tx = g4hit.get_px(0)/g4hit.get_pz(0);
   double ty = g4hit.get_py(0)/g4hit.get_pz(0);
-  double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
-  double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
+  //double x0 = (g4hit.get_x(0) - tx*g4hit.get_z(0));///cm;
+  //double y0 = (g4hit.get_y(0) - ty*g4hit.get_z(0));///cm;
+
+  //double tx = (g4hit.get_px(0)+g4hit.get_px(1))/(g4hit.get_pz(0)+g4hit.get_pz(1));
+  //double ty = (g4hit.get_py(0)+g4hit.get_py(1))/(g4hit.get_pz(0)+g4hit.get_pz(1));
+  double x0 = 0.5*(g4hit.get_x(0) + g4hit.get_x(1));///cm;
+  double y0 = 0.5*(g4hit.get_y(0) + g4hit.get_y(1));///cm;
+  double z0 = 0.5*(g4hit.get_z(0) + g4hit.get_z(1));///cm;
 
   //temporary variabels
   double w;
@@ -498,15 +537,6 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
       cout << "DEBUG: detectorName: " << digiPlanes[*dpid].detectorName << endl;
     }
 
-    //check if the track intercepts the plane
-    if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, pos, w)) continue;
-
-    int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
-        //(w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh + digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
-      (w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing) ;
-    double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
-    if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
-
     string detName = digiPlanes[*dpid].detectorName;
     int kt_detector_id = p_geomSvc->getDetectorID(detName);
 
@@ -515,8 +545,22 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
 
     auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
     auto digiHit = up_digiHit.get();
-
     digiHit->set_detector_id(kt_detector_id);
+
+    //check if the track intercepts the plane
+    if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, z0, pos, w)) continue;
+
+    int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
+      (w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh - digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
+    //(w - digiPlanes[*dpid].xPrimeOffset)/digiPlanes[*dpid].spacing) ;
+    digiHit->set_element_id(DP_elementID);
+
+    //double driftDistance = w - digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) - digiPlanes[*dpid].xPrimeOffset;
+    //double wire_pos = digiPlanes[*dpid].spacing*(DP_elementID - digiPlanes[*dpid].nElements/2. - 0.5) + digiPlanes[*dpid].xPrimeOffset;
+    double wire_pos = p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id());
+    double driftDistance = w - wire_pos;
+
+    if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
     digiHit->set_track_id(track_id);
     digiHit->set_g4hit_id(g4hit.get_hit_id());
@@ -525,13 +569,7 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     digiHit->set_truth_y(pos[1]);
     digiHit->set_truth_z(pos[2]);
 
-    //digiHit.fPDGCode = vHit.particlePDG;
-    //digiHit->set_detector_id(digiPlanes[*dpid].detectorID);
-    digiHit->set_element_id(DP_elementID);
     digiHit->set_drift_distance(driftDistance);
-    //digiHit.fMomentum.SetXYZ(vHit.get_px(0)/GeV, vHit.get_py(0)/GeV, vHit.get_pz(0)/GeV);
-    //digiHit.fPosition.SetXYZ(pos[0], pos[1], pos[2]);
-    //digiHit.fDepEnergy = vHit.edep/GeV;
 
     //if(realize(digiHit)) g4hit.digiHits.push_back(digiHit);
 
@@ -552,16 +590,19 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
       }
     }
 
-    digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
+    digiHit->set_pos(wire_pos);
+    //digiHit->set_pos(p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id()));
     //digiHit->set_pos(w);
 
     // FIXME figure this out
     digiHit->set_in_time(1);
-    digiHit->set_hodo_mask(1);
+    digiHit->set_hodo_mask(0);
 
     digiHit->set_hit_id(digits->size());
 
     if(Verbosity() > 2) {
+    	int gs_detector_id      = digiHit->get_detector_id();
+    	string gs_detector_name = p_geomSvc->getDetectorName(gs_detector_id);
       cout << digiPlanes[*dpid] << endl;
       cout << "DEBUG: DigiHit: DPSim: ID: " << *dpid << ", Name: " << digiPlanes[*dpid].detectorName << endl;
       cout << "DEBUG: DigiHit: GeoSvc: ID: " << digiHit->get_detector_id() << ", Name: " << detName << ", "<< endl;
@@ -569,8 +610,28 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
         << "DEBUG: DigiHit: hit_id: " << digiHit->get_hit_id()
         << ", w: " << w
         << ", pos: " << digiHit->get_pos()
-        << endl;
-      //digiHit->identify();
+        << ", truth pos: "
+				<<
+//				 (pos[0]-digiPlanes[*dpid].xc)*digiPlanes[*dpid].uVec[0] +
+//				 (pos[1]-digiPlanes[*dpid].yc)*digiPlanes[*dpid].uVec[1] +
+//				 (pos[2]-digiPlanes[*dpid].zc)*digiPlanes[*dpid].uVec[2]
+				 (pos[0])*digiPlanes[*dpid].uVec[0] +
+				 (pos[1])*digiPlanes[*dpid].uVec[1] +
+				 (pos[2]-digiPlanes[*dpid].zc)*digiPlanes[*dpid].uVec[2]
+        << endl
+      	<< endl;
+
+			std::cout << " { "
+					<< pos[0] << ", "
+					<< pos[1] << ", "
+					<< pos[2] << "} {"
+					<< digiPlanes[*dpid].xc << ", "
+					<< digiPlanes[*dpid].yc << ", "
+					<< digiPlanes[*dpid].zc << "} {"
+					<< digiPlanes[*dpid].uVec[0] << ", "
+					<< digiPlanes[*dpid].uVec[1] << ", "
+					<< digiPlanes[*dpid].uVec[2] << "}"
+					<< std::endl;
     }
 
     digits->push_back(digiHit);
@@ -623,9 +684,13 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
     LogInfo(digiPlanes[41].detectorName);
   }
 
-  for(auto detector_iter = map_g4name_group.begin();
-      detector_iter != map_g4name_group.end(); ++detector_iter) {
-    string g4name = detector_iter->first;
+//  for(auto detector_iter = map_g4name_group.begin();
+//      detector_iter != map_g4name_group.end(); ++detector_iter) {
+//    string g4name = detector_iter->first;
+
+  //auto sim_list = p_geomSvc->getDefaultSimList();
+  for(string g4name : p_geomSvc->getDefaultSimList()) {
+
     string hitnodename = "G4HIT_" + g4name;
 
     if(Verbosity() > 2) {
@@ -652,7 +717,8 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
       //FIXME only keep primary hit only for now
       if(track_id < 0) continue;
 
-      string group = map_g4name_group[g4name];
+      //string group = map_g4name_group[g4name];
+      string group = p_geomSvc->getDetectorGroupName(g4name);
       if(Verbosity() > 2) {
         hit->identify();
         LogDebug(g4name);

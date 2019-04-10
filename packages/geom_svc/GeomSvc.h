@@ -177,6 +177,8 @@ public:
     	return map_dname_group.find(detectorName)!=map_dname_group.end() ? map_dname_group.at(detectorName) : "";
     }
 
+    std::vector<std::string> getDefaultSimList() {return vector_default_sim_group;}
+
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
 
@@ -189,6 +191,8 @@ public:
     double getTantheta(int detectorID) const  { return planes[detectorID].tantheta; }
     double getPlaneScaleX(int detectorID)   { return planes[detectorID].x2 - planes[detectorID].x1; }
     double getPlaneScaleY(int detectorID)   { return planes[detectorID].y2 - planes[detectorID].y1; }
+    double getPlaneScaleZ(int detectorID)   { return map_detid_scale_z[detectorID]; }
+    std::string getPlaneMaterial(int detectorID)   { return map_detid_material[detectorID]; }
     int getPlaneNElements(int detectorID)   { return planes[detectorID].nElements; }
     double getPlaneResolution(int detectorID) const { return planes[detectorID].resolution; }
 
@@ -259,8 +263,18 @@ private:
     //Mapping of detectorName to detectorID, and vice versa
     std::map<std::string, int> map_detectorID;
     std::map<int, std::string> map_detectorName;
+
+    //! detectorName -> detecotr group name (used in simulation)
     std::map<std::string, std::string> map_dname_group;
-    std::map<std::string, std::string> map_g4name_dname;
+
+    //! detectorID -> detector thickness
+    std::map<int, double> map_detid_scale_z;
+
+    //! detectorID -> detector material
+    std::map<int, std::string> map_detid_material;
+
+    //! default groups to put into simulation
+    std::vector<std::string> vector_default_sim_group;
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;
