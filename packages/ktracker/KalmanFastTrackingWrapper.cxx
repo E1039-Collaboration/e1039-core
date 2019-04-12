@@ -330,7 +330,10 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 		_rawEvent = up_raw_event.get();
 	}
 
-	_rawEvent->identify();
+	if(verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
+		LogInfo("SRawEvent before the Reducer");
+		_rawEvent->identify();
+	}
 
   if(_enable_event_reducer){
 	  eventReducer->reduceEvent(_rawEvent);
@@ -338,12 +341,17 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	  	ReMaskHits(_rawEvent);
   }
 
+	if(verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
+	  LogInfo("SRawEvent after the Reducer");
+		_rawEvent->identify();
+	}
+
 	//auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
 	//_recEvent = up_recEvent.get();
 
 	_recEvent->setRecStatus(fastfinder->setRawEvent(_rawEvent));
 
-  if(verbosity >= 2)
+  if(verbosity >= Fun4AllBase::VERBOSITY_A_LOT)
   	fastfinder->printTimers();
 
   _recEvent->setRawEvent(_rawEvent);
