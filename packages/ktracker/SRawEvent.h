@@ -14,6 +14,8 @@ Created: 07-02-2012
 
 #include "GlobalConsts.h"
 
+#include <phool/PHObject.h>
+
 #include <iostream>
 #include <vector>
 #include <list>
@@ -29,7 +31,7 @@ Created: 07-02-2012
 class EventReducer;
 
 ///Definition of hit structure
-class Hit: public TObject
+class Hit: public PHObject
 {
 public:
     //Constructor
@@ -37,10 +39,16 @@ public:
     Hit(int uniqueID);
     Hit(int detectorID, int elementID);
 
+    /// PHObject virtual overloads
+    void         identify(std::ostream& os = std::cout) const {print(os);}
+    void         Reset() {*this = Hit();}
+    int          isValid() const {return true;}
+    Hit*         Clone() const {return (new Hit(*this));}
+
     //Decompose the data quality flag
-    bool isInTime() { return (flag & Hit::inTime) != 0; }
-    bool isHodoMask() { return (flag & Hit::hodoMask) != 0; }
-    bool isTriggerMask() { return (flag & Hit::triggerMask) != 0; }
+    bool isInTime() const { return (flag & Hit::inTime) != 0; }
+    bool isHodoMask() const { return (flag & Hit::hodoMask) != 0; }
+    bool isTriggerMask() const { return (flag & Hit::triggerMask) != 0; }
 
     //Set the flag
     void setFlag(UShort_t flag_input) { flag |= flag_input; }
@@ -57,12 +65,13 @@ public:
     Int_t getDetectorID(Int_t uniqueID) { return uniqueID/1000; }
     Int_t getElementID(Int_t uniqueID) { return uniqueID % 1000; }
 
-    //overiden comparison operator for track seeding
+    //overridden comparison operator for track seeding
     bool operator<(const Hit& elem) const;
     bool operator==(const Hit& elem) const;
 
     //Debugging output
-    void print() { std::cout << index << " : " << detectorID << " : " << elementID << " : " << pos << " : " << driftDistance << " : " << isInTime() << " : " << isHodoMask() << " : " << isTriggerMask() << std::endl; }
+    void print(std::ostream& os = std::cout) const
+    { os << index << " : " << detectorID << " : " << elementID << " : " << pos << " : " << driftDistance << " : " << isInTime() << " : " << isHodoMask() << " : " << isTriggerMask() << std::endl; }
 
     //Data members
     Int_t index;             //unique index for identification
@@ -81,14 +90,20 @@ public:
     };
     UShort_t flag;
 
-    ClassDef(Hit, 3)
+    ClassDef(Hit, 4)
 };
 
-class SRawEvent: public TObject
+class SRawEvent: public PHObject
 {
 public:
     SRawEvent();
     ~SRawEvent();
+
+    /// PHObject virtual overloads
+    void         identify(std::ostream& os = std::cout) const { print(os);}
+    void         Reset() {*this = SRawEvent();}
+    int          isValid() const {return true;}
+    SRawEvent*   Clone() const {return (new SRawEvent(*this));}
 
     ///Gets
     //Hit lists
@@ -206,7 +221,7 @@ public:
     void empty() { fAllHits.clear(); fTriggerHits.clear(); }
 
     ///Print for debugging purposes
-    void print();
+    void print (std::ostream& os = std::cout) const;
 
     ///Friend class which handles all kinds of hit list reduction
     friend class EventReducer;
@@ -253,7 +268,7 @@ private:
     std::vector<Hit> fAllHits;
     std::vector<Hit> fTriggerHits;
 
-    ClassDef(SRawEvent, 8)
+    ClassDef(SRawEvent, 9)
 };
 
 class SRawMCEvent: public SRawEvent

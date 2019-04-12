@@ -45,6 +45,7 @@ class TGeoManager;
 class KalmanFastTrackingWrapper: public SubsysReco {
 
 public:
+	enum INPUPT_TYPE {E1039, E906};
 
 	KalmanFastTrackingWrapper(const std::string &name = "KalmanFastTrackingWrapper");
 	virtual ~KalmanFastTrackingWrapper() {
@@ -120,6 +121,7 @@ private:
 
 	int ReMaskHits(SRawEvent *sraw_event);
 
+	KalmanFastTrackingWrapper::INPUPT_TYPE _input_type;
 	bool _enable_KF;
 	bool _enable_event_reducer;
 	int _DS_level;
