@@ -334,7 +334,8 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
   if(_enable_event_reducer){
 	  eventReducer->reduceEvent(_rawEvent);
-		ReMaskHits(_rawEvent);
+	  if(_input_type == KalmanFastTrackingWrapper::E1039)
+	  	ReMaskHits(_rawEvent);
   }
 
 	//auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
