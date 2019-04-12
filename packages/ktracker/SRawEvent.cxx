@@ -95,6 +95,33 @@ SRawEvent::~SRawEvent()
 {
 }
 
+void SRawEvent::DeepClone(SRawEvent *c)
+{
+    fRunID       = c->getRunID();
+    fEventID     = c->getEventID();
+    fSpillID     = c->getSpillID();
+
+    fTriggerBits = c->getTriggerBits();
+
+    fTargetPos   = c->getTargetPos();
+
+    fTurnID      = c->getTurnID();
+    fRFID        = c->getRFID();
+    for(int i=0; i<33; ++i) fIntensity[i] = c->getIntensity(i);
+
+    setTriggerEmu(c->isEmuTriggered());
+    for(int i=0; i<4; ++i)  fNRoads[i]    = c->getNRoads()[i];
+
+
+    for(Short_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++) {
+        fNHits[i] = c->getNHitsInDetector(i);
+    }
+    fAllHits      = c->getAllHits();
+    fTriggerHits  = c->getTriggerHits();
+
+    return;
+}
+
 void SRawEvent::setEventInfo(Int_t runID, Int_t spillID, Int_t eventID)
 {
     fRunID = runID;

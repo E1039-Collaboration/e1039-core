@@ -105,6 +105,8 @@ public:
     int          isValid() const {return true;}
     SRawEvent*   Clone() const {return (new SRawEvent(*this));}
 
+    void         DeepClone(SRawEvent *c);
+
     ///Gets
     //Hit lists
     std::list<Int_t> getHitsIndexInDetector(Short_t detectorID);

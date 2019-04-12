@@ -159,20 +159,12 @@ int Fun4AllSRawEventInputManager::run(const int nevents)
 	}
   
 	_tin->GetEntry(events_thisfile);
-	rawEvent = _b_srawEvent->Clone();
+	rawEvent->DeepClone(_b_srawEvent);
 	events_thisfile++;
 	events_total++;
 
-	if (verbosity > 1) {
-		cout << ThisName << ":  run " << _b_srawEvent->getRunID()
-				<< ", spill " << _b_srawEvent->getSpillID()
-				<< ", event " << _b_srawEvent->getEventID() << endl;
-	}
-
-	if (verbosity > 1) {
-		cout << ThisName << ":  run " << rawEvent->getRunID()
-				<< ", spill " << rawEvent->getSpillID()
-				<< ", event " << rawEvent->getEventID() << endl;
+	if (verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
+		rawEvent->identify();
 	}
 
   SetRunNumber                (rawEvent->getRunID());
