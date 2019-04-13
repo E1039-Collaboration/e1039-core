@@ -323,8 +323,9 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 		//return Fun4AllReturnCodes::ABORTRUN;
 	}
 
+	std::unique_ptr<SRawEvent> up_raw_event;
 	if(_input_type == KalmanFastTrackingWrapper::E1039) {
-		auto up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
+		up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
 		_rawEvent = up_raw_event.get();
 	}
 
