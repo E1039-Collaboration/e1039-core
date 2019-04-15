@@ -27,7 +27,7 @@ and then prop. tubes
 #include <TVector3.h>
 #include <TSpline.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
+#include <JobOptsSvc.h> // <jobopts_svc/JobOptsSvc.h>
 #include "GlobalConsts.h"
 
 class Plane

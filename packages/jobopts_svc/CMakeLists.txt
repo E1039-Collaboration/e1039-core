@@ -24,7 +24,7 @@ file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 add_library(jobopts_svc SHARED ${sources} ${dicts})
 target_link_libraries(jobopts_svc ${ROOT_LINK})
 
-target_include_directories(jobopts_svc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(jobopts_svc INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 #message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

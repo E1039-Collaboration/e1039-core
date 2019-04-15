@@ -2,6 +2,24 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(e1039-core CXX C)
 
+##
+## functions
+##
+function(ListInc include_opts)
+  set(list_opt "")
+  foreach(arg IN LISTS ARGN)
+    get_property(list_dir TARGET ${arg} PROPERTY INCLUDE_DIRECTORIES)
+    foreach(dir ${list_dir})
+      list(APPEND list_opt "-I${dir}")
+      #message(STATUS "  inc='${dir}'")
+    endforeach()
+  endforeach()
+  string(REPLACE ";" " " list_opt "${list_opt}")
+  #message(STATUS "  list_opt='${list_opt}'")
+  set(${include_opts} ${list_opt} PARENT_SCOPE)
+endfunction()
+
+
 # source code
 #include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 
@@ -54,10 +72,11 @@ add_subdirectory(framework/phool)
 #add_subdirectory(packages/ktracker
 #add_subdirectory(module_example
 
-# Install the pcm files in case of ROOT 6.
-#execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_MAJOR_VER)
-#string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
-#if (ROOT_VER GREATER 5)
-#   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
-#   add_dependencies(install_pcm jobopts_svc geom_svc)
-#endif()
+
+##
+## Install the pcm files in case of ROOT 6.
+##
+if (ROOT_MAJOR_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND find ${CMAKE_BINARY_DIR} -path ${CMAKE_INSTALL_PREFIX} -prune -o -name "*_rdict.pcm" -exec cp -upv {} ${CMAKE_INSTALL_PREFIX}/lib "\;")
+   add_dependencies(install_pcm jobopts_svc geom_svc)
+endif()
