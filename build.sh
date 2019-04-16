@@ -21,27 +21,28 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    online/chan_map
     online/onlmonserver
     online/decoder_maindaq
-    packages/Half
-    packages/vararray
-    database/pdbcal/base
-    database/PHParameter
-    packages/PHGeometry
-    packages/PHField
-    generators/phhepmc
-    generators/PHPythia8
-    simulation/g4decayer
-    simulation/g4gdml
-    simulation/g4main
-    simulation/g4detectors
-    simulation/g4dst
-    simulation/g4eval
-    packages/db2g4
-    packages/PHGenFitPkg/GenFitExp
-    packages/PHGenFitPkg/PHGenFit
-    packages/ktracker
-    module_example
+#    packages/Half
+#    packages/vararray
+#    database/pdbcal/base
+#    database/PHParameter
+#    packages/PHGeometry
+#    packages/PHField
+#    generators/phhepmc
+#    generators/PHPythia8
+#    simulation/g4decayer
+#    simulation/g4gdml
+#    simulation/g4main
+#    simulation/g4detectors
+#    simulation/g4dst
+#    simulation/g4eval
+#    packages/db2g4
+#    packages/PHGenFitPkg/GenFitExp
+#    packages/PHGenFitPkg/PHGenFit
+#    packages/ktracker
+#    module_example
 	)
 fi
 
