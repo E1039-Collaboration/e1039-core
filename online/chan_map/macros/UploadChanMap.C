@@ -5,11 +5,13 @@ int UploadChanMap()
 {
   gSystem->Load("libchan_map.so");
   ChanMapperTaiwan map;
-  map.ReadFromFile(15000);
-  //map.ReadFromFile("/data2/analysis/kenichi/e1039/chan_map/chamber/test/chamberInfo_v22.tsv");
+  map.SetMapIDbyFile(15000); // todo: use map_id to select the map to be uploaded...
+  map.ReadFromFile();
+
   //map.Print(cout);
-  //map.WriteToFile("test.tsv");
+  map.WriteToLocalFile("test.tsv");
   map.WriteToDB();
+  map.WriteRangeToDB();
 
   return 0;
 }

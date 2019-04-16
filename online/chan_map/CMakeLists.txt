@@ -18,6 +18,7 @@ add_custom_command (
   COMMAND rootcint
   ARGS -f ChanMap_Dict.cc -c
   -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+  ${PROJECT_SOURCE_DIR}/ChanMapperRange.h
   ${PROJECT_SOURCE_DIR}/ChanMapper.h
   ${PROJECT_SOURCE_DIR}/ChanMapperTaiwan.h
   ${PROJECT_SOURCE_DIR}/LinkDef.h

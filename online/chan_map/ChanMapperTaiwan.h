@@ -17,21 +17,19 @@ class ChanMapperTaiwan : public ChanMapper {
   using ChanMapper::ReadFromFile;
   using ChanMapper::ReadFromDB;
 
-  void ReadFromFile(const std::string fn_tsv);
-  void WriteToFile (const std::string fn_tsv);
-
   void Add (const short roc, const short board, const short chan, const std::string det, const short ele);
   bool Find(const short roc, const short board, const short chan,  std::string& det, short& ele);
   bool Find(const short roc, const short board, const short chan,        short& det, short& ele);
   void Print(std::ostream& os);
 
- private:
+ protected:
+  int  ReadFileCont(LineList& lines);
+  int WriteFileCont(std::ostream& os);
+
   void  ReadDbTable(DbSvc& db);
   void WriteDbTable(DbSvc& db);
 
   void InitNameMap();
-
-  //ClassDef(ChanMapperTaiwan, 1);
 };
 
 #endif // __CHAN_MAPPER_TAIWAN_H__

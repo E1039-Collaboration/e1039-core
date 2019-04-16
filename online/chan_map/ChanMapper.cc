@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <fstream>
 #include "DbSvc.h"
-#include "ChanMapperRange.h"
 #include "ChanMapper.h"
 using namespace std;
 
@@ -16,10 +15,34 @@ ChanMapper::ChanMapper()
   m_header   = "";
 }
 
+ChanMapper::~ChanMapper()
+{
+  ;
+}
+
+void ChanMapper::SetMapIDbyFile(const int run)
+{
+  m_range.ReadFromFile(RangeFileName().c_str());
+  m_map_id = m_range.Find(run);
+}
+
+void ChanMapper::SetMapIDbyDB(const int run)
+{
+  m_range.ReadFromDB(SchemaName());
+  m_map_id = m_range.Find(run);
+}
+
 std::string ChanMapper::RangeFileName()
 {
   ostringstream oss;
   oss << m_dir_base << "/" << m_label << "/run_range.tsv";
+  return oss.str();
+}
+
+std::string ChanMapper::MapFileName()
+{
+  ostringstream oss;
+  oss << m_dir_base << "/" << m_label << "/" << m_map_id << "/chan_map.tsv";
   return oss.str();
 }
 
@@ -30,42 +53,55 @@ std::string ChanMapper::SchemaName()
   return ret;
 }
 
-std::string ChanMapper::TableName()
+std::string ChanMapper::MapTableName()
 {
   string ret = "chan_map_";
   ret += m_map_id;
   return ret;
 }
 
-void ChanMapper::ReadFromFile(const int run)
+void ChanMapper::ReadFromFile()
 {
-  ostringstream oss;
-  oss << m_dir_base << "/" << m_label << "/run_range.tsv";
-  ChanMapperRange range;
-  range.ReadFromFile(oss.str().c_str());
-
-  m_map_id = range.Find(run);
-  oss.str("");
-  oss << m_dir_base << "/" << m_label << "/" << m_map_id << "/chan_map.tsv";
-  ReadFromFile(oss.str());
+  ReadFromLocalFile(MapFileName());
 }
 
-void ChanMapper::ReadFromDB(const int run)
+void ChanMapper::WriteToFile()
 {
-  ChanMapperRange range;
-  range.ReadFromDB(SchemaName());
-  m_map_id = range.Find(run);
-  ReadFromDB();
+  WriteToLocalFile(MapFileName());
 }
 
-void ChanMapper::ReadFromFile(const string fn_tsv)
+void ChanMapper::ReadFromLocalFile(const string fn_tsv)
 {
-  ;
+  cout << "  ChanMapper::ReadFromFile(): " << fn_tsv << "...";
+  ifstream ifs(fn_tsv.c_str());
+  if (! ifs) {
+    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
+    exit(1);
+  } 
+
+  LineList lines;
+  string buffer;
+  while ( getline(ifs, buffer) ) {
+    if (buffer[0] == '#') continue;
+    lines.push_back(buffer);
+  }
+  ifs.close();
+  int nn = ReadFileCont(lines);
+  cout << " read " << nn << " entries." << endl;
 }
 
-void ChanMapper::WriteToFile(const string fn_tsv)
+void ChanMapper::WriteToLocalFile(const string fn_tsv)
 {
-  ;
+  cout << "  ChanMapper::WriteToFile(): " << fn_tsv << "...";
+  ofstream ofs(fn_tsv.c_str());
+  if (! ofs) {
+    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
+    exit(1);
+  }
+  ofs << "#" << m_header << "\n";
+  int nn = WriteFileCont(ofs);
+  ofs.close();
+  cout << " wrote " << nn << " entries." << endl;
 }
 
 void ChanMapper::ReadFromDB()
@@ -74,8 +110,8 @@ void ChanMapper::ReadFromDB()
     cerr << "  ERROR:  The map ID is not set.  Abort." << endl;
     exit(1);
   }
-  string name_schema = SchemaName();
-  string name_table  =  TableName();
+  string name_schema =   SchemaName();
+  string name_table  = MapTableName();
   cout <<   "  Schema = " << name_schema
        << "\n  Table  = " << name_table << "\n";
 
@@ -92,8 +128,8 @@ void ChanMapper::WriteToDB()
     cerr << "  ERROR:  The map ID is not set.  Abort." << endl;
     exit(1);
   }
-  string name_schema = SchemaName();
-  string name_table  =  TableName();
+  string name_schema =   SchemaName();
+  string name_table  = MapTableName();
   cout <<   "  Schema = " << name_schema
        << "\n  Table  = " << name_table << "\n";
 
@@ -102,6 +138,11 @@ void ChanMapper::WriteToDB()
   db.DropTable(name_table);
   WriteDbTable(db);
   cout <<   "  ...done." << endl;
+}
+
+void ChanMapper::WriteRangeToDB()
+{
+  m_range.WriteToDB(SchemaName());
 }
 
 void ChanMapper::Print(std::ostream& os)

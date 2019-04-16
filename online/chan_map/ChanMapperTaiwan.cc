@@ -7,8 +7,6 @@
 #include "ChanMapperTaiwan.h"
 using namespace std;
 
-//ClassImp(ChanMapperTaiwan)
-
 ChanMapperTaiwan::ChanMapperTaiwan()
 {
   m_label = "taiwan";
@@ -16,55 +14,39 @@ ChanMapperTaiwan::ChanMapperTaiwan()
   InitNameMap();
 }
 
-void ChanMapperTaiwan::ReadFromFile(const string fn_tsv)
+int ChanMapperTaiwan::ReadFileCont(LineList& lines)
 {
-  cout << "  ChanMapperTaiwan::ReadFile(): " << fn_tsv << "... ";
-  ifstream ifs(fn_tsv.c_str());
-  if (! ifs) {
-    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
-    exit(1);
-  } 
-
-  string buffer;
   istringstream iss;
-  //getline(ifs, buffer); // discard the 1st line
-  unsigned int nn = 0;
-  while ( getline(ifs, buffer) ) {
-    if (buffer[0] == '#') continue;
+  int nn = 0;
+  for (LineList::iterator it = lines.begin(); it != lines.end(); it++) {
     iss.clear(); // clear any error flags
-    iss.str(buffer);
+    iss.str(*it);
     string det;
     short  ele, roc, board, chan;
     if (! (iss >> det >> ele >> roc >> board >> chan)) continue;
     Add(roc, board, chan, det, ele);
     nn++;
   }
-  ifs.close();
-  cout << nn << " read in." << endl;
+  return nn;
 }
 
-void ChanMapperTaiwan::WriteToFile(const string fn_tsv)
+int ChanMapperTaiwan::WriteFileCont(std::ostream& os)
 {
-  cout << "  ChanMapper::WriteFile(): " << fn_tsv << "... ";
-  ofstream ofs(fn_tsv.c_str());
-  if (! ofs) {
-    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
-    exit(1);
-  } 
-  ofs << "#" << m_header << "\n";
+  int nn = 0;
   for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
     RocBoardChan_t key = it->first;
     DetEle_t       val = it->second;
-    ofs << val.first << "\t" << val.second << "\t"
-        << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+    os << val.first << "\t" << val.second << "\t"
+       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+    nn++;
   }
-  ofs.close();
+  return nn;
 }
 
 void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
-  oss << "select roc, board, chan, det, ele from " << TableName();
+  oss << "select roc, board, chan, det, ele from " << MapTableName();
   TSQLStatement* stmt = db.Process(oss.str());
   while (stmt->NextResultRow()) {
     short  roc   = stmt->GetInt   (0);
@@ -79,7 +61,7 @@ void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
 
 void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
 {
-  string name_table = TableName();
+  string name_table = MapTableName();
   ostringstream oss;
   oss << "create table " << name_table << "("
     "  roc   SMALLINT, "
@@ -138,7 +120,6 @@ bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan
   det = ele = 0;
   return false;
 }
-
 
 void ChanMapperTaiwan::Print(std::ostream& os)
 {

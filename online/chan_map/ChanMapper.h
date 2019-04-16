@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include "ChanMapperRange.h"
 class DbSvc;
 
 class ChanMapper {
@@ -13,29 +14,38 @@ class ChanMapper {
   std::string m_label;
   std::string m_map_id;
   std::string m_header;
+  ChanMapperRange m_range;
 
  public:
   ChanMapper();
-  virtual ~ChanMapper() {;}
+  virtual ~ChanMapper();
 
   std::string GetMapID() { return m_map_id; }
   void        SetMapID(const std::string map_id) { m_map_id = map_id; }
+  void SetMapIDbyFile(const int run);
+  void SetMapIDbyDB  (const int run);
+
   std::string RangeFileName();
+  std::string MapFileName();
   std::string SchemaName();
-  std::string TableName();
+  std::string MapTableName();
 
-  void ReadFromFile(const int run);
-  void ReadFromDB  (const int run);
-
-  virtual void ReadFromFile(const std::string fn_tsv);
-  virtual void WriteToFile (const std::string fn_tsv);
+  void ReadFromFile();
+  void  WriteToFile();
+  void ReadFromLocalFile(const std::string fn_tsv);
+  void  WriteToLocalFile(const std::string fn_tsv);
 
   void ReadFromDB();
   void WriteToDB ();
+  void WriteRangeToDB();
 
   virtual void Print(std::ostream& os);
 
  protected:
+  typedef std::vector<std::string> LineList;
+  virtual int  ReadFileCont(LineList& lines) {;}
+  virtual int WriteFileCont(std::ostream& os) {;}
+
   virtual void  ReadDbTable(DbSvc& db);
   virtual void WriteDbTable(DbSvc& db);
 };
