@@ -25,15 +25,6 @@ function cmake-e1039-core {
     echo "MY_INSTALL     = $MY_INSTALL"
 
     cmake -DCMAKE_INSTALL_PREFIX=$MY_INSTALL $DIR_E1039_CORE
-
-    #mkdir -p $build/$package
-    #cd $build/$package
-    #echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
-    #cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
-    #make -j4 install
-    #ret=$?
-    #if [ $ret -ne 0 ] ; then
-    #	echo "Abort since ret = $ret."
-    #	exit
-    #fi
+    ret=$?
+    test $ret -eq 0 && echo "OK, run 'make -j4 install'."
 }

@@ -1,37 +1,35 @@
 # Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(phool CXX C)
+#cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+#project(phool CXX C)
 
 # ROOT dict generation
 add_custom_command (
   OUTPUT PHBase_dict.cc
   COMMAND rootcint
   ARGS -f PHBase_dict.cc -c
-	${PROJECT_SOURCE_DIR}/PHFlag.h
-	${PROJECT_SOURCE_DIR}/phool.h
-	${PROJECT_SOURCE_DIR}/PHObject.h
-	${PROJECT_SOURCE_DIR}/PHRandomSeed.h
-	${PROJECT_SOURCE_DIR}/PHTimeServer.h
-	${PROJECT_SOURCE_DIR}/PHTimeStamp.h
-	${PROJECT_SOURCE_DIR}/recoConsts.h
-	${PROJECT_SOURCE_DIR}/PHBase_LinkDef.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHFlag.h
+	${CMAKE_CURRENT_SOURCE_DIR}/phool.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHObject.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHRandomSeed.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHTimeServer.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHTimeStamp.h
+	${CMAKE_CURRENT_SOURCE_DIR}/recoConsts.h
+	${CMAKE_CURRENT_SOURCE_DIR}/PHBase_LinkDef.h
 	)
 
 # source code
-include_directories(${PROJECT_SOURCE_DIR}/)
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
+file(GLOB sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ROOT_LINK}")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include ${ROOT_CFLAGS} -std=c++11 ")
 add_library(phool SHARED ${sources} PHBase_dict.cc)
-target_link_libraries(phool ${ROOT_LINK})
 
-#message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+## NG.  Same as jobopts_svc.
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(phool INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 install(TARGETS phool DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+file(GLOB dist_headers     ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB non_dist_headers ${CMAKE_CURRENT_SOURCE_DIR}/*LinkDef.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
-install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
+install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

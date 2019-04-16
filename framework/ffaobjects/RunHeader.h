@@ -1,7 +1,7 @@
 #ifndef RUNHEADER_H
 #define RUNHEADER_H
 
-#include <phool/PHObject.h>
+#include <PHObject.h>
 
 #include <ctime>
 #include <iostream>

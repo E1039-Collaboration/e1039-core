@@ -1,8 +1,8 @@
 #ifndef FLAGSAVE_H
 #define FLAGSAVE_H
 
-#include <phool/PHObject.h>
-#include <phool/phool.h>
+#include <PHObject.h>
+#include <phool.h>
 
 class PHFlag;
 

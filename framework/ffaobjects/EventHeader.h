@@ -1,7 +1,7 @@
 #ifndef EVENTHEADER_H
 #define EVENTHEADER_H
 
-#include <phool/PHObject.h>
+#include <PHObject.h>
 
 #include <ctime>
 

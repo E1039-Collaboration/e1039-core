@@ -1,6 +1,6 @@
 #include "SyncObject.h"
 
-#include <phool/phool.h>
+#include <phool.h>
 
 #include <iostream>
 

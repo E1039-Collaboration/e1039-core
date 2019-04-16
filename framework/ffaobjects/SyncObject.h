@@ -1,7 +1,7 @@
 #ifndef SYNCOBJECT_H
 #define SYNCOBJECT_H
 
-#include <phool/PHObject.h>
+#include <PHObject.h>
 
 #include <iostream>
 

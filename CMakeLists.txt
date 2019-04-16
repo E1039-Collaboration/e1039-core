@@ -5,7 +5,7 @@ project(e1039-core CXX C)
 ##
 ## functions
 ##
-function(ListInc include_opts)
+function(ListIncDirs include_opts)
   set(list_opt "")
   foreach(arg IN LISTS ARGN)
     get_property(list_dir TARGET ${arg} PROPERTY INCLUDE_DIRECTORIES)
@@ -47,7 +47,9 @@ add_dependencies(jobopts_svc global_consts)
 add_dependencies(geom_svc    jobopts_svc)
 
 add_subdirectory(framework/phool)
-#add_subdirectory(framework/ffaobjects)
+add_subdirectory(framework/ffaobjects)
+add_dependencies(ffaobjects phool)
+
 #add_subdirectory(framework/fun4all)
 #add_subdirectory(interface_main)
 #add_subdirectory(online/onlmonserver
@@ -78,5 +80,5 @@ add_subdirectory(framework/phool)
 ##
 if (ROOT_MAJOR_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND find ${CMAKE_BINARY_DIR} -path ${CMAKE_INSTALL_PREFIX} -prune -o -name "*_rdict.pcm" -exec cp -upv {} ${CMAKE_INSTALL_PREFIX}/lib "\;")
-   add_dependencies(install_pcm jobopts_svc geom_svc)
+   add_dependencies(install_pcm jobopts_svc geom_svc phool ffaobjects)
 endif()

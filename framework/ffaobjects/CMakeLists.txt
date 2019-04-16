@@ -1,63 +1,37 @@
 # Setup the project
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(ffaobjects CXX C)
+#cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+#project(ffaobjects CXX C)
+
+# source code
+file(GLOB sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+file(GLOB headers ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 # ROOT dict generation
+ListIncDirs(inc_opts phool)
+message(STATUS "inc_opts = '${inc_opts}'")
 add_custom_command (
   OUTPUT libffaobjects_Dict.cc
   COMMAND rootcint
   ARGS -f libffaobjects_Dict.cc -c
-  -I$ENV{MY_INSTALL}/include
-	-I$ENV{OFFLINE_MAIN}/include
-  ${PROJECT_SOURCE_DIR}/FlagSave.h
-  ${PROJECT_SOURCE_DIR}/FlagSavev1.h
-  ${PROJECT_SOURCE_DIR}/RunHeader.h
-  ${PROJECT_SOURCE_DIR}/SyncObject.h
-  ${PROJECT_SOURCE_DIR}/SyncObjectv1.h
-  ${PROJECT_SOURCE_DIR}/SyncObjectv2.h
-  ${PROJECT_SOURCE_DIR}/EventHeader.h
-  ${PROJECT_SOURCE_DIR}/EventHeaderv1.h
-  ${PROJECT_SOURCE_DIR}/libffaobjects_LinkDef.h
-	)
-
-file(GLOB pcms "")
-list(APPEND pcms "libffaobjects_Dict_rdict.pcm")
-
-
-# source code
-include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
-
-# ROOT
-find_program(ROOTCONF "root-config")
-if(ROOTCONF)
-  message("-- Detecting ROOT:    found at ${ROOTCONF}")
-else()
-  message(FATAL_ERROR "-- Detecting ROOT:    not found")
-endif()
-execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{MY_INSTALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool")
+  ${inc_opts}
+  ${CMAKE_CURRENT_SOURCE_DIR}/FlagSave.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/FlagSavev1.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/RunHeader.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/SyncObject.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/SyncObjectv1.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/SyncObjectv2.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/EventHeader.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/EventHeaderv1.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/libffaobjects_LinkDef.h
+)
 
 add_library(ffaobjects SHARED ${sources} libffaobjects_Dict.cc)
-target_link_libraries(ffaobjects -L$ENV{MY_INSTALL}/lib -L$ENV{OFFLINE_MAIN}/lib -lphool)
-
-message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+target_link_libraries     (ffaobjects phool)
+target_include_directories(ffaobjects INTERFACE phool)
 
 install(TARGETS ffaobjects DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
-file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+file(GLOB dist_headers     ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB non_dist_headers ${CMAKE_CURRENT_SOURCE_DIR}/*LinkDef.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
-install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
-
-execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
-string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
-if (ROOT_VER GREATER 5)
-   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up ${pcms} ${CMAKE_INSTALL_PREFIX}/lib)
-   add_dependencies(install_pcm ffaobjects)
-endif()
+install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

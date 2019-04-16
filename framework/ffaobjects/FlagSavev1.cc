@@ -1,5 +1,5 @@
 #include "FlagSavev1.h"
-#include <phool/PHFlag.h>
+#include <PHFlag.h>
 
 using namespace std;
 
