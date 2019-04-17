@@ -20,7 +20,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   //const char* dir_in  = "/data/e906",
   const char* dir_in  = "/data2/analysis/kenichi/e1039";
   const char* dir_out = ".";
-  const bool is_online = true;
+  const bool is_online = false; // true;
 
   ostringstream oss;
   oss << setfill('0') 

@@ -104,8 +104,10 @@ void ChanMapper::ReadFromDB()
   }
   string name_schema =   SchemaName();
   string name_table  = MapTableName();
-  cout <<   "  Schema = " << name_schema
-       << "\n  Table  = " << name_table << "\n";
+  cout << "Read channel map from "
+       << name_schema << "." << name_table << ".\n";
+  //cout <<   "  Schema = " << name_schema
+  //     << "\n  Table  = " << name_table << "\n";
 
   DbSvc db(DbSvc::DB1);
   db.UseSchema(name_schema);

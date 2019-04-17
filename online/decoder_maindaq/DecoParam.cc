@@ -27,20 +27,28 @@ int DecoParam::InitMapper()
     cout << "!!ERROR!!  DecoParam::InitMapper(): runID = 0.\n";
     return 1;
   }
-  ostringstream oss;
-  oss << dir_param << "/run_" << setfill('0') << setw(6) << runID;
-  string dir_map = oss.str();
-  oss << "/chamber/chamberInfo.tsv";
-  map_taiwan.ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/hodoscope/hodoInfo.tsv";
-  map_taiwan.ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/trigger/triggerInfo.tsv";
-  map_v1495 .ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/scaler/scalerInfo.tsv";
-  map_scaler.ReadFile(oss.str().c_str());
+  //ostringstream oss;
+  //oss << dir_param << "/run_" << setfill('0') << setw(6) << runID;
+  //string dir_map = oss.str();
+  //oss << "/chamber/chamberInfo.tsv";
+  //map_taiwan.ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/hodoscope/hodoInfo.tsv";
+  //map_taiwan.ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/trigger/triggerInfo.tsv";
+  //map_v1495 .ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/scaler/scalerInfo.tsv";
+  //map_scaler.ReadFile(oss.str().c_str());
+
+  chan_map_taiwan.SetMapIDbyDB(runID);
+  chan_map_taiwan.ReadFromDB();
+  chan_map_v1495 .SetMapIDbyDB(runID);
+  chan_map_v1495 .ReadFromDB();
+  chan_map_scaler.SetMapIDbyDB(runID);
+  chan_map_scaler.ReadFromDB();
+
   return 0;
 }
 
