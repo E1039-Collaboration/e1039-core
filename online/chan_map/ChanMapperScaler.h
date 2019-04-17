@@ -1,12 +1,19 @@
 #ifndef __CHAN_MAPPER_SCALER_H__
 #define __CHAN_MAPPER_SCALER_H__
-#include <tuple>
 #include "ChanMapper.h"
 
 class ChanMapperScaler : public ChanMapper {
-  typedef std::tuple<short, short, short> RocBoardChan_t;
+  struct MapItem {
+    short roc;
+    short board;
+    short chan;
+    std::string name;
+  };
+  typedef std::vector<MapItem> List_t;
+  List_t m_list; ///< Used to keep all information in the added order.
+
   typedef std::map<RocBoardChan_t, std::string> Map_t;
-  Map_t m_map;
+  Map_t m_map; ///< Used in Find() for better speed.
 
  public:
   ChanMapperScaler();

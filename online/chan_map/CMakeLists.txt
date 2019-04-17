@@ -41,7 +41,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
 
 add_library(chan_map SHARED ${sources} ChanMap_Dict.cc)
-target_link_libraries(chan_map ${MYSQL_LIBS} ${ROOT_LINK})
+target_link_libraries(chan_map ${MYSQL_LIBS} ${ROOT_LINK} geom_svc)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

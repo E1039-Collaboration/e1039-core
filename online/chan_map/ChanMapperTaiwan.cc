@@ -5,6 +5,7 @@
 #include <fstream>
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
+#include <geom_svc/GeomSvc.h>
 #include "DbSvc.h"
 #include "ChanMapperTaiwan.h"
 using namespace std;
@@ -35,11 +36,9 @@ int ChanMapperTaiwan::ReadFileCont(LineList& lines)
 int ChanMapperTaiwan::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEle_t       val = it->second;
-    os << val.first << "\t" << val.second << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->det_name << "\t" << it->ele << "\t"
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     nn++;
   }
   return nn;
@@ -48,15 +47,16 @@ int ChanMapperTaiwan::WriteFileCont(std::ostream& os)
 void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
-  oss << "select roc, board, chan, det, ele from " << MapTableName();
+  oss << "select roc, board, chan, det_name, det, ele from " << MapTableName();
   TSQLStatement* stmt = db.Process(oss.str());
   while (stmt->NextResultRow()) {
-    short  roc   = stmt->GetInt   (0);
-    short  board = stmt->GetInt   (1);
-    short  chan  = stmt->GetInt   (2);
-    string det   = stmt->GetString(3);
-    short  ele   = stmt->GetInt   (4);
-    Add(roc, board, chan, det, ele);
+    short  roc      = stmt->GetInt   (0);
+    short  board    = stmt->GetInt   (1);
+    short  chan     = stmt->GetInt   (2);
+    string det_name = stmt->GetString(3);
+    short  det      = stmt->GetInt   (4);
+    short  ele      = stmt->GetInt   (5);
+    Add(roc, board, chan, det_name, det, ele);
   }
   delete stmt;
 }
@@ -65,17 +65,16 @@ void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
-  const char* list_var [] = {      "roc",    "board",     "chan",        "det",      "ele" };
-  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(8)", "SMALLINT" };
-  db.CreateTable(name_table, 5, list_var, list_type);
+  const char* list_var [] = {      "roc",    "board",     "chan",    "det_name",      "det",      "ele" };
+  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(32)", "SMALLINT", "SMALLINT" };
+  const int   n_var       = 6;
+  db.CreateTable(name_table, n_var, list_var, list_type);
 
   ostringstream oss;
-  oss << "insert into " << name_table << "(roc, board, chan, det, ele) values";
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEle_t       val = it->second;
-    oss << " (" << std::get<0>(key) << ", " << std::get<1>(key) << ", " << std::get<2>(key) 
-        << ", '" << val.first << "', " << val.second << "),";
+  oss << "insert into " << name_table << "(roc, board, chan, det_name, det, ele) values";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    oss << " (" << it->roc << ", " << it->board << ", " << it->chan
+        << ", '" << it->det_name << "', " << it->det << ", " << it->ele << "),";
   }
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
@@ -85,12 +84,61 @@ void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
   }
 }
 
-void ChanMapperTaiwan::Add(const short roc, const short board, const short chan, const std::string det, const short ele)
+void ChanMapperTaiwan::Add(
+  const short roc, const short board, const short chan, 
+  const std::string det, const short ele)
 {
-  m_map[RocBoardChan_t(roc, board, chan)] = DetEle_t(det, ele);
+  GeomSvc* geom = GeomSvc::instance();
+  string det_new = det;
+  int    ele_new = ele;
+  geom->toLocalDetectorName(det_new, ele_new);
+  int det_id = geom->getDetectorID(det_new);
+  Add(roc, board, chan, det, det_id, ele);
+
+  if (ele_new != ele) {
+    cout << "!WARNING!  ChanMapperTaiwan::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
+         << "  From det = " << det << ", ele = " << ele << "\n"
+         << "  To   det = " << det_new << "(id = " << det_id << "), ele = " << ele_new << "\n"
+         << "  The mapping result will be incorrect!!" << endl;
+  }
+
+  /// Code to check the conversion
+  //int det_id_local = -1;
+  //if (m_map_name2id.find(det) != m_map_name2id.end()) det_id_local = m_map_name2id[det];
+  //cout << "Debug: " << det << " " << ele << " -> " << det_id << " " << det_new << " " << ele_new << " : "
+  //     << det_id - det_id_local << " " << ele - ele_new << "\n";
 }
 
-bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  std::string& det, short& ele)
+void ChanMapperTaiwan::Add(
+  const short roc, const short board, const short chan, 
+  const std::string det_name, const short det_id, const short ele)
+{
+  MapItem item;
+  item.roc      = roc;
+  item.board    = board;
+  item.chan     = chan;
+  item.det_name = det_name;
+  item.det      = det_id;
+  item.ele      = ele;
+  m_list.push_back(item);
+  m_map[RocBoardChan_t(roc, board, chan)] = DetEle_t(det_id, ele);
+}
+
+//bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  std::string& det, short& ele)
+//{
+//  RocBoardChan_t key(roc, board, chan);
+//  if (m_map.find(key) != m_map.end()) {
+//    DetEle_t* det_ele = &m_map[key];
+//    det = det_ele->first;
+//    ele = det_ele->second;
+//    return true;
+//  }
+//  det = "";
+//  ele = 0;
+//  return false;
+//}
+
+bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  short& det, short& ele)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
@@ -99,19 +147,14 @@ bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan
     ele = det_ele->second;
     return true;
   }
-  det = "";
-  ele = 0;
-  return false;
-}  
 
-bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  short& det, short& ele)
-{
-  string det_str;
-  if (! Find(roc, board, chan, det_str, ele)) return false;
-  if (m_map_name2id.find(det_str) != m_map_name2id.end()) {
-    det = m_map_name2id[det_str];
-    return true;
-  }
+//  string det_str;
+//  if (! Find(roc, board, chan, det_str, ele)) return false;
+//  if (m_map_name2id.find(det_str) != m_map_name2id.end()) {
+//    det = m_map_name2id[det_str];
+//    return true;
+//  }
+
   det = ele = 0;
   return false;
 }
@@ -119,14 +162,12 @@ bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan
 void ChanMapperTaiwan::Print(std::ostream& os)
 {
   int n_ent = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEle_t       val = it->second;
-    os << val.first << "\t" << val.second << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->det_name << "\t" << it->det << "\t" << it->ele << "\t"
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     n_ent++;
   }
-  cout << n_ent << endl;
+  cout << "  n = " << n_ent << endl;
 }
 
 void ChanMapperTaiwan::InitNameMap()

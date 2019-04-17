@@ -1,21 +1,33 @@
 #ifndef __CHAN_MAPPER_TAIWAN_H__
 #define __CHAN_MAPPER_TAIWAN_H__
-#include <tuple>
 #include "ChanMapper.h"
 
 class ChanMapperTaiwan : public ChanMapper {
-  typedef std::tuple<short, short, short> RocBoardChan_t;
-  typedef std::pair<std::string, short> DetEle_t;
+  struct MapItem {
+    short roc;
+    short board;
+    short chan;
+    std::string det_name;
+    short det;
+    short ele;
+  };
+  typedef std::vector<MapItem> List_t;
+  List_t m_list; ///< Used to keep all information in the added order.
+
+  typedef std::pair<short, short> DetEle_t;
   typedef std::map<RocBoardChan_t, DetEle_t> Map_t;
-  Map_t m_map;
+  Map_t m_map; ///< Used in Find() for better speed.
+
   std::map<std::string, short> m_map_name2id;
 
  public:
   ChanMapperTaiwan();
   virtual ~ChanMapperTaiwan() {;}
 
-  void Add (const short roc, const short board, const short chan, const std::string det, const short ele);
-  bool Find(const short roc, const short board, const short chan,  std::string& det, short& ele);
+  void Add(const short roc, const short board, const short chan, const std::string det, const short ele);
+  void Add(const short roc, const short board, const short chan, const std::string det_name, const short det_id, const short ele);
+
+  //bool Find(const short roc, const short board, const short chan,  std::string& det, short& ele);
   bool Find(const short roc, const short board, const short chan,        short& det, short& ele);
   void Print(std::ostream& os);
 

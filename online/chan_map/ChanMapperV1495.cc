@@ -5,6 +5,7 @@
 #include <fstream>
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
+#include <geom_svc/GeomSvc.h>
 #include "DbSvc.h"
 #include "ChanMapperV1495.h"
 using namespace std;
@@ -35,11 +36,9 @@ int ChanMapperV1495::ReadFileCont(LineList& lines)
 int ChanMapperV1495::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEleLvl_t    val = it->second;
-    os << std::get<0>(val) << "\t" << std::get<1>(val) << "\t" << std::get<2>(val) << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->det_name << "\t" << it->ele << "\t" << it->lvl << "\t"
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     nn++;
   }
   return nn;
@@ -48,16 +47,17 @@ int ChanMapperV1495::WriteFileCont(std::ostream& os)
 void ChanMapperV1495::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
-  oss << "select roc, board, chan, det, ele, lvl from " << MapTableName();
+  oss << "select roc, board, chan, det_name, det, ele, lvl from " << MapTableName();
   TSQLStatement* stmt = db.Process(oss.str());
   while (stmt->NextResultRow()) {
-    short  roc   = stmt->GetInt   (0);
-    short  board = stmt->GetInt   (1);
-    short  chan  = stmt->GetInt   (2);
-    string det   = stmt->GetString(3);
-    short  ele   = stmt->GetInt   (4);
-    short  lvl   = stmt->GetInt   (5);
-    Add(roc, board, chan, det, ele, lvl);
+    short  roc      = stmt->GetInt   (0);
+    short  board    = stmt->GetInt   (1);
+    short  chan     = stmt->GetInt   (2);
+    string det_name = stmt->GetString(3);
+    short  det      = stmt->GetInt   (4);
+    short  ele      = stmt->GetInt   (5);
+    short  lvl      = stmt->GetInt   (6);
+    Add(roc, board, chan, det_name, det, ele, lvl);
   }
   delete stmt;
 }
@@ -66,18 +66,16 @@ void ChanMapperV1495::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
-  const char* list_var [] = {      "roc",    "board",     "chan",        "det",      "ele",      "lvl" };
-  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(8)", "SMALLINT", "SMALLINT" };
-  db.CreateTable(name_table, 6, list_var, list_type);
+  const char* list_var [] = {      "roc",    "board",     "chan",    "det_name",      "det",      "ele",      "lvl" };
+  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(32)", "SMALLINT", "SMALLINT", "SMALLINT" };
+  const int   n_var       = 7;
+  db.CreateTable(name_table, n_var, list_var, list_type);
 
   ostringstream oss;
-  oss << "insert into " << name_table << "(roc, board, chan, det, ele, lvl) values";
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEleLvl_t    val = it->second;
-    oss << " ("  << std::get<0>(key) <<  ", " << std::get<1>(key) << ", " << std::get<2>(key) 
-        << ", '" << std::get<0>(val) << "', " << std::get<1>(val) << ", " << std::get<2>(val) 
-        << "),";
+  oss << "insert into " << name_table << "(roc, board, chan, det_name, det, ele, lvl) values";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    oss << " (" << it->roc << ", " << it->board << ", " << it->chan
+        << ", '" << it->det_name << "', " << it->det << ", " << it->ele << ", " << it->lvl << "),";
   }
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
@@ -87,12 +85,74 @@ void ChanMapperV1495::WriteDbTable(DbSvc& db)
   }
 }
 
-void ChanMapperV1495::Add(const short roc, const short board, const short chan, const std::string det, const short ele, const short lvl)
+/**
+ * todo: The "STOP" and "L1PX*" detectors should be handled by GeomSvc properly.
+ */
+void ChanMapperV1495::Add(
+  const short roc, const short board, const short chan, 
+  const std::string det, const short ele, const short lvl)
 {
-  m_map[RocBoardChan_t(roc, board, chan)] = DetEleLvl_t(det, ele, lvl);
+  GeomSvc* geom = GeomSvc::instance();
+  string det_new = det;
+  int    ele_new = ele;
+  int    det_id;
+  if      (det == "STOP"  ) { det_id = 1000; }
+  else if (det == "L1PXtp") { det_id = 1001; }
+  else if (det == "L1PXtn") { det_id = 1002; }
+  else if (det == "L1PXbp") { det_id = 1003; }
+  else if (det == "L1PXbn") { det_id = 1004; }
+  else {
+    geom->toLocalDetectorName(det_new, ele_new);
+    det_id = geom->getDetectorID(det_new);
+  }
+  Add(roc, board, chan, det, det_id, ele, lvl);
+
+  if (ele_new != ele) {
+    cout << "!WARNING!  ChanMapperV1495::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
+         << "  From det = " << det << ", ele = " << ele << "\n"
+         << "  To   det = " << det_new << "(id = " << det_id << "), ele = " << ele_new << "\n"
+         << "  The mapping result will be incorrect!!" << endl;
+  }
+
+  /// Code to check the conversion
+  //int det_id_local = -1;
+  //if (m_map_name2id.find(det) != m_map_name2id.end()) det_id_local = m_map_name2id[det];
+  //cout << "Debug: " << det << " " << ele << " -> " << det_id << " " << det_new << " " << ele_new << " : "
+  //     << det_id - det_id_local << " " << ele - ele_new << "\n";
 }
 
-bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl)
+void ChanMapperV1495::Add(
+  const short roc, const short board, const short chan, 
+  const std::string det_name, const short det_id, const short ele, const short lvl)
+{
+  MapItem item;
+  item.roc      = roc;
+  item.board    = board;
+  item.chan     = chan;
+  item.det_name = det_name;
+  item.det      = det_id;
+  item.ele      = ele;
+  item.lvl      = lvl;
+  m_list.push_back(item);
+  m_map[RocBoardChan_t(roc, board, chan)] = DetEleLvl_t(det_id, ele, lvl);
+}
+
+//bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl)
+//{
+//  RocBoardChan_t key(roc, board, chan);
+//  if (m_map.find(key) != m_map.end()) {
+//    DetEleLvl_t val = m_map[key];
+//    det = std::get<0>(val);
+//    ele = std::get<1>(val);
+//    lvl = std::get<2>(val);
+//    return true;
+//  }
+//  det = "";
+//  ele = lvl = 0;
+//  return false;
+//}  
+
+bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  short& det, short& ele, short& lvl)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
@@ -102,19 +162,14 @@ bool ChanMapperV1495::Find(const short roc, const short board, const short chan,
     lvl = std::get<2>(val);
     return true;
   }
-  det = "";
-  ele = lvl = 0;
-  return false;
-}  
 
-bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  short& det, short& ele, short& lvl)
-{
-  string det_str;
-  if (! Find(roc, board, chan, det_str, ele, lvl)) return false;
-  if (m_map_name2id.find(det_str) != m_map_name2id.end()) {
-    det = m_map_name2id[det_str];
-    return true;
-  }
+//  string det_str;
+//  if (! Find(roc, board, chan, det_str, ele, lvl)) return false;
+//  if (m_map_name2id.find(det_str) != m_map_name2id.end()) {
+//    det = m_map_name2id[det_str];
+//    return true;
+//  }
+
   det = ele = lvl = 0;
   return false;
 }
@@ -122,11 +177,9 @@ bool ChanMapperV1495::Find(const short roc, const short board, const short chan,
 void ChanMapperV1495::Print(std::ostream& os)
 {
   int n_ent = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    DetEleLvl_t    val = it->second;
-    os << std::get<0>(val) << "\t" << std::get<1>(val) << "\t" << std::get<2>(val) << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->det_name << "\t" << it->det << "\t" << it->ele << "\t" << it->lvl << "\t"
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     n_ent++;
   }
   cout << n_ent << endl;

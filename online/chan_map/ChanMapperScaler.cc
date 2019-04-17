@@ -34,11 +34,9 @@ int ChanMapperScaler::ReadFileCont(LineList& lines)
 int ChanMapperScaler::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    string         val = it->second;
-    os << val << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->name 
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     nn++;
   }
   return nn;
@@ -65,15 +63,14 @@ void ChanMapperScaler::WriteDbTable(DbSvc& db)
 
   const char* list_var [] = {      "roc",    "board",     "chan",        "name" };
   const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(64)" };
-  db.CreateTable(name_table, 4, list_var, list_type);
+  const int   n_var       = 4;
+  db.CreateTable(name_table, n_var, list_var, list_type);
 
   ostringstream oss;
   oss << "insert into " << name_table << "(roc, board, chan, name) values";
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    string         val = it->second;
-    oss << " (" << std::get<0>(key) << ", " << std::get<1>(key) << ", " << std::get<2>(key) 
-        << ", '" << val << "'),";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    oss << " (" << it->roc << ", " << it->board << ", " << it->chan
+        << ", '" << it->name << "'),";
   }
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
@@ -85,6 +82,12 @@ void ChanMapperScaler::WriteDbTable(DbSvc& db)
 
 void ChanMapperScaler::Add(const short roc, const short board, const short chan, const std::string name)
 {
+  MapItem item;
+  item.roc   = roc;
+  item.board = board;
+  item.chan  = chan;
+  item.name  = name;
+  m_list.push_back(item);
   m_map[RocBoardChan_t(roc, board, chan)] = name;
 }
 
@@ -102,11 +105,9 @@ bool ChanMapperScaler::Find(const short roc, const short board, const short chan
 void ChanMapperScaler::Print(std::ostream& os)
 {
   int n_ent = 0;
-  for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
-    RocBoardChan_t key = it->first;
-    string         val = it->second;
-    os << val << "\t"
-       << std::get<0>(key) << "\t" << std::get<1>(key) << "\t" << std::get<2>(key) << "\n";
+  for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    os << it->name << "\t" 
+       << it->roc << "\t" << it->board << "\t" << it->chan << "\n";
     n_ent++;
   }
   cout << n_ent << endl;

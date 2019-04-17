@@ -4,11 +4,14 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <tuple>
 #include "ChanMapperRange.h"
 class DbSvc;
 
 class ChanMapper {
  protected:
+  typedef std::tuple<short, short, short> RocBoardChan_t;
+
   std::string m_dir_base;
   std::string m_label;
   std::string m_map_id;
