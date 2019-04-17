@@ -3,6 +3,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
+#include <TSQLServer.h>
+#include <TSQLStatement.h>
 #include "DbSvc.h"
 #include "ChanMapperRange.h"
 using namespace std;
@@ -14,6 +16,14 @@ void ChanMapperRange::Add(const int run_b, const int run_e, const std::string ma
   item.run_e  = run_e ;
   item.map_id = map_id;
   m_list.push_back(item);
+}
+
+bool ChanMapperRange::Find(const std::string map_id)
+{
+  for (RangeList::iterator it = m_list.begin(); it != m_list.end(); it++) {
+    if (it->map_id == map_id) return true;
+  }
+  return false;
 }
 
 std::string ChanMapperRange::Find(const int run, const bool exit_on_error)
@@ -59,7 +69,7 @@ void ChanMapperRange::ReadFromDB(const std::string schema)
   m_list.clear();
   DbSvc db(DbSvc::DB1);
   db.UseSchema(schema);
-  db.AssureTable("run_range");
+  db.HasTable("run_range", true);
   TSQLStatement* stmt = db.Process("select run_b, run_e, map_id from run_range");
   while (stmt->NextResultRow()) {
     int    run_b  = stmt->GetInt   (0);
@@ -79,14 +89,9 @@ void ChanMapperRange::WriteToDB(const std::string schema)
   db.UseSchema(schema, true);
   db.DropTable("run_range");
 
-  const char* query_create = "create table run_range ("
-    "  run_b  INT, "
-    "  run_e  INT, "
-    "  map_id VARCHAR(64) )";
-  if (! db.Con()->Exec(query_create)) {
-    cerr << "  ERROR in create.  Abort." << endl;
-    exit(1);
-  }
+  const char* list_var [] = { "run_b", "run_e",      "map_id" };
+  const char* list_type[] = {   "INT",   "INT", "VARCHAR(64)" };
+  db.CreateTable("run_range", 3, list_var, list_type);
 
   ostringstream oss;
   oss << "insert into run_range (run_b, run_e, map_id) values";

@@ -3,6 +3,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
+#include <TSQLServer.h>
+#include <TSQLStatement.h>
 #include "DbSvc.h"
 #include "ChanMapperTaiwan.h"
 using namespace std;
@@ -62,19 +64,12 @@ void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
 void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
-  ostringstream oss;
-  oss << "create table " << name_table << "("
-    "  roc   SMALLINT, "
-    "  board SMALLINT, "
-    "  chan  SMALLINT, "
-    "  det   VARCHAR(8), "
-    "  ele   SMALLINT )";
-  if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  ChanMapperTaiwan::WriteToDB():  in create.  Abort." << endl;
-    exit(1);
-  }
 
-  oss.str("");
+  const char* list_var [] = {      "roc",    "board",     "chan",        "det",      "ele" };
+  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(8)", "SMALLINT" };
+  db.CreateTable(name_table, 5, list_var, list_type);
+
+  ostringstream oss;
   oss << "insert into " << name_table << "(roc, board, chan, det, ele) values";
   for (Map_t::iterator it = m_map.begin(); it != m_map.end(); it++) {
     RocBoardChan_t key = it->first;

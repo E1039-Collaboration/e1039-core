@@ -1,9 +1,8 @@
 #ifndef __CHAN_MAPPER_H__
 #define __CHAN_MAPPER_H__
-#include <cstdlib>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <vector>
 #include <string>
 #include "ChanMapperRange.h"
 class DbSvc;
@@ -22,13 +21,10 @@ class ChanMapper {
 
   std::string GetMapID() { return m_map_id; }
   void        SetMapID(const std::string map_id) { m_map_id = map_id; }
+  void SetMapIDbyFile(const std::string map_id);
+  void SetMapIDbyDB  (const std::string map_id);
   void SetMapIDbyFile(const int run);
   void SetMapIDbyDB  (const int run);
-
-  std::string RangeFileName();
-  std::string MapFileName();
-  std::string SchemaName();
-  std::string MapTableName();
 
   void ReadFromFile();
   void  WriteToFile();
@@ -42,9 +38,14 @@ class ChanMapper {
   virtual void Print(std::ostream& os);
 
  protected:
+  std::string RangeFileName();
+  std::string MapFileName();
+  std::string SchemaName();
+  std::string MapTableName();
+
   typedef std::vector<std::string> LineList;
-  virtual int  ReadFileCont(LineList& lines) {;}
-  virtual int WriteFileCont(std::ostream& os) {;}
+  virtual int  ReadFileCont(LineList& lines);
+  virtual int WriteFileCont(std::ostream& os);
 
   virtual void  ReadDbTable(DbSvc& db);
   virtual void WriteDbTable(DbSvc& db);

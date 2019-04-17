@@ -2,14 +2,23 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <TMySQLServer.h>
+#include <TSQLStatement.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 #include "DbSvc.h"
 using namespace std;
 
-DbSvc::DbSvc(const SvrId_t svr_id)
+DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cnf)
 {
   m_svr_id = svr_id;
+  m_usr_id = usr_id;
+  if (my_cnf.length() > 0) {
+    m_my_cnf = my_cnf;
+  } else {
+    if (usr_id == Guest) m_my_cnf = "/data2/analysis/kenichi/e1039/my.cnf";
+    else /* == Prod */   m_my_cnf = "my.cnf"; // not supported yet.
+  }
   SelectServer();
   ConnectServer();
 }
@@ -72,14 +81,48 @@ void DbSvc::DropTable(const char* name)
   }
 }
 
-bool DbSvc::AssureTable(const char* name, const bool exit_on_error)
+bool DbSvc::HasTable(const char* name, const bool exit_on_false)
 {
   if (m_con->HasTable(name)) return true;
-  if (exit_on_error) {
+  if (exit_on_false) {
     cerr << "!!ERROR!!  DbSvc:  The table '" << name << "' does not exist.  Abort." << endl;
     exit(1);
   }
   return false;
+}
+
+void DbSvc::CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type)
+{
+  if (HasTable(name)) {
+    cerr << "!!ERROR!!  DbSvc::CreateTable():  Table '" << name << "' already exists.  To avoid an unintended creation, please check and drop the table in your code.  Abort." << endl;
+    exit(1);
+  }
+  if (list_var.size() != list_type.size()) {
+    cerr << "!!ERROR!!  DbSvc::CreateTable():  The sizes of the var and type lists don't match.  Abort." << endl;
+    exit(1);
+  }
+
+  ostringstream oss;
+  oss << "create table " << name << "(";
+  for (unsigned int ii = 0; ii < list_var.size(); ii++) {
+    oss << list_var[ii] << " " << list_type[ii] << ", ";
+  }
+  oss << "primary_id INT not null auto_increment, PRIMARY KEY (primary_id) )";
+  if (! m_con->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DbSvc::CreateTable():  The creation query failed.  Abort." << endl;
+    exit(1);
+  }
+}
+
+void DbSvc::CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type)
+{
+  vector<string> vec_var;
+  vector<string> vec_type;
+  for (int ii = 0; ii < n_var; ii++) {
+    vec_var .push_back(list_var [ii]);
+    vec_type.push_back(list_type[ii]);
+  }
+  CreateTable(name, vec_var, vec_type);
 }
 
 /** This function runs Statement(), Process() and StoreResult() with error check.
@@ -119,15 +162,13 @@ void DbSvc::SelectServer()
 
 void DbSvc::ConnectServer()
 {
-   //cout << "DB server: " << m_svr << endl;
-   string uri = "mysql://";
-   uri += m_svr;
-   // todo: follow https://root.cern.ch/doc/master/classTMySQLServer.html to use my.cnf.
-   // see also /data2/chambers/hvmon_cham/fy2018/src/DBC.cc
+  ostringstream oss;
+  oss << "mysql://" << m_svr << "/?reconnect=1&cnf_file=" << m_my_cnf;
 
-   m_con = TMySQLServer::Connect(uri.c_str(), "seaguest", "qqbar2mu+mu-");
-   if (! (m_con && m_con->IsConnected())) {
-      cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
-      exit(1);
-   }
+  /// User and password must be given in my.cnf, not here.
+  m_con = TMySQLServer::Connect(oss.str().c_str(), 0, 0);
+  if (! (m_con && m_con->IsConnected())) {
+    cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
+    exit(1);
+  }
 }

@@ -3,27 +3,13 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(chan_map CXX)
 
 # ROOT dict generation
-#file(GLOB dicts "")
-#file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
-#foreach(LinkDefh ${LinkDefhs})
-#	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-#	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
-#	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
-#	list(APPEND dicts ${DictC})
-#	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
-#endforeach(LinkDefh)
-
 add_custom_command (
   OUTPUT ChanMap_Dict.cc
   COMMAND rootcint
   ARGS -f ChanMap_Dict.cc -c
-  -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
-  ${PROJECT_SOURCE_DIR}/ChanMapperRange.h
-  ${PROJECT_SOURCE_DIR}/ChanMapper.h
-  ${PROJECT_SOURCE_DIR}/ChanMapperTaiwan.h
-  ${PROJECT_SOURCE_DIR}/LinkDef.h
+    -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+    ${PROJECT_SOURCE_DIR}/*.h
 )
-
 
 link_directories("./" "$ENV{OFFLINE_MAIN}/lib/")
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")

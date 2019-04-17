@@ -20,6 +20,26 @@ ChanMapper::~ChanMapper()
   ;
 }
 
+void ChanMapper::SetMapIDbyFile(const std::string map_id)
+{
+  m_range.ReadFromFile(RangeFileName().c_str());
+  if (! m_range.Find(map_id)) {
+    cout << "  !WARNING!  SetMapIDbyFile():  This map ID '" << map_id
+         << "' is not included in the run-range table.  OK?" << endl;
+  }
+  m_map_id = map_id;
+}
+
+void ChanMapper::SetMapIDbyDB(const std::string map_id)
+{
+  m_range.ReadFromDB(RangeFileName().c_str());
+  if (! m_range.Find(map_id)) {
+    cout << "  !WARNING!  SetMapIDbyDB():  This map ID '" << map_id
+         << "' is not included in the run-range table.  OK?" << endl;
+  }
+  m_map_id = map_id;
+}
+
 void ChanMapper::SetMapIDbyFile(const int run)
 {
   m_range.ReadFromFile(RangeFileName().c_str());
@@ -30,34 +50,6 @@ void ChanMapper::SetMapIDbyDB(const int run)
 {
   m_range.ReadFromDB(SchemaName());
   m_map_id = m_range.Find(run);
-}
-
-std::string ChanMapper::RangeFileName()
-{
-  ostringstream oss;
-  oss << m_dir_base << "/" << m_label << "/run_range.tsv";
-  return oss.str();
-}
-
-std::string ChanMapper::MapFileName()
-{
-  ostringstream oss;
-  oss << m_dir_base << "/" << m_label << "/" << m_map_id << "/chan_map.tsv";
-  return oss.str();
-}
-
-std::string ChanMapper::SchemaName()
-{
-  string ret = "user_e1039_chan_map_";
-  ret += m_label;
-  return ret;
-}
-
-std::string ChanMapper::MapTableName()
-{
-  string ret = "chan_map_";
-  ret += m_map_id;
-  return ret;
 }
 
 void ChanMapper::ReadFromFile()
@@ -117,7 +109,7 @@ void ChanMapper::ReadFromDB()
 
   DbSvc db(DbSvc::DB1);
   db.UseSchema(name_schema);
-  db.AssureTable(name_table);
+  db.HasTable(name_table, true);
   ReadDbTable(db);
 }
 
@@ -150,6 +142,46 @@ void ChanMapper::Print(std::ostream& os)
   cout << "  virtual function called." << endl;
 }
 
+std::string ChanMapper::RangeFileName()
+{
+  ostringstream oss;
+  oss << m_dir_base << "/" << m_label << "/run_range.tsv";
+  return oss.str();
+}
+
+std::string ChanMapper::MapFileName()
+{
+  ostringstream oss;
+  oss << m_dir_base << "/" << m_label << "/" << m_map_id << "/chan_map.tsv";
+  return oss.str();
+}
+
+std::string ChanMapper::SchemaName()
+{
+  string ret = "user_e1039_chan_map_";
+  ret += m_label;
+  return ret;
+}
+
+std::string ChanMapper::MapTableName()
+{
+  string ret = "chan_map_";
+  ret += m_map_id;
+  return ret;
+}
+
+int ChanMapper::ReadFileCont(LineList& lines)
+{
+  cout << "  virtual function called." << endl;
+  return 0;
+}
+
+int ChanMapper::WriteFileCont(std::ostream& os)
+{
+  cout << "  virtual function called." << endl;
+  return 0;
+}
+
 void ChanMapper::ReadDbTable(DbSvc& db)
 {
   cout << "  virtual function called." << endl;
@@ -159,4 +191,3 @@ void ChanMapper::WriteDbTable(DbSvc& db)
 {
   cout << "  virtual function called." << endl;
 }
-

@@ -1,11 +1,14 @@
 /// UploadChanMap.C:  Macro to upload the channel mapping from tsv file to MySQL DB.
 R__LOAD_LIBRARY(libchan_map)
 
-int UploadChanMap()
+int UploadChanMap(const std::string map_id="e906run28740")
 {
   gSystem->Load("libchan_map.so");
-  ChanMapperTaiwan map;
-  map.SetMapIDbyFile(15000); // todo: use map_id to select the map to be uploaded...
+  //ChanMapperTaiwan map;
+  ChanMapperV1495  map;
+  //ChanMapperScaler map;
+
+  map.SetMapIDbyFile(map_id);
   map.ReadFromFile();
 
   //map.Print(cout);

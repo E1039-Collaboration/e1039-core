@@ -14,9 +14,6 @@ class ChanMapperTaiwan : public ChanMapper {
   ChanMapperTaiwan();
   virtual ~ChanMapperTaiwan() {;}
 
-  using ChanMapper::ReadFromFile;
-  using ChanMapper::ReadFromDB;
-
   void Add (const short roc, const short board, const short chan, const std::string det, const short ele);
   bool Find(const short roc, const short board, const short chan,  std::string& det, short& ele);
   bool Find(const short roc, const short board, const short chan,        short& det, short& ele);

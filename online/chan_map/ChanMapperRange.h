@@ -1,10 +1,7 @@
 #ifndef __CHAN_MAPPER_RANGE_H__
 #define __CHAN_MAPPER_RANGE_H__
-#include <cstdlib>
 #include <iostream>
 #include <vector>
-#include <map>
-#include <tuple>
 #include <string>
 
 class ChanMapperRange {
@@ -20,6 +17,7 @@ class ChanMapperRange {
   ChanMapperRange() {;}
   ~ChanMapperRange() {;}
   void Add(const int run_b, const int run_e, const std::string map_id);
+  bool Find(const std::string map_id);
   std::string Find(const int run, const bool exit_on_error=true);
 
   void ReadFromFile(const std::string fn_tsv);
