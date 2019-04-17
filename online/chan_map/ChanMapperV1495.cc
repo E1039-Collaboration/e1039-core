@@ -6,7 +6,7 @@
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
 #include <geom_svc/GeomSvc.h>
-#include "DbSvc.h"
+#include <db_svc/DbSvc.h>
 #include "ChanMapperV1495.h"
 using namespace std;
 

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
-#include "DbSvc.h"
+#include <db_svc/DbSvc.h>
 #include "ChanMapper.h"
 using namespace std;
 

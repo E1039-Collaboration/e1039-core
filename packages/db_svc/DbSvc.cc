@@ -58,19 +58,6 @@ void DbSvc::UseSchema(const char* name, const bool do_create, const bool do_drop
   }
 }
 
-//void DbSvc::UseSchema(const char* schema, const bool do_create)
-//{
-//  int ret = m_con->SelectDataBase(schema);
-//  if (ret != 0 && do_create) { // Try to create it.
-//    ret = m_con->CreateDataBase(schema);
-//    if (ret == 0) ret = m_con->SelectDataBase(schema);
-//  }
-//  if (ret != 0) {
-//    cerr << "!!ERROR!!  DbSvc::UseSchema:  Failed to select the schema (" << schema << ").  Abort." << endl;
-//    exit(1);
-//  }
-//}
-
 void DbSvc::DropTable(const char* name)
 {
   string query = "drop table if exists ";

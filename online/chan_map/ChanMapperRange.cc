@@ -5,7 +5,7 @@
 #include <fstream>
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
-#include "DbSvc.h"
+#include <db_svc/DbSvc.h>
 #include "ChanMapperRange.h"
 using namespace std;
 

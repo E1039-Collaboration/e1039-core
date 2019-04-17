@@ -5,8 +5,6 @@
 #include <sstream>
 class TSQLServer;
 class TSQLStatement;
-//#include <TMySQLServer.h>
-//#include <TSQLStatement.h>
 
 class DbSvc {
  public:
@@ -18,13 +16,11 @@ class DbSvc {
 
   void UseSchema(const char*       name, const bool do_create=false, const bool do_drop=false);
   void UseSchema(const std::string name, const bool do_create=false, const bool do_drop=false) { UseSchema(name.c_str(), do_create, do_drop); }
-  //void UseSchema(const char* schema, const bool do_create=true);
-  //void UseSchema(const std::string schema, const bool do_create=true) { UseSchema(schema.c_str(), do_create);}
 
   void DropTable  (const char* name);
   void DropTable  (const std::string name) { DropTable(name.c_str()); }
   bool HasTable(const char* name, const bool exit_on_false=false);
-  bool HasTable(const std::string name, const bool exit_on_false=false) { HasTable(name.c_str(), exit_on_false); }
+  bool HasTable(const std::string name, const bool exit_on_false=false) { return HasTable(name.c_str(), exit_on_false); }
   void CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type);
   void CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type);
   

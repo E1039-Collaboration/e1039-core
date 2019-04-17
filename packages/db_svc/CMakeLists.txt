@@ -1,12 +1,12 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(chan_map CXX)
+project(db_svc CXX)
 
 # ROOT dict generation
 add_custom_command (
-  OUTPUT ChanMap_Dict.cc
+  OUTPUT DbSvc_Dict.cc
   COMMAND rootcint
-  ARGS -f ChanMap_Dict.cc -c
+  ARGS -f DbSvc_Dict.cc -c
     -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
     ${PROJECT_SOURCE_DIR}/*.h
 )
@@ -27,7 +27,6 @@ endif()
 execute_process(COMMAND mysql_config --cflags OUTPUT_VARIABLE MYSQL_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND mysql_config --libs   OUTPUT_VARIABLE MYSQL_LIBS    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-
 # ROOT
 find_program(ROOTCONF "root-config")
 if(ROOTCONF)
@@ -40,12 +39,12 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
 
-add_library(chan_map SHARED ${sources} ChanMap_Dict.cc)
-target_link_libraries(chan_map ${MYSQL_LIBS} ${ROOT_LINK} geom_svc db_svc)
+add_library(db_svc SHARED ${sources} DbSvc_Dict.cc)
+target_link_libraries(db_svc ${MYSQL_LIBS} ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
-install(TARGETS chan_map DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS db_svc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
@@ -57,5 +56,5 @@ execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
 string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
 if (ROOT_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
-   add_dependencies(install_pcm chan_map)
+   add_dependencies(install_pcm db_svc)
 endif()
