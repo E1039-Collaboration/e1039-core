@@ -8,7 +8,8 @@ add_custom_command (
   COMMAND rootcint
   ARGS -f DbSvc_Dict.cc -c
     -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
-    ${PROJECT_SOURCE_DIR}/*.h
+    ${PROJECT_SOURCE_DIR}/DbSvc.h
+    ${PROJECT_SOURCE_DIR}/LinkDef.h
 )
 
 link_directories("./" "$ENV{OFFLINE_MAIN}/lib/")
