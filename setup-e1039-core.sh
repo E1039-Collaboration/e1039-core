@@ -1,8 +1,9 @@
+DIR_E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
 
 if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     source /opt/e1039-share/this-share.sh
     export OFFLINE_MAIN=$DIR_E1039_SHARE/inst
-    export MY_INSTALL=~/tmp/e1039-core
+    export MY_INSTALL=$(dirname $DIR_E1039_CORE)/e1039-core-build/inst # ~/tmp/e1039-core
 
     export            PATH=$MY_INSTALL/bin:$PATH
     export           CPATH=$MY_INSTALL/include:$CPATH

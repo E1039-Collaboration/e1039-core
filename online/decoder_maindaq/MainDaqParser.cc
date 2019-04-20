@@ -649,7 +649,8 @@ int MainDaqParser::ProcessBoardScaler (int* words, int idx)
       data.board = boardID;
       data.chan  = ii;
       data.value = value;
-      if (! dec_par.map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
+      //if (! dec_par.map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
+      if (! dec_par.chan_map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
 	if (dec_par.verbose > 1) cout << "  Unmapped Scaler: " << data.roc << " " << data.board << " " << data.chan << "\n";
 	continue;
       }
@@ -1109,14 +1110,16 @@ int MainDaqParser::PackOneSpillData()
     /// since it takes the longest process time per event.
     for (unsigned int ih = 0; ih < n_taiwan; ih++) {
       HitData* hd = &ed->list_hit[ih];
-      if (! dec_par.map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
-        if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+      //if (! dec_par.map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
+      if (! dec_par.chan_map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
+        if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
     for (unsigned int ih = 0; ih < n_v1495; ih++) {
       HitData* hd = &ed->list_hit_trig[ih];
       short level; // not stored for now
-      if (! dec_par.map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
+      //if (! dec_par.map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
+      if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
         if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
