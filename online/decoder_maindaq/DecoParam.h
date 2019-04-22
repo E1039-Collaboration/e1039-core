@@ -3,6 +3,9 @@
 #include "MapperTaiwan.h"
 #include "MapperV1495.h"
 #include "MapperScaler.h"
+#include <chan_map/ChanMapperTaiwan.h>
+#include <chan_map/ChanMapperV1495.h>
+#include <chan_map/ChanMapperScaler.h>
 //#include "assert.h"
 class EventInfo;
 
@@ -24,6 +27,9 @@ struct DecoParam {
   MapperV1495  map_v1495;
   MapperScaler map_scaler;
 
+  ChanMapperTaiwan chan_map_taiwan;
+  ChanMapperV1495  chan_map_v1495;
+  ChanMapperScaler chan_map_scaler;
 
   ///
   /// Monitoring parameters
