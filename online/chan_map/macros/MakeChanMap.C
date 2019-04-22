@@ -11,6 +11,6 @@ int MakeChanMap()
   map.Add(11, 101, 2, "D2X", 321);
 
   map.Print(cout);
-  map.WriteToLocalFile("chan_map_new.tsv");
+  map.WriteToLocalFile("make_chan_map.tsv");
   return 0;
 }

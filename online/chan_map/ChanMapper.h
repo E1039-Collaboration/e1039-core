@@ -13,6 +13,7 @@ class ChanMapper {
   typedef std::tuple<short, short, short> RocBoardChan_t;
 
   std::string m_dir_base;
+  std::string m_type;
   std::string m_label;
   std::string m_map_id;
   std::string m_header;
@@ -52,6 +53,12 @@ class ChanMapper {
 
   virtual void  ReadDbTable(DbSvc& db);
   virtual void WriteDbTable(DbSvc& db);
+};
+
+class CalibParamBase : public ChanMapper {
+ public:
+  CalibParamBase();
+  virtual ~CalibParamBase() {;}
 };
 
 #endif // __CHAN_MAPPER_H__

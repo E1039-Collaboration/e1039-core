@@ -7,9 +7,15 @@
 #include "ChanMapper.h"
 using namespace std;
 
+CalibParamBase::CalibParamBase()
+{
+  m_type = "calib";
+}
+
 ChanMapper::ChanMapper()
 {
-  m_dir_base = "/data2/analysis/kenichi/e1039/chan_map";
+  m_dir_base = "/data2/analysis/kenichi/e1039";
+  m_type     = "chan_map";
   m_label    = "base";
   m_map_id   = "";
   m_header   = "";
@@ -147,29 +153,29 @@ void ChanMapper::Print(std::ostream& os)
 std::string ChanMapper::RangeFileName()
 {
   ostringstream oss;
-  oss << m_dir_base << "/" << m_label << "/run_range.tsv";
+  oss << m_dir_base << "/" << m_type << "/" << m_label << "/run_range.tsv";
   return oss.str();
 }
 
 std::string ChanMapper::MapFileName()
 {
   ostringstream oss;
-  oss << m_dir_base << "/" << m_label << "/" << m_map_id << "/chan_map.tsv";
+  oss << m_dir_base << "/" << m_type << "/" << m_label << "/" << m_map_id << "/param.tsv";
   return oss.str();
 }
 
 std::string ChanMapper::SchemaName()
 {
-  string ret = "user_e1039_chan_map_";
-  ret += m_label;
-  return ret;
+  ostringstream oss;
+  oss << "user_e1039_" << m_type << "_" << m_label;
+  return oss.str();
 }
 
 std::string ChanMapper::MapTableName()
 {
-  string ret = "chan_map_";
-  ret += m_map_id;
-  return ret;
+  ostringstream oss;
+  oss << "param_" << m_map_id;
+  return oss.str();
 }
 
 int ChanMapper::ReadFileCont(LineList& lines)
