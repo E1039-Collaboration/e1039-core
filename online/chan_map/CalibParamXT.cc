@@ -11,10 +11,10 @@
 #include "CalibParamXT.h"
 using namespace std;
 
-CalibParamXT::CalibParamXT()
+CalibParamXT::CalibParamXT() :
+  CalibParamBase("xt_curve", "det\tt\tx\tdx")
 {
-  m_label = "xt_curve";
-  m_header = "det\tt\tx\tdx";
+  ;
 }
 
 CalibParamXT::~CalibParamXT()
@@ -101,10 +101,10 @@ void CalibParamXT::Add(
   int det_id = geom->getDetectorID(det_new);
   Add(det, det_id, t, x, dx);
 
-  if (ele_new != ele) {
+  if (ele_new != ele) { // I know the current version cannot handle "P4" properly!!
     cout << "!WARNING!  CalibParamXT::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
          << "  From det = " << det << ", ele = " << ele << "\n"
-         << "  To   det = " << det_new << "(id = " << det_id << "), ele = " << ele_new << "\n"
+         << "  To   det = " << det_new << " (id=" << det_id << "), ele = " << ele_new << "\n"
          << "  The mapping result will be incorrect!!" << endl;
   }
 }

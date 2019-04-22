@@ -6,12 +6,12 @@ int UploadChanMap()
   gSystem->Load("libchan_map.so");
 
   /// Select one of the classes.
-  //ChanMapperTaiwan map;
+  ChanMapperTaiwan map;
   //ChanMapperV1495  map;
   //ChanMapperScaler map;
   //CalibParamXT map;
   //CalibParamInTimeTaiwan map;
-  CalibParamInTimeV1495 map;
+  //CalibParamInTimeV1495 map;
 
   /// Set a map ID.
   const std::string map_id="e906run28740";

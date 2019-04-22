@@ -2,7 +2,7 @@
 #define __CHAN_MAPPER_TAIWAN_H__
 #include "ChanMapper.h"
 
-class ChanMapperTaiwan : public ChanMapper {
+class ChanMapperTaiwan : public ChanMapBase {
   struct MapItem {
     short roc;
     short board;

@@ -2,7 +2,7 @@
 #define __CHAN_MAPPER_SCALER_H__
 #include "ChanMapper.h"
 
-class ChanMapperScaler : public ChanMapper {
+class ChanMapperScaler : public ChanMapBase {
   struct MapItem {
     short roc;
     short board;

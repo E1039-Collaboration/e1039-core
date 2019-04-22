@@ -10,10 +10,9 @@
 #include "ChanMapperTaiwan.h"
 using namespace std;
 
-ChanMapperTaiwan::ChanMapperTaiwan()
+ChanMapperTaiwan::ChanMapperTaiwan() :
+  ChanMapBase("taiwan", "det\tele\troc\tboard\tchan")
 {
-  m_label = "taiwan";
-  m_header = "det\tele\troc\tboard\tchan";
   InitNameMap();
 }
 

@@ -11,13 +11,8 @@
 #include "CalibParamInTimeTaiwan.h"
 using namespace std;
 
-CalibParamInTimeTaiwan::CalibParamInTimeTaiwan()
-{
-  m_label = "intime_taiwan";
-  m_header = "det\tele\tcenter\twidth";
-}
-
-CalibParamInTimeTaiwan::~CalibParamInTimeTaiwan()
+CalibParamInTimeTaiwan::CalibParamInTimeTaiwan() :
+  CalibParamBase("intime_taiwan", "det\tele\tcenter\twidth")
 {
   ;
 }

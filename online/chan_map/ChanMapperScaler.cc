@@ -9,10 +9,10 @@
 #include "ChanMapperScaler.h"
 using namespace std;
 
-ChanMapperScaler::ChanMapperScaler()
+ChanMapperScaler::ChanMapperScaler() : 
+  ChanMapBase("scaler", "name\troc\tboard\tchan")
 {
-  m_label = "scaler";
-  m_header = "name\troc\tboard\tchan";
+  ;
 }
 
 int ChanMapperScaler::ReadFileCont(LineList& lines)

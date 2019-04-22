@@ -11,10 +11,10 @@
 #include "CalibParamInTimeV1495.h"
 using namespace std;
 
-CalibParamInTimeV1495::CalibParamInTimeV1495()
+CalibParamInTimeV1495::CalibParamInTimeV1495() :
+  CalibParamBase("intime_v1495", "det\tele\tlvl\tcenter\twidth")
 {
-  m_label = "intime_v1495";
-  m_header = "det\tele\tlvl\tcenter\twidth";
+  ;
 }
 
 int CalibParamInTimeV1495::ReadFileCont(LineList& lines)

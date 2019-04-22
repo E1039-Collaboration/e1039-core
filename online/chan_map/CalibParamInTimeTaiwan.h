@@ -20,7 +20,7 @@ class CalibParamInTimeTaiwan : public CalibParamBase {
 
  public:
   CalibParamInTimeTaiwan();
-  virtual ~CalibParamInTimeTaiwan();
+  virtual ~CalibParamInTimeTaiwan() {;}
 
   void Add(const std::string det     ,                     const short ele, const double center, const double width);
   void Add(const std::string det_name, const short det_id, const short ele, const double center, const double width);

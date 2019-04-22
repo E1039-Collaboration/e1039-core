@@ -7,21 +7,9 @@
 #include "ChanMapper.h"
 using namespace std;
 
-CalibParamBase::CalibParamBase()
-{
-  m_type = "calib";
-}
-
-ChanMapper::ChanMapper()
-{
-  m_dir_base = "/data2/analysis/kenichi/e1039";
-  m_type     = "chan_map";
-  m_label    = "base";
-  m_map_id   = "";
-  m_header   = "";
-}
-
-ChanMapper::~ChanMapper()
+ChanMapper::ChanMapper(const std::string type, const std::string label, const std::string header) :
+  m_dir_base("/data2/analysis/kenichi/e1039"), 
+  m_type(type), m_label(label), m_header(header), m_map_id("")
 {
   ;
 }

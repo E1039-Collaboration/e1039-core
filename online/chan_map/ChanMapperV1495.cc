@@ -10,10 +10,9 @@
 #include "ChanMapperV1495.h"
 using namespace std;
 
-ChanMapperV1495::ChanMapperV1495()
+ChanMapperV1495::ChanMapperV1495() :
+  ChanMapBase("v1495", "det\tele\tlvl\troc\tboard\tchan")
 {
-  m_label = "v1495";
-  m_header = "det\tele\tlvl\troc\tboard\tchan";
   InitNameMap();
 }
 
