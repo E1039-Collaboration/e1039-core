@@ -6,9 +6,9 @@ int CheckChanMap()
   gSystem->Load("libchan_map.so");
 
   /// Select one of the classes.
-  //ChanMapperTaiwan map;
-  //ChanMapperV1495  map;
-  //ChanMapperScaler map;
+  //ChanMapTaiwan map;
+  //ChanMapV1495  map;
+  //ChanMapScaler map;
   //CalibParamXT map;
   //CalibParamInTimeTaiwan map;
   CalibParamInTimeV1495 map;

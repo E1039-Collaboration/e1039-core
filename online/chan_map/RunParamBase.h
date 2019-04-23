@@ -1,5 +1,5 @@
-#ifndef __CHAN_MAPPER_H__
-#define __CHAN_MAPPER_H__
+#ifndef __RUN_PARAM_BASE_H__
+#define __RUN_PARAM_BASE_H__
 #include <iostream>
 #include <map>
 #include <vector>
@@ -8,7 +8,7 @@
 #include "ParamRunRange.h"
 class DbSvc;
 
-class ChanMapper {
+class RunParamBase {
   std::string m_dir_base;
   std::string m_type;
   std::string m_label;
@@ -17,8 +17,8 @@ class ChanMapper {
   ParamRunRange m_range;
 
  public:
-  ChanMapper(const std::string type, const std::string label, const std::string header);
-  virtual ~ChanMapper() {;}
+  RunParamBase(const std::string type, const std::string label, const std::string header);
+  virtual ~RunParamBase() {;}
 
   void SetBaseDir(const std::string dir_base) { m_dir_base = dir_base; }
   std::string GetBaseDir() { return m_dir_base; }
@@ -55,18 +55,18 @@ class ChanMapper {
   virtual void WriteDbTable(DbSvc& db);
 };
 
-class ChanMapBase : public ChanMapper {
+class ChanMapBase : public RunParamBase {
  protected:
   typedef std::tuple<short, short, short> RocBoardChan_t;
  public:
-  ChanMapBase(const std::string label, const std::string header) : ChanMapper("chan_map", label, header) {;}
+  ChanMapBase(const std::string label, const std::string header) : RunParamBase("chan_map", label, header) {;}
   virtual ~ChanMapBase() {;}
 };
 
-class CalibParamBase : public ChanMapper {
+class CalibParamBase : public RunParamBase {
  public:
-  CalibParamBase(const std::string label, const std::string header) : ChanMapper("calib", label, header) {;}
+  CalibParamBase(const std::string label, const std::string header) : RunParamBase("calib", label, header) {;}
   virtual ~CalibParamBase() {;}
 };
 
-#endif // __CHAN_MAPPER_H__
+#endif // __RUN_PARAM_BASE_H__

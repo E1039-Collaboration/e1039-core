@@ -1,6 +1,6 @@
 #ifndef __CALIB_PARAM_IN_TIME_TAIWAN_H__
 #define __CALIB_PARAM_IN_TIME_TAIWAN_H__
-#include "ChanMapper.h"
+#include "RunParamBase.h"
 
 class CalibParamInTimeTaiwan : public CalibParamBase {
   struct ParamItem {

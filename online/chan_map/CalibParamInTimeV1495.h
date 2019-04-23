@@ -1,6 +1,6 @@
 #ifndef __CALIB_PARAM_IN_TIME_V1495_H__
 #define __CALIB_PARAM_IN_TIME_V1495_H__
-#include "ChanMapper.h"
+#include "RunParamBase.h"
 
 class CalibParamInTimeV1495 : public CalibParamBase {
   struct ParamItem {

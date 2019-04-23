@@ -4,17 +4,17 @@
 #include <cstdlib>
 #include <fstream>
 #include <db_svc/DbSvc.h>
-#include "ChanMapper.h"
+#include "RunParamBase.h"
 using namespace std;
 
-ChanMapper::ChanMapper(const std::string type, const std::string label, const std::string header) :
+RunParamBase::RunParamBase(const std::string type, const std::string label, const std::string header) :
   m_dir_base("/data2/analysis/kenichi/e1039"), 
   m_type(type), m_label(label), m_header(header), m_map_id("")
 {
   ;
 }
 
-void ChanMapper::SetMapIDbyFile(const std::string map_id)
+void RunParamBase::SetMapIDbyFile(const std::string map_id)
 {
   m_range.ReadFromFile(RangeFileName().c_str());
   if (! m_range.Find(map_id)) {
@@ -24,7 +24,7 @@ void ChanMapper::SetMapIDbyFile(const std::string map_id)
   m_map_id = map_id;
 }
 
-void ChanMapper::SetMapIDbyDB(const std::string map_id)
+void RunParamBase::SetMapIDbyDB(const std::string map_id)
 {
   m_range.ReadFromDB(RangeFileName().c_str());
   if (! m_range.Find(map_id)) {
@@ -34,31 +34,31 @@ void ChanMapper::SetMapIDbyDB(const std::string map_id)
   m_map_id = map_id;
 }
 
-void ChanMapper::SetMapIDbyFile(const int run)
+void RunParamBase::SetMapIDbyFile(const int run)
 {
   m_range.ReadFromFile(RangeFileName().c_str());
   m_map_id = m_range.Find(run);
 }
 
-void ChanMapper::SetMapIDbyDB(const int run)
+void RunParamBase::SetMapIDbyDB(const int run)
 {
   m_range.ReadFromDB(SchemaName());
   m_map_id = m_range.Find(run);
 }
 
-void ChanMapper::ReadFromFile()
+void RunParamBase::ReadFromFile()
 {
   ReadFromLocalFile(MapFileName());
 }
 
-void ChanMapper::WriteToFile()
+void RunParamBase::WriteToFile()
 {
   WriteToLocalFile(MapFileName());
 }
 
-void ChanMapper::ReadFromLocalFile(const string fn_tsv)
+void RunParamBase::ReadFromLocalFile(const string fn_tsv)
 {
-  cout << "  ChanMapper::ReadFromFile(): " << fn_tsv << "...";
+  cout << "  RunParamBase::ReadFromFile(): " << fn_tsv << "...";
   ifstream ifs(fn_tsv.c_str());
   if (! ifs) {
     cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
@@ -76,9 +76,9 @@ void ChanMapper::ReadFromLocalFile(const string fn_tsv)
   cout << " read " << nn << " entries." << endl;
 }
 
-void ChanMapper::WriteToLocalFile(const string fn_tsv)
+void RunParamBase::WriteToLocalFile(const string fn_tsv)
 {
-  cout << "  ChanMapper::WriteToFile(): " << fn_tsv << "...";
+  cout << "  RunParamBase::WriteToFile(): " << fn_tsv << "...";
   ofstream ofs(fn_tsv.c_str());
   if (! ofs) {
     cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
@@ -90,7 +90,7 @@ void ChanMapper::WriteToLocalFile(const string fn_tsv)
   cout << " wrote " << nn << " entries." << endl;
 }
 
-void ChanMapper::ReadFromDB()
+void RunParamBase::ReadFromDB()
 {
   if (m_map_id.length() == 0) {
     cerr << "  ERROR:  The map ID is not set.  Abort." << endl;
@@ -109,9 +109,9 @@ void ChanMapper::ReadFromDB()
   ReadDbTable(db);
 }
 
-void ChanMapper::WriteToDB()
+void RunParamBase::WriteToDB()
 {
-  cout << "ChanMapper::WriteToDB()\n";
+  cout << "RunParamBase::WriteToDB()\n";
   if (m_map_id.length() == 0) {
     cerr << "  ERROR:  The map ID is not set.  Abort." << endl;
     exit(1);
@@ -128,62 +128,62 @@ void ChanMapper::WriteToDB()
   cout <<   "  ...done." << endl;
 }
 
-void ChanMapper::WriteRangeToDB()
+void RunParamBase::WriteRangeToDB()
 {
   m_range.WriteToDB(SchemaName());
 }
 
-void ChanMapper::Print(std::ostream& os)
+void RunParamBase::Print(std::ostream& os)
 {
   cout << "  virtual function called." << endl;
 }
 
-std::string ChanMapper::RangeFileName()
+std::string RunParamBase::RangeFileName()
 {
   ostringstream oss;
   oss << m_dir_base << "/" << m_type << "/" << m_label << "/run_range.tsv";
   return oss.str();
 }
 
-std::string ChanMapper::MapFileName()
+std::string RunParamBase::MapFileName()
 {
   ostringstream oss;
   oss << m_dir_base << "/" << m_type << "/" << m_label << "/" << m_map_id << "/param.tsv";
   return oss.str();
 }
 
-std::string ChanMapper::SchemaName()
+std::string RunParamBase::SchemaName()
 {
   ostringstream oss;
   oss << "user_e1039_" << m_type << "_" << m_label;
   return oss.str();
 }
 
-std::string ChanMapper::MapTableName()
+std::string RunParamBase::MapTableName()
 {
   ostringstream oss;
   oss << "param_" << m_map_id;
   return oss.str();
 }
 
-int ChanMapper::ReadFileCont(LineList& lines)
+int RunParamBase::ReadFileCont(LineList& lines)
 {
   cout << "  virtual function called." << endl;
   return 0;
 }
 
-int ChanMapper::WriteFileCont(std::ostream& os)
+int RunParamBase::WriteFileCont(std::ostream& os)
 {
   cout << "  virtual function called." << endl;
   return 0;
 }
 
-void ChanMapper::ReadDbTable(DbSvc& db)
+void RunParamBase::ReadDbTable(DbSvc& db)
 {
   cout << "  virtual function called." << endl;
 }
 
-void ChanMapper::WriteDbTable(DbSvc& db)
+void RunParamBase::WriteDbTable(DbSvc& db)
 {
   cout << "  virtual function called." << endl;
 }

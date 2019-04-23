@@ -1,6 +1,6 @@
 #ifndef __CALIB_PARAM_XT_H__
 #define __CALIB_PARAM_XT_H__
-#include "ChanMapper.h"
+#include "RunParamBase.h"
 class TGraphErrors;
 
 class CalibParamXT : public CalibParamBase {

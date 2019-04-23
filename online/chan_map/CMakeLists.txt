@@ -13,7 +13,9 @@ if (ROOT_VER GREATER 5)
     COMMAND rootcint
     ARGS -f ChanMap_Dict.cc -c
       -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
-      ${PROJECT_SOURCE_DIR}/ChanMapper*.h
+      ${PROJECT_SOURCE_DIR}/ParamRunRange.h
+      ${PROJECT_SOURCE_DIR}/RunParamBase.h
+      ${PROJECT_SOURCE_DIR}/ChanMap*.h
       ${PROJECT_SOURCE_DIR}/CalibParam*.h
       ${PROJECT_SOURCE_DIR}/LinkDef.h
   )

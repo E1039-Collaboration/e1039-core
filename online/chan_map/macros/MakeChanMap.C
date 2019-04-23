@@ -4,7 +4,7 @@ R__LOAD_LIBRARY(libchan_map)
 int MakeChanMap()
 {
   gSystem->Load("libchan_map.so");
-  ChanMapperTaiwan map;
+  ChanMapTaiwan map;
 
   /// roc, board chan, det, ele
   map.Add(10, 100, 1, "D1X", 123);
