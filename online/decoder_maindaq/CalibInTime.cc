@@ -66,9 +66,11 @@ int CalibInTime::process_event(PHCompositeNode* topNode)
     int det = hit->get_detector_id();
     int ele = hit->get_element_id();
     int lvl = 0; // not available in SQHit yet.
+    if (det == 0) continue; // known that the mapping is not complete yet.
+
     double center, width;
     if (! m_cal_v1495->Find(det, ele, lvl, center, width)) {
-      cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << ".\n";
+      cerr << "  WARNING:  Cannot find the in-time parameter for trigger det=" << det << " ele=" << ele << ".\n";
       return Fun4AllReturnCodes::ABORTEVENT;
     }
     hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width );

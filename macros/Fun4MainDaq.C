@@ -48,7 +48,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
   se->registerOutputManager(out);
 
-  se->registerSubsystem(new CalibXT());
+  se->registerSubsystem(new CalibInTime());
   se->registerSubsystem(new CalibXT());
 
   if (is_online) { // Register the online-monitoring clients
