@@ -19,21 +19,20 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND dicts ${DictC})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
   OUTPUT PHHepMC_io_Dict.C
   COMMAND rootcint
-  ARGS -f PHHepMC_io_Dict.C -c
-  -I$ENV{OFFLINE_MAIN}/include
+  ARGS -f PHHepMC_io_Dict.C -c -p
   ${PROJECT_SOURCE_DIR}/PHGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHGenEventv1.h
   ${PROJECT_SOURCE_DIR}/PHGenEventList.h
   ${PROJECT_SOURCE_DIR}/PHGenEventListv1.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEventMap.h
-  $ENV{OFFLINE_MAIN}/include/HepMC/*.h
+	$ENV{DIR_E1039_SHARE}/include/HepMC/*.h
   ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
 	)
 
