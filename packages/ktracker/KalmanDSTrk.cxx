@@ -1615,9 +1615,10 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
                 {
                     continue;
                 }
-
 #ifdef _DEBUG_ON
-                tracklet_new.print();
+                if(Verbosity()>=Fun4AllBase::VERBOSITY_A_LOT) {
+                	tracklet_new.print();
+                }
 #endif
                 if(acceptTracklet(tracklet_new))
                 {
