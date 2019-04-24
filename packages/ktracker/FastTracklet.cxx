@@ -432,7 +432,11 @@ namespace {
 	static bool kmag_on = true;
 
 	//static flag of kmag strength
-	static double kmag_str = 1.0;
+	static double FMAGSTR = 1.0;
+	static double KMAGSTR = 1.0;
+
+	static double PT_KICK_FMAG = 2.909;
+	static double PT_KICK_KMAG = 0.4016;
 }
 //@}
 
@@ -442,7 +446,10 @@ Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(999
 
     p_geomSvc = GeomSvc::instance();
     kmag_on = JobOptsSvc::instance()->m_enableKMag;
-    kmag_str = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
+    FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
+    KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
+    PT_KICK_FMAG = 2.909*FMAGSTR
+    PT_KICK_KMAG = 0.4016*KMAGSTR;
 }
 
 bool Tracklet::isValid()
@@ -770,7 +777,7 @@ double Tracklet::getMomentum() const
 
 int Tracklet::getCharge() const
 {
-	return x0*kmag_str > tx ? 1 : -1;
+	return x0*KMAGSTR > tx ? 1 : -1;
 }
 
 void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
@@ -1115,5 +1122,5 @@ void Tracklet::print()
 
     cout << "KMAG projection: X =  " << getExpPositionX(Z_KMAG_BEND) << " +/- " << getExpPosErrorX(Z_KMAG_BEND) << endl;
     cout << "KMAG projection: Y =  " << getExpPositionY(Z_KMAG_BEND) << " +/- " << getExpPosErrorY(Z_KMAG_BEND) << endl;
-    cout << "kmag_str =  " << kmag_str << endl;
+    cout << "KMAGSTR =  " << KMAGSTR << endl;
 }
