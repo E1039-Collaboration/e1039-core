@@ -124,9 +124,7 @@ int EventReducer::reduceEvent(SRawEvent* rawEvent)
 
     //apply hodoscope mask
     hodohitlist.sort();
-    LogInfo(hitlist.size());
     if(hodomask) hodoscopeMask(hitlist, hodohitlist);
-    LogInfo(hitlist.size());
 
     //Remove after hits
     hitlist.sort();
