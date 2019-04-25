@@ -16,6 +16,8 @@ Created: 01-21-2013
 #include "KalmanUtil.h"
 #include "KalmanFilter.h"
 
+#include <phool/recoConsts.h>
+
 ClassImp(SRecTrack)
 ClassImp(SRecDimuon)
 ClassImp(SRecEvent)
@@ -306,7 +308,7 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
     double eloss_unit_2 = ELOSS_FMAG_P2/FMAG_LENGTH;
     double eloss_unit_3 = ELOSS_FMAG_P3/FMAG_LENGTH;
     double eloss_unit_4 = ELOSS_FMAG_P4/FMAG_LENGTH;
-    double ptkick_unit = PT_KICK_FMAG/FMAG_LENGTH;
+    double ptkick_unit = 2.909*recoConsts::instance()->get_DoubleFlag("FMAGSTR")/FMAG_LENGTH;
 
     //Step size in FMAG/target area
     double step_fmag = FMAG_LENGTH/NSLICES_FMAG/2.;   //note that in FMag, each step is devided into two slices
@@ -420,7 +422,7 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
     int iStep_y = iStep;                  // both intialized with the most upstream position
     for(int i = 0; i < NSLICES_FMAG+NSTEPS_TARGET+1; ++i)
     {
-        if(FMAGSTR*charge*mom[i].Px() < 0.) continue;    // this is the upstream accidental cross, ignore
+        if(recoConsts::instance()->get_DoubleFlag("FMAGSTR")*charge*mom[i].Px() < 0.) continue;    // this is the upstream accidental cross, ignore
 
         double dca = (pos[i] - TVector3(X_VTX, Y_VTX, pos[i].Z())).Perp();
         if(dca < dca_min)
@@ -520,7 +522,7 @@ int SRecDimuon::isValid() const
     if(chisq_kf > 15. || chisq_kf < 0.) return false;
 
     //Kinematic cuts
-    if(FMAGSTR*(p_pos.Px() - p_neg.Px()) < 0.) return false;
+    if(recoConsts::instance()->get_DoubleFlag("FMAGSTR")*(p_pos.Px() - p_neg.Px()) < 0.) return false;
     if(fabs(xF) > 1.) return false;
     if(x1 < 0. || x1 > 1.) return false;
     if(x2 < 0. || x2 > 1.) return false;

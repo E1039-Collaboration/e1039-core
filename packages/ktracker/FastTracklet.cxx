@@ -448,7 +448,7 @@ Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(999
     kmag_on = JobOptsSvc::instance()->m_enableKMag;
     FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
     KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
-    PT_KICK_FMAG = 2.909*FMAGSTR
+    PT_KICK_FMAG = 2.909*FMAGSTR;
     PT_KICK_KMAG = 0.4016*KMAGSTR;
 }
 
