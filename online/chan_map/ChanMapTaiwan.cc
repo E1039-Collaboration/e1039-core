@@ -7,17 +7,16 @@
 #include <TSQLStatement.h>
 #include <geom_svc/GeomSvc.h>
 #include <db_svc/DbSvc.h>
-#include "ChanMapperTaiwan.h"
+#include "ChanMapTaiwan.h"
 using namespace std;
 
-ChanMapperTaiwan::ChanMapperTaiwan()
+ChanMapTaiwan::ChanMapTaiwan() :
+  ChanMapBase("taiwan", "det\tele\troc\tboard\tchan")
 {
-  m_label = "taiwan";
-  m_header = "det\tele\troc\tboard\tchan";
   InitNameMap();
 }
 
-int ChanMapperTaiwan::ReadFileCont(LineList& lines)
+int ChanMapTaiwan::ReadFileCont(LineList& lines)
 {
   istringstream iss;
   int nn = 0;
@@ -33,7 +32,7 @@ int ChanMapperTaiwan::ReadFileCont(LineList& lines)
   return nn;
 }
 
-int ChanMapperTaiwan::WriteFileCont(std::ostream& os)
+int ChanMapTaiwan::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
@@ -44,7 +43,7 @@ int ChanMapperTaiwan::WriteFileCont(std::ostream& os)
   return nn;
 }
 
-void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
+void ChanMapTaiwan::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
   oss << "select roc, board, chan, det_name, det, ele from " << MapTableName();
@@ -61,7 +60,7 @@ void ChanMapperTaiwan::ReadDbTable(DbSvc& db)
   delete stmt;
 }
 
-void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
+void ChanMapTaiwan::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
@@ -79,12 +78,12 @@ void ChanMapperTaiwan::WriteDbTable(DbSvc& db)
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
   if (! db.Con()->Exec(query.c_str())) {
-    cerr << "!!ERROR!!  ChanMapperTaiwan::WriteToDB():  in insert.  Abort." << endl;
+    cerr << "!!ERROR!!  ChanMapTaiwan::WriteToDB():  in insert.  Abort." << endl;
     exit(1);
   }
 }
 
-void ChanMapperTaiwan::Add(
+void ChanMapTaiwan::Add(
   const short roc, const short board, const short chan, 
   const std::string det, const short ele)
 {
@@ -96,7 +95,7 @@ void ChanMapperTaiwan::Add(
   Add(roc, board, chan, det, det_id, ele);
 
   if (ele_new != ele) {
-    cout << "!WARNING!  ChanMapperTaiwan::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
+    cout << "!WARNING!  ChanMapTaiwan::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
          << "  From det = " << det << ", ele = " << ele << "\n"
          << "  To   det = " << det_new << "(id = " << det_id << "), ele = " << ele_new << "\n"
          << "  The mapping result will be incorrect!!" << endl;
@@ -109,7 +108,7 @@ void ChanMapperTaiwan::Add(
   //     << det_id - det_id_local << " " << ele - ele_new << "\n";
 }
 
-void ChanMapperTaiwan::Add(
+void ChanMapTaiwan::Add(
   const short roc, const short board, const short chan, 
   const std::string det_name, const short det_id, const short ele)
 {
@@ -124,7 +123,7 @@ void ChanMapperTaiwan::Add(
   m_map[RocBoardChan_t(roc, board, chan)] = DetEle_t(det_id, ele);
 }
 
-//bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  std::string& det, short& ele)
+//bool ChanMapTaiwan::Find(const short roc, const short board, const short chan,  std::string& det, short& ele)
 //{
 //  RocBoardChan_t key(roc, board, chan);
 //  if (m_map.find(key) != m_map.end()) {
@@ -138,7 +137,7 @@ void ChanMapperTaiwan::Add(
 //  return false;
 //}
 
-bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan,  short& det, short& ele)
+bool ChanMapTaiwan::Find(const short roc, const short board, const short chan,  short& det, short& ele)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
@@ -159,7 +158,7 @@ bool ChanMapperTaiwan::Find(const short roc, const short board, const short chan
   return false;
 }
 
-void ChanMapperTaiwan::Print(std::ostream& os)
+void ChanMapTaiwan::Print(std::ostream& os)
 {
   int n_ent = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
@@ -170,7 +169,7 @@ void ChanMapperTaiwan::Print(std::ostream& os)
   cout << "  n = " << n_ent << endl;
 }
 
-void ChanMapperTaiwan::InitNameMap()
+void ChanMapTaiwan::InitNameMap()
 {
   m_map_name2id["D0U"  ] =   1;
   m_map_name2id["D0Up" ] =   2;

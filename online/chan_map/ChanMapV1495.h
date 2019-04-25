@@ -1,8 +1,8 @@
-#ifndef __CHAN_MAPPER_V1495_H__
-#define __CHAN_MAPPER_V1495_H__
-#include "ChanMapper.h"
+#ifndef __CHAN_MAP_V1495_H__
+#define __CHAN_MAP_V1495_H__
+#include "RunParamBase.h"
 
-class ChanMapperV1495 : public ChanMapper {
+class ChanMapV1495 : public ChanMapBase {
   struct MapItem {
     short roc;
     short board;
@@ -22,8 +22,8 @@ class ChanMapperV1495 : public ChanMapper {
   std::map<std::string, short> m_map_name2id;
 
  public:
-  ChanMapperV1495();
-  virtual ~ChanMapperV1495() {;}
+  ChanMapV1495();
+  virtual ~ChanMapV1495() {;}
 
   void Add (const short roc, const short board, const short chan, const std::string det, const short ele, const short lvl);
   void Add (const short roc, const short board, const short chan, const std::string det_name, const short det_id, const short ele, const short lvl);
@@ -42,4 +42,4 @@ class ChanMapperV1495 : public ChanMapper {
   void InitNameMap();
 };
 
-#endif // __CHAN_MAPPER_V1495_H__
+#endif // __CHAN_MAP_V1495_H__

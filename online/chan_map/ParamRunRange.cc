@@ -6,10 +6,10 @@
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
 #include <db_svc/DbSvc.h>
-#include "ChanMapperRange.h"
+#include "ParamRunRange.h"
 using namespace std;
 
-void ChanMapperRange::Add(const int run_b, const int run_e, const std::string map_id)
+void ParamRunRange::Add(const int run_b, const int run_e, const std::string map_id)
 {
   RangeItem item;
   item.run_b  = run_b ;
@@ -18,7 +18,7 @@ void ChanMapperRange::Add(const int run_b, const int run_e, const std::string ma
   m_list.push_back(item);
 }
 
-bool ChanMapperRange::Find(const std::string map_id)
+bool ParamRunRange::Find(const std::string map_id)
 {
   for (RangeList::iterator it = m_list.begin(); it != m_list.end(); it++) {
     if (it->map_id == map_id) return true;
@@ -26,21 +26,21 @@ bool ChanMapperRange::Find(const std::string map_id)
   return false;
 }
 
-std::string ChanMapperRange::Find(const int run, const bool exit_on_error)
+std::string ParamRunRange::Find(const int run, const bool exit_on_error)
 {
   for (RangeList::iterator it = m_list.begin(); it != m_list.end(); it++) {
     if (it->run_b <= run && run <= it->run_e) return it->map_id;
   }
   if (exit_on_error) {
-    cerr << "\n!!ERROR!!  ChanMapperRange::Find():  Cannot find a range for run=" << run << ".  Abort." << endl;
+    cerr << "\n!!ERROR!!  ParamRunRange::Find():  Cannot find a range for run=" << run << ".  Abort." << endl;
     exit(1);
   }
   return "";
 }
 
-void ChanMapperRange::ReadFromFile(const std::string fn_tsv)
+void ParamRunRange::ReadFromFile(const std::string fn_tsv)
 {
-  cout << "  ChanMapperRange::ReadFromFile(): " << fn_tsv << "...\n";
+  cout << "  ParamRunRange::ReadFromFile(): " << fn_tsv << "...\n";
   ifstream ifs(fn_tsv);
   if (! ifs) {
     cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
@@ -64,7 +64,7 @@ void ChanMapperRange::ReadFromFile(const std::string fn_tsv)
   ifs.close();
 }
 
-void ChanMapperRange::ReadFromDB(const std::string schema)
+void ParamRunRange::ReadFromDB(const std::string schema)
 {
   m_list.clear();
   DbSvc db(DbSvc::DB1);
@@ -80,9 +80,9 @@ void ChanMapperRange::ReadFromDB(const std::string schema)
   delete stmt;
 }
 
-void ChanMapperRange::WriteToDB(const std::string schema)
+void ParamRunRange::WriteToDB(const std::string schema)
 {
-  cout << "ChanMapperRange::WriteToDB()\n";
+  cout << "ParamRunRange::WriteToDB()\n";
   cout <<   "  Schema = " << schema << "\n";
 
   DbSvc db(DbSvc::DB1);

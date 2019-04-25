@@ -1,10 +1,10 @@
-#ifndef __CHAN_MAPPER_RANGE_H__
-#define __CHAN_MAPPER_RANGE_H__
+#ifndef __PARAM_RUN_RANGE_H__
+#define __PARAM_RUN_RANGE_H__
 #include <iostream>
 #include <vector>
 #include <string>
 
-class ChanMapperRange {
+class ParamRunRange {
   struct RangeItem {
     int run_b;
     int run_e;
@@ -14,8 +14,8 @@ class ChanMapperRange {
   RangeList m_list;
 
  public:
-  ChanMapperRange() {;}
-  ~ChanMapperRange() {;}
+  ParamRunRange() {;}
+  ~ParamRunRange() {;}
   void Add(const int run_b, const int run_e, const std::string map_id);
   bool Find(const std::string map_id);
   std::string Find(const int run, const bool exit_on_error=true);
@@ -25,4 +25,4 @@ class ChanMapperRange {
   void WriteToDB   (const std::string schema);
 };
 
-#endif // __CHAN_MAPPER_RANGE_H__
+#endif // __PARAM_RUN_RANGE_H__

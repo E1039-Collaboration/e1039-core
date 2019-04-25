@@ -1,8 +1,8 @@
-#ifndef __CHAN_MAPPER_SCALER_H__
-#define __CHAN_MAPPER_SCALER_H__
-#include "ChanMapper.h"
+#ifndef __CHAN_MAP_SCALER_H__
+#define __CHAN_MAP_SCALER_H__
+#include "RunParamBase.h"
 
-class ChanMapperScaler : public ChanMapper {
+class ChanMapScaler : public ChanMapBase {
   struct MapItem {
     short roc;
     short board;
@@ -16,8 +16,8 @@ class ChanMapperScaler : public ChanMapper {
   Map_t m_map; ///< Used in Find() for better speed.
 
  public:
-  ChanMapperScaler();
-  virtual ~ChanMapperScaler() {;}
+  ChanMapScaler();
+  virtual ~ChanMapScaler() {;}
 
   void Add (const short roc, const short board, const short chan, const std::string name);
   bool Find(const short roc, const short board, const short chan,  std::string& name);
@@ -31,4 +31,4 @@ class ChanMapperScaler : public ChanMapper {
   void WriteDbTable(DbSvc& db);
 };
 
-#endif // __CHAN_MAPPER_SCALER_H__
+#endif // __CHAN_MAP_SCALER_H__

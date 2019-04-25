@@ -6,16 +6,16 @@
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
 #include <db_svc/DbSvc.h>
-#include "ChanMapperScaler.h"
+#include "ChanMapScaler.h"
 using namespace std;
 
-ChanMapperScaler::ChanMapperScaler()
+ChanMapScaler::ChanMapScaler() : 
+  ChanMapBase("scaler", "name\troc\tboard\tchan")
 {
-  m_label = "scaler";
-  m_header = "name\troc\tboard\tchan";
+  ;
 }
 
-int ChanMapperScaler::ReadFileCont(LineList& lines)
+int ChanMapScaler::ReadFileCont(LineList& lines)
 {
   istringstream iss;
   int nn = 0;
@@ -31,7 +31,7 @@ int ChanMapperScaler::ReadFileCont(LineList& lines)
   return nn;
 }
 
-int ChanMapperScaler::WriteFileCont(std::ostream& os)
+int ChanMapScaler::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
@@ -42,7 +42,7 @@ int ChanMapperScaler::WriteFileCont(std::ostream& os)
   return nn;
 }
 
-void ChanMapperScaler::ReadDbTable(DbSvc& db)
+void ChanMapScaler::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
   oss << "select roc, board, chan, name from " << MapTableName();
@@ -57,7 +57,7 @@ void ChanMapperScaler::ReadDbTable(DbSvc& db)
   delete stmt;
 }
 
-void ChanMapperScaler::WriteDbTable(DbSvc& db)
+void ChanMapScaler::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
@@ -75,12 +75,12 @@ void ChanMapperScaler::WriteDbTable(DbSvc& db)
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
   if (! db.Con()->Exec(query.c_str())) {
-    cerr << "!!ERROR!!  ChanMapperScaler::WriteToDB():  in insert.  Abort." << endl;
+    cerr << "!!ERROR!!  ChanMapScaler::WriteToDB():  in insert.  Abort." << endl;
     exit(1);
   }
 }
 
-void ChanMapperScaler::Add(const short roc, const short board, const short chan, const std::string name)
+void ChanMapScaler::Add(const short roc, const short board, const short chan, const std::string name)
 {
   MapItem item;
   item.roc   = roc;
@@ -91,7 +91,7 @@ void ChanMapperScaler::Add(const short roc, const short board, const short chan,
   m_map[RocBoardChan_t(roc, board, chan)] = name;
 }
 
-bool ChanMapperScaler::Find(const short roc, const short board, const short chan,  std::string& name)
+bool ChanMapScaler::Find(const short roc, const short board, const short chan,  std::string& name)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
@@ -102,7 +102,7 @@ bool ChanMapperScaler::Find(const short roc, const short board, const short chan
   return false;
 }  
 
-void ChanMapperScaler::Print(std::ostream& os)
+void ChanMapScaler::Print(std::ostream& os)
 {
   int n_ent = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
