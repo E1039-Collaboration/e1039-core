@@ -1,8 +1,8 @@
-#ifndef __CHAN_MAPPER_TAIWAN_H__
-#define __CHAN_MAPPER_TAIWAN_H__
-#include "ChanMapper.h"
+#ifndef __CHAN_MAP_TAIWAN_H__
+#define __CHAN_MAP_TAIWAN_H__
+#include "RunParamBase.h"
 
-class ChanMapperTaiwan : public ChanMapper {
+class ChanMapTaiwan : public ChanMapBase {
   struct MapItem {
     short roc;
     short board;
@@ -21,8 +21,8 @@ class ChanMapperTaiwan : public ChanMapper {
   std::map<std::string, short> m_map_name2id;
 
  public:
-  ChanMapperTaiwan();
-  virtual ~ChanMapperTaiwan() {;}
+  ChanMapTaiwan();
+  virtual ~ChanMapTaiwan() {;}
 
   void Add(const short roc, const short board, const short chan, const std::string det, const short ele);
   void Add(const short roc, const short board, const short chan, const std::string det_name, const short det_id, const short ele);
@@ -41,4 +41,4 @@ class ChanMapperTaiwan : public ChanMapper {
   void InitNameMap();
 };
 
-#endif // __CHAN_MAPPER_TAIWAN_H__
+#endif // __CHAN_MAP_TAIWAN_H__

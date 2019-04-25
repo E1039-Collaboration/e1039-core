@@ -7,17 +7,16 @@
 #include <TSQLStatement.h>
 #include <geom_svc/GeomSvc.h>
 #include <db_svc/DbSvc.h>
-#include "ChanMapperV1495.h"
+#include "ChanMapV1495.h"
 using namespace std;
 
-ChanMapperV1495::ChanMapperV1495()
+ChanMapV1495::ChanMapV1495() :
+  ChanMapBase("v1495", "det\tele\tlvl\troc\tboard\tchan")
 {
-  m_label = "v1495";
-  m_header = "det\tele\tlvl\troc\tboard\tchan";
   InitNameMap();
 }
 
-int ChanMapperV1495::ReadFileCont(LineList& lines)
+int ChanMapV1495::ReadFileCont(LineList& lines)
 {
   istringstream iss;
   int nn = 0;
@@ -33,7 +32,7 @@ int ChanMapperV1495::ReadFileCont(LineList& lines)
   return nn;
 }
 
-int ChanMapperV1495::WriteFileCont(std::ostream& os)
+int ChanMapV1495::WriteFileCont(std::ostream& os)
 {
   int nn = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
@@ -44,7 +43,7 @@ int ChanMapperV1495::WriteFileCont(std::ostream& os)
   return nn;
 }
 
-void ChanMapperV1495::ReadDbTable(DbSvc& db)
+void ChanMapV1495::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
   oss << "select roc, board, chan, det_name, det, ele, lvl from " << MapTableName();
@@ -62,7 +61,7 @@ void ChanMapperV1495::ReadDbTable(DbSvc& db)
   delete stmt;
 }
 
-void ChanMapperV1495::WriteDbTable(DbSvc& db)
+void ChanMapV1495::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
@@ -80,7 +79,7 @@ void ChanMapperV1495::WriteDbTable(DbSvc& db)
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
   if (! db.Con()->Exec(query.c_str())) {
-    cerr << "!!ERROR!!  ChanMapperV1495::WriteToDB():  in insert.  Abort." << endl;
+    cerr << "!!ERROR!!  ChanMapV1495::WriteToDB():  in insert.  Abort." << endl;
     exit(1);
   }
 }
@@ -88,7 +87,7 @@ void ChanMapperV1495::WriteDbTable(DbSvc& db)
 /**
  * todo: The "STOP" and "L1PX*" detectors should be handled by GeomSvc properly.
  */
-void ChanMapperV1495::Add(
+void ChanMapV1495::Add(
   const short roc, const short board, const short chan, 
   const std::string det, const short ele, const short lvl)
 {
@@ -108,7 +107,7 @@ void ChanMapperV1495::Add(
   Add(roc, board, chan, det, det_id, ele, lvl);
 
   if (ele_new != ele) {
-    cout << "!WARNING!  ChanMapperV1495::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
+    cout << "!WARNING!  ChanMapV1495::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
          << "  From det = " << det << ", ele = " << ele << "\n"
          << "  To   det = " << det_new << "(id = " << det_id << "), ele = " << ele_new << "\n"
          << "  The mapping result will be incorrect!!" << endl;
@@ -121,7 +120,7 @@ void ChanMapperV1495::Add(
   //     << det_id - det_id_local << " " << ele - ele_new << "\n";
 }
 
-void ChanMapperV1495::Add(
+void ChanMapV1495::Add(
   const short roc, const short board, const short chan, 
   const std::string det_name, const short det_id, const short ele, const short lvl)
 {
@@ -137,7 +136,7 @@ void ChanMapperV1495::Add(
   m_map[RocBoardChan_t(roc, board, chan)] = DetEleLvl_t(det_id, ele, lvl);
 }
 
-//bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl)
+//bool ChanMapV1495::Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl)
 //{
 //  RocBoardChan_t key(roc, board, chan);
 //  if (m_map.find(key) != m_map.end()) {
@@ -152,7 +151,7 @@ void ChanMapperV1495::Add(
 //  return false;
 //}  
 
-bool ChanMapperV1495::Find(const short roc, const short board, const short chan,  short& det, short& ele, short& lvl)
+bool ChanMapV1495::Find(const short roc, const short board, const short chan,  short& det, short& ele, short& lvl)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
@@ -174,7 +173,7 @@ bool ChanMapperV1495::Find(const short roc, const short board, const short chan,
   return false;
 }
 
-void ChanMapperV1495::Print(std::ostream& os)
+void ChanMapV1495::Print(std::ostream& os)
 {
   int n_ent = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
@@ -185,7 +184,7 @@ void ChanMapperV1495::Print(std::ostream& os)
   cout << n_ent << endl;
 }
 
-void ChanMapperV1495::InitNameMap()
+void ChanMapV1495::InitNameMap()
 {
   m_map_name2id["H1B"  ] =  25+6;
   m_map_name2id["H1T"  ] =  26+6;
