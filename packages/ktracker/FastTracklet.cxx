@@ -7,6 +7,8 @@ Author: Kun Liu, liuk@fnal.gov
 Created: 05-28-2013
 */
 
+#include <phool/recoConsts.h>
+
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -415,8 +417,28 @@ void PropSegment::linearFit_iterative()
 }
 
 //General tracklet part
+
+//<TODO improve this part
+//@{
+// Original imp.
 //const GeomSvc* Tracklet::p_geomSvc = GeomSvc::instance();
 //const bool Tracklet::kmag_on = JobOptsSvc::instance()->m_enableKMag;
+
+namespace {
+	//static pointer to geomtry service
+	static GeomSvc* p_geomSvc = nullptr;
+
+	//static flag of kmag on/off
+	static bool kmag_on = true;
+
+	//static flag of kmag strength
+	static double FMAGSTR = 1.0;
+	static double KMAGSTR = 1.0;
+
+	static double PT_KICK_FMAG = 2.909;
+	static double PT_KICK_KMAG = 0.4016;
+}
+//@}
 
 Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(9999.), chisq_vtx(9999.), tx(0.), ty(0.), x0(0.), y0(0.), invP(0.1), err_tx(-1.), err_ty(-1.), err_x0(-1.), err_y0(-1.), err_invP(-1.)
 {
@@ -424,6 +446,10 @@ Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(999
 
     p_geomSvc = GeomSvc::instance();
     kmag_on = JobOptsSvc::instance()->m_enableKMag;
+    FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
+    KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
+    PT_KICK_FMAG = 2.909*FMAGSTR;
+    PT_KICK_KMAG = 0.4016*KMAGSTR;
 }
 
 bool Tracklet::isValid()
@@ -747,6 +773,11 @@ double Tracklet::getMomentum() const
     }
 
     return p;
+}
+
+int Tracklet::getCharge() const
+{
+	return x0*KMAGSTR > tx ? 1 : -1;
 }
 
 void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
@@ -1091,4 +1122,5 @@ void Tracklet::print()
 
     cout << "KMAG projection: X =  " << getExpPositionX(Z_KMAG_BEND) << " +/- " << getExpPosErrorX(Z_KMAG_BEND) << endl;
     cout << "KMAG projection: Y =  " << getExpPositionY(Z_KMAG_BEND) << " +/- " << getExpPosErrorY(Z_KMAG_BEND) << endl;
+    cout << "KMAGSTR =  " << KMAGSTR << endl;
 }

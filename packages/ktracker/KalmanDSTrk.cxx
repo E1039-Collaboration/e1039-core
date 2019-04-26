@@ -868,11 +868,13 @@ void KalmanDSTrk::buildBackPartialTracks()
     _timers["st23"]->stop();
 
 #ifdef _DEBUG_YUHW_
-  	LogInfo("");
-  	std::cout
-		<< counter["in"] << " => "
-		<< counter["DS"] << " => "
-		<< counter["out"] << std::endl;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+			LogInfo("");
+			std::cout
+			<< counter["in"] << " => "
+			<< counter["DS"] << " => "
+			<< counter["out"] << std::endl;
+    }
 
     if(_ana_mode) {
 			float tana_data[] = {
@@ -1112,11 +1114,13 @@ void KalmanDSTrk::buildGlobalTracks()
     _timers["global"]->stop();
 
 #ifdef _DEBUG_YUHW_
-		LogInfo("");
-		std::cout
-		<< counter["in"] << " => "
-		<< counter["DS"] << " => "
-		<< counter["out"] << std::endl;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+			LogInfo("");
+			std::cout
+			<< counter["in"] << " => "
+			<< counter["DS"] << " => "
+			<< counter["out"] << std::endl;
+    }
 
 		if(_ana_mode) {
 			float tana_data[] = {
@@ -1214,15 +1218,10 @@ void KalmanDSTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
             //LogInfo("Final: " << index_min << "  " << pull_min);
             if(index_min >= 0 && pull_min < threshold)//((tracklet.stationID == 5 && pull_min < 25.) || (tracklet.stationID == 6 && pull_min < 100.)))
             {
-            	//FIXME temp for debug purpose
-							//hit1->sign = possibility[index_min][0];
-							//hit2->sign = possibility[index_min][1];
-
-            	//FIXME temp for debug purpose
-            	hit1->sign = hit1->hit.driftDistance > 0 ? 1 : -1;
-            	hit2->sign = hit2->hit.driftDistance > 0 ? 1 : -1;
-
-                isUpdated = true;
+            	//Origin imp.
+							hit1->sign = possibility[index_min][0];
+							hit2->sign = possibility[index_min][1];
+              isUpdated = true;
             }
         }
 
@@ -1234,8 +1233,13 @@ void KalmanDSTrk::resolveLeftRight(Tracklet& tracklet, double threshold)
         ++hit2;
         ++hit2;
     }
-
+#ifdef _DEBUG_ON
+    tracklet.print();
+#endif
     if(isUpdated) fitTracklet(tracklet);
+#ifdef _DEBUG_ON
+    tracklet.print();
+#endif
 }
 
 void KalmanDSTrk::resolveSingleLeftRight(Tracklet& tracklet)
@@ -1611,9 +1615,10 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
                 {
                     continue;
                 }
-
 #ifdef _DEBUG_ON
-                tracklet_new.print();
+                if(Verbosity()>=Fun4AllBase::VERBOSITY_A_LOT) {
+                	tracklet_new.print();
+                }
 #endif
                 if(acceptTracklet(tracklet_new))
                 {
@@ -1633,11 +1638,13 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
     }
 
 #ifdef _DEBUG_YUHW_
-  	LogInfo("");
-  	std::cout
-		<< counter["in"] << " => "
-		<< counter["DS"] << " => "
-		<< counter["out"] << std::endl;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
+			LogInfo("");
+			std::cout
+			<< counter["in"] << " => "
+			<< counter["DS"] << " => "
+			<< counter["out"] << std::endl;
+    }
 
     if(_ana_mode) {
 			float tana_data[] = {

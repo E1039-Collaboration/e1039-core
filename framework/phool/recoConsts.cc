@@ -10,6 +10,7 @@ recoConsts::Print() const
   // methods from PHFlag
   PrintCharFlags();
   PrintFloatFlags();
+  PrintDoubleFlags();
   PrintIntFlags();
 
   return;
