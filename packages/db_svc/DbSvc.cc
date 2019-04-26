@@ -16,7 +16,7 @@ DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cn
   if (my_cnf.length() > 0) {
     m_my_cnf = my_cnf;
   } else {
-    if (usr_id == Guest) m_my_cnf = "/data2/analysis/kenichi/e1039/my.cnf";
+    if (usr_id == Guest) m_my_cnf = "/seaquest/analysis/kenichi/e1039/my.cnf";
     else /* == Prod */   m_my_cnf = "my.cnf"; // not supported yet.
   }
   SelectServer();
