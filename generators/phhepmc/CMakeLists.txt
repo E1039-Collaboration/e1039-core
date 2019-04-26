@@ -32,7 +32,7 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/PHGenEventListv1.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEventMap.h
-	$ENV{DIR_E1039_SHARE}/include/HepMC/*.h
+	$ENV{E1039_SHARE}/include/HepMC/*.h
   ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
 	)
 
