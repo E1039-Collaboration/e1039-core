@@ -18,7 +18,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
 {
   //gSystem->Load("libdecoder_maindaq.so");
   //const char* dir_in  = "/data/e906",
-  const char* dir_in  = "/data2/analysis/kenichi/e1039";
+  const char* dir_in  = "/seaquest/analysis/kenichi/e1039";
   const char* dir_out = ".";
   const bool is_online = false; // true;
 
@@ -40,7 +40,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   if (is_online) {
     in->PretendSpillInterval(55);
   }
-  in->DirParam("/data2/production/runs");
+  in->DirParam("/seaquest/production/runs");
   //in->DirParam("/data/e906/runs");
   in->fileopen(fn_in);
   se->registerInputManager(in);
