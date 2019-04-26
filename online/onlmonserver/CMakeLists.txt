@@ -3,15 +3,14 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(onlmonserver CXX C)
 
 # ROOT dict generation
-file(GLOB dicts "")
-file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
-foreach(LinkDefh ${LinkDefhs})
-	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
-	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
-	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
-endforeach(LinkDefh)
+add_custom_command (
+  OUTPUT onlmonserver_Dict.cc
+  COMMAND rootcint
+  ARGS -f onlmonserver_Dict.cc -c
+    -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+    ${PROJECT_SOURCE_DIR}/OnlMon*.h
+    ${PROJECT_SOURCE_DIR}/LinkDef.h
+)
 
 # source code
 include_directories("${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/")
@@ -34,8 +33,8 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool -lg4testbench")
 
-add_library(onlmonserver SHARED ${sources} ${dicts})
-target_link_libraries(onlmonserver -L$ENV{OFFLINE_MAIN}/lib -lfun4all)
+add_library(onlmonserver SHARED ${sources} onlmonserver_Dict.cc)
+target_link_libraries(onlmonserver -L$ENV{OFFLINE_MAIN}/lib -lfun4all db_svc chan_map)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

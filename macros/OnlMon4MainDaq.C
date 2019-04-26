@@ -4,7 +4,8 @@ R__LOAD_LIBRARY(libonlmonserver)
 
 int OnlMon4MainDaq()
 {
-  OnlMonClient* omc = new OnlMonMainDaq();
+  //OnlMonClient* omc = new OnlMonMainDaq();
+  OnlMonClient* omc = new OnlMonCham(OnlMonCham::D3p);
   omc->StartMonitor();
   return 0;
 }

@@ -21,7 +21,6 @@ class OnlMonMainDaq: public OnlMonClient {
   int DrawMonitor();
 
  private:
-  void PrintSpill(SQSpill* spi);
   void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
 };
 
