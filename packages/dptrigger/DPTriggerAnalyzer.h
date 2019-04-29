@@ -4,10 +4,8 @@
 // ROOT
 #include <TString.h>
 
-#include <g4detectors/DPDigitizer.h>
 // Fun4All includes
 #include <fun4all/SubsysReco.h>
-#include <g4main/PHG4TruthInfoContainer.h>
 
 // STL includes
 #include <vector>
@@ -16,6 +14,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <string>
 
 class PHG4Hit;
 class SQRun;
@@ -29,26 +28,12 @@ class SRecEvent;
 
 class GeomSvc;
 
-#define SetBit(n) (1 << (n))
 
 #define NTRPLANES 4
 #define NMAXHODOS 16
 #define NMAXMTRKS 1000
 #define NMAXMHITS 1000000
 
-enum DPTriggerType
-{
-    MATRIX1 = SetBit(0),
-    MATRIX2 = SetBit(1),
-    MATRIX3 = SetBit(2),
-    MATRIX4 = SetBit(3),
-    MATRIX5 = SetBit(4),
-    NIM1 = SetBit(5),
-    NIM2 = SetBit(6),
-    NIM3 = SetBit(7),
-    NIM4 = SetBit(8),
-    NIM5 = SetBit(9)
-};
 
 class DPTriggerRoad
 {
@@ -96,6 +81,7 @@ public:
     friend std::ostream& operator << (std::ostream& os, const DPTriggerRoad& road);
 
 private:
+
     //!unique road ID
     int roadID;
 
@@ -122,8 +108,6 @@ public:
     DPTriggerAnalyzer(const std::string &name = "DPTriggerAnalyzer");
     virtual ~DPTriggerAnalyzer();
 
-    static DPTriggerAnalyzer* instance();
-
 #ifndef __CINT__
     int Init(PHCompositeNode *topNode);
 #endif
@@ -137,6 +121,14 @@ public:
     int End(PHCompositeNode *topNode);
 
     int ResetEvalVars();
+
+  	const std::string& get_road_set_file_name() const {
+  		return _road_set_file_name;
+  	}
+
+  	void set_road_set_file_name(const std::string& roadSetFileName) {
+  		_road_set_file_name = roadSetFileName;
+  	}
 
     const std::string& get_hit_container_choice() const {
       return _hit_container_type;
@@ -169,12 +161,12 @@ public:
     void printPath();
 
 private:
-    static DPTriggerAnalyzer* p_triggerAna;
 
-    //!pointer to the digitizer, or geometry for that matter
-    DPDigitizer* p_digitizer;
-
+    int MakeNodes(PHCompositeNode *topNode);
     int GetNodes(PHCompositeNode *topNode);
+
+    //! road set input file name
+    std::string _road_set_file_name;
 
     std::string _hit_container_type;
 
@@ -204,13 +196,11 @@ private:
     SQEvent* _event_header;
     SQHitMap* _hit_map;
     SQHitVector* _hit_vector;
-    PHG4TruthInfoContainer* _truth;
     SRecEvent* _recEvent;
 
     int run_id;
     int spill_id;
     int event_id;
-    int krecstat;
     float target_pos;
 
     int Nhits_YNIM_1XT;
@@ -247,6 +237,7 @@ private:
 
     int uniqueIDs[NMAXMHITS];
 
+    //!pointer to the digitizer, or geometry for that matter
     GeomSvc *p_geomSvc;
 };
 
