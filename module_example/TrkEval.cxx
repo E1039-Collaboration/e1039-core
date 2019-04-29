@@ -117,9 +117,10 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
   }
 
 	if(_event_header) {
-    event_id = _event_header->get_event_id();
-    spill_id = _event_header->get_spill_id();
-    run_id   = _event_header->get_run_id();
+    event_id    = _event_header->get_event_id();
+    emu_trigger = _event_header->get_trigger();
+    spill_id    = _event_header->get_spill_id();
+    run_id      = _event_header->get_run_id();
   }
 
   PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
@@ -404,9 +405,10 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   }
 
 	if(_event_header) {
-    event_id = _event_header->get_event_id();
-    spill_id = _event_header->get_spill_id();
-    run_id   = _event_header->get_run_id();
+    event_id    = _event_header->get_event_id();
+    emu_trigger = _event_header->get_trigger();
+    spill_id    = _event_header->get_spill_id();
+    run_id      = _event_header->get_run_id();
   }
 
   PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
@@ -840,6 +842,7 @@ int TrkEval::InitEvalTree() {
   _tout_truth->Branch("spillID",       &spill_id,        "spillID/I");
   _tout_truth->Branch("liveProton",    &target_pos,      "liveProton/F");
   _tout_truth->Branch("eventID",       &event_id,        "eventID/I");
+  _tout_truth->Branch("emu_trigger",   &emu_trigger,      "emu_trigger/s");
   _tout_truth->Branch("krecstat",      &krecstat,        "krecstat/I");
 
   _tout_truth->Branch("nHits",         &n_hits,          "nHits/I");
@@ -970,6 +973,7 @@ int TrkEval::ResetEvalVars() {
   spill_id = std::numeric_limits<int>::max();
   target_pos = std::numeric_limits<float>::max();
   event_id = std::numeric_limits<int>::max();
+  emu_trigger = 0;
   krecstat = std::numeric_limits<int>::max();
 
   n_hits = 0;
