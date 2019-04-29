@@ -287,6 +287,23 @@ void GeomSvc::init()
     	map_detid_scale_z[i]  = 4;
     }
 
+    // TODO temp solution
+    for(int i=1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes; ++i) {
+    	map_detid_triggerlv[i] = -1;
+    }
+    for(int i=nChamberPlanes+1; i<=nChamberPlanes+4; ++i) {
+    	map_detid_triggerlv[i] = 0;
+    }
+    for(int i=nChamberPlanes+5; i<=nChamberPlanes+8; ++i) {
+    	map_detid_triggerlv[i] = 1;
+    }
+    for(int i=nChamberPlanes+9; i<=nChamberPlanes+10; ++i) {
+    	map_detid_triggerlv[i] = 2;
+    }
+    for(int i=nChamberPlanes+11; i<=nChamberPlanes+16; ++i) {
+    	map_detid_triggerlv[i] = 3;
+    }
+
   	//init map_dname_group
   	map_dname_group["D1U"]      = "D1U";
   	map_dname_group["D1Up"]     = "D1U";
