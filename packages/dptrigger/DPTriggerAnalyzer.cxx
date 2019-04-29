@@ -247,7 +247,6 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
   Nhits_YNIM_4Y1R=0;
   Nhits_YNIM_4Y2R=0;
 
-  LogInfo("DEBUG");
 	if (_hit_vector) {
 		for (Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
 			SQHit *hit = _hit_vector->at(ihit);
