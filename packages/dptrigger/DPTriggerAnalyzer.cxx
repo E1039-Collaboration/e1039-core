@@ -293,7 +293,7 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
 
   if(HYL or HYR) _event_header->set_trigger(SQEvent::NIM1, true);
   if(HXT or HXB) _event_header->set_trigger(SQEvent::NIM2, true);
-  
+
   //For FPGA trigger, build the internal hit pattern first
   if(_hit_vector) {
 
@@ -306,15 +306,16 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
 			uniqueIDs[n_FPGA_hits++] = hit->get_detector_id()*1000 + hit->get_element_id();
     }
 
-    buildHitPattern(n_FPGA_hits, uniqueIDs);
-    
+    bool all_planes_have_hits = buildHitPattern(n_FPGA_hits, uniqueIDs);
+
     //do the tree DFS search
     for(int i = 0; i < 2; ++i) {
 			path.clear();
 			roads_found[i].clear();
-			searchMatrix(matrix[i], 0, i);
+			if(all_planes_have_hits)
+				searchMatrix(matrix[i], 0, i);
     }
-    
+
     //FPGA singles trigger
     nPlusTop=0;
     nPlusBot=0;
@@ -324,7 +325,7 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
     nHiPxPlusBot=0;
     nHiPxMinusTop=0;
     nHiPxMinusBot=0;
-    
+
     for (std::list<DPTriggerRoad>::iterator iter = roads_found[0].begin();
 				iter != roads_found[0].end(); ++iter) {
 			if (iter->getTB() > 0) {
@@ -351,13 +352,13 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
 			}
 		}
   }
-    
+
   if((nPlusTop > 0 && nMinusBot > 0) || (nPlusBot > 0 && nMinusTop > 0)) _event_header->set_trigger(SQEvent::MATRIX1, true);
   if((nPlusTop > 0 && nMinusTop > 0) || (nPlusBot > 0 && nMinusBot > 0)) _event_header->set_trigger(SQEvent::MATRIX2, true);
   if((nPlusTop > 0 && nPlusBot > 0) || (nMinusTop > 0 && nMinusBot > 0)) _event_header->set_trigger(SQEvent::MATRIX3, true);
   if(nPlusTop > 0 || nMinusTop > 0 || nPlusBot > 0 || nMinusBot > 0) _event_header->set_trigger(SQEvent::MATRIX4, true);
   if(nHiPxPlusTop > 0 || nHiPxMinusTop > 0 || nHiPxPlusBot > 0 || nHiPxMinusBot > 0) _event_header->set_trigger(SQEvent::MATRIX5, true);
-  
+
   if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
   	_event_header->identify();
   }
