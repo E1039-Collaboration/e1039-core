@@ -5,10 +5,10 @@
  *      Author: yuhw@nmsu.edu
  */
 
-
 #include "KalmanFastTrackingWrapper.h"
+
+#include "KalmanDSTrk.h"
 #include "KalmanFastTracking.h"
-#include "KalmanPrgTrk.h"
 #include "EventReducer.h"
 
 #include <phfield/PHFieldConfig_v3.h>
@@ -56,6 +56,10 @@ using namespace std;
 
 KalmanFastTrackingWrapper::KalmanFastTrackingWrapper(const std::string& name) :
 SubsysReco(name),
+ _input_type(KalmanFastTrackingWrapper::E1039),
+_enable_KF(true),
+_enable_event_reducer(false),
+_DS_level(KalmanDSTrk::NO_DS),
 _hit_container_type("Vector"),
 _event(0),
 _run_header(nullptr),
@@ -67,9 +71,7 @@ _triggerhit_vector(nullptr),
 _out_name("ktracker_eval.root"),
 _geom_file_name("")
 {
-	//p_jobOptsSvc = new JobOptsSvc();
 	p_jobOptsSvc = JobOptsSvc::instance();
-	p_jobOptsSvc->init("default.opts");
 	LogDebug(p_jobOptsSvc->m_geomVersion);
 }
 
@@ -104,19 +106,21 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
     field_scan.close();
   }
 
-	/// init KalmanPrgTrk
-	fastfinder = new KalmanPrgTrk(field, _t_geo_manager);
+	/// init KalmanDSTrk
+	fastfinder = new KalmanDSTrk(field, _t_geo_manager, _enable_KF, _DS_level);
 	fastfinder->Verbosity(verbosity);
 
-  TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
-  if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
-  if(p_jobOptsSvc->m_sagittaReducer) opt = opt + "s";
-  if(p_jobOptsSvc->m_updateAlignment) opt = opt + "e";
-  if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
-  if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
-  if(p_jobOptsSvc->m_realization) opt = opt + "r";
+	if(_enable_event_reducer) {
+		TString opt = "aoc";      //turn on after pulse removal, out of time removal, and cluster removal
+		if(p_jobOptsSvc->m_enableTriggerMask) opt = opt + "t";
+		if(p_jobOptsSvc->m_sagittaReducer) opt = opt + "s";
+		if(p_jobOptsSvc->m_updateAlignment) opt = opt + "e";
+		if(p_jobOptsSvc->m_hodomask) opt = opt + "h";
+		if(p_jobOptsSvc->m_mergeHodo) opt = opt + "m";
+		if(p_jobOptsSvc->m_realization) opt = opt + "r";
 
-  eventReducer = new EventReducer(opt);
+		eventReducer = new EventReducer(opt);
+	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -159,6 +163,26 @@ int KalmanFastTrackingWrapper::InitGeom(PHCompositeNode *topNode)
 	assert(_t_geo_manager);
 
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int KalmanFastTrackingWrapper::ReMaskHits(SRawEvent* sraw_event) {
+
+	std::map<int, size_t> m_hitid_ihit;
+
+	//if use hit vector, index first
+	for(size_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
+		SQHit* sq_hit = _hit_vector->at(ihit);
+		m_hitid_ihit[sq_hit->get_hit_id()] = ihit;
+		sq_hit->set_hodo_mask(false);
+	}
+
+	for( Hit hit : sraw_event->getAllHits()) {
+		size_t ihit = m_hitid_ihit[hit.index];
+		SQHit* sq_hit = _hit_vector->at(ihit);
+		sq_hit->set_hodo_mask(true);
+	}
+
+	return 0;
 }
 
 SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
@@ -231,7 +255,7 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
     h.detectorID = sq_hit->get_detector_id();
     h.elementID = sq_hit->get_element_id();
     h.tdcTime = sq_hit->get_tdc_time();
-    h.driftDistance = sq_hit->get_drift_distance();
+    h.driftDistance = fabs(sq_hit->get_drift_distance()); //MC L-R info removed here
     h.pos = sq_hit->get_pos();
 
     if(sq_hit->is_in_time()) h.setInTime();
@@ -252,7 +276,7 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
     sraw_event->insertHit(h);
 
     // FIXME just for the meeting, figure this out fast!
-    if(!_triggerhit_vector and h.detectorID >= 31) {
+    if(!_triggerhit_vector and h.detectorID >= 31 and h.detectorID <= 46) {
     	sraw_event->insertTriggerHit(h);
     }
 	}
@@ -296,25 +320,37 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 
 	if(!_hit_vector) {
 		LogDebug("!_hit_vector");
-		return Fun4AllReturnCodes::ABORTRUN;
+		//return Fun4AllReturnCodes::ABORTRUN;
 	}
 
-	auto up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
-	SRawEvent* sraw_event = up_raw_event.get();
+	std::unique_ptr<SRawEvent> up_raw_event;
+	if(_input_type == KalmanFastTrackingWrapper::E1039) {
+		up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
+		_rawEvent = up_raw_event.get();
+	}
 
-  // TODO temp solution
-  if(_event_header) {
-	  eventReducer->reduceEvent(sraw_event);
+	if(verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
+		LogInfo("SRawEvent before the Reducer");
+		_rawEvent->identify();
+	}
+
+  if(_enable_event_reducer){
+	  eventReducer->reduceEvent(_rawEvent);
+	  if(_input_type == KalmanFastTrackingWrapper::E1039)
+	  	ReMaskHits(_rawEvent);
   }
 
-	_rawEvent = sraw_event;
+	if(verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
+	  LogInfo("SRawEvent after the Reducer");
+		_rawEvent->identify();
+	}
 
 	//auto up_recEvent = std::unique_ptr<SRecEvent>(new SRecEvent());
 	//_recEvent = up_recEvent.get();
 
-	_recEvent->setRecStatus(fastfinder->setRawEvent(sraw_event));
+	_recEvent->setRecStatus(fastfinder->setRawEvent(_rawEvent));
 
-  if(verbosity >= 2)
+  if(verbosity >= Fun4AllBase::VERBOSITY_A_LOT)
   	fastfinder->printTimers();
 
   _recEvent->setRawEvent(_rawEvent);
@@ -348,7 +384,6 @@ int KalmanFastTrackingWrapper::process_event(PHCompositeNode* topNode) {
 	}
 #endif
 
-
 	_tout->Fill();
 
 	if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME)
@@ -372,13 +407,13 @@ int KalmanFastTrackingWrapper::End(PHCompositeNode* topNode) {
 
 int KalmanFastTrackingWrapper::InitEvalTree() {
 
-	_rawEvent = nullptr;
+	//_rawEvent = nullptr;
 	_recEvent = nullptr;
 
 	PHTFileServer::get().open(_out_name.c_str(), "RECREATE");
 
 	_tout = new TTree("T", "save");
-	_tout->Branch("rawEvent", &_rawEvent, 256000, 99);
+	//_tout->Branch("rawEvent", &_rawEvent, 256000, 99);
 	_tout->Branch("recEvent", &_recEvent, 256000, 99);
 
 	return 0;
@@ -401,6 +436,26 @@ int KalmanFastTrackingWrapper::MakeNodes(PHCompositeNode* topNode) {
 		eventNode = new PHCompositeNode("DST");
 		topNode->addNode(eventNode);
 	}
+
+//	_rawEvent_orig = findNode::getClass<SRecEvent>(topNode, "SRawEvent");
+//	if (_rawEvent_orig) {
+//		if(Verbosity() > 0) LogInfo("Using SRawEvent as input!");
+//		_input_type = KalmanFastTrackingWrapper::E906;
+//	}
+//	else {
+//		_input_type = KalmanFastTrackingWrapper::E1039;
+//		_rawEvent_orig = new SRawEvent();
+//		PHIODataNode<PHObject>* rawEventNode = new PHIODataNode<PHObject>(_rawEvent_orig,"SRawEvent", "PHObject");
+//		eventNode->addNode(rawEventNode);
+//		if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+//			LogInfo("DST/SRawEvent Added");
+//	}
+
+//	_rawEvent_redu = new SRawEvent();
+//	PHIODataNode<PHObject>* rawreduEventNode = new PHIODataNode<PHObject>(_rawEvent_redu,"SRawEventReduced", "PHObject");
+//	eventNode->addNode(rawreduEventNode);
+//	if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
+//		LogInfo("DST/SRawEventReduced Added");
 
 	_recEvent = new SRecEvent();
 	PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent,"SRecEvent", "PHObject");
@@ -435,7 +490,7 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 		_hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
 		if (!_hit_map) {
 			LogError("!_hit_map");
-			return Fun4AllReturnCodes::ABORTEVENT;
+			//return Fun4AllReturnCodes::ABORTEVENT;
 		}
 	}
 
@@ -443,7 +498,7 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 		_hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
 		if (!_hit_vector) {
 			LogError("!_hit_vector");
-			return Fun4AllReturnCodes::ABORTEVENT;
+			//return Fun4AllReturnCodes::ABORTEVENT;
 		}
 
 		_triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
@@ -453,11 +508,28 @@ int KalmanFastTrackingWrapper::GetNodes(PHCompositeNode* topNode) {
 		}
 	}
 
+	_rawEvent = findNode::getClass<SRawEvent>(topNode, "SRawEvent");
+	if (_rawEvent) {
+		if(Verbosity() > 0) LogInfo("Using SRawEvent as input!");
+		_input_type = KalmanFastTrackingWrapper::E906;
+	}
+
 	_recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
 	if (!_recEvent) {
 		if(Verbosity() > 2) LogError("!_recEvent");
 		return Fun4AllReturnCodes::ABORTEVENT;
 	}
+
+//	_rawEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+//	if (!_rawEvent_orig) {
+//		if(Verbosity() > 2) LogError("!_rawEvent_orig");
+//		return Fun4AllReturnCodes::ABORTEVENT;
+//	}
+//	_rawEvent_redu = findNode::getClass<SRecEvent>(topNode, "SRawEventReduced");
+//	if (!_rawEvent_redu) {
+//		if(Verbosity() > 2) LogError("!_rawEvent_redu");
+//		return Fun4AllReturnCodes::ABORTEVENT;
+//	}
 
 	return Fun4AllReturnCodes::EVENT_OK;
 }

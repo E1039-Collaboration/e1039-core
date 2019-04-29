@@ -48,7 +48,7 @@ add_library(phg4gdml SHARED
   ${PROJECT_SOURCE_DIR}/PHG4GDMLConfig.cc
 )
 
-target_link_libraries(phg4gdml -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lfun4all -L$ENV{XERCESCROOT} -lxerces-c ${GEANT4_LINK})
+target_link_libraries(phg4gdml -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lfun4all -L$ENV{XERCESCROOT}/lib -lxerces-c ${GEANT4_LINK})
 
 install(TARGETS phg4gdml 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

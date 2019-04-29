@@ -10,6 +10,7 @@
 class SQSpill;
 class SQEvent;
 class SQHitVector;
+class TH1;
 
 class AnaMainDaq: public SubsysReco {
  public:
@@ -22,6 +23,8 @@ class AnaMainDaq: public SubsysReco {
  private:
   void PrintSpill(SQSpill* spi);
   void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
+
+  TH1* h1_evt_qual;
 };
 
 #endif /* _H_AnaMainDaq_H_ */

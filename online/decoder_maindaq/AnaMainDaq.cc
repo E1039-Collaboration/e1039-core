@@ -5,6 +5,7 @@
  *      Author: yuhw
  */
 #include <iomanip>
+#include <TH1D.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQSpillMap.h>
 #include <interface_main/SQSpill.h>
@@ -14,9 +15,11 @@
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
+#include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
+#include <onlmonserver/OnlMonServer.h>
 #include "AnaMainDaq.h"
 using namespace std;
 
@@ -27,6 +30,12 @@ AnaMainDaq::AnaMainDaq(const std::string& name) : SubsysReco(name)
 
 int AnaMainDaq::Init(PHCompositeNode* topNode)
 {
+  h1_evt_qual = new TH1D("h1_evt_qual", ";Event-quality bit;N of events", 33, -0.5, 32.5);
+
+  Fun4AllHistoManager* hm = new Fun4AllHistoManager("MainDaq");
+  OnlMonServer::instance()->registerHistoManager(hm);
+  hm->registerHisto(h1_evt_qual);
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -58,6 +67,13 @@ int AnaMainDaq::process_event(PHCompositeNode* topNode)
 
   static int n_evt_print = 0;
   if (n_evt_print++ < 3) PrintEvent(event_header, hit_vec, trig_hit_vec);
+
+  int dq_evt = event_header->get_data_quality();
+  if (dq_evt == 0) h1_evt_qual->Fill(32);
+  for (int bit = 0; bit < 32; bit++) {
+    if ((dq_evt > bit) & 0x1) h1_evt_qual->Fill(bit);
+  }
+
   
   return Fun4AllReturnCodes::EVENT_OK;
 }

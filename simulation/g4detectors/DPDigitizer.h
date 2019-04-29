@@ -31,7 +31,7 @@ public:
 
 #ifndef __CINT__
 	//!intercepts with a 3-D straight line
-	bool intercept(double tx, double ty, double x0, double y0, G4ThreeVector& pos, double& w);
+	bool intercept(double tx, double ty, double x0, double y0, double z0, G4ThreeVector& pos, double& w);
 #endif
 
 	//!@name X, Y, U, V conversion

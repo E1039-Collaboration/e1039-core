@@ -95,6 +95,33 @@ SRawEvent::~SRawEvent()
 {
 }
 
+void SRawEvent::DeepClone(SRawEvent *c)
+{
+    fRunID       = c->getRunID();
+    fEventID     = c->getEventID();
+    fSpillID     = c->getSpillID();
+
+    fTriggerBits = c->getTriggerBits();
+
+    fTargetPos   = c->getTargetPos();
+
+    fTurnID      = c->getTurnID();
+    fRFID        = c->getRFID();
+    for(int i=0; i<33; ++i) fIntensity[i] = c->getIntensity(i);
+
+    setTriggerEmu(c->isEmuTriggered());
+    for(int i=0; i<4; ++i)  fNRoads[i]    = c->getNRoads()[i];
+
+
+    for(Short_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++) {
+        fNHits[i] = c->getNHitsInDetector(i);
+    }
+    fAllHits      = c->getAllHits();
+    fTriggerHits  = c->getTriggerHits();
+
+    return;
+}
+
 void SRawEvent::setEventInfo(Int_t runID, Int_t spillID, Int_t eventID)
 {
     fRunID = runID;
@@ -615,19 +642,19 @@ bool SRawEvent::isFPGATriggered()
     return isTriggeredBy(MATRIX1) || isTriggeredBy(MATRIX2) || isTriggeredBy(MATRIX3) || isTriggeredBy(MATRIX4) || isTriggeredBy(MATRIX5);
 }
 
-void SRawEvent::print()
+void SRawEvent::print(std::ostream& os) const
 {
-    std::cout << "RunID: " << fRunID << ", EventID: " << fEventID << "===============" << std::endl;
+    os << "RunID: " << fRunID << ", EventID: " << fEventID << "===============" << std::endl;
     for(Int_t i = 1; i <= nChamberPlanes; i++)
     {
-        std::cout << "Layer " << i << " has " << fNHits[i] << " hits." << std::endl;
+        os << "Layer " << i << " has " << fNHits[i] << " hits." << std::endl;
     }
-    std::cout << "===================================================================" << std::endl;
+    os << "===================================================================" << std::endl;
 
     return;
-    for(std::vector<Hit>::iterator iter = fAllHits.begin(); iter != fAllHits.end(); ++iter)
+    for(auto iter = fAllHits.begin(); iter != fAllHits.end(); ++iter)
     {
         iter->print();
     }
-    std::cout << "===================================================================" << std::endl;
+    os << "===================================================================" << std::endl;
 }
