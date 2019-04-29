@@ -1,11 +1,6 @@
 /// OnlMonCham.C
 #include <iomanip>
 #include <TH1D.h>
-#include <TSocket.h>
-#include <TClass.h>
-#include <TMessage.h>
-#include <TCanvas.h>
-#include <TPaveText.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQStringMap.h>
 #include <interface_main/SQScaler.h>
@@ -25,6 +20,7 @@ using namespace std;
 
 OnlMonCham::OnlMonCham(const ChamType_t type, const std::string& name) : m_type(type), m_pl0(0), OnlMonClient(name)
 {
+  SetNumCanvases(2);
   switch (m_type) {
   case D0 :  m_pl0 =  1;  Name("OnlMonChamD0" );  break;
   case D1 :  m_pl0 =  7;  Name("OnlMonChamD1" );  break;
@@ -113,22 +109,29 @@ int OnlMonCham::DrawMonitor()
     h1_time[pl] = (TH1*)FindMonObj(oss.str().c_str());
   }
 
-  pad_main->cd();
-  pad_main->SetGrid();
-  pad_main->Divide(3, 4);
-
+  OnlMonCanvas* can0 = GetCanvas(0);
+  TPad* pad0 = can0->GetMainPad();
+  pad0->SetGrid();
+  pad0->Divide(2, 3);
   for (int pl = 0; pl < N_PL; pl++) {
-    pad_main->cd(pl+1);
+    pad0->cd(pl+1);
     if (h1_ele[pl]->Integral() > 1000) gPad->SetLogy();
     h1_ele[pl]->Draw();
+  }
+  can0->AddMessage("Always Okay ;^D");
+  can0->SetStatus(OnlMonCanvas::OK);
 
-    pad_main->cd(pl+7);
+  OnlMonCanvas* can1 = GetCanvas(1);
+  TPad* pad1 = can1->GetMainPad();
+  pad1->SetGrid();
+  pad1->Divide(2, 3);
+  for (int pl = 0; pl < N_PL; pl++) {
+    pad1->cd(pl+1);
     if (h1_time[pl]->Integral() > 1000) gPad->SetLogy();
     h1_time[pl]->Draw();
   }
-
-  AddMessage("Always Okay ;^D");
-  SetStatus(OK);
+  can1->AddMessage("Always Okay ;^D");
+  can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;
 }

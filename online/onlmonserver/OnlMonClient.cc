@@ -3,20 +3,20 @@
 #include <TSocket.h>
 #include <TClass.h>
 #include <TMessage.h>
-#include <TCanvas.h>
-#include <TPaveText.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include "OnlMonServer.h"
+#include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
 using namespace std;
 
 OnlMonClient::OnlMonClient(const std::string &name) : SubsysReco(name)
 {
-  ;
+  m_n_can = 1;
+  memset(m_list_can, 0, sizeof(m_list_can));
 }
 
 OnlMonClient::~OnlMonClient()
@@ -56,40 +56,23 @@ int OnlMonClient::DrawMonitor()
 
 int OnlMonClient::StartMonitor()
 {
+  for (int ii = 0; ii < m_n_can; ii++) {
+    if (m_list_can[ii]) delete m_list_can[ii];
+  }
+
   ReceiveHist();
 
-  c1 = new TCanvas("c1", Name().c_str(), 600, 800);
-  pad_title = new TPad("pad_title", "", 0.0, 0.9, 1.0, 1.0);
-  pad_main  = new TPad("pad_main" , "", 0.0, 0.1, 1.0, 0.9);
-  pad_msg   = new TPad("pad_msg"  , "", 0.0, 0.0, 1.0, 0.1);
-  pate_msg  = new TPaveText(.02, .02, .98, .98);
-
-  c1->cd();  pad_title->Draw();
-  c1->cd();  pad_main ->Draw();
-  c1->cd();  pad_msg  ->Draw();
-
-  pad_title->cd();
-  TPaveText* title = new TPaveText(.02, .02, .98, .98);
-  title->AddText(Name().c_str());
-  title->Draw();
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii] = new OnlMonCanvas(Name(), ii);
+    m_list_can[ii]->PreDraw();
+  }
 
   int ret = DrawMonitor();
 
-  int color;
-  switch (mon_status) {
-  case OK   :  color = kGreen ;  break;
-  case WARN :  color = kYellow;  break;
-  case ERROR:  color = kRed   ;  break;
-  default   :  color = kGray  ;  break;
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii]->PostDraw();
   }
-  pate_msg->SetFillColor(color);
-  pad_msg ->cd();
-  pate_msg->Draw();
 
-  ostringstream oss;
-  oss << "/dev/shm/" << Name() << ".png";
-  c1->SaveAs(oss.str().c_str());
-  
   return ret;
 }
 
@@ -136,11 +119,6 @@ int OnlMonClient::ReceiveHist()
   return 0;
 }
 
-void OnlMonClient::AddMessage(const char* msg)
-{
-  pate_msg->AddText(msg);
-}
-
 void OnlMonClient::ClearHistList()
 {
   for (HistList_t::iterator it = m_list_h1.begin(); it != m_list_h1.end(); it++) {
@@ -152,4 +130,12 @@ void OnlMonClient::ClearHistList()
   //  delete *it;
   //}
   //m_list_obj.clear();
+}
+OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
+{
+  if (num >= m_n_can) {
+    cerr << "ERROR  OnlMonClient::GetCanvas():  Num out of range (" << num << " >= " << m_n_can << ").  Abort.";
+    exit(1);
+  }
+  return m_list_can[num]; 
 }

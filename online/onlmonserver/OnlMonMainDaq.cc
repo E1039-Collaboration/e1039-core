@@ -23,7 +23,7 @@ using namespace std;
 
 OnlMonMainDaq::OnlMonMainDaq(const std::string& name) : OnlMonClient(name)
 {
-  ;
+  SetNumCanvases(1);
 }
 
 int OnlMonMainDaq::Init(PHCompositeNode* topNode)
@@ -78,19 +78,20 @@ int OnlMonMainDaq::DrawMonitor()
   h1_tgt      = (TH1*)FindMonObj("h1_tgt");
   h1_evt_qual = (TH1*)FindMonObj("h1_evt_qual");
 
-  pad_main->cd();
-  pad_main->SetGrid();
-  pad_main->Divide(1, 2);
+  OnlMonCanvas* can = GetCanvas();
+  TPad* pad = can->GetMainPad();
+  pad->SetGrid();
+  pad->Divide(1, 2);
 
-  pad_main->cd(1);
+  pad->cd(1);
   if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
   h1_evt_qual->Draw();
 
-  pad_main->cd(2);
+  pad->cd(2);
   h1_tgt->Draw();
 
-  AddMessage("Always Okay ;^D");
-  SetStatus(OK);
+  can->AddMessage("Always Okay ;^D");
+  can->SetStatus(OnlMonCanvas::OK);
 
   return 0;
 }

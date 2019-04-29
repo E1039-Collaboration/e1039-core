@@ -1,30 +1,22 @@
 #ifndef _ONL_MON_CLIENT__H_
 #define _ONL_MON_CLIENT__H_
 #include <TCanvas.h>
+#include <TPaveText.h>
 #include <fun4all/SubsysReco.h>
+#include "OnlMonCanvas.h"
 class TH1;
 class TH2;
 class TH3;
 class TPaveText;
 
 class OnlMonClient: public SubsysReco {
- protected:  
-  typedef enum { OK, WARN, ERROR, UNDEF } MonStatus_t;
-  TCanvas* c1;
-  TPad* pad_title;
-  TPad* pad_main ;
-  TPad* pad_msg  ;
+  int m_n_can;
+  OnlMonCanvas* m_list_can[9];
 
- private:
   typedef std::vector<TH1*> HistList_t;
   HistList_t m_list_h1;
   typedef std::vector<TObject*> ObjList_t;
   ObjList_t m_list_obj;
-  void ClearHistList();
-
-  /// Variables for message and status
-  MonStatus_t mon_status;
-  TPaveText* pate_msg;
 
  public:
   OnlMonClient(const std::string &name = "OnlMonClient");
@@ -38,10 +30,10 @@ class OnlMonClient: public SubsysReco {
 
  protected:  
   int ReceiveHist();
+  void ClearHistList();
 
-  /// Functions for message and status
-  void AddMessage(const char* msg);
-  void SetStatus(const MonStatus_t stat) { mon_status = stat; }
+  void SetNumCanvases(const int num) { m_n_can = num; }
+  OnlMonCanvas* GetCanvas(const int num=0);
 };
 
 #endif /* _ONL_MON_CLIENT__H_ */
