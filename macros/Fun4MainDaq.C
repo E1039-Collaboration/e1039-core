@@ -55,6 +55,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
     se->registerSubsystem(new OnlMonSpill());
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonCham(OnlMonCham::D3p));
+    se->registerSubsystem(new OnlMonCham(OnlMonCham::D3m));
   }
 
   se->run(nevent);
