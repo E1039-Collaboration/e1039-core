@@ -432,39 +432,32 @@ int DPTriggerAnalyzer::GetNodes(PHCompositeNode* topNode) {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-void DPTriggerAnalyzer::buildTriggerMatrix()
-{
-  for(int i = 0; i < 2; ++i)
-    {
-      matrix[i] = new MatrixNode(-1);
-      for(std::map<TString, DPTriggerRoad>::iterator iter = roads[i].begin(); iter != roads[i].end(); ++iter)
-        {
-    MatrixNode* parentNode[NTRPLANES+1]; //NOTE: the last entry is useless, just to keep the following code simpler
-    parentNode[0] = matrix[i];
-    for(int j = 0; j < NTRPLANES; ++j)
-            {
+void DPTriggerAnalyzer::buildTriggerMatrix() {
+  for (int i = 0; i < 2; ++i) {
+    matrix[i] = new MatrixNode(-1);
+    for (std::map<TString, DPTriggerRoad>::iterator iter = roads[i].begin(); iter != roads[i].end(); ++iter) {
+      MatrixNode* parentNode[NTRPLANES + 1]; //NOTE: the last entry is useless, just to keep the following code simpler
+      parentNode[0] = matrix[i];
+      for (int j = 0; j < NTRPLANES; ++j) {
         int uniqueID = iter->second.getTrID(j);
         bool isNewNode = true;
-        for(std::list<MatrixNode*>::iterator jter = parentNode[j]->children.begin(); jter != parentNode[j]->children.end(); ++jter)
-                {
-      if(uniqueID == (*jter)->uniqueID)
-                    {
-          parentNode[j+1] = *jter;
-          isNewNode = false;
+        for (std::list<MatrixNode*>::iterator jter = parentNode[j]->children.begin(); jter != parentNode[j]->children.end(); ++jter) {
+          if (uniqueID == (*jter)->uniqueID) {
+            parentNode[j + 1] = *jter;
+            isNewNode = false;
 
-          break;
-                    }
-                }
-
-        if(isNewNode)
-                {
-      MatrixNode* newNode = new MatrixNode(uniqueID);
-      parentNode[j]->add(newNode);
-      parentNode[j+1] = newNode;
-                }
-            }
+            break;
+          }
         }
+
+        if (isNewNode) {
+          MatrixNode* newNode = new MatrixNode(uniqueID);
+          parentNode[j]->add(newNode);
+          parentNode[j + 1] = newNode;
+        }
+      }
     }
+  }
 }
 
 bool DPTriggerAnalyzer::buildHitPattern(int nTrHits, int uniqueTrIDs[])
@@ -493,65 +486,57 @@ bool DPTriggerAnalyzer::buildHitPattern(int nTrHits, int uniqueTrIDs[])
   return true;
 }
 
-void DPTriggerAnalyzer::searchMatrix(MatrixNode* node, int level, int index)
-{
+void DPTriggerAnalyzer::searchMatrix(MatrixNode* node, int level, int index) {
   path.push_back(node->uniqueID);
-  if(node->children.empty())
-    {
-      //printPath();
-      DPTriggerRoad road_found(path);
-      if(roads[index].find(road_found.getStringID()) != roads[index].end()) roads_found[index].push_back(road_found);
-      path.pop_back();
-      
-      return;
-    }
-  
-  for(std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter)
-    {
-      if(data[level+1].find((*iter)->uniqueID) == data[level+1].end()) continue;
-      searchMatrix(*iter, level+1, index);
-    }
+  if (node->children.empty()) {
+    //printPath();
+    DPTriggerRoad road_found(path);
+    if (roads[index].find(road_found.getStringID()) != roads[index].end())
+      roads_found[index].push_back(road_found);
+    path.pop_back();
+
+    return;
+  }
+
+  for (std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter) {
+    if (data[level + 1].find((*iter)->uniqueID) == data[level + 1].end())
+      continue;
+    searchMatrix(*iter, level + 1, index);
+  }
   path.pop_back();
 }
 
-void DPTriggerAnalyzer::deleteMatrix(MatrixNode* node)
-{
-  if(node == NULL) return;
-  
-  if(node->children.empty())
-    {
-      delete node;
-      return;
-    }
-  
-  for(std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter)
-    {
-      deleteMatrix(*iter);
-    }
-  
+void DPTriggerAnalyzer::deleteMatrix(MatrixNode* node) {
+  if (node == NULL)
+    return;
+
+  if (node->children.empty()) {
+    delete node;
+    return;
+  }
+
+  for (std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter) {
+    deleteMatrix(*iter);
+  }
+
   delete node;
 }
 
-void DPTriggerAnalyzer::printHitPattern()
-{
-  for(unsigned int i = 1; i < NTRPLANES; ++i)
-    {
-      std::cout << "Lv. " << i << ":  ";
-      for(std::set<int>::iterator iter = data[i].begin(); iter != data[i].end(); ++iter)
-        {
-    std::cout << *iter << "  ";
-        }
-      std::cout << std::endl;
+void DPTriggerAnalyzer::printHitPattern() {
+  for (unsigned int i = 1; i < NTRPLANES; ++i) {
+    std::cout << "Lv. " << i << ":  ";
+    for (std::set<int>::iterator iter = data[i].begin(); iter != data[i].end(); ++iter) {
+      std::cout << *iter << "  ";
     }
+    std::cout << std::endl;
+  }
 }
 
-void DPTriggerAnalyzer::printPath()
-{
+void DPTriggerAnalyzer::printPath() {
   std::cout << "Found one road: " << std::endl;
-  for(std::list<int>::iterator iter = path.begin(); iter != path.end(); ++iter)
-    {
-      std::cout << *iter << " === ";
-    }
+  for (std::list<int>::iterator iter = path.begin(); iter != path.end(); ++iter) {
+    std::cout << *iter << " === ";
+  }
   std::cout << std::endl;
 }
 
