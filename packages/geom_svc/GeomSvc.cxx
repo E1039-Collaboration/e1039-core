@@ -269,6 +269,24 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
     map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
 
+    map_detectorID.insert(nameToID("BeforeInhNIM"   , nChamberPlanes+nHodoPlanes+nPropPlanes+ 1));
+    map_detectorID.insert(nameToID("BeforeInhMatrix", nChamberPlanes+nHodoPlanes+nPropPlanes+ 2));
+    map_detectorID.insert(nameToID("AfterInhNIM"    , nChamberPlanes+nHodoPlanes+nPropPlanes+ 3));
+    map_detectorID.insert(nameToID("AfterInhMatrix" , nChamberPlanes+nHodoPlanes+nPropPlanes+ 4));
+    map_detectorID.insert(nameToID("BOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 5));
+    map_detectorID.insert(nameToID("EOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 6));
+    map_detectorID.insert(nameToID("L1"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 7));
+    map_detectorID.insert(nameToID("RF"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 8));
+    map_detectorID.insert(nameToID("STOP"           , nChamberPlanes+nHodoPlanes+nPropPlanes+ 9));
+    map_detectorID.insert(nameToID("L1PXtp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+10));
+    map_detectorID.insert(nameToID("L1PXtn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+11));
+    map_detectorID.insert(nameToID("L1PXbp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+12));
+    map_detectorID.insert(nameToID("L1PXbn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+13));
+    map_detectorID.insert(nameToID("L1NIMxt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+14));
+    map_detectorID.insert(nameToID("L1NIMxb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+15));
+    map_detectorID.insert(nameToID("L1NIMyt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+16));
+    map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+17));
+
     // TODO temp solution
     for(int i=7; i<=18; ++i) {
     	map_detid_material[i] = "G4_Ar";
@@ -782,7 +800,7 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
 {
     using namespace std;
 
-    if(detectorName.find("P") != string::npos)
+    if(detectorName[0] == 'P')
     {
         string XY = detectorName[2] == 'H' ? "Y" : "X";
         string FB = (detectorName[3] == 'f' || detectorName[4] == 'f') ? "1" : "2"; //temporary solution
@@ -797,7 +815,7 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
             eID = (9 - moduleID)*8 + eID;
         }
     }
-    else if(detectorName.find("H4") != string::npos)
+    else if(detectorName.substr(0, 2) == "H4")
     {
         if(detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
         {
