@@ -1,12 +1,19 @@
 /// OnlMon4MainDaq.C:  Macro to launch an online-monitor client for MainDaq.
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <TGClient.h>
 #include <TGButton.h>
 #include <TGFrame.h>
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libonlmonserver)
+#endif
+
+#include <vector>
 
 int OnlMon4MainDaq()
 {
+  gSystem->Load("libdecoder_maindaq.so");
+  gSystem->Load("libonlmonserver.so");
+
   vector<OnlMonClient*> list_omc;
   list_omc.push_back(new OnlMonMainDaq());
   list_omc.push_back(new OnlMonCham(OnlMonCham::D0 ));
