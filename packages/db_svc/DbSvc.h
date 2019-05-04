@@ -21,8 +21,8 @@ class DbSvc {
   void DropTable  (const std::string name) { DropTable(name.c_str()); }
   bool HasTable(const char* name, const bool exit_on_false=false);
   bool HasTable(const std::string name, const bool exit_on_false=false) { return HasTable(name.c_str(), exit_on_false); }
-  void CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type);
-  void CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type);
+  void CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type, const std::vector<std::string> list_key);
+  void CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type, const int n_key=0, const char** list_key=0);
   
   TSQLServer* Con() { return m_con; }
   TSQLStatement* Process(const char*       query);

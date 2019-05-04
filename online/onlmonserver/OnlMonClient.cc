@@ -3,19 +3,20 @@
 #include <TSocket.h>
 #include <TClass.h>
 #include <TMessage.h>
-#include <TCanvas.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include "OnlMonServer.h"
+#include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
 using namespace std;
 
 OnlMonClient::OnlMonClient(const std::string &name) : SubsysReco(name)
 {
-  ;
+  m_n_can = 1;
+  memset(m_list_can, 0, sizeof(m_list_can));
 }
 
 OnlMonClient::~OnlMonClient()
@@ -35,6 +36,18 @@ TH1* OnlMonClient::FindMonHist(const std::string name, const bool non_null)
   return 0;
 }
 
+TObject* OnlMonClient::FindMonObj(const std::string name, const bool non_null)
+{
+  for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
+    if (name == (*it)->GetName()) return *it;
+  }
+  if (non_null) {
+    cerr << "!!ERROR!!  OnlMonClient::FindMonObj() cannot find '" << name << "'.  Abort." << endl;
+    exit(1);
+  }
+  return 0;
+}
+
 int OnlMonClient::DrawMonitor()
 {
   cerr << "!!ERROR!!  OnlMonClient::DrawMonitor(): virtual function called.  Abort." << endl;
@@ -43,18 +56,24 @@ int OnlMonClient::DrawMonitor()
 
 int OnlMonClient::StartMonitor()
 {
+  for (int ii = 0; ii < m_n_can; ii++) {
+    if (m_list_can[ii]) delete m_list_can[ii];
+  }
+
   ReceiveHist();
 
-  c1 = new TCanvas("c1", Name().c_str(), 600, 800);
-  pad_title = new TPad("pad_title", "", 0.0, 0.9, 1.0, 1.0);
-  pad_main  = new TPad("pad_main" , "", 0.0, 0.1, 1.0, 0.9);
-  pad_msg   = new TPad("pad_msg"  , "", 0.0, 0.0, 1.0, 0.1);
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii] = new OnlMonCanvas(Name(), ii);
+    m_list_can[ii]->PreDraw();
+  }
 
-  c1->cd();  pad_title->Draw();
-  c1->cd();  pad_main ->Draw();
-  c1->cd();  pad_msg  ->Draw();
+  int ret = DrawMonitor();
 
-  return DrawMonitor();
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii]->PostDraw();
+  }
+
+  return ret;
 }
 
 int OnlMonClient::ReceiveHist()
@@ -83,10 +102,14 @@ int OnlMonClient::ReceiveHist()
       mess = 0;
       if (!strcmp(str, "Finished")) break;
     } else if (mess->What() == kMESS_OBJECT) {
-      TClass* cla = mess->GetClass();
-      TH1*    obj = (TH1*)mess->ReadObject(cla);
+      TClass*  cla = mess->GetClass();
+      TObject* obj = mess->ReadObject(cla);
       cout << "  Receive: " << cla->GetName() << " " << obj->GetName() << endl;
-      m_list_h1.push_back( (TH1*)obj->Clone() ); // copy
+      m_list_obj.push_back( obj->Clone() ); // copy
+
+      //TH1*    obj = (TH1*)mess->ReadObject(cla);
+      //cout << "  Receive: " << cla->GetName() << " " << obj->GetName() << endl;
+      //m_list_h1.push_back( (TH1*)obj->Clone() ); // copy
       delete mess;
       mess = 0;
       sock.Send("NEXT"); // Any text is ok for now
@@ -102,4 +125,17 @@ void OnlMonClient::ClearHistList()
     delete *it;
   }
   m_list_h1.clear();
+
+  //for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
+  //  delete *it;
+  //}
+  //m_list_obj.clear();
+}
+OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
+{
+  if (num >= m_n_can) {
+    cerr << "ERROR  OnlMonClient::GetCanvas():  Num out of range (" << num << " >= " << m_n_can << ").  Abort.";
+    exit(1);
+  }
+  return m_list_can[num]; 
 }

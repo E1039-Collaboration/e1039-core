@@ -10,17 +10,21 @@
      scp -p  e906-gat6.fnal.gov:/data3/data/mainDAQ/run_$RUN6.dat $DIR_LOCAL
      scp -pr e906-gat6.fnal.gov:/data2/production/runs/run_$RUN6  $DIR_LOCAL/runs
  */
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
+#endif
 
 int Fun4MainDaq(const int nevent = 0, const int run = 28700)
 {
-  //gSystem->Load("libdecoder_maindaq.so");
+  gSystem->Load("libdecoder_maindaq.so");
+  gSystem->Load("libonlmonserver.so");
+
   //const char* dir_in  = "/data/e906",
   const char* dir_in  = "/seaquest/analysis/kenichi/e1039";
   const char* dir_out = ".";
-  const bool is_online = false; // true;
+  const bool is_online = true; // false;
 
   ostringstream oss;
   oss << setfill('0') 
@@ -37,9 +41,8 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(1);
   in->EventSamplingFactor(100);
-  if (is_online) {
-    in->PretendSpillInterval(55);
-  }
+  if (is_online) in->PretendSpillInterval(20);
+
   in->DirParam("/seaquest/production/runs");
   //in->DirParam("/data/e906/runs");
   in->fileopen(fn_in);
@@ -53,9 +56,10 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
 
   if (is_online) { // Register the online-monitoring clients
     se->StartServer();
-
-    OnlMonClient* ana = new OnlMonMainDaq();
-    se->registerSubsystem(ana);
+    se->registerSubsystem(new OnlMonSpill());
+    se->registerSubsystem(new OnlMonMainDaq());
+    se->registerSubsystem(new OnlMonCham(OnlMonCham::D3p));
+    se->registerSubsystem(new OnlMonCham(OnlMonCham::D3m));
   }
 
   se->run(nevent);

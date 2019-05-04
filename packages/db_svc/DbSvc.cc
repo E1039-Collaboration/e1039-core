@@ -78,7 +78,7 @@ bool DbSvc::HasTable(const char* name, const bool exit_on_false)
   return false;
 }
 
-void DbSvc::CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type)
+void DbSvc::CreateTable(const std::string name, const std::vector<std::string> list_var, const std::vector<std::string> list_type, const std::vector<std::string> list_key)
 {
   if (HasTable(name)) {
     cerr << "!!ERROR!!  DbSvc::CreateTable():  Table '" << name << "' already exists.  To avoid an unintended creation, please check and drop the table in your code.  Abort." << endl;
@@ -94,14 +94,24 @@ void DbSvc::CreateTable(const std::string name, const std::vector<std::string> l
   for (unsigned int ii = 0; ii < list_var.size(); ii++) {
     oss << list_var[ii] << " " << list_type[ii] << ", ";
   }
-  oss << "primary_id INT not null auto_increment, PRIMARY KEY (primary_id) )";
+  if (list_key.size() == 0) {
+    oss << "primary_id INT not null auto_increment, PRIMARY KEY (primary_id)";
+  } else {
+    oss << "PRIMARY KEY (";
+    for (unsigned int ii = 0; ii < list_key.size(); ii++) {
+      if (ii != 0) oss << ", ";
+      oss << list_key[ii];
+    }
+    oss << ")";
+  }
+  oss << ")";
   if (! m_con->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DbSvc::CreateTable():  The creation query failed.  Abort." << endl;
     exit(1);
   }
 }
 
-void DbSvc::CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type)
+void DbSvc::CreateTable(const std::string name, const int n_var, const char** list_var, const char** list_type, const int n_key, const char** list_key)
 {
   vector<string> vec_var;
   vector<string> vec_type;
@@ -109,7 +119,11 @@ void DbSvc::CreateTable(const std::string name, const int n_var, const char** li
     vec_var .push_back(list_var [ii]);
     vec_type.push_back(list_type[ii]);
   }
-  CreateTable(name, vec_var, vec_type);
+  vector<string> vec_key;
+  for (int ii = 0; ii < n_key; ii++) {
+    vec_key.push_back(list_key[ii]);
+  }
+  CreateTable(name, vec_var, vec_type, vec_key);
 }
 
 /** This function runs Statement(), Process() and StoreResult() with error check.
