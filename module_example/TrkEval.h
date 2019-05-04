@@ -1,8 +1,9 @@
-/*
- * TrkEval.h
+/**
+ * \class TrkEval
+ * \brief General purposed evaluation module
+ * \author Haiwang Yu, yuhw@nmsu.edu
  *
- *  Created on: Oct 29, 2017
- *      Author: yuhw@nmsu.edu
+ * Created: 08-27-2018
  */
 
 #ifndef _H_TrkEval_H_
@@ -76,6 +77,9 @@ private:
 
 	int GetNodes(PHCompositeNode *topNode);
 
+	int TruthEval(PHCompositeNode *topNode);
+	int RecoEval(PHCompositeNode *topNode);
+
 	std::string _hit_container_type;
 
 	size_t _event;
@@ -92,17 +96,21 @@ private:
 	SRecEvent* _recEvent;
 
 	std::string _out_name;
-	TTree* _tout;
+	TTree* _tout_truth;
+	TTree* _tout_reco;
 
 	int run_id;
 	int spill_id;
 	float target_pos;
 	int event_id;
 	int krecstat;
+	unsigned short emu_trigger;
 
 	int n_hits;
 	int hit_id[10000];
 	int detector_id[10000];
+	int element_id[10000];
+	int hodo_mask[10000];
 	float drift_distance[10000];
 	float pos[10000];
 	float detector_z[10000];
@@ -112,7 +120,9 @@ private:
 	float truth_z[10000];
 	float truth_pos[10000];
 
-	int n_particles;
+	int n_tracks;
+	int rec_id[1000];
+	int par_id[1000];
 	int pid[1000];
 	float gvx[1000];
 	float gvy[1000];
@@ -120,6 +130,9 @@ private:
 	float gpx[1000];
 	float gpy[1000];
 	float gpz[1000];
+	float gx_st1[1000];
+	float gy_st1[1000];
+	float gz_st1[1000];
 	float gpx_st1[1000];
 	float gpy_st1[1000];
 	float gpz_st1[1000];
@@ -131,6 +144,7 @@ private:
 	int gnhodo[1000];
 	int gnprop[1000];
 	int ntruhits[1000];
+	int nhits[1000];
 	int charge[1000];
 	float vx[1000];
 	float vy[1000];
@@ -141,9 +155,13 @@ private:
 	float pt[1000];
 	float eta[1000];
 	float phi[1000];
+	float x_st1[1000];
+	float y_st1[1000];
 	float px_st1[1000];
 	float py_st1[1000];
 	float pz_st1[1000];
+
+	int gelmid[1000][55];
 
 	int gndimu;
 	float dimu_gpx[1000];

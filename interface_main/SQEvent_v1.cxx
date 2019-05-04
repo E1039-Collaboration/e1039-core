@@ -31,6 +31,14 @@ SQEvent_v1::~SQEvent_v1() {
 }
 
 void SQEvent_v1::Reset() {
+	_run_id        = INT_MAX;
+	_spill_id      = INT_MAX;
+	_event_id      = INT_MAX;
+	_coda_event_id = INT_MAX;
+	_trigger       = 0;
+	_data_quality  = INT_MAX;
+	_vme_time      = INT_MAX;
+
 	return;
 }
 

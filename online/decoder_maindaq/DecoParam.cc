@@ -5,7 +5,7 @@
 using namespace std;
 
 DecoParam::DecoParam() :
-  fn_in(""), dir_param(""), sampling(0), verbose(0), 
+  fn_in(""), dir_param(""), sampling(0), verbose(0), time_wait(0), 
   runID(0), spillID(0), spillID_cntr(0), spillID_slow(0),
   targPos(0), targPos_slow(0), 
   codaID(0), rocID(0), hitID(0), 
@@ -27,20 +27,28 @@ int DecoParam::InitMapper()
     cout << "!!ERROR!!  DecoParam::InitMapper(): runID = 0.\n";
     return 1;
   }
-  ostringstream oss;
-  oss << dir_param << "/run_" << setfill('0') << setw(6) << runID;
-  string dir_map = oss.str();
-  oss << "/chamber/chamberInfo.tsv";
-  map_taiwan.ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/hodoscope/hodoInfo.tsv";
-  map_taiwan.ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/trigger/triggerInfo.tsv";
-  map_v1495 .ReadFile(oss.str().c_str());
-  oss.str("");
-  oss << dir_map << "/scaler/scalerInfo.tsv";
-  map_scaler.ReadFile(oss.str().c_str());
+  //ostringstream oss;
+  //oss << dir_param << "/run_" << setfill('0') << setw(6) << runID;
+  //string dir_map = oss.str();
+  //oss << "/chamber/chamberInfo.tsv";
+  //map_taiwan.ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/hodoscope/hodoInfo.tsv";
+  //map_taiwan.ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/trigger/triggerInfo.tsv";
+  //map_v1495 .ReadFile(oss.str().c_str());
+  //oss.str("");
+  //oss << dir_map << "/scaler/scalerInfo.tsv";
+  //map_scaler.ReadFile(oss.str().c_str());
+
+  chan_map_taiwan.SetMapIDbyDB(runID);
+  chan_map_taiwan.ReadFromDB();
+  chan_map_v1495 .SetMapIDbyDB(runID);
+  chan_map_v1495 .ReadFromDB();
+  chan_map_scaler.SetMapIDbyDB(runID);
+  chan_map_scaler.ReadFromDB();
+
   return 0;
 }
 

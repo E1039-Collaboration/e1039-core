@@ -24,8 +24,8 @@
 #include <map>
 //#include <algorithm>
 
-class KalmanFastTracking;
-class KalmanPrgTrk;
+//class KalmanFastTracking;
+class KalmanDSTrk;
 class EventReducer;
 class SRawEvent;
 class SRecEvent;
@@ -45,6 +45,7 @@ class TGeoManager;
 class KalmanFastTrackingWrapper: public SubsysReco {
 
 public:
+	enum INPUPT_TYPE {E1039, E906};
 
 	KalmanFastTrackingWrapper(const std::string &name = "KalmanFastTrackingWrapper");
 	virtual ~KalmanFastTrackingWrapper() {
@@ -84,6 +85,30 @@ public:
 		_geom_file_name = geomFileName;
 	}
 
+	int get_DS_level() const {
+		return _DS_level;
+	}
+
+	void set_DS_level(int DS) {
+		_DS_level = DS;
+	}
+
+	bool is_enable_KF() const {
+		return _enable_KF;
+	}
+
+	void set_enable_KF(bool enableKf) {
+		_enable_KF = enableKf;
+	}
+
+	bool is_enable_event_reducer() const {
+		return _enable_event_reducer;
+	}
+
+	void set_enable_event_reducer(bool enableEventReducer) {
+		_enable_event_reducer = enableEventReducer;
+	}
+
 private:
 
 	int InitField(PHCompositeNode *topNode);
@@ -94,10 +119,17 @@ private:
 
 	int GetNodes(PHCompositeNode *topNode);
 
+	int ReMaskHits(SRawEvent *sraw_event);
+
+	KalmanFastTrackingWrapper::INPUPT_TYPE _input_type;
+	bool _enable_KF;
+	bool _enable_event_reducer;
+	int _DS_level;
+
 	SRawEvent* BuildSRawEvent();
 
 	//KalmanFastTracking* fastfinder;
-	KalmanPrgTrk* fastfinder;
+	KalmanDSTrk* fastfinder;
 	EventReducer* eventReducer;
 
 	std::string _hit_container_type;

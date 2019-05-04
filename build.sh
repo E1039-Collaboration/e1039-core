@@ -17,10 +17,13 @@ else
     packages/global_consts
     packages/jobopts_svc
     packages/geom_svc
+    packages/db_svc
     framework/phool
     framework/ffaobjects
     framework/fun4all
     interface_main
+    online/chan_map
+    online/onlmonserver
     online/decoder_maindaq
     packages/Half
     packages/vararray

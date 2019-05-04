@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4detectors CXX C)
 
 # source code
-include_directories("$ENV{MY_INSALL}/include/ $ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
   message("SET CMP0015 OLD")
   cmake_policy(SET CMP0015 OLD)
@@ -49,14 +49,14 @@ foreach(LinkDefh ${LinkDefhs})
   #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
   -c
-  -I$ENV{MY_INSALL}/include 
+  -I$ENV{MY_INSTALL}/include 
   -I$ENV{OFFLINE_MAIN}/include 
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{MY_INSALL}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{MY_INSTALL}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
 add_library(g4detectors_io SHARED
   ${PROJECT_SOURCE_DIR}/PHG4Parameters.cc
@@ -187,6 +187,7 @@ file(GLOB dist_headers
   PHG4BlockCellGeomContainer.h
   PHG4BlockGeom.h
   PHG4BlockGeomContainer.h
+  PHG4BlockSubsystem.h
   PHG4Cell.h
   PHG4Cellv1.h
   PHG4Cellv2.h
@@ -221,9 +222,17 @@ file(GLOB dist_headers
   PHG4Parameters.h
   PHG4ParametersContainer.h
   PHG4StepStatusDecode.h
+  DPDigitizer.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
+# Install the pcm files in case of ROOT 6.
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm g4detectors g4detectors_io)
+endif()
 
 

@@ -168,7 +168,8 @@ public:
     double getMomentum() const;
 
     //Decide charge by KMag bending direction
-    int getCharge() const { return x0*KMAGSTR > tx ? 1 : -1; }
+    //int getCharge() const { return x0*KMAGSTR > tx ? 1 : -1; }
+    int getCharge() const;
 
     //Get the slope and intersection in station 1
     void getXZInfoInSt1(double& tx_st1, double& x0_st1);
@@ -229,16 +230,6 @@ public:
 
     //Residuals of all pos
     double residual[nChamberPlanes];
-
-#ifndef __CINT__
-    //static pointer to geomtry service
-    //static const GeomSvc* p_geomSvc;
-    GeomSvc* p_geomSvc;
-
-    //static flag of kmag on/off
-    //static const bool kmag_on;
-    bool kmag_on;
-#endif
 
     ClassDef(Tracklet, 4)
 };

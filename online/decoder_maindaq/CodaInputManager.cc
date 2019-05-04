@@ -75,7 +75,7 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
   if (ret != 0 && m_online && m_run > 0) { // try to recover
     cout << "Try to recover..." << endl;
     ostringstream oss;
-    oss << "/data2/e906daq/coda/data/END/" << m_run << ".end";
+    oss << "/seaquest/e906daq/coda/data/END/" << m_run << ".end";
     string fn_end = oss.str();
     if (file_exists(fn_end)) {
       cout << "Exiting since the END file exists.\n";

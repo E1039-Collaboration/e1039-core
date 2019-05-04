@@ -269,71 +269,207 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
     map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
 
-    // TODO figure this out ...
-    // init map_g4name_dname
-    map_g4name_dname["C1X"]    = "D1X";
-    map_g4name_dname["C1U"]    = "D1U";
-    map_g4name_dname["C1V"]    = "D1V";
-    map_g4name_dname["C2X"]    = "D2X";
-    map_g4name_dname["C2U"]    = "D2U";
-    map_g4name_dname["C2V"]    = "D2V";
-    map_g4name_dname["C3T"]    = "D3pX";
-    map_g4name_dname["C3B"]    = "D3mX";
+    map_detectorID.insert(nameToID("BeforeInhNIM"   , nChamberPlanes+nHodoPlanes+nPropPlanes+ 1));
+    map_detectorID.insert(nameToID("BeforeInhMatrix", nChamberPlanes+nHodoPlanes+nPropPlanes+ 2));
+    map_detectorID.insert(nameToID("AfterInhNIM"    , nChamberPlanes+nHodoPlanes+nPropPlanes+ 3));
+    map_detectorID.insert(nameToID("AfterInhMatrix" , nChamberPlanes+nHodoPlanes+nPropPlanes+ 4));
+    map_detectorID.insert(nameToID("BOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 5));
+    map_detectorID.insert(nameToID("EOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 6));
+    map_detectorID.insert(nameToID("L1"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 7));
+    map_detectorID.insert(nameToID("RF"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 8));
+    map_detectorID.insert(nameToID("STOP"           , nChamberPlanes+nHodoPlanes+nPropPlanes+ 9));
+    map_detectorID.insert(nameToID("L1PXtp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+10));
+    map_detectorID.insert(nameToID("L1PXtn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+11));
+    map_detectorID.insert(nameToID("L1PXbp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+12));
+    map_detectorID.insert(nameToID("L1PXbn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+13));
+    map_detectorID.insert(nameToID("L1NIMxt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+14));
+    map_detectorID.insert(nameToID("L1NIMxb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+15));
+    map_detectorID.insert(nameToID("L1NIMyt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+16));
+    map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+17));
 
-    map_g4name_dname["H1y"]    = "H1Y";
+    // TODO temp solution
+    for(int i=7; i<=18; ++i) {
+    	map_detid_material[i] = "G4_Ar";
+    	map_detid_scale_z[i]  = 6;
+    }
+    for(int i=19; i<=nChamberPlanes; ++i) {
+    	map_detid_material[i] = "G4_Ar";
+    	map_detid_scale_z[i]  = 5.9;
+    }
+    for(int i=nChamberPlanes+1; i<=nChamberPlanes+nHodoPlanes; ++i) {
+    	map_detid_material[i] = "G4_PLASTIC_SC_VINYLTOLUENE";
+    	map_detid_scale_z[i]  = 0.635;
+    }
+    for(int i=nChamberPlanes+nHodoPlanes+1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes; ++i) {
+    	map_detid_material[i] = "G4_Ar";
+    	map_detid_scale_z[i]  = 4;
+    }
+
+    // TODO temp solution
+    for(int i=1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes; ++i) {
+    	map_detid_triggerlv[i] = -1;
+    }
+    for(int i=nChamberPlanes+1; i<=nChamberPlanes+4; ++i) {
+    	map_detid_triggerlv[i] = 0;
+    }
+    for(int i=nChamberPlanes+5; i<=nChamberPlanes+8; ++i) {
+    	map_detid_triggerlv[i] = 1;
+    }
+    for(int i=nChamberPlanes+9; i<=nChamberPlanes+10; ++i) {
+    	map_detid_triggerlv[i] = 2;
+    }
+    for(int i=nChamberPlanes+11; i<=nChamberPlanes+16; ++i) {
+    	map_detid_triggerlv[i] = 3;
+    }
+
+  	//init map_dname_group
+  	map_dname_group["D1U"]      = "D1U";
+  	map_dname_group["D1Up"]     = "D1U";
+  	map_dname_group["D1V"]      = "D1V";
+  	map_dname_group["D1Vp"]     = "D1V";
+  	map_dname_group["D1X"]      = "D1X";
+  	map_dname_group["D1Xp"]     = "D1X";
+
+  	map_dname_group["D2U"]      = "D2U";
+  	map_dname_group["D2Up"]     = "D2U";
+  	map_dname_group["D2V"]      = "D2V";
+  	map_dname_group["D2Vp"]     = "D2V";
+  	map_dname_group["D2X"]      = "D2X";
+  	map_dname_group["D2Xp"]     = "D2X";
+
+  	map_dname_group["D3pU"]     = "D3pU";
+  	map_dname_group["D3pUp"]    = "D3pU";
+  	map_dname_group["D3pV"]     = "D3pV";
+  	map_dname_group["D3pVp"]    = "D3pV";
+  	map_dname_group["D3pX"]     = "D3pX";
+  	map_dname_group["D3pXp"]    = "D3pX";
+
+  	map_dname_group["D3mU"]     = "D3mU";
+  	map_dname_group["D3mUp"]    = "D3mU";
+  	map_dname_group["D3mV"]     = "D3mV";
+  	map_dname_group["D3mVp"]    = "D3mV";
+  	map_dname_group["D3mX"]     = "D3mX";
+  	map_dname_group["D3mXp"]    = "D3mX";
+
+  	map_dname_group["H1T"]      = "H1T";
+  	map_dname_group["H1B"]      = "H1B";
+  	map_dname_group["H1L"]      = "H1L";
+  	map_dname_group["H1R"]      = "H1R";
+
+  	map_dname_group["H2T"]      = "H2T";
+  	map_dname_group["H2B"]      = "H2B";
+  	map_dname_group["H2L"]      = "H2L";
+  	map_dname_group["H2R"]      = "H2R";
+
+  	map_dname_group["H3T"]      = "H3T";
+  	map_dname_group["H3B"]      = "H3B";
+  	map_dname_group["H4Y1L"]    = "H4Y1L";
+  	map_dname_group["H4Y1R"]    = "H4Y1R";
+  	map_dname_group["H4Y2L"]    = "H4Y2L";
+  	map_dname_group["H4Y2R"]    = "H4Y2R";
+  	map_dname_group["H4T"]      = "H4T";
+  	map_dname_group["H4B"]      = "H4B";
+
+  	map_dname_group["P1Y1"]     = "P1Y1";
+  	map_dname_group["P1Y2"]     = "P1Y2";
+  	map_dname_group["P1X1"]     = "P1X1";
+  	map_dname_group["P1X2"]     = "P1X2";
+  	map_dname_group["P2Y1"]     = "P2Y1";
+  	map_dname_group["P2Y2"]     = "P2Y2";
+  	map_dname_group["P2X1"]     = "P2X1";
+  	map_dname_group["P2X2"]     = "P2X2";
+
+    vector_default_sim_group.push_back("D1U");
+    vector_default_sim_group.push_back("D1X");
+    vector_default_sim_group.push_back("D1V");
+    vector_default_sim_group.push_back("D2V");
+    vector_default_sim_group.push_back("D2Xp");
+    vector_default_sim_group.push_back("D2U");
+    vector_default_sim_group.push_back("D3pVp");
+    vector_default_sim_group.push_back("D3pXp");
+    vector_default_sim_group.push_back("D3pUp");
+    vector_default_sim_group.push_back("D3mVp");
+    vector_default_sim_group.push_back("D3mXp");
+    vector_default_sim_group.push_back("D3mUp");
+
+    vector_default_sim_group.push_back("H1B");
+    vector_default_sim_group.push_back("H1T");
+    vector_default_sim_group.push_back("H1L");
+    vector_default_sim_group.push_back("H1R");
+    vector_default_sim_group.push_back("H2L");
+    vector_default_sim_group.push_back("H2R");
+    vector_default_sim_group.push_back("H2B");
+    vector_default_sim_group.push_back("H2T");
+    vector_default_sim_group.push_back("H3B");
+    vector_default_sim_group.push_back("H3T");
+    vector_default_sim_group.push_back("H4Y1L");
+    vector_default_sim_group.push_back("H4Y1R");
+    vector_default_sim_group.push_back("H4Y2L");
+    vector_default_sim_group.push_back("H4Y2R");
+    vector_default_sim_group.push_back("H4B");
+    vector_default_sim_group.push_back("H4T");
+
+    vector_default_sim_group.push_back("P1Y1");
+    vector_default_sim_group.push_back("P1Y2");
+    vector_default_sim_group.push_back("P1X1");
+    vector_default_sim_group.push_back("P1X2");
+    vector_default_sim_group.push_back("P2X1");
+    vector_default_sim_group.push_back("P2X2");
+    vector_default_sim_group.push_back("P2Y1");
+    vector_default_sim_group.push_back("P2Y2");
 
 
   	//init map_dname_group
-  	map_dname_group["D1U"]      = "D1";
-  	map_dname_group["D1Up"]     = "D1";
-  	map_dname_group["D1V"]      = "D1";
-  	map_dname_group["D1Vp"]     = "D1";
-  	map_dname_group["D1X"]      = "D1";
-  	map_dname_group["D1Xp"]     = "D1";
-  	map_dname_group["D2U"]      = "D2";
-  	map_dname_group["D2Up"]     = "D2";
-  	map_dname_group["D2V"]      = "D2";
-  	map_dname_group["D2Vp"]     = "D2";
-  	map_dname_group["D2X"]      = "D2";
-  	map_dname_group["D2Xp"]     = "D2";
-  	map_dname_group["D3pU"]     = "D3p";
-  	map_dname_group["D3pUp"]    = "D3p";
-  	map_dname_group["D3pV"]     = "D3p";
-  	map_dname_group["D3pVp"]    = "D3p";
-  	map_dname_group["D3pX"]     = "D3p";
-  	map_dname_group["D3pXp"]    = "D3p";
-  	map_dname_group["D3mU"]     = "D3m";
-  	map_dname_group["D3mUp"]    = "D3m";
-  	map_dname_group["D3mV"]     = "D3m";
-  	map_dname_group["D3mVp"]    = "D3m";
-  	map_dname_group["D3mX"]     = "D3m";
-  	map_dname_group["D3mXp"]    = "D3m";
-
-  	map_dname_group["H1T"]      = "H1X";
-  	map_dname_group["H1B"]      = "H1X";
-  	map_dname_group["H1L"]      = "H1Y";
-  	map_dname_group["H1R"]      = "H1Y";
-  	map_dname_group["H2T"]      = "H2X";
-  	map_dname_group["H2B"]      = "H2X";
-  	map_dname_group["H2L"]      = "H2Y";
-  	map_dname_group["H2R"]      = "H2Y";
-  	map_dname_group["H3T"]      = "H3X";
-  	map_dname_group["H3B"]      = "H3X";
-  	map_dname_group["H4Y1L"]    = "H4Y1";
-  	map_dname_group["H4Y1R"]    = "H4Y1";
-  	map_dname_group["H4Y2L"]    = "H4Y2";
-  	map_dname_group["H4Y2R"]    = "H4Y2";
-  	map_dname_group["H4T"]      = "H4X";
-  	map_dname_group["H4B"]      = "H4X";
-
-  	map_dname_group["P1Y1"]     = "P1Y";
-  	map_dname_group["P1Y2"]     = "P1Y";
-  	map_dname_group["P1X1"]     = "P1X";
-  	map_dname_group["P1X2"]     = "P1X";
-  	map_dname_group["P2Y1"]     = "P2Y";
-  	map_dname_group["P2Y2"]     = "P2Y";
-  	map_dname_group["P2X1"]     = "P2X";
-  	map_dname_group["P2X2"]     = "P2X";
+//  	map_dname_group["D1U"]      = "D1";
+//  	map_dname_group["D1Up"]     = "D1";
+//  	map_dname_group["D1V"]      = "D1";
+//  	map_dname_group["D1Vp"]     = "D1";
+//  	map_dname_group["D1X"]      = "D1";
+//  	map_dname_group["D1Xp"]     = "D1";
+//  	map_dname_group["D2U"]      = "D2";
+//  	map_dname_group["D2Up"]     = "D2";
+//  	map_dname_group["D2V"]      = "D2";
+//  	map_dname_group["D2Vp"]     = "D2";
+//  	map_dname_group["D2X"]      = "D2";
+//  	map_dname_group["D2Xp"]     = "D2";
+//  	map_dname_group["D3pU"]     = "D3p";
+//  	map_dname_group["D3pUp"]    = "D3p";
+//  	map_dname_group["D3pV"]     = "D3p";
+//  	map_dname_group["D3pVp"]    = "D3p";
+//  	map_dname_group["D3pX"]     = "D3p";
+//  	map_dname_group["D3pXp"]    = "D3p";
+//  	map_dname_group["D3mU"]     = "D3m";
+//  	map_dname_group["D3mUp"]    = "D3m";
+//  	map_dname_group["D3mV"]     = "D3m";
+//  	map_dname_group["D3mVp"]    = "D3m";
+//  	map_dname_group["D3mX"]     = "D3m";
+//  	map_dname_group["D3mXp"]    = "D3m";
+//
+//  	map_dname_group["H1T"]      = "H1X";
+//  	map_dname_group["H1B"]      = "H1X";
+//  	map_dname_group["H1L"]      = "H1Y";
+//  	map_dname_group["H1R"]      = "H1Y";
+//  	map_dname_group["H2T"]      = "H2X";
+//  	map_dname_group["H2B"]      = "H2X";
+//  	map_dname_group["H2L"]      = "H2Y";
+//  	map_dname_group["H2R"]      = "H2Y";
+//  	map_dname_group["H3T"]      = "H3X";
+//  	map_dname_group["H3B"]      = "H3X";
+//  	map_dname_group["H4Y1L"]    = "H4Y1";
+//  	map_dname_group["H4Y1R"]    = "H4Y1";
+//  	map_dname_group["H4Y2L"]    = "H4Y2";
+//  	map_dname_group["H4Y2R"]    = "H4Y2";
+//  	map_dname_group["H4T"]      = "H4X";
+//  	map_dname_group["H4B"]      = "H4X";
+//
+//  	map_dname_group["P1Y1"]     = "P1Y";
+//  	map_dname_group["P1Y2"]     = "P1Y";
+//  	map_dname_group["P1X1"]     = "P1X";
+//  	map_dname_group["P1X2"]     = "P1X";
+//  	map_dname_group["P2Y1"]     = "P2Y";
+//  	map_dname_group["P2Y2"]     = "P2Y";
+//  	map_dname_group["P2X1"]     = "P2X";
+//  	map_dname_group["P2X2"]     = "P2X";
 
     typedef std::map<int, std::string>::value_type idToName;
     for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
@@ -664,7 +800,7 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
 {
     using namespace std;
 
-    if(detectorName.find("P") != string::npos)
+    if(detectorName[0] == 'P')
     {
         string XY = detectorName[2] == 'H' ? "Y" : "X";
         string FB = (detectorName[3] == 'f' || detectorName[4] == 'f') ? "1" : "2"; //temporary solution
@@ -679,7 +815,7 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
             eID = (9 - moduleID)*8 + eID;
         }
     }
-    else if(detectorName.find("H4") != string::npos)
+    else if(detectorName.substr(0, 2) == "H4")
     {
         if(detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
         {

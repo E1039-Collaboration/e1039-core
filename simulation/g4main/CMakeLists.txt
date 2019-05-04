@@ -50,6 +50,7 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/PHG4InputFilter.h
   ${PROJECT_SOURCE_DIR}/PHG4PileupGenerator.h
   ${PROJECT_SOURCE_DIR}/PHG4SimpleEventGenerator.h
+  ${PROJECT_SOURCE_DIR}/PHG4PSScanGenerator.h
   ${PROJECT_SOURCE_DIR}/PHG4ParticleGun.h
   ${PROJECT_SOURCE_DIR}/PHG4ParticleGenerator.h
   ${PROJECT_SOURCE_DIR}/PHG4ParticleGeneratorBase.h
@@ -127,6 +128,7 @@ add_library(g4testbench SHARED
     ${PROJECT_SOURCE_DIR}/PHG4ParameterisationTubsEta.cc
     ${PROJECT_SOURCE_DIR}/PHG4PileupGenerator.cc
     ${PROJECT_SOURCE_DIR}/PHG4SimpleEventGenerator.cc
+    ${PROJECT_SOURCE_DIR}/PHG4PSScanGenerator.cc
     ${PROJECT_SOURCE_DIR}/PHG4ParticleGun.cc
     ${PROJECT_SOURCE_DIR}/PHG4ParticleGeneratorBase.cc
     ${PROJECT_SOURCE_DIR}/PHG4ParticleGenerator.cc
@@ -182,6 +184,8 @@ file(GLOB dist_headers
   PHG4Reco.h
   PHG4RegionInformation.h
   PHG4SimpleEventGenerator.h
+  PHG4ParticleGun.h
+  PHG4PSScanGenerator.h
   PHG4Shower.h
   PHG4Showerv1.h
   PHG4SteppingAction.h
@@ -197,5 +201,10 @@ file(GLOB dist_headers
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
-
-
+# Install the pcm files in case of ROOT 6.
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm phg4hit g4testbench)
+endif()

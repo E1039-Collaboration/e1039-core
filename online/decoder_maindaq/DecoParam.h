@@ -1,8 +1,11 @@
 #ifndef __DECO_PARAM_H__
 #define __DECO_PARAM_H__
-#include "MapperTaiwan.h"
-#include "MapperV1495.h"
-#include "MapperScaler.h"
+//#include "MapperTaiwan.h"
+//#include "MapperV1495.h"
+//#include "MapperScaler.h"
+#include <chan_map/ChanMapTaiwan.h>
+#include <chan_map/ChanMapV1495.h>
+#include <chan_map/ChanMapScaler.h>
 //#include "assert.h"
 class EventInfo;
 
@@ -19,9 +22,14 @@ struct DecoParam {
   std::string dir_param;
   int sampling;
   int verbose;
-  MapperTaiwan map_taiwan;
-  MapperV1495  map_v1495;
-  MapperScaler map_scaler;
+  int time_wait; //< waiting time in second to pretend the online data flow.
+  //MapperTaiwan map_taiwan;
+  //MapperV1495  map_v1495;
+  //MapperScaler map_scaler;
+
+  ChanMapTaiwan chan_map_taiwan;
+  ChanMapV1495  chan_map_v1495;
+  ChanMapScaler chan_map_scaler;
 
   ///
   /// Monitoring parameters

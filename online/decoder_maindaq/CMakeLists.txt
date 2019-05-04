@@ -34,7 +34,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{MY_INSTALL}/include/ -
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -DBIT64    -I$ENV{MY_INSTALL}/include/ -I$ENV{OFFLINE_MAIN}/include/")
 
 add_library(decoder_maindaq SHARED ${sources} ${dicts})
-target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool)
+target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool -lchan_map)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
@@ -44,3 +44,11 @@ file(GLOB dist_headers ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h ${PROJECT_SOURCE_DIR}/evio.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
+
+# Install the pcm files in case of ROOT 6.
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm decoder_maindaq)
+endif()

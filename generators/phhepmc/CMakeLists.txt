@@ -4,7 +4,7 @@ project(phhepmc CXX C)
 
 # source code
 include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-link_directories("./" "$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
+link_directories("$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -19,24 +19,22 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND dicts ${DictC})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
   OUTPUT PHHepMC_io_Dict.C
   COMMAND rootcint
-  ARGS -f PHHepMC_io_Dict.C -c
-  -I$ENV{OFFLINE_MAIN}/include
+  ARGS -f PHHepMC_io_Dict.C -c -p
   ${PROJECT_SOURCE_DIR}/PHGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHGenEventv1.h
   ${PROJECT_SOURCE_DIR}/PHGenEventList.h
   ${PROJECT_SOURCE_DIR}/PHGenEventListv1.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHHepMCGenEventMap.h
-  $ENV{OFFLINE_MAIN}/include/HepMC/*.h
+	$ENV{E1039_SHARE}/include/HepMC/*.h
   ${PROJECT_SOURCE_DIR}/PHHepMCLinkDef.h
 	)
-
 
 # ROOT
 find_program(ROOTCONF "root-config")
@@ -94,5 +92,10 @@ file(GLOB dist_headers
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
-
-
+# The same method as "database/pdbcal/base".
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
+if (ROOT_VER GREATER 5)
+   add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
+   add_dependencies(install_pcm phhepmc phhepmc_io)
+endif()
