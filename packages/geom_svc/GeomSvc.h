@@ -193,6 +193,7 @@ public:
     double getPlaneScaleY(int detectorID)   { return planes[detectorID].y2 - planes[detectorID].y1; }
     double getPlaneScaleZ(int detectorID)   { return map_detid_scale_z[detectorID]; }
     std::string getPlaneMaterial(int detectorID)   { return map_detid_material[detectorID]; }
+    int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
     int getPlaneNElements(int detectorID)   { return planes[detectorID].nElements; }
     double getPlaneResolution(int detectorID) const { return planes[detectorID].resolution; }
 
@@ -272,6 +273,9 @@ private:
 
     //! detectorID -> detector material
     std::map<int, std::string> map_detid_material;
+
+    //! detectorID -> trigger level
+    std::map<int, int> map_detid_triggerlv;
 
     //! default groups to put into simulation
     std::vector<std::string> vector_default_sim_group;

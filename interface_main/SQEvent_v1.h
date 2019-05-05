@@ -26,8 +26,9 @@ public:
 	virtual ~SQEvent_v1();
 
 	void Reset();
-
 	virtual void identify(std::ostream& os = std::cout) const;
+  int  isValid() const {return 1;}
+  SQEvent* Clone() const {return new SQEvent_v1(*this);}
 
 	virtual int get_run_id() const {return _run_id;}
 	virtual void set_run_id(const int a) {_run_id = a;}
@@ -50,6 +51,9 @@ public:
 
 	virtual bool get_trigger(const SQEvent::TriggerMask i) const {return (_trigger&(1<<i)) > 0 ;}
 	virtual void set_trigger(const SQEvent::TriggerMask i, const bool a) {a ? (_trigger |= (1<<i)) : (_trigger &= ~(1<<i)) ;}
+
+	virtual unsigned short get_trigger() const {return _trigger;}
+	virtual void           set_trigger(const unsigned short a) {_trigger = a;}
 
 	virtual int get_raw_matrix(const unsigned short i) const {
 		if(i<5) return _raw_matrix[i];

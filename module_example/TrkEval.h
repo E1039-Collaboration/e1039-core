@@ -104,6 +104,7 @@ private:
 	float target_pos;
 	int event_id;
 	int krecstat;
+	unsigned short emu_trigger;
 
 	int n_hits;
 	int hit_id[10000];
