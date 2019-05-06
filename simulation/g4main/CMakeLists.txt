@@ -2,12 +2,11 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4main CXX C)
 
-include_directories( "${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/")
+include_directories( "${PROJECT_SOURCE_DIR}/")
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
   message("SET CMP0015 OLD")
   cmake_policy(SET CMP0015 OLD)
 endif()
-link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 
 # source code
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
@@ -40,8 +39,8 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 add_custom_command (
   OUTPUT PHG4_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4_Dict.cc -c
-  -I$ENV{XERCESCROOT}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
+  ARGS -f PHG4_Dict.cc -c -p
+  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/HepMCNodeReader.h
   ${PROJECT_SOURCE_DIR}/PHG4ConsistencyCheck.h
   ${PROJECT_SOURCE_DIR}/PHG4HeadReco.h
@@ -66,8 +65,8 @@ add_custom_command (
 add_custom_command (
   OUTPUT PHG4Hit_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4Hit_Dict.cc -c
-  -I$ENV{XERCESCROOT}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
+  ARGS -f PHG4Hit_Dict.cc -c -p
+  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/PHG4EventHeader.h
   ${PROJECT_SOURCE_DIR}/PHG4EventHeaderv1.h
   ${PROJECT_SOURCE_DIR}/PHG4HitReadBack.h
@@ -90,7 +89,7 @@ add_custom_command (
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DG4INTY_USE_XT -DG4VIS_USE_OPENGL -DG4UI_USE_TCSH -DG4UI_USE_XM -DG4VIS_USE_OPENGLX")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{XERCESCROOT}/include -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{XERCESCROOT}/include -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/")
 
 add_library(phg4hit SHARED
     ${PROJECT_SOURCE_DIR}/PHG4EventHeader.cc

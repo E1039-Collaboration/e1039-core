@@ -13,11 +13,11 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE ".C" "_rdict.pcm" DictPcm ${DictC})
 	list(APPEND dicts ${DictC})
 	list(APPEND pcms  ${DictPcm})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.C  ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -35,7 +35,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 add_library(geom_svc SHARED ${sources} ${dicts})
-target_link_libraries(geom_svc -L$ENV{OFFLINE_MAIN}/lib -ljobopts_svc ${ROOT_LINK})
+target_link_libraries(geom_svc -ljobopts_svc ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

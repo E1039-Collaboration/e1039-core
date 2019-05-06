@@ -6,8 +6,8 @@ project(onlmonserver CXX C)
 add_custom_command (
   OUTPUT onlmonserver_Dict.cc
   COMMAND rootcint
-  ARGS -f onlmonserver_Dict.cc -c
-    -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+  ARGS -f onlmonserver_Dict.cc -c -p
+    -I${ROOT_PREFIX}/include/
     ${PROJECT_SOURCE_DIR}/OnlMon*.h
     ${PROJECT_SOURCE_DIR}/LinkDef.h
 )
