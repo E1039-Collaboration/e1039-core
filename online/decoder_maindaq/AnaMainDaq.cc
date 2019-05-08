@@ -45,7 +45,7 @@ int AnaMainDaq::InitRun(PHCompositeNode* topNode)
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
   cout << "SQRun: \n"
        << "  " << run_header->get_run_id()
-       << "  " << run_header->get_spill_count()
+       << "  " << run_header->get_n_spill()
        << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }

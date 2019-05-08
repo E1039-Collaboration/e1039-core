@@ -51,12 +51,13 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
   se->registerOutputManager(out);
 
+  se->registerSubsystem(new DbUpRun());
+  se->registerSubsystem(new DbUpSpill());
   se->registerSubsystem(new CalibInTime());
   se->registerSubsystem(new CalibXT());
 
   if (is_online) { // Register the online-monitoring clients
     se->StartServer();
-    se->registerSubsystem(new OnlMonSpill());
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonCham(OnlMonCham::D3p));
     se->registerSubsystem(new OnlMonCham(OnlMonCham::D3m));

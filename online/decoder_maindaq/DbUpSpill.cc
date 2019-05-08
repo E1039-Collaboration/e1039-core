@@ -1,7 +1,5 @@
-/// OnlMonSpill.C
+/// DbUpSpill.C
 #include <iomanip>
-//#include <TH1D.h>
-//#include <TSocket.h>
 #include <TClass.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQSpillMap.h>
@@ -17,31 +15,25 @@
 #include <phool/getClass.h>
 #include <TSQLServer.h>
 #include <db_svc/DbSvc.h>
-#include "OnlMonServer.h"
-#include "OnlMonSpill.h"
+#include "DbUpSpill.h"
 using namespace std;
 
-OnlMonSpill::OnlMonSpill(const std::string& name) : OnlMonClient(name)
+DbUpSpill::DbUpSpill(const std::string& name) : SubsysReco(name)
 {
   ;
 }
 
-int OnlMonSpill::Init(PHCompositeNode* topNode)
-{
-  //Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
-  //OnlMonServer::instance()->registerHistoManager(hm);
-  //hm->registerHisto(h1_tgt);
-  //hm->registerHisto(h1_evt_qual);
-
-  return Fun4AllReturnCodes::EVENT_OK;
-}
-
-int OnlMonSpill::InitRun(PHCompositeNode* topNode)
+int DbUpSpill::Init(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonSpill::process_event(PHCompositeNode* topNode)
+int DbUpSpill::InitRun(PHCompositeNode* topNode)
+{
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int DbUpSpill::process_event(PHCompositeNode* topNode)
 {
   SQSpillMap*     spill_map = findNode::getClass<SQSpillMap >(topNode, "SQSpillMap");
   SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
@@ -58,17 +50,13 @@ int OnlMonSpill::process_event(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonSpill::End(PHCompositeNode* topNode)
+int DbUpSpill::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonSpill::DrawMonitor()
-{
-  return 0;
-}
-
-void OnlMonSpill::UploadToDB(SQSpill* spi)
+/// The coding style inside this function is going to be updated like DbUpRun::UploadToDB().
+void DbUpSpill::UploadToDB(SQSpill* spi)
 {
   DbSvc db(DbSvc::DB1);
   db.UseSchema("user_e1039_maindaq", true);
@@ -91,12 +79,12 @@ void OnlMonSpill::UploadToDB(SQSpill* spi)
       << spi->get_eos_coda_id () << ", "
       << spi->get_eos_vme_time() << ") on duplicate key update target_pos=values(target_pos), bos_coda_id=values(bos_coda_id), bos_vme_time=values(bos_vme_time), eos_coda_id=values(eos_coda_id), eos_vme_time=values(eos_vme_time)";
   if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  OnlMonSpill::UploadToDB()." << endl;
+    cerr << "!!ERROR!!  DbUpSpill::UploadToDB()." << endl;
     return;
   }
 }
 
-void OnlMonSpill::PrintSpill(SQSpill* spi)
+void DbUpSpill::PrintSpill(SQSpill* spi)
 {
   cout << "SQSpill:  "
        << "  " << spi->get_spill_id    ()

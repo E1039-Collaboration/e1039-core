@@ -1,22 +1,20 @@
-#ifndef _ONL_MON_SPILL__H_
-#define _ONL_MON_SPILL__H_
-#include "OnlMonClient.h"
+#ifndef _DB_UP_SPILL__H_
+#define _DB_UP_SPILL__H_
+#include <fun4all/SubsysReco.h>
 class SQSpill;
 
-class OnlMonSpill: public OnlMonClient {
+class DbUpSpill: public SubsysReco {
  public:
-  OnlMonSpill(const std::string &name = "OnlMonSpill");
-  virtual ~OnlMonSpill() {}
+  DbUpSpill(const std::string &name = "DbUpSpill");
+  virtual ~DbUpSpill() {}
   int Init(PHCompositeNode *topNode);
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
-
-  int DrawMonitor();
 
  private:
   void UploadToDB(SQSpill* spi);
   void PrintSpill(SQSpill* spi);
 };
 
-#endif /* _ONL_MON_SPILL__H_ */
+#endif /* _DB_UP_SPILL__H_ */

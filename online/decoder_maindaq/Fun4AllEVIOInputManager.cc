@@ -229,9 +229,33 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   syncobject->RunNumber       (rd->run_id);
   syncobject->EventNumber     (ed->event.eventID);
 
-  if (run_header->get_run_id() == INT_MAX) { // Any better way to check if initialized??
-    run_header->set_run_id(rd->run_id);
-    run_header->set_spill_count(0); // not implemented
+  //if (run_header->get_run_id() == INT_MAX) { // Any better way to check if initialized??
+  static int n_evt = 0;
+  if (n_evt++ % 10 == 0) { // Suppress the number of updates
+    run_header->set_run_id         (rd->run_id);
+    run_header->set_unix_time_begin(rd->utime_b);
+    run_header->set_unix_time_end  (rd->utime_e);
+    for (int ii = 0; ii < 5; ii++) {
+      run_header->set_fpga_enabled (ii, rd->fpga_enabled [ii]);
+      run_header->set_fpga_prescale(ii, rd->fpga_prescale[ii]);
+      run_header->set_nim_enabled  (ii, rd-> nim_enabled [ii]);
+    }
+    for (int ii = 0; ii < 3; ii++) {
+      run_header->set_nim_prescale(ii, rd->nim_prescale[ii]);
+    }
+    run_header->set_run_desc      (rd->run_desc);
+    run_header->set_n_fee_event   (rd->n_fee_event);
+    run_header->set_n_fee_prescale(rd->n_fee_prescale);
+    run_header->set_n_run_desc    (rd->n_run_desc);
+    run_header->set_n_spill       (rd->n_spill);
+    run_header->set_n_evt_all     (rd->n_evt_all);
+    run_header->set_n_evt_dec     (rd->n_evt_dec);
+    run_header->set_n_phys_evt    (rd->n_phys_evt);
+    run_header->set_n_flush_evt   (rd->n_flush_evt);
+    run_header->set_n_hit         (rd->n_hit);
+    run_header->set_n_t_hit       (rd->n_t_hit);
+    run_header->set_n_hit_bad     (rd->n_hit_bad);
+    run_header->set_n_t_hit_bad   (rd->n_t_hit_bad);
   }
 
   SQSpill* spill = spill_map->get(sd->spill_id);

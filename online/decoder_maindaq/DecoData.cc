@@ -20,9 +20,16 @@ FeeData::FeeData() :
 }
 
 RunData::RunData() : 
-  run_id(0), run_desc(""),
-  n_fee_event(0), n_fee_prescale(0), n_run_desc(0)
+  run_id(0), utime_b(0), utime_e(0), run_desc(""),
+  n_fee_event(0), n_fee_prescale(0), n_run_desc(0),
+  n_spill(0), n_evt_all(0), n_evt_dec(0), n_phys_evt(0), n_flush_evt(0),
+  n_hit(0), n_t_hit(0), n_hit_bad(0), n_t_hit_bad(0)
 {
+  memset( fpga_enabled, 0, sizeof( fpga_enabled));
+  memset(  nim_enabled, 0, sizeof(  nim_enabled));
+  memset(fpga_prescale, 0, sizeof(fpga_prescale));
+  memset( nim_prescale, 0, sizeof( nim_prescale));
+
   memset(trig_bit, 0, sizeof(trig_bit));
   memset(prescale, 0, sizeof(prescale));
 }

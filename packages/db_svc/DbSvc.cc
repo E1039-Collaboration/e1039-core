@@ -126,6 +126,35 @@ void DbSvc::CreateTable(const std::string name, const int n_var, const char** li
   CreateTable(name, vec_var, vec_type, vec_key);
 }
 
+void DbSvc::CreateTable(const std::string name, const int n_var, const char* list_var[][3])
+{
+  vector<string> vec_var;
+  vector<string> vec_type;
+  vector<string> vec_key;
+  for (int ii = 0; ii < n_var; ii++) {
+    vec_var .push_back(list_var[ii][0]);
+    vec_type.push_back(list_var[ii][1]);
+    if (list_var[ii][2] != 0) vec_key.push_back(list_var[ii][0]);
+  }
+  CreateTable(name, vec_var, vec_type, vec_key);
+}
+
+void DbSvc::CreateTable(const std::string name, const VarList list)
+{
+  vector<string> vec_var;
+  vector<string> vec_type;
+  vector<string> vec_key;
+  for (unsigned int ii = 0; ii < list.Size(); ii++) {
+    string name, type;
+    bool is_key;
+    list.Get(ii, name, type, is_key);
+    vec_var .push_back(name);
+    vec_type.push_back(type);
+    if (is_key) vec_key.push_back(name);
+  }
+  CreateTable(name, vec_var, vec_type, vec_key);
+}
+
 /** This function runs Statement(), Process() and StoreResult() with error check.
  *  The return object (TSQLStatement*) must be deleted by user.
  *  Example:
@@ -172,4 +201,18 @@ void DbSvc::ConnectServer()
     cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
     exit(1);
   }
+}
+
+void DbSvc::VarList::Add(const std::string name, const std::string type, const bool is_key)
+{
+  m_name  .push_back(name);
+  m_type  .push_back(type);
+  m_is_key.push_back(is_key);
+}
+
+void DbSvc::VarList::Get(const int idx, std::string& name, std::string& type, bool& is_key) const
+{
+  name   = m_name  [idx];
+  type   = m_type  [idx];
+  is_key = m_is_key[idx];
 }

@@ -132,11 +132,11 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
 {
     // int evLength     = words[0];
     // int prestartCode = words[1];
-    int runTime = words[2];
+    run_data.utime_b = words[2];
     dec_par.runID = run_data.run_id = words[3];
     // int runType = words[4];
 
-    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << dec_par.sampling << "\n";
+    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << run_data.utime_b << " " << dec_par.sampling << "\n";
 
     dec_par.InitMapper();
     coda->SetRunNumber(dec_par.runID);
@@ -223,10 +223,16 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
   for (int ii = 0; ii < 10; ii++) {
     run_data.trig_bit[ii] = get_bin_bit (feeTriggerBits, ii);
   }
+  for (int ii = 0; ii < 5; ii++) run_data.fpga_enabled[ii] = get_bin_bit (feeTriggerBits, ii  );
+  for (int ii = 0; ii < 5; ii++) run_data. nim_enabled[ii] = get_bin_bit (feeTriggerBits, ii+5);
+
   /// 8 words = FPGA1, ..., FPGA5, NIM1, ..., NIM3
   for (int ii = 0; ii < 8; ii++) {
     run_data.prescale[ii] = words[ii + 5];
   }
+  for (int ii = 0; ii < 5; ii++) run_data.fpga_prescale[ii] = words[ii +  5];
+  for (int ii = 0; ii < 3; ii++) run_data. nim_prescale[ii] = words[ii + 10];
+
   run_data.n_fee_prescale++;
   if (dec_par.verbose > 1) {
     cout << "  feeP ";
@@ -250,6 +256,7 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
  */
 int MainDaqParser::ProcessCodaPhysics(int* words)
 {
+  run_data.n_phys_evt++;
   int eventCode = words[1];
   int ret = 0;
   switch (get_hex_bits(eventCode, 7, 4) ) {
@@ -438,6 +445,7 @@ int MainDaqParser::ProcessPhysSpillCounter(int* words)
   if (dec_par.verbose) {
     cout << "Spill Counter @ coda = " << dec_par.codaID << ":  spill = " << dec_par.spillID_cntr << "\n";
   }
+  run_data.n_spill++;
   return 0;
 }
 
@@ -524,6 +532,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
  */
 int MainDaqParser::ProcessPhysFlush(int* words)
 {
+  run_data.n_flush_evt++;
   dec_par.n_flush_evt_all++;
   const bool print_event = false; ///< If "true", print out ROCs & boards found.
   int evLength = words[0];
@@ -991,6 +1000,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  eventID without stop word." << endl; // Possible to miss a stop signal???
 	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
 	continue;
       }
       int evt_id = words[idx];
@@ -1022,6 +1032,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  Start without stop word." << endl; // Possible to miss a stop signal???
 	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
 	continue;
       }
       int word = words[idx];
@@ -1029,6 +1040,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  Start signal is not rising." << endl;
 	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
       }
       double fine  = 4.0 - get_hex_bit (word, 0) * 4.0 / 9.0;
       double rough = 4.0 * get_hex_bits(word, 3, 3);
@@ -1057,6 +1069,7 @@ int MainDaqParser::PackOneSpillData()
   sd_now = &(*list_sd)[dec_par.spillID];
   
   dec_par.n_phys_evt_all += list_ed->size();
+  run_data.n_evt_all     += list_ed->size();
 
   /// A part (most?) of lines in this loop had better be moved to
   /// a SubsysReco module for better function separation.
@@ -1072,6 +1085,7 @@ int MainDaqParser::PackOneSpillData()
     }
     it++;
     dec_par.n_phys_evt_dec++;
+    run_data.n_evt_dec++;
 
     unsigned int n_tdc; // expected number of tdc info
     if (dec_par.runID >= 28664) n_tdc = 101; // seen in run 28700
@@ -1105,6 +1119,9 @@ int MainDaqParser::PackOneSpillData()
     dec_par.n_thit += n_v1495;
     if (dec_par. n_hit_max < n_taiwan) dec_par. n_hit_max = n_taiwan;
     if (dec_par.n_thit_max < n_v1495 ) dec_par.n_thit_max = n_v1495 ;
+
+    run_data.n_hit   += n_taiwan;
+    run_data.n_t_hit += n_v1495;
 
     /// Run the mapping.  It should be done here (after the event selection)
     /// since it takes the longest process time per event.

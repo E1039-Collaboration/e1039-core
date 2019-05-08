@@ -72,6 +72,14 @@ typedef std::vector<FeeData> FeeDataList;
 
 struct RunData : public TObject {
   int run_id;
+  int utime_b;
+  int utime_e; // not implemented
+
+  int fpga_enabled [5];
+  int  nim_enabled [5];
+  int fpga_prescale[5];
+  int  nim_prescale[3];
+
   int trig_bit[10];
   int prescale[ 8];
   FeeDataList fee;
@@ -80,6 +88,15 @@ struct RunData : public TObject {
   int n_fee_event;
   int n_fee_prescale;
   int n_run_desc;
+  int n_spill;
+  int n_evt_all; //< N of all real (i.e. triggered) events
+  int n_evt_dec; //< N of decoded real events
+  int n_phys_evt; //< N of Coda standard-physics events
+  int n_flush_evt; //< N of Coda flush events
+  int n_hit; //< N of Taiwan-TDC hits
+  int n_t_hit; //< N of v1495-TDC hits
+  int n_hit_bad; //< N of bad hits
+  int n_t_hit_bad; //< N of bad t-hits.  Not implemented
 
   RunData();
   virtual ~RunData() {;}
