@@ -13,7 +13,9 @@ class DbUpSpill: public SubsysReco {
   int End(PHCompositeNode *topNode);
 
  private:
-  void UploadToDB(SQSpill* spi);
+  void UploadToSpillTable(SQSpill* spi);
+  void UploadToScalerTable(SQSpill* spi, const std::string boseos);
+  void UploadToSlowContTable(SQSpill* spi);
   void PrintSpill(SQSpill* spi);
 };
 

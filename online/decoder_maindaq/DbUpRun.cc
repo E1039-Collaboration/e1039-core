@@ -54,7 +54,7 @@ void DbUpRun::UploadToDB(SQRun* sq)
   const char* table_name = "run";
   DbSvc db(DbSvc::DB1);
   db.UseSchema("user_e1039_maindaq", true);
-  db.DropTable(table_name); // Use this when you want to refresh
+  //db.DropTable(table_name); // Use this when you want to refresh
   if (! db.HasTable(table_name)) {
     DbSvc::VarList list;
     list.Add("run_id"        , "INT", true);
