@@ -74,8 +74,14 @@ public:
 	virtual int  get_n_phys_evt() const { return _n_phys_evt; }
 	virtual void set_n_phys_evt(const int a)   { _n_phys_evt = a; }
 
+	virtual int  get_n_phys_evt_bad() const { return _n_phys_evt_bad; }
+	virtual void set_n_phys_evt_bad(const int a)   { _n_phys_evt_bad = a; }
+
 	virtual int  get_n_flush_evt() const { return _n_flush_evt; }
 	virtual void set_n_flush_evt(const int a)   { _n_flush_evt = a; }
+
+	virtual int  get_n_flush_evt_bad() const { return _n_flush_evt_bad; }
+	virtual void set_n_flush_evt_bad(const int a)   { _n_flush_evt_bad = a; }
 
 	virtual int  get_n_hit() const { return _n_hit; }
 	virtual void set_n_hit(const int a)   { _n_hit = a; }
@@ -89,8 +95,17 @@ public:
 	virtual int  get_n_t_hit_bad() const { return _n_t_hit_bad; }
 	virtual void set_n_t_hit_bad(const int a)   { _n_t_hit_bad = a; }
 
-	//virtual int get_spill_count() const {return _spill_count;}
-	//virtual void set_spill_count(const int a) {_spill_count = a;}
+	virtual int  get_n_v1495() const { return _n_v1495; }
+	virtual void set_n_v1495(const int a)   { _n_v1495 = a; }
+
+	virtual int  get_n_v1495_d1ad() const { return _n_v1495_d1ad; }
+	virtual void set_n_v1495_d1ad(const int a)   { _n_v1495_d1ad = a; }
+
+	virtual int  get_n_v1495_d2ad() const { return _n_v1495_d2ad; }
+	virtual void set_n_v1495_d2ad(const int a)   { _n_v1495_d2ad = a; }
+
+	virtual int  get_n_v1495_d3ad() const { return _n_v1495_d3ad; }
+	virtual void set_n_v1495_d3ad(const int a)   { _n_v1495_d3ad = a; }
 
 protected:
 	int _run_id;
@@ -112,13 +127,17 @@ protected:
   int _n_evt_all;   //< N of all real (i.e. triggered) events
   int _n_evt_dec;   //< N of decoded real events
   int _n_phys_evt;  //< N of Coda standard-physics events
+  int _n_phys_evt_bad;
   int _n_flush_evt; //< N of Coda flush events
+  int _n_flush_evt_bad;
   int _n_hit;       //< N of Taiwan-TDC hits
   int _n_t_hit;     //< N of v1495-TDC hits
   int _n_hit_bad;   //< N of bad hits
   int _n_t_hit_bad; //< N of bad t-hits.  Not implemented
-
-  //int _spill_count;
+  int _n_v1495;     //< N of all v1495 events
+  int _n_v1495_d1ad;//< N of d1ad v1495 events
+  int _n_v1495_d2ad;//< N of d2ad v1495 events
+  int _n_v1495_d3ad;//< N of d3ad v1495 events
 
 ClassDef(SQRun_v1, 1);
 };

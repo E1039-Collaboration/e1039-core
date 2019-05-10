@@ -39,7 +39,6 @@ int OnlMonCham::InitRun(PHCompositeNode* topNode)
 {
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  cout << "SQRun: " << run_header->get_run_id() << " " << run_header->get_spill_count() << endl;
 
   GeomSvc* geom = GeomSvc::instance();
   CalibParamInTimeTaiwan calib;

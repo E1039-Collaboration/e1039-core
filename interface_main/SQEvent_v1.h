@@ -73,6 +73,53 @@ public:
 		else std::cout<<"SQEvent_v1::set_after_inh_matrix: i>=5";
 	}
 
+        virtual int  get_qie_presum(const unsigned short i) const {
+          if (i<4) return _qie_presums[i]; 
+          return INT_MAX;
+        }
+	virtual void set_qie_presum(const unsigned short i, const int a) {
+          if(i<4) _qie_presums[i] = a;
+          else std::cout<<"SQEvent_v1::set_qie_presum: i>=4";
+        }
+
+        virtual int  get_qie_trigger_count() const { return _qie_trig_cnt; }
+	virtual void set_qie_trigger_count(const int a)   { _qie_trig_cnt = a; }
+
+        virtual int  get_qie_turn_id() const { return _qie_turn_id; }
+	virtual void set_qie_turn_id(const int a)   { _qie_turn_id = a; }
+
+        virtual int  get_qie_rf_id() const { return _qie_rf_id; }
+	virtual void set_qie_rf_id(const int a)   { _qie_rf_id = a; }
+
+        virtual int  get_qie_rf_intensity(const short i) const {
+          if (abs(i)<=16) return _qie_rf_inte[i+16]; 
+          return INT_MAX;
+        }
+	virtual void set_qie_rf_intensity(const short i, const int a) {
+          if(abs(i)<=16) _qie_rf_inte[i+16] = a;
+          else std::cout<<"SQEvent_v1::set_qie_rf_intensity: abs(i)>16";
+        }
+
+        virtual short get_flag_v1495() const { return _flag_v1495; }
+	virtual void  set_flag_v1495(const short a) { _flag_v1495 = a; }
+
+        virtual short get_n_board_qie() const { return _n_board_qie; }
+	virtual void  set_n_board_qie(const short a) { _n_board_qie = a; }
+
+        virtual short get_n_board_v1495() const { return _n_board_v1495; }
+	virtual void  set_n_board_v1495(const short a) { _n_board_v1495 = a; }
+
+        virtual short get_n_board_taiwan() const { return _n_board_taiwan; }
+	virtual void  set_n_board_taiwan(const short a) { _n_board_taiwan = a; }
+
+        virtual short get_n_board_trig_bit() const { return _n_board_trig_b; }
+	virtual void  set_n_board_trig_bit(const short a) { _n_board_trig_b = a; }
+
+        virtual short get_n_board_trig_count() const { return _n_board_trig_c; }
+	virtual void  set_n_board_trig_count(const short a) { _n_board_trig_c = a; }
+
+
+
 protected:
 	int _run_id;
 	int _spill_id;
@@ -88,6 +135,19 @@ protected:
 	int _data_quality;
 
 	int _vme_time;
+
+        int _qie_presums[4];
+        int _qie_trig_cnt;
+        int _qie_turn_id;
+        int _qie_rf_id;
+        int _qie_rf_inte[33];
+
+        short _flag_v1495;
+        short _n_board_qie;
+        short _n_board_v1495;
+        short _n_board_taiwan;
+        short _n_board_trig_b;
+        short _n_board_trig_c;
 
 ClassDef(SQEvent_v1, 1);
 };

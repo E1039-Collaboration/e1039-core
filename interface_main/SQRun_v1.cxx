@@ -25,11 +25,18 @@ SQRun_v1::SQRun_v1() :
   _n_evt_all(INT_MAX),
   _n_evt_dec(INT_MAX),
   _n_phys_evt(INT_MAX),
+  _n_phys_evt_bad(INT_MAX),
   _n_flush_evt(INT_MAX),
+  _n_flush_evt_bad(INT_MAX),
   _n_hit(INT_MAX),
   _n_t_hit(INT_MAX),
   _n_hit_bad(INT_MAX),
-  _n_t_hit_bad(INT_MAX)
+  _n_t_hit_bad(INT_MAX), 
+  _n_v1495(INT_MAX), 
+  _n_v1495_d1ad(INT_MAX),
+  _n_v1495_d2ad(INT_MAX),
+  _n_v1495_d3ad(INT_MAX)
+
 {
   memset(_fpga_enabled , 0, sizeof(_fpga_enabled ));
   memset( _nim_enabled , 0, sizeof( _nim_enabled ));

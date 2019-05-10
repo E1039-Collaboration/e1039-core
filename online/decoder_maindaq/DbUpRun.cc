@@ -60,18 +60,27 @@ void DbUpRun::UploadToDB(SQRun* sq)
     list.Add("run_id"        , "INT", true);
     list.Add("utime_b"       , "INT"); 
     list.Add("utime_e"       , "INT"); 
-    list.Add("n_fee_event"   , "INT"); 
-    list.Add("n_fee_prescale", "INT"); 
-    list.Add("n_run_desc"    , "INT"); 
+    list.Add("fpga1_enabled" , "BOOL");
+    list.Add("fpga2_enabled" , "BOOL");
+    list.Add("fpga3_enabled" , "BOOL");
+    list.Add("fpga4_enabled" , "BOOL");
+    list.Add("fpga5_enabled" , "BOOL");
+    list.Add( "nim1_enabled" , "BOOL");
+    list.Add( "nim2_enabled" , "BOOL");
+    list.Add( "nim3_enabled" , "BOOL");
+    list.Add( "nim4_enabled" , "BOOL");
+    list.Add( "nim5_enabled" , "BOOL");
+    list.Add("fpga1_prescale", "INT");
+    list.Add("fpga2_prescale", "INT");
+    list.Add("fpga3_prescale", "INT");
+    list.Add("fpga4_prescale", "INT");
+    list.Add("fpga5_prescale", "INT");
+    list.Add( "nim1_prescale", "INT");
+    list.Add( "nim2_prescale", "INT");
+    list.Add( "nim3_prescale", "INT");
     list.Add("n_spill"       , "INT"); 
     list.Add("n_evt_all"     , "INT"); 
     list.Add("n_evt_dec"     , "INT");
-    list.Add("n_phys_evt"    , "INT");
-    list.Add("n_flush_evt"   , "INT");
-    list.Add("n_hit"         , "INT");
-    list.Add("n_t_hit"       , "INT");
-    list.Add("n_hit_bad"     , "INT");
-    list.Add("n_t_hit_bad"   , "INT");
     db.CreateTable(table_name, list);
   }
 
@@ -85,19 +94,14 @@ void DbUpRun::UploadToDB(SQRun* sq)
   oss << "insert into " << table_name << " values"
       << " (" << sq->get_run_id() 
       << ", " << sq->get_unix_time_begin()
-      << ", " << sq->get_unix_time_end()
-      << ", " << sq->get_n_fee_event()
-      << ", " << sq->get_n_fee_prescale()
-      << ", " << sq->get_n_run_desc()
-      << ", " << sq->get_n_spill()
+      << ", " << sq->get_unix_time_end();
+  for (int ii=0; ii<5; ii++) oss << ", " << sq->get_fpga_enabled(ii);
+  for (int ii=0; ii<5; ii++) oss << ", " << sq->get_nim_enabled(ii);
+  for (int ii=0; ii<5; ii++) oss << ", " << sq->get_fpga_prescale(ii);
+  for (int ii=0; ii<3; ii++) oss << ", " << sq->get_nim_prescale(ii);
+  oss << ", " << sq->get_n_spill()
       << ", " << sq->get_n_evt_all()
       << ", " << sq->get_n_evt_dec()
-      << ", " << sq->get_n_phys_evt()
-      << ", " << sq->get_n_flush_evt()
-      << ", " << sq->get_n_hit()
-      << ", " << sq->get_n_t_hit()
-      << ", " << sq->get_n_hit_bad()
-      << ", " << sq->get_n_t_hit_bad()
       << ")";
   if (! db.Con()->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DbUpRun::UploadToDB()." << endl;

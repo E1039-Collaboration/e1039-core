@@ -73,8 +73,14 @@ public:
 	virtual int  get_n_phys_evt() const {return std::numeric_limits<int>::max();}
 	virtual void set_n_phys_evt(const int a) {}
 
+	virtual int  get_n_phys_evt_bad() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_phys_evt_bad(const int a) {}
+
 	virtual int  get_n_flush_evt() const {return std::numeric_limits<int>::max();}
 	virtual void set_n_flush_evt(const int a) {}
+
+	virtual int  get_n_flush_evt_bad() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_flush_evt_bad(const int a) {}
 
 	virtual int  get_n_hit() const {return std::numeric_limits<int>::max();}
 	virtual void set_n_hit(const int a) {}
@@ -88,8 +94,17 @@ public:
 	virtual int  get_n_t_hit_bad() const {return std::numeric_limits<int>::max();}
 	virtual void set_n_t_hit_bad(const int a) {}
 
-	//virtual int  get_spill_count() const {return std::numeric_limits<int>::max();}
-	//virtual void set_spill_count(const int a) {}
+	virtual int  get_n_v1495() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_v1495(const int a) {}
+
+	virtual int  get_n_v1495_d1ad() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_v1495_d1ad(const int a) {}
+
+	virtual int  get_n_v1495_d2ad() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_v1495_d2ad(const int a) {}
+
+	virtual int  get_n_v1495_d3ad() const {return std::numeric_limits<int>::max();}
+	virtual void set_n_v1495_d3ad(const int a) {}
 
 protected:
 
