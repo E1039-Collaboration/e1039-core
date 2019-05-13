@@ -22,6 +22,7 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    packages/dptrigger
     online/chan_map
     online/onlmonserver
     online/decoder_maindaq
@@ -39,10 +40,11 @@ else
     simulation/g4detectors
     simulation/g4dst
     simulation/g4eval
-    packages/db2g4
+    #packages/db2g4
     packages/PHGenFitPkg/GenFitExp
     packages/PHGenFitPkg/PHGenFit
     packages/ktracker
+    packages/embedding
     module_example
 	)
 fi
