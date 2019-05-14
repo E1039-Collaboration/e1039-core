@@ -126,19 +126,6 @@ void DbSvc::CreateTable(const std::string name, const int n_var, const char** li
   CreateTable(name, vec_var, vec_type, vec_key);
 }
 
-void DbSvc::CreateTable(const std::string name, const int n_var, const char* list_var[][3])
-{
-  vector<string> vec_var;
-  vector<string> vec_type;
-  vector<string> vec_key;
-  for (int ii = 0; ii < n_var; ii++) {
-    vec_var .push_back(list_var[ii][0]);
-    vec_type.push_back(list_var[ii][1]);
-    if (list_var[ii][2] != 0) vec_key.push_back(list_var[ii][0]);
-  }
-  CreateTable(name, vec_var, vec_type, vec_key);
-}
-
 void DbSvc::CreateTable(const std::string name, const VarList list)
 {
   vector<string> vec_var;

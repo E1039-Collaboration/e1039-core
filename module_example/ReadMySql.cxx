@@ -647,7 +647,7 @@ int ReadMySql::FillSQRun(SQRun* run_header, TSQLServer* server,
 
     	std::string name = getString(row, 1);
     	if(name.compare("spillCount")==0) {
-    		run_header->set_spill_count(getInt(row,2));
+    		run_header->set_n_spill(getInt(row,2));
     	}
     }
 
