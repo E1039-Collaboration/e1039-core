@@ -79,6 +79,7 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
     string fn_end = oss.str();
     if (file_exists(fn_end)) {
       cout << "Exiting since the END file exists.\n";
+      ForceEnd();
       return false;
     }
     oss.str("");
@@ -86,6 +87,7 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
     string fn_next_run = oss.str();
     if (file_exists(fn_next_run)) {
       cout << "Exiting since the next run file exists.\n";
+      ForceEnd();
       return false;
     }
     // Re-open the file, requring a larger file size

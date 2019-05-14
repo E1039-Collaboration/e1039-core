@@ -2,13 +2,13 @@
 #ifndef _ONL_MON_MAIN_DAQ__H_
 #define _ONL_MON_MAIN_DAQ__H_
 #include "OnlMonClient.h"
-class SQSpill;
 class SQEvent;
-class SQHitVector;
+class TArrayI;
 
 class OnlMonMainDaq: public OnlMonClient {
-  TH1* h1_tgt;
   TH1* h1_evt_qual;
+  TH1* h1_flag_v1495;
+  TH1* h1_cnt;
 
  public:
   OnlMonMainDaq(const std::string &name = "OnlMonMainDaq");
@@ -21,7 +21,7 @@ class OnlMonMainDaq: public OnlMonClient {
   int DrawMonitor();
 
  private:
-  void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
+  //void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
 };
 
 #endif /* _ONL_MON_MAIN_DAQ__H_ */
