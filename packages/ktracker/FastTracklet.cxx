@@ -10,6 +10,7 @@ Created: 05-28-2013
 #include <phool/recoConsts.h>
 
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <cmath>
 
@@ -1113,7 +1114,8 @@ void Tracklet::print()
         if(iter->sign < 0) cout << "R: ";
         if(iter->sign == 0) cout << "U: ";
 
-        cout << iter->hit.index << " " << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << residual[iter->hit.detectorID-1] << " === ";
+        cout << setw(8) << iter->hit.index << " " << setw(3) << iter->hit.detectorID << " " << setw(3) << iter->hit.elementID << " " << setw(7) << setprecision(3) << residual[iter->hit.detectorID-1] << " == ";
+        if(iter->hit.detectorID==12 || iter->hit.detectorID==18) cout << endl;
     }
     cout << endl;
 

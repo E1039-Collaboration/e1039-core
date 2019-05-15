@@ -207,10 +207,11 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
   int triggers[10];
   for(int i = SQEvent::NIM1; i <= SQEvent::MATRIX5; ++i)
   {
-		if(_event_header)
-			triggers[i] = _event_header->get_trigger(static_cast<SQEvent::TriggerMask>(i));
-		else
-			triggers[i] = 1;
+    triggers[i] = 0;
+    if(_event_header) {
+      if(_event_header->get_trigger(static_cast<SQEvent::TriggerMask>(i)) > 0)
+        triggers[i] |= (1<<i);
+    }
   }
   sraw_event->setTriggerBits(triggers);
 
