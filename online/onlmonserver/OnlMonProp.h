@@ -1,21 +1,21 @@
-#ifndef _ONL_MON_CHAM__H_
-#define _ONL_MON_CHAM__H_
+#ifndef _ONL_MON_PROP__H_
+#define _ONL_MON_PROP__H_
 #include "OnlMonClient.h"
 
-class OnlMonCham: public OnlMonClient {
+class OnlMonProp: public OnlMonClient {
  public:
-  typedef enum { D0, D1, D2, D3p, D3m } ChamType_t;
-  static const int N_PL = 6;
+  typedef enum { P1, P2 } PropType_t;
+  static const int N_PL = 4;
 
  private:
-  ChamType_t m_type;
+  PropType_t m_type;
   int m_pl0;
   TH1* h1_ele [N_PL];
   TH1* h1_time[N_PL];
 
  public:
-  OnlMonCham(const ChamType_t type);
-  virtual ~OnlMonCham() {}
+  OnlMonProp(const PropType_t type);
+  virtual ~OnlMonProp() {}
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);
@@ -25,4 +25,4 @@ class OnlMonCham: public OnlMonClient {
   int DrawMonitor();
 };
 
-#endif /* _ONL_MON_CHAM__H_ */
+#endif /* _ONL_MON_PROP__H_ */

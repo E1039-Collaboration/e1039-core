@@ -45,6 +45,9 @@ public:
   virtual short        get_element_id() const                           {return std::numeric_limits<short>::max();}
   virtual void         set_element_id(const short a)                    {}
 
+  virtual short        get_level() const                                {return std::numeric_limits<short>::max();}
+  virtual void         set_level(const short a)                         {}
+
   virtual float        get_tdc_time() const                             {return std::numeric_limits<float>::max();}
   virtual void         set_tdc_time(const float a)                      {}
 

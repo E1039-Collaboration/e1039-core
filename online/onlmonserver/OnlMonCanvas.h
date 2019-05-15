@@ -14,7 +14,9 @@ class OnlMonCanvas {
 
  protected:
   std::string m_name;
+  std::string m_title;
   int         m_num;
+  int         m_run;
   TCanvas     m_can;
   TPad        m_pad_title;
   TPad        m_pad_main;
@@ -23,7 +25,7 @@ class OnlMonCanvas {
   MonStatus_t m_mon_status;
 
  public:
-  OnlMonCanvas(const std::string name, const int num);
+  OnlMonCanvas(const std::string name, const std::string title, const int num, const int run);
   virtual ~OnlMonCanvas();
 
   void AddMessage(const char* msg);
@@ -31,7 +33,7 @@ class OnlMonCanvas {
   TPad* GetMainPad();
 
   void PreDraw();
-  void PostDraw();
+  void PostDraw(const bool at_end=false);
 };
 
 #endif /* _ONL_MON_CANVAS__H_ */

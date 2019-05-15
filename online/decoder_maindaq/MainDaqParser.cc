@@ -1095,8 +1095,7 @@ int MainDaqParser::PackOneSpillData()
     }
     for (unsigned int ih = 0; ih < n_v1495; ih++) {
       HitData* hd = &ed->list_hit_trig[ih];
-      short level; // not stored for now
-      if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
+      if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, hd->lvl)) {
         if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }

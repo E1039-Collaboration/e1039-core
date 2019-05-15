@@ -17,19 +17,37 @@
 #include "OnlMonMainDaq.h"
 using namespace std;
 
-OnlMonMainDaq::OnlMonMainDaq(const std::string& name) : OnlMonClient(name)
+OnlMonMainDaq::OnlMonMainDaq()
 {
-  SetNumCanvases(1);
+  Name("OnlMonMainDaq");
+  Title("Main DAQ");
+  NumCanvases(1);
 }
 
-int OnlMonMainDaq::Init(PHCompositeNode* topNode)
+int OnlMonMainDaq::InitOnlMon(PHCompositeNode* topNode)
 {
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
+{
+  h1_trig = new TH1D("h1_trig", ";Trigger;N of events", 8, 0.5, 8.5);
   h1_evt_qual = new TH1D("h1_evt_qual", ";Event-quality bit;N of events", 33, -0.5, 32.5);
   h1_flag_v1495 = new TH1D("h1_flag_v1495", ";v1495 status flag; N of v1495 events", 4, -0.5, 3.5);
   h1_cnt = new TH1D("h1_cnt", ";Type;Count", 15, 0.5, 15.5);
 
+  h1_trig->GetXaxis()->SetBinLabel(1, "FPGA1");
+  h1_trig->GetXaxis()->SetBinLabel(2, "FPGA2");
+  h1_trig->GetXaxis()->SetBinLabel(3, "FPGA3");
+  h1_trig->GetXaxis()->SetBinLabel(4, "FPGA4");
+  h1_trig->GetXaxis()->SetBinLabel(5, "FPGA5");
+  h1_trig->GetXaxis()->SetBinLabel(6, "NIM1");
+  h1_trig->GetXaxis()->SetBinLabel(7, "NIM2");
+  h1_trig->GetXaxis()->SetBinLabel(8, "NIM3");
+
   Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
   OnlMonServer::instance()->registerHistoManager(hm);
+  hm->registerHisto(h1_trig);
   hm->registerHisto(h1_evt_qual);
   hm->registerHisto(h1_flag_v1495);
   hm->registerHisto(h1_cnt);
@@ -37,16 +55,20 @@ int OnlMonMainDaq::Init(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonMainDaq::InitRun(PHCompositeNode* topNode)
-{
-  return Fun4AllReturnCodes::EVENT_OK;
-}
-
-int OnlMonMainDaq::process_event(PHCompositeNode* topNode)
+int OnlMonMainDaq::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
   SQRun*   run   = findNode::getClass<SQRun  >(topNode, "SQRun");
   SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (! run || ! event) return Fun4AllReturnCodes::ABORTEVENT;
+
+  if (event->get_trigger(SQEvent::MATRIX1)) h1_trig->Fill(1);
+  if (event->get_trigger(SQEvent::MATRIX2)) h1_trig->Fill(2);
+  if (event->get_trigger(SQEvent::MATRIX3)) h1_trig->Fill(3);
+  if (event->get_trigger(SQEvent::MATRIX4)) h1_trig->Fill(4);
+  if (event->get_trigger(SQEvent::MATRIX5)) h1_trig->Fill(5);
+  if (event->get_trigger(SQEvent::NIM1   )) h1_trig->Fill(6);
+  if (event->get_trigger(SQEvent::NIM2   )) h1_trig->Fill(7);
+  if (event->get_trigger(SQEvent::NIM3   )) h1_trig->Fill(8);
 
   h1_cnt->SetBinContent( 1, run->get_n_spill        ());
   h1_cnt->SetBinContent( 2, run->get_n_evt_all      ());
@@ -79,31 +101,40 @@ int OnlMonMainDaq::process_event(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonMainDaq::End(PHCompositeNode* topNode)
+int OnlMonMainDaq::EndOnlMon(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonMainDaq::DrawMonitor()
+int OnlMonMainDaq::FindAllMonHist()
 {
+  h1_trig       = (TH1*)FindMonObj("h1_trig");
   h1_evt_qual   = (TH1*)FindMonObj("h1_evt_qual");
   h1_flag_v1495 = (TH1*)FindMonObj("h1_flag_v1495");
   h1_cnt        = (TH1*)FindMonObj("h1_cnt");
+  return (h1_trig && h1_evt_qual && h1_flag_v1495 && h1_cnt  ?  0  :  1);
+}
 
+int OnlMonMainDaq::DrawMonitor()
+{
   OnlMonCanvas* can = GetCanvas();
   TPad* pad = can->GetMainPad();
   pad->SetGrid();
-  pad->Divide(1, 3);
+  pad->Divide(1, 4);
 
   pad->cd(1);
-  if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
-  h1_evt_qual->Draw();
+  //if (h1_trig->Integral() > 100) gPad->SetLogy();
+  h1_trig->Draw();
 
   pad->cd(2);
-  if (h1_flag_v1495->Integral() > 100) gPad->SetLogy();
-  h1_flag_v1495->Draw();
+  //if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
+  h1_evt_qual->Draw();
 
   pad->cd(3);
+  //if (h1_flag_v1495->Integral() > 100) gPad->SetLogy();
+  h1_flag_v1495->Draw();
+
+  pad->cd(4);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
   ostringstream oss;
   oss << "N of spills = " << h1_cnt->GetBinContent(1);

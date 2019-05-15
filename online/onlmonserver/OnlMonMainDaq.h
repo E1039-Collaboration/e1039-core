@@ -6,18 +6,20 @@ class SQEvent;
 class TArrayI;
 
 class OnlMonMainDaq: public OnlMonClient {
+  TH1* h1_trig;
   TH1* h1_evt_qual;
   TH1* h1_flag_v1495;
   TH1* h1_cnt;
 
  public:
-  OnlMonMainDaq(const std::string &name = "OnlMonMainDaq");
+  OnlMonMainDaq();
   virtual ~OnlMonMainDaq() {}
-  int Init(PHCompositeNode *topNode);
-  int InitRun(PHCompositeNode *topNode);
-  int process_event(PHCompositeNode *topNode);
-  int End(PHCompositeNode *topNode);
 
+  int InitOnlMon(PHCompositeNode *topNode);
+  int InitRunOnlMon(PHCompositeNode *topNode);
+  int ProcessEventOnlMon(PHCompositeNode *topNode);
+  int EndOnlMon(PHCompositeNode *topNode);
+  int FindAllMonHist();
   int DrawMonitor();
 
  private:

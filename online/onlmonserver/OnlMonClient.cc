@@ -3,6 +3,7 @@
 #include <TSocket.h>
 #include <TClass.h>
 #include <TMessage.h>
+#include <interface_main/SQRun.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
@@ -13,15 +14,53 @@
 #include "OnlMonClient.h"
 using namespace std;
 
-OnlMonClient::OnlMonClient(const std::string &name) : SubsysReco(name)
+OnlMonClient::OnlMonClient() :
+  SubsysReco("OnlMonClient"), m_title("Client Title"), m_n_can(1)
 {
-  m_n_can = 1;
   memset(m_list_can, 0, sizeof(m_list_can));
 }
 
 OnlMonClient::~OnlMonClient()
 {
   ClearHistList();
+}
+
+int OnlMonClient::Init(PHCompositeNode* topNode)
+{
+  return InitOnlMon(topNode);
+}
+
+int OnlMonClient::InitRun(PHCompositeNode* topNode)
+{
+  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  m_run_id = run_header->get_run_id();
+  return InitRunOnlMon(topNode);
+}
+
+int OnlMonClient::process_event(PHCompositeNode* topNode)
+{
+  return ProcessEventOnlMon(topNode);
+}
+
+int OnlMonClient::End(PHCompositeNode* topNode)
+{
+  for (int ii = 0; ii < m_n_can; ii++) {
+    if (m_list_can[ii]) delete m_list_can[ii];
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, m_run_id);
+    m_list_can[ii]->PreDraw();
+  }
+
+  int ret = DrawMonitor();
+  if (ret != 0) {
+    cerr << "WARNING: OnlMonClient::End().\n" << endl;
+  }
+
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii]->PostDraw(true);
+  }
+
+  return EndOnlMon(topNode);
 }
 
 TH1* OnlMonClient::FindMonHist(const std::string name, const bool non_null)
@@ -48,6 +87,36 @@ TObject* OnlMonClient::FindMonObj(const std::string name, const bool non_null)
   return 0;
 }
 
+int OnlMonClient::InitOnlMon(PHCompositeNode* topNode)
+{
+  cerr << "!!ERROR!!  OnlMonClient::InitOnlMon(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
+int OnlMonClient::InitRunOnlMon(PHCompositeNode* topNode)
+{
+  cerr << "!!ERROR!!  OnlMonClient::InitRunOnlMon(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
+int OnlMonClient::ProcessEventOnlMon(PHCompositeNode* topNode)
+{
+  cerr << "!!ERROR!!  OnlMonClient::ProcessEventOnlMon(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
+int OnlMonClient::EndOnlMon(PHCompositeNode* topNode)
+{
+  cerr << "!!ERROR!!  OnlMonClient::EndOnlMon(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
+int OnlMonClient::FindAllMonHist()
+{
+  cerr << "!!ERROR!!  OnlMonClient::FindAllMonHist(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
 int OnlMonClient::DrawMonitor()
 {
   cerr << "!!ERROR!!  OnlMonClient::DrawMonitor(): virtual function called.  Abort." << endl;
@@ -61,9 +130,10 @@ int OnlMonClient::StartMonitor()
   }
 
   ReceiveHist();
+  FindAllMonHist();
 
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), ii);
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, m_run_id);
     m_list_can[ii]->PreDraw();
   }
 

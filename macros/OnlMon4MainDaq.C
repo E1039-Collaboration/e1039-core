@@ -16,20 +16,31 @@ int OnlMon4MainDaq()
 
   vector<OnlMonClient*> list_omc;
   list_omc.push_back(new OnlMonMainDaq());
-  list_omc.push_back(new OnlMonCham(OnlMonCham::D0 ));
-  list_omc.push_back(new OnlMonCham(OnlMonCham::D1 ));
-  list_omc.push_back(new OnlMonCham(OnlMonCham::D2 ));
-  list_omc.push_back(new OnlMonCham(OnlMonCham::D3p));
-  list_omc.push_back(new OnlMonCham(OnlMonCham::D3m));
+  list_omc.push_back(new OnlMonTrigSig());
+  list_omc.push_back(new OnlMonV1495(OnlMonV1495::H1, 1));
+  list_omc.push_back(new OnlMonV1495(OnlMonV1495::H2, 1));
+  list_omc.push_back(new OnlMonV1495(OnlMonV1495::H3, 1));
+  list_omc.push_back(new OnlMonV1495(OnlMonV1495::H4, 1));
+  list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H1 ));
+  list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H2 ));
+  list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H3 ));
+  list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H4 ));
+  list_omc.push_back(new OnlMonCham (OnlMonCham ::D0 ));
+  list_omc.push_back(new OnlMonCham (OnlMonCham ::D1 ));
+  list_omc.push_back(new OnlMonCham (OnlMonCham ::D2 ));
+  list_omc.push_back(new OnlMonCham (OnlMonCham ::D3p));
+  list_omc.push_back(new OnlMonCham (OnlMonCham ::D3m));
+  list_omc.push_back(new OnlMonProp (OnlMonProp ::P1 ));
+  list_omc.push_back(new OnlMonProp (OnlMonProp ::P2 ));
   
-  TGMainFrame* frame = new TGMainFrame(gClient->GetRoot(), 400, 800);
+  TGMainFrame* frame = new TGMainFrame(gClient->GetRoot(), 200, 800);
 
-  TGTextView* head = new TGTextView(frame, 400, 50, "E1039 OnlMon Selector");
+  TGTextView* head = new TGTextView(frame, 200, 50, "E1039 OnlMon Selector");
   frame->AddFrame(head); 
 
   TGTextButton*  button[99];
   for (unsigned int ii = 0; ii < list_omc.size(); ii++) {
-    button[ii] = new TGTextButton(frame, list_omc[ii]->Name().c_str());
+    button[ii] = new TGTextButton(frame, list_omc[ii]->Title().c_str());
     button[ii]->Connect("Clicked()", "OnlMonClient", list_omc[ii], "StartMonitor()");
     frame->AddFrame(button[ii], new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 10,10,20,20)); // (l, r, t, b) 
   }

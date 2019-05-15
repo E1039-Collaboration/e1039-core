@@ -96,7 +96,7 @@ JobOptsSvc::JobOptsSvc()
     m_fMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Fmag";
     m_kMagFile = "$GEOMETRY_ROOT/magnetic_fields/tab.Kmag";
 
-    m_geomVersion = "geometry_G18_run3";
+    m_geomVersion = "geometry_G10_run5";
     m_mySQLInputServer  = "e906-db1.fnal.gov";
     m_mySQLOutputServer = "e906-db1.fnal.gov";
 }

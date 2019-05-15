@@ -322,6 +322,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     hit_vec->push_back(hit);
     delete hit;
@@ -333,6 +334,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     trig_hit_vec->push_back(hit);
     delete hit;
