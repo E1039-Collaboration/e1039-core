@@ -39,10 +39,12 @@ else
     simulation/g4detectors
     simulation/g4dst
     simulation/g4eval
-    packages/db2g4
+    packages/dptrigger
+    #packages/db2g4
     packages/PHGenFitPkg/GenFitExp
     packages/PHGenFitPkg/PHGenFit
     packages/ktracker
+    packages/embedding
     module_example
 	)
 fi

@@ -119,7 +119,16 @@ int MainDaqParser::End()
 {
   coda->CloseFile();
   dec_par.timeEnd = time(NULL);
-  if (dec_par.verbose) dec_par.PrintStat();
+  if (dec_par.verbose) {
+    cout << "\nStatistics in MainDaqParser:\n"
+         << "  Phys  events:  all = " << run_data.n_phys_evt << "\n"
+         << "  Flush events:  all = " << run_data.n_flush_evt << "\n"
+         << "  v1495 events:  all = " << run_data.n_v1495 << ", 0xd1ad = " << run_data.n_v1495_d1ad << ", 0xd2ad = " << run_data.n_v1495_d2ad << ", 0xd3ad = " << run_data.n_v1495_d3ad << "\n"
+         << "  Real  events:  all = " << run_data.n_evt_all << ", decoded = " << run_data.n_evt_dec << "\n"
+         << "  TDC   hits: total = " << run_data.n_hit   << ", bad = " << run_data.n_hit_bad << "\n"
+         << "  v1495 hits: total = " << run_data.n_t_hit << ", bad = " << run_data.n_t_hit_bad << "\n"
+         << "  Real decoding time: " << (dec_par.timeEnd - dec_par.timeStart) << "\n";
+  }
   return 0;
 }
 
@@ -132,11 +141,11 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
 {
     // int evLength     = words[0];
     // int prestartCode = words[1];
-    int runTime = words[2];
+    run_data.utime_b = words[2];
     dec_par.runID = run_data.run_id = words[3];
     // int runType = words[4];
 
-    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << runTime << " " << dec_par.runID << " " << dec_par.sampling << "\n";
+    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << run_data.utime_b << " " << dec_par.sampling << "\n";
 
     dec_par.InitMapper();
     coda->SetRunNumber(dec_par.runID);
@@ -223,10 +232,16 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
   for (int ii = 0; ii < 10; ii++) {
     run_data.trig_bit[ii] = get_bin_bit (feeTriggerBits, ii);
   }
+  for (int ii = 0; ii < 5; ii++) run_data.fpga_enabled[ii] = get_bin_bit (feeTriggerBits, ii  );
+  for (int ii = 0; ii < 5; ii++) run_data. nim_enabled[ii] = get_bin_bit (feeTriggerBits, ii+5);
+
   /// 8 words = FPGA1, ..., FPGA5, NIM1, ..., NIM3
   for (int ii = 0; ii < 8; ii++) {
     run_data.prescale[ii] = words[ii + 5];
   }
+  for (int ii = 0; ii < 5; ii++) run_data.fpga_prescale[ii] = words[ii +  5];
+  for (int ii = 0; ii < 3; ii++) run_data. nim_prescale[ii] = words[ii + 10];
+
   run_data.n_fee_prescale++;
   if (dec_par.verbose > 1) {
     cout << "  feeP ";
@@ -250,6 +265,7 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
  */
 int MainDaqParser::ProcessCodaPhysics(int* words)
 {
+  run_data.n_phys_evt++;
   int eventCode = words[1];
   int ret = 0;
   switch (get_hex_bits(eventCode, 7, 4) ) {
@@ -257,7 +273,9 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     ////KN: test code to check if a specific word exists.
     //PrintWords(words, 0, evLength);
     //PrintCodaEventSummary(words);
+    run_data.n_flush_evt++;
     ret = ProcessPhysFlush(words);
+    if (ret < 0) run_data.n_flush_evt_bad++;
     break;
   case SLOW_CONTROL:
     ret = ProcessPhysSlow(words);
@@ -280,10 +298,11 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     ret = ProcessPhysBOSEOS(words, TYPE_EOS);
     break;
   default: // Awaiting further event types
+    ret = -1;
     cout << "Unknown event code: " << eventCode << ".  Ignore.\n";
     break;
   }
-  
+  if (ret != 0) run_data.n_phys_evt_bad++;
   return ret;
 }
 
@@ -438,6 +457,7 @@ int MainDaqParser::ProcessPhysSpillCounter(int* words)
   if (dec_par.verbose) {
     cout << "Spill Counter @ coda = " << dec_par.codaID << ":  spill = " << dec_par.spillID_cntr << "\n";
   }
+  run_data.n_spill++;
   return 0;
 }
 
@@ -524,7 +544,6 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
  */
 int MainDaqParser::ProcessPhysFlush(int* words)
 {
-  dec_par.n_flush_evt_all++;
   const bool print_event = false; ///< If "true", print out ROCs & boards found.
   int evLength = words[0];
   //int codaEvVmeTime = 0;
@@ -595,7 +614,6 @@ int MainDaqParser::ProcessPhysFlush(int* words)
     if (idx != idx_roc_end) Abort("idx != idx_roc_end");
   }
   if (print_event) cout << endl;
-  dec_par.n_flush_evt_ok++;
   return 0;
 }
 
@@ -739,7 +757,6 @@ int MainDaqParser::ProcessBoardTriggerCount (int* words, int j)
  */
 int MainDaqParser::ProcessBoardFeeQIE (int* words, int idx)
 {
-    int submitQIE = 1;
     if (dec_par.runID < 22400) Abort("feeQIE does not support run < 22400.");
 
     while (words[idx] == (int)0xe906e906) idx++; // Still necessary??
@@ -806,29 +823,21 @@ int MainDaqParser::ProcessBoardFeeQIE (int* words, int idx)
 	idx_evt++;
       }
       
-      if (submitQIE) {
-	EventData* ed = &(*list_ed)[eventID];
-	ed->n_qie++;
-	EventInfo* evt = &ed->event;
-	//if (ed->n_qie == 2) {
-	//  cout << "QIE#1 " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
-	//       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
-	//}
-	SetEventInfo(evt, eventID);
-
-	evt->qieFlag = 1;
-	for (int ii = 0; ii < 4; ii++) evt->sums[ii] = sums_vals[ii];
-	evt->triggerCount = triggerCount;
-	evt->turnOnset    = turnOnset;
-	evt->rfOnset      = rfOnset;
-	for (int ii = 0; ii < 25 ; ii++) evt->rf[ii+4] = rf_vals[ii]; // We are now missing first 4 bins and last 4 bins. YC, 2016/05/27
-
-	//if (ed->n_qie == 2) {
-	//  cout << "QIE#2 " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
-	//       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
-	//}
-      }
+      EventData* ed = &(*list_ed)[eventID];
+      ed->n_qie++;
+      EventInfo* evt = &ed->event;
+      //if (ed->n_qie == 2) {
+      //  cout << "QIE#1 " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
+      //       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
+      //}
+      SetEventInfo(evt, eventID);
       
+      for (int ii = 0; ii < 4; ii++) evt->sums[ii] = sums_vals[ii];
+      evt->triggerCount = triggerCount;
+      evt->turnOnset    = turnOnset;
+      evt->rfOnset      = rfOnset;
+      for (int ii = 0; ii < 25 ; ii++) evt->rf[ii+4] = rf_vals[ii]; // We are now missing first 4 bins and last 4 bins. YC, 2016/05/27
+            
       idx += 49;
     }
 
@@ -875,13 +884,13 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	SetEventInfo(evt, evt_id);
 
 	if (word_stop == (int)0xd2ad) {
-	  dec_par.n_1495_d2ad++;
-	  evt->dataQuality |= EVT_ERR_V1495;
+          evt->flag_v1495 |= 0x2;
+	  run_data.n_v1495_d2ad++;
 	} else if (word_stop == (int)0xd3ad) {
-	  dec_par.n_1495_d3ad++;
-	  evt->dataQuality |= EVT_ERR_V1495;
+          evt->flag_v1495 |= 0x4;
+	  run_data.n_v1495_d3ad++;
 	} else if (get_hex_bits(word_stop, 3, 1) != 1) {
-	  evt->dataQuality |= EVT_ERR_V1495;
+          evt->flag_v1495 |= 0x8;
 	  cerr << "  !! v1495: bad stop word: " << word_stop << endl;
 	} else { // OK.  Insert hits.
 	  int time_stop   = get_hex_bits(word_stop, 2, 3);
@@ -895,11 +904,10 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	    hit.time  = time_stop - list_time[ii];
 	    ed->list_hit_trig.push_back(hit);
 	  }
-	  dec_par.n_1495_good++;
 	}
 	list_chan.clear();
 	list_time.clear();
-	dec_par.n_1495_all++;
+	run_data.n_v1495++;
 	idx += 5;
 	i_evt++;
       } else { // start signal
@@ -968,7 +976,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   }
 
   int i_evt = 0;
-  int qual = 0;
+  //int qual = 0;
   bool header_found = false;
   double time_header = 0;
   vector<int   > list_chan;
@@ -976,7 +984,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   for (int idx = idx_events_begin; idx < idx_events_end; idx++) {
     if (get_hex_bits(words[idx], 7, 1) == 8) { // header = stop hit
       if (header_found) { // Not seen in run 23930, but seen in run 23751.
-	qual |= 0x1<<(roc-1);
+	//qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  Header after header." << endl;
       }
       int word = words[idx];
@@ -988,9 +996,9 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     } else if (get_hex_bits(words[idx], 7, 1) == 0 &&
 	       get_hex_bits(words[idx], 6, 7) != 0   ) { // event ID
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-	qual |= 0x1<<(roc-1);
+	//qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  eventID without stop word." << endl; // Possible to miss a stop signal???
-	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
 	continue;
       }
       int evt_id = words[idx];
@@ -998,7 +1006,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
       ed->n_tdc++;
       EventInfo* evt = &ed->event;
       SetEventInfo(evt, evt_id);
-      evt->dataQuality |= qual;
+      //evt->dataQuality |= qual;
 
       /// The data of one physics event are complete.  Let's insert hits to the storage.
       for (unsigned int ii = 0; ii < list_chan.size(); ii++) {
@@ -1013,22 +1021,22 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	//cout << " HIT " << dec_par.spillID << " " << evt_id << " " << (int)dec_par.rocID << " " << boardID << " " << list_chan[ii] << " " << list_time[ii] << endl;
       }
       i_evt++;
-      qual = 0;
+      //qual = 0;
       header_found = false;
       list_chan.clear();
       list_time.clear();
     } else { // start hit
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-	qual |= 0x1<<(roc-1);
+	//qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  Start without stop word." << endl; // Possible to miss a stop signal???
-	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
 	continue;
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) { // Not seen in run 23930, but seen in run 23751.
-	qual |= 0x1<<(roc-1);
+	//qual |= 0x1<<(roc-1);
 	cerr << "WARNING:  Start signal is not rising." << endl;
-	dec_par.n_hit_bad++;
+	run_data.n_hit_bad++;
       }
       double fine  = 4.0 - get_hex_bit (word, 0) * 4.0 / 9.0;
       double rough = 4.0 * get_hex_bits(word, 3, 3);
@@ -1043,7 +1051,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     }
   }
   if (header_found) { // Not seen in run 23930, but seen in run 23751.
-    qual |= 0x1<<(roc-1);
+    //qual |= 0x1<<(roc-1);
     cerr << "WARNING:  Not finished cleanly." << endl;
   }
   
@@ -1055,8 +1063,7 @@ int MainDaqParser::PackOneSpillData()
   if (dec_par.verbose) cout << "PackOneSpillData(): n=" << list_ed->size() << endl;
 
   sd_now = &(*list_sd)[dec_par.spillID];
-  
-  dec_par.n_phys_evt_all += list_ed->size();
+  run_data.n_evt_all += list_ed->size();
 
   /// A part (most?) of lines in this loop had better be moved to
   /// a SubsysReco module for better function separation.
@@ -1071,46 +1078,17 @@ int MainDaqParser::PackOneSpillData()
       continue;
     }
     it++;
-    dec_par.n_phys_evt_dec++;
-
-    unsigned int n_tdc; // expected number of tdc info
-    if (dec_par.runID >= 28664) n_tdc = 101; // seen in run 28700
-    else                        n_tdc = 108; // seen in run 28000
-    // This run range was confirmed by checking n_tdc in the following runs;
-    //  * 101 in runs 28680, 28670, 28665, 28664
-    //  * 108 in runs 28500, 28600, 28650, 28660, 28661
-    // Note that runs 28662 & 28663 contain no event.
-    // Is the change of n_tdc related to elog #17385??
-    // https://e906-gat6.fnal.gov:8080/SeaQuest/17385
-    if (ed->n_tdc != n_tdc) event->dataQuality |= EVT_ERR_N_TDC;
-
-    if      (ed->n_v1495  < 2) event->dataQuality |= EVT_ERR_N_V1495_0;
-    else if (ed->n_v1495  > 2) event->dataQuality |= EVT_ERR_N_V1495_2;
-    if      (ed->n_trig_b < 1) event->dataQuality |= EVT_ERR_N_TRIGB_0;
-    else if (ed->n_trig_b > 1) event->dataQuality |= EVT_ERR_N_TRIGB_2;
-    if      (ed->n_trig_c < 1) event->dataQuality |= EVT_ERR_N_TRIGC_0;
-    else if (ed->n_trig_c > 1) event->dataQuality |= EVT_ERR_N_TRIGC_2;
-    if      (ed->n_qie    < 1) event->dataQuality |= EVT_ERR_N_QIE_0;
-    else if (ed->n_qie    > 1) event->dataQuality |= EVT_ERR_N_QIE_2;
-
-    if (dec_par.verbose > 1) {
-      if (ed->n_qie != 1 || ed->n_v1495 != 2 || ed->n_tdc != n_tdc || ed->n_trig_b != 1 || ed->n_trig_c != 1) {
-	cout << "  N! " << evt_id << " | " << ed->n_qie << " " << ed->n_v1495 << " " << ed->n_tdc << " " << ed->n_trig_b << " " << ed->n_trig_c << endl;
-      }
-    }
+    run_data.n_evt_dec++;
 
     unsigned int n_taiwan = ed->list_hit     .size();
     unsigned int n_v1495  = ed->list_hit_trig.size();
-    dec_par.n_hit  += n_taiwan;
-    dec_par.n_thit += n_v1495;
-    if (dec_par. n_hit_max < n_taiwan) dec_par. n_hit_max = n_taiwan;
-    if (dec_par.n_thit_max < n_v1495 ) dec_par.n_thit_max = n_v1495 ;
+    run_data.n_hit   += n_taiwan;
+    run_data.n_t_hit += n_v1495;
 
     /// Run the mapping.  It should be done here (after the event selection)
     /// since it takes the longest process time per event.
     for (unsigned int ih = 0; ih < n_taiwan; ih++) {
       HitData* hd = &ed->list_hit[ih];
-      //if (! dec_par.map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
       if (! dec_par.chan_map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
         if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
@@ -1118,7 +1096,6 @@ int MainDaqParser::PackOneSpillData()
     for (unsigned int ih = 0; ih < n_v1495; ih++) {
       HitData* hd = &ed->list_hit_trig[ih];
       short level; // not stored for now
-      //if (! dec_par.map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
       if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, level)) {
         if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }

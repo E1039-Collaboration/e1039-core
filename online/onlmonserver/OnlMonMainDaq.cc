@@ -7,11 +7,7 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <interface_main/SQRun.h>
-#include <interface_main/SQStringMap.h>
-#include <interface_main/SQScaler.h>
-#include <interface_main/SQSlowCont.h>
 #include <interface_main/SQEvent.h>
-#include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
@@ -28,41 +24,58 @@ OnlMonMainDaq::OnlMonMainDaq(const std::string& name) : OnlMonClient(name)
 
 int OnlMonMainDaq::Init(PHCompositeNode* topNode)
 {
-  h1_tgt      = new TH1D("h1_tgt", ";Target position; N of spills", 9, -0.5, 8.5);
   h1_evt_qual = new TH1D("h1_evt_qual", ";Event-quality bit;N of events", 33, -0.5, 32.5);
+  h1_flag_v1495 = new TH1D("h1_flag_v1495", ";v1495 status flag; N of v1495 events", 4, -0.5, 3.5);
+  h1_cnt = new TH1D("h1_cnt", ";Type;Count", 15, 0.5, 15.5);
 
   Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
   OnlMonServer::instance()->registerHistoManager(hm);
-  hm->registerHisto(h1_tgt);
   hm->registerHisto(h1_evt_qual);
+  hm->registerHisto(h1_flag_v1495);
+  hm->registerHisto(h1_cnt);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int OnlMonMainDaq::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  cout << "SQRun: " << run_header->get_run_id() << " " << run_header->get_spill_count() << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int OnlMonMainDaq::process_event(PHCompositeNode* topNode)
 {
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
-  SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  SQHitVector* trig_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-  if (!event_header || !hit_vec || !trig_hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
+  SQRun*   run   = findNode::getClass<SQRun  >(topNode, "SQRun");
+  SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (! run || ! event) return Fun4AllReturnCodes::ABORTEVENT;
 
-  //static int n_evt_print = 0;
-  //if (n_evt_print++ < 3) PrintEvent(event_header, hit_vec, trig_hit_vec);
+  h1_cnt->SetBinContent( 1, run->get_n_spill        ());
+  h1_cnt->SetBinContent( 2, run->get_n_evt_all      ());
+  h1_cnt->SetBinContent( 3, run->get_n_evt_dec      ());
+  h1_cnt->SetBinContent( 4, run->get_n_phys_evt     ());
+  h1_cnt->SetBinContent( 5, run->get_n_phys_evt_bad ());
+  h1_cnt->SetBinContent( 6, run->get_n_flush_evt    ());
+  h1_cnt->SetBinContent( 7, run->get_n_flush_evt_bad());
+  h1_cnt->SetBinContent( 8, run->get_n_hit          ());
+  h1_cnt->SetBinContent( 9, run->get_n_t_hit        ());
+  h1_cnt->SetBinContent(10, run->get_n_hit_bad      ());
+  h1_cnt->SetBinContent(11, run->get_n_t_hit_bad    ());
+  h1_cnt->SetBinContent(12, run->get_n_v1495        ());
+  h1_cnt->SetBinContent(13, run->get_n_v1495_d1ad   ());
+  h1_cnt->SetBinContent(14, run->get_n_v1495_d2ad   ());
+  h1_cnt->SetBinContent(15, run->get_n_v1495_d3ad   ());
 
-  int dq_evt = event_header->get_data_quality();
-  if (dq_evt == 0) h1_evt_qual->Fill(32);
+  int dq = event->get_data_quality();
+  if (dq == 0) h1_evt_qual->Fill(0);
   for (int bit = 0; bit < 32; bit++) {
-    if ((dq_evt >> bit) & 0x1) h1_evt_qual->Fill(bit);
+    if ((dq >> bit) & 0x1) h1_evt_qual->Fill(bit + 1);
   }
-  
+
+  int v1495 = event->get_flag_v1495();
+  if (v1495 == 0) h1_flag_v1495->Fill(0);
+  for (int bit = 0; bit < 3; bit++) {
+    if ((v1495 >> bit) & 0x1) h1_flag_v1495->Fill(bit + 1);
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -73,47 +86,50 @@ int OnlMonMainDaq::End(PHCompositeNode* topNode)
 
 int OnlMonMainDaq::DrawMonitor()
 {
-  //h1_tgt      = FindMonHist("h1_tgt");
-  //h1_evt_qual = FindMonHist("h1_evt_qual");
-  h1_tgt      = (TH1*)FindMonObj("h1_tgt");
-  h1_evt_qual = (TH1*)FindMonObj("h1_evt_qual");
+  h1_evt_qual   = (TH1*)FindMonObj("h1_evt_qual");
+  h1_flag_v1495 = (TH1*)FindMonObj("h1_flag_v1495");
+  h1_cnt        = (TH1*)FindMonObj("h1_cnt");
 
   OnlMonCanvas* can = GetCanvas();
   TPad* pad = can->GetMainPad();
   pad->SetGrid();
-  pad->Divide(1, 2);
+  pad->Divide(1, 3);
 
   pad->cd(1);
   if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
   h1_evt_qual->Draw();
 
   pad->cd(2);
-  h1_tgt->Draw();
+  if (h1_flag_v1495->Integral() > 100) gPad->SetLogy();
+  h1_flag_v1495->Draw();
+
+  pad->cd(3);
+  TPaveText* pate = new TPaveText(.02, .02, .98, .98);
+  ostringstream oss;
+  oss << "N of spills = " << h1_cnt->GetBinContent(1);
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of triggered events = " << h1_cnt->GetBinContent(2) << " (all), " << h1_cnt->GetBinContent(3) << " (decoded)";
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of Coda physics events = " << h1_cnt->GetBinContent(4) << " (all), " << h1_cnt->GetBinContent(5) << " (bad)";
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of Coda flush events = " << h1_cnt->GetBinContent(6) << " (all), " << h1_cnt->GetBinContent(7) << " (bad)";
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of Taiwan TDC hits = " << h1_cnt->GetBinContent(8) << " (all), " << h1_cnt->GetBinContent(10) << " (bad)";
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of v1495 TDC hits = " << h1_cnt->GetBinContent(9) << " (all), " << h1_cnt->GetBinContent(11) << " (bad)";
+  pate->AddText(oss.str().c_str());
+  oss.str("");
+  oss << "N of v1495 events = " << h1_cnt->GetBinContent(12) << " (all), " << h1_cnt->GetBinContent(13) << " (d1ad), " << h1_cnt->GetBinContent(14) << " (d2ad), " << h1_cnt->GetBinContent(15) << " (d3ad)";
+  pate->AddText(oss.str().c_str());
+  pate->Draw();
 
   can->AddMessage("Always Okay ;^D");
   can->SetStatus(OnlMonCanvas::OK);
 
   return 0;
-}
-
-void OnlMonMainDaq::PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit)
-{
-  cout << "SQEvent:  "
-       << "  " << evt->get_run_id       ()
-       << "  " << evt->get_spill_id     ()
-       << "  " << evt->get_event_id     ()
-       << "  " << evt->get_coda_event_id()
-       << "  " << evt->get_data_quality ()
-       << "  " << evt->get_vme_time     ()
-       << "\n";
-
-  cout << "SQHitVector (Taiwan TDC):  " << v_hit->size() << "\n";
-  for (SQHitVector::ConstIter it = v_hit->begin(); it != v_hit->end(); it++) {
-    cout << "    " << (*it)->get_hit_id() << " " << setw(2) << (*it)->get_detector_id() << " " << setw(3) << (*it)->get_element_id() << " " << (*it)->get_tdc_time() << "\n";
-  }
-
-  cout << "SQHitVector (v1495 TDC):  " << v_trig_hit->size() << "\n";
-  for (SQHitVector::ConstIter it = v_trig_hit->begin(); it != v_trig_hit->end(); it++) {
-    cout << "    " << (*it)->get_hit_id() << " " << setw(2) << (*it)->get_detector_id() << " " << setw(3) << (*it)->get_element_id() << " " << (*it)->get_tdc_time() << "\n";
-  }
 }

@@ -58,7 +58,7 @@ int CalibInTime::process_event(PHCompositeNode* topNode)
       cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << ".\n";
       return Fun4AllReturnCodes::ABORTEVENT;
     }
-    hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width );
+    hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width / 2 );
   }
 
   for (SQHitVector::Iter it = trig_hit_vec->begin(); it != trig_hit_vec->end(); it++) {
@@ -73,7 +73,7 @@ int CalibInTime::process_event(PHCompositeNode* topNode)
       cerr << "  WARNING:  Cannot find the in-time parameter for trigger det=" << det << " ele=" << ele << ".\n";
       return Fun4AllReturnCodes::ABORTEVENT;
     }
-    hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width );
+    hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width / 2 );
   }
 
   return Fun4AllReturnCodes::EVENT_OK;

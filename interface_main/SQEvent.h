@@ -72,6 +72,40 @@ public:
 	virtual void set_after_inh_matrix(const unsigned short i, const bool a) = 0;
 
 
+        virtual int  get_qie_presum(const unsigned short i) const = 0;
+	virtual void set_qie_presum(const unsigned short i, const int a) = 0;
+
+        virtual int  get_qie_trigger_count() const = 0;
+	virtual void set_qie_trigger_count(const int a) = 0;
+
+        virtual int  get_qie_turn_id() const = 0;
+	virtual void set_qie_turn_id(const int a) = 0;
+
+        virtual int  get_qie_rf_id() const = 0;
+	virtual void set_qie_rf_id(const int a) = 0;
+
+        virtual int  get_qie_rf_intensity(const short i) const = 0;
+	virtual void set_qie_rf_intensity(const short i, const int a) = 0;
+
+
+        virtual short get_flag_v1495() const = 0;
+	virtual void  set_flag_v1495(const short a) = 0;
+
+        virtual short get_n_board_qie() const = 0;
+	virtual void  set_n_board_qie(const short a) = 0;
+
+        virtual short get_n_board_v1495() const = 0;
+	virtual void  set_n_board_v1495(const short a) = 0;
+
+        virtual short get_n_board_taiwan() const = 0;
+	virtual void  set_n_board_taiwan(const short a) = 0;
+
+        virtual short get_n_board_trig_bit() const = 0;
+	virtual void  set_n_board_trig_bit(const short a) = 0;
+
+        virtual short get_n_board_trig_count() const = 0;
+	virtual void  set_n_board_trig_count(const short a) = 0;
+
 
 protected:
 
