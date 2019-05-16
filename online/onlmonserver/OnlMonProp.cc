@@ -2,13 +2,9 @@
 #include <iomanip>
 #include <TH1D.h>
 #include <interface_main/SQRun.h>
-#include <interface_main/SQStringMap.h>
-#include <interface_main/SQScaler.h>
-#include <interface_main/SQSlowCont.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
-#include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
@@ -35,16 +31,13 @@ int OnlMonProp::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
 
   GeomSvc* geom = GeomSvc::instance();
   //CalibParamInTimeTaiwan calib;
   //calib.SetMapIDbyDB(run_header->get_run_id());
   //calib.ReadFromDB();
-
-  Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
-  OnlMonServer::instance()->registerHistoManager(hm);
 
   ostringstream oss;
   for (int pl = 0; pl < N_PL; pl++) {
@@ -73,8 +66,8 @@ int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";tdcTime;Hit count";
     h1_time[pl]->SetTitle(oss.str().c_str());
 
-    hm->registerHisto(h1_ele [pl]);
-    hm->registerHisto(h1_time[pl]);
+    RegisterHist(h1_ele [pl]);
+    RegisterHist(h1_time[pl]);
   }
 
   return Fun4AllReturnCodes::EVENT_OK;

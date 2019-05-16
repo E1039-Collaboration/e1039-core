@@ -2,8 +2,6 @@
 #ifndef _ONL_MON_MAIN_DAQ__H_
 #define _ONL_MON_MAIN_DAQ__H_
 #include "OnlMonClient.h"
-class SQEvent;
-class TArrayI;
 
 class OnlMonMainDaq: public OnlMonClient {
   TH1* h1_trig;
@@ -21,9 +19,6 @@ class OnlMonMainDaq: public OnlMonClient {
   int EndOnlMon(PHCompositeNode *topNode);
   int FindAllMonHist();
   int DrawMonitor();
-
- private:
-  //void PrintEvent(SQEvent* evt, SQHitVector* v_hit, SQHitVector* v_trig_hit);
 };
 
 #endif /* _ONL_MON_MAIN_DAQ__H_ */

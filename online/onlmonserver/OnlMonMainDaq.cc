@@ -1,15 +1,11 @@
 /// OnlMonMainDaq.C
 #include <iomanip>
 #include <TH1D.h>
-#include <TSocket.h>
-#include <TClass.h>
-#include <TMessage.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQEvent.h>
 #include <fun4all/Fun4AllReturnCodes.h>
-#include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
@@ -45,12 +41,10 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   h1_trig->GetXaxis()->SetBinLabel(7, "NIM2");
   h1_trig->GetXaxis()->SetBinLabel(8, "NIM3");
 
-  Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
-  OnlMonServer::instance()->registerHistoManager(hm);
-  hm->registerHisto(h1_trig);
-  hm->registerHisto(h1_evt_qual);
-  hm->registerHisto(h1_flag_v1495);
-  hm->registerHisto(h1_cnt);
+  RegisterHist(h1_trig);
+  RegisterHist(h1_evt_qual);
+  RegisterHist(h1_flag_v1495);
+  RegisterHist(h1_cnt);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -120,13 +114,20 @@ int OnlMonMainDaq::DrawMonitor()
   OnlMonCanvas* can = GetCanvas();
   TPad* pad = can->GetMainPad();
   pad->SetGrid();
-  pad->Divide(1, 4);
+  pad->Divide(1, 3);
 
-  pad->cd(1);  h1_trig->Draw();
-  pad->cd(2);  h1_evt_qual->Draw();
-  pad->cd(3);  h1_flag_v1495->Draw();
+  pad->cd(1);
+  TPad* pad11 = new TPad("pad11", "", 0.0, 0.0, 0.6, 1.0);
+  TPad* pad12 = new TPad("pad12", "", 0.6, 0.0, 1.0, 1.0);
+  pad11->Draw();
+  pad12->Draw();
+  pad11->cd();  h1_trig->Draw();
+  pad12->cd();  h1_flag_v1495->Draw();
 
-  pad->cd(4);
+  pad->cd(2);
+  h1_evt_qual->Draw();
+
+  pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
   ostringstream oss;
   oss << "N of spills = " << h1_cnt->GetBinContent(1);

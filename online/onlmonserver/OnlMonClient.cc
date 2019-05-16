@@ -4,6 +4,7 @@
 #include <TClass.h>
 #include <TMessage.h>
 #include <interface_main/SQRun.h>
+#include <interface_main/SQEvent.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
@@ -18,7 +19,7 @@ std::vector<OnlMonClient*> OnlMonClient::m_list_us;
 bool OnlMonClient::m_bl_clear_us = true;
 
 OnlMonClient::OnlMonClient() :
-  SubsysReco("OnlMonClient"), m_title("Client Title"), m_n_can(1)
+  SubsysReco("OnlMonClient"), m_title("Client Title"), m_hm(0), m_n_can(1), m_h1_basic_info(0)
 {
   memset(m_list_can, 0, sizeof(m_list_can));
   m_list_us.push_back(this);
@@ -26,6 +27,7 @@ OnlMonClient::OnlMonClient() :
 
 OnlMonClient::~OnlMonClient()
 {
+  if (! m_hm) delete m_hm;
   ClearHistList();
   ClearCanvasList();
   m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
@@ -38,22 +40,36 @@ int OnlMonClient::Init(PHCompositeNode* topNode)
 
 int OnlMonClient::InitRun(PHCompositeNode* topNode)
 {
+  m_hm = new Fun4AllHistoManager(Name());
+  OnlMonServer::instance()->registerHistoManager(m_hm);
+  m_h1_basic_info = new TH1D("h1_basic_info", "", 10, 0.5, 10.5);
+  m_hm->registerHisto(m_h1_basic_info);
+
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  m_run_id = run_header->get_run_id();
+  m_h1_basic_info->SetBinContent(BIN_RUN, run_header->get_run_id());
+
   return InitRunOnlMon(topNode);
 }
 
 int OnlMonClient::process_event(PHCompositeNode* topNode)
 {
+  SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (!event) return Fun4AllReturnCodes::ABORTEVENT;
+  m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
+  m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
+
   return ProcessEventOnlMon(topNode);
 }
 
 int OnlMonClient::End(PHCompositeNode* topNode)
 {
+  int run_id;
+  GetBasicInfo(&run_id);
+
   ClearCanvasList();
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, m_run_id);
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, run_id);
     m_list_can[ii]->PreDraw();
   }
 
@@ -67,6 +83,13 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   }
 
   return EndOnlMon(topNode);
+}
+
+void OnlMonClient::GetBasicInfo(int* run_id, int* spill_id, int* event_id)
+{
+  if (run_id  ) *run_id   = (int)m_h1_basic_info->GetBinContent(BIN_RUN);
+  if (spill_id) *spill_id = (int)m_h1_basic_info->GetBinContent(BIN_SPILL);
+  if (event_id) *event_id = (int)m_h1_basic_info->GetBinContent(BIN_EVENT);
 }
 
 TH1* OnlMonClient::FindMonHist(const std::string name, const bool non_null)
@@ -140,10 +163,14 @@ int OnlMonClient::StartMonitor()
   }
 
   ReceiveHist();
+  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
+  if (! m_h1_basic_info) return 1;
   FindAllMonHist();
 
+  int run_id;
+  GetBasicInfo(&run_id);
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, m_run_id);
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, run_id);
     m_list_can[ii]->PreDraw();
   }
 
@@ -154,6 +181,11 @@ int OnlMonClient::StartMonitor()
   }
 
   return ret;
+}
+
+void OnlMonClient::RegisterHist(TH1* h1)
+{
+  m_hm->registerHisto(h1);
 }
 
 int OnlMonClient::ReceiveHist()

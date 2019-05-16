@@ -39,7 +39,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(1);
   in->EventSamplingFactor(100);
-  if (is_online) in->PretendSpillInterval(20);
+//  if (is_online) in->PretendSpillInterval(20);
 
   in->DirParam("/seaquest/production/runs");
   in->fileopen(fn_in);

@@ -1,41 +1,35 @@
 /// OnlMonTrigSig.C
 #include <iomanip>
 #include <TH2D.h>
-#include <interface_main/SQRun.h>
-#include <interface_main/SQStringMap.h>
-#include <interface_main/SQScaler.h>
-#include <interface_main/SQSlowCont.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
-#include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
-#include <chan_map/CalibParamInTimeTaiwan.h>
 #include "OnlMonServer.h"
 #include "OnlMonTrigSig.h"
 #include "UtilHist.h"
 using namespace std;
 
-// BeforeInhNIM = 55
+// BeforeInhNIM
 // BeforeInhMatrix
 // AfterInhNIM
 // AfterInhMatrix 
-// BOS ???
-// EOS ???
-// L1  ???
+// BOS  (ch = ?)
+// EOS  (ch = ?)
+// L1   (ch = ?)
 // RF   (ch = 0-8 on v1495)
 // STOP (ch = 0-8 on v1495)
-// L1PXtp         
-// L1PXtn         
-// L1PXbp         
-// L1PXbn         
-// L1NIMxt        
-// L1NIMxb        
-// L1NIMyt        
-// L1NIMyb        
+// L1PXtp
+// L1PXtn
+// L1PXbp
+// L1PXbn
+// L1NIMxt
+// L1NIMxb
+// L1NIMyt
+// L1NIMyb
 
 OnlMonTrigSig::OnlMonTrigSig()
 {
@@ -83,14 +77,12 @@ int OnlMonTrigSig::InitRunOnlMon(PHCompositeNode* topNode)
     h2_stop->GetYaxis()->SetBinLabel(ii, oss.str().c_str());
   }
 
-  Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
-  OnlMonServer::instance()->registerHistoManager(hm);
-  hm->registerHisto(h2_bi_fpga);
-  hm->registerHisto(h2_ai_fpga);
-  hm->registerHisto(h2_bi_nim );
-  hm->registerHisto(h2_ai_nim );
-  hm->registerHisto(h2_rf     );
-  hm->registerHisto(h2_stop   );
+  RegisterHist(h2_bi_fpga);
+  RegisterHist(h2_ai_fpga);
+  RegisterHist(h2_bi_nim );
+  RegisterHist(h2_ai_nim );
+  RegisterHist(h2_rf     );
+  RegisterHist(h2_stop   );
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

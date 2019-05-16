@@ -1,24 +1,24 @@
 #ifndef _ONL_MON_CLIENT__H_
 #define _ONL_MON_CLIENT__H_
-#include <TCanvas.h>
-#include <TPaveText.h>
 #include <fun4all/SubsysReco.h>
 #include "OnlMonCanvas.h"
+class Fun4AllHistoManager;
 class TH1;
 class TH2;
 class TH3;
-class TPaveText;
 
 class OnlMonClient: public SubsysReco {
   std::string m_title;
+  Fun4AllHistoManager* m_hm;
   int m_n_can;
   OnlMonCanvas* m_list_can[9];
 
-  int m_run_id;
+  typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3 } BasicInfoBin_t;
+  TH1* m_h1_basic_info;
   typedef std::vector<TH1*> HistList_t;
   HistList_t m_list_h1;
   typedef std::vector<TObject*> ObjList_t;
-  ObjList_t m_list_obj;
+  ObjList_t m_list_obj; ///< Need this or m_list_h1 at end...
 
   /// List of OnlMonClient objects created.  Used to clear all canvases opened by all objects.
   typedef std::vector<OnlMonClient*> SelfList_t;
@@ -37,6 +37,7 @@ class OnlMonClient: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
+  void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0);
   int StartMonitor();
   TH1* FindMonHist(const std::string name, const bool non_null=true);
   TObject* FindMonObj(const std::string name, const bool non_null=true);
@@ -52,6 +53,8 @@ class OnlMonClient: public SubsysReco {
   static bool GetClearUsFlag() { return m_bl_clear_us; }
 
  protected:  
+  void RegisterHist(TH1* h1);
+
   int ReceiveHist();
   void ClearHistList();
 

@@ -56,17 +56,19 @@ void OnlMonCanvas::PreDraw()
   pate->AddText(oss.str().c_str());
   pate->Draw();
 
+  TPaveText* pate2 = new TPaveText(.02, .02, .98, .48, "NB");
+  pate2->SetFillColor(kWhite);
+
+  oss.str("");  oss << "Run " << m_run;
+  pate2->AddText(oss.str().c_str());
+
   time_t utime = time(0);
   char stime[64];
   strftime(stime, sizeof(stime),"%Y-%m-%d %H:%M:%S", localtime(&utime));
-  oss.str("");
-  oss << "Run " << m_run << " : Drawn at " << stime;
-
-  TPaveText* pate2 = new TPaveText(.02, .02, .98, .48, "NB");
-  pate2->SetFillColor(kWhite);
+  oss.str("");  oss << "Drawn at " << stime;
   pate2->AddText(oss.str().c_str());
-  pate2->Draw();
 
+  pate2->Draw();
   gStyle->SetOptStat(0000);
   gStyle->SetHistMinimumZero(true);
 }

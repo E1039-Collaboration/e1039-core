@@ -2,13 +2,9 @@
 #include <iomanip>
 #include <TH1D.h>
 #include <interface_main/SQRun.h>
-#include <interface_main/SQStringMap.h>
-#include <interface_main/SQScaler.h>
-#include <interface_main/SQSlowCont.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
-#include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
@@ -49,9 +45,6 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
   //CalibParamInTimeV1495 calib;
   //calib.SetMapIDbyDB(run_header->get_run_id());
   //calib.ReadFromDB();
-
-  Fun4AllHistoManager* hm = new Fun4AllHistoManager(Name());
-  OnlMonServer::instance()->registerHistoManager(hm);
 
   ostringstream oss;
   for (int pl = 0; pl < m_n_pl; pl++) {
@@ -94,10 +87,10 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";tdcTime;In-time hit count";
     h1_time_in[pl]->SetTitle(oss.str().c_str());
 
-    hm->registerHisto(h1_ele    [pl]);
-    hm->registerHisto(h1_ele_in [pl]);
-    hm->registerHisto(h1_time   [pl]);
-    hm->registerHisto(h1_time_in[pl]);
+    RegisterHist(h1_ele    [pl]);
+    RegisterHist(h1_ele_in [pl]);
+    RegisterHist(h1_time   [pl]);
+    RegisterHist(h1_time_in[pl]);
   }
 
   return Fun4AllReturnCodes::EVENT_OK;

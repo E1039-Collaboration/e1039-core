@@ -1,9 +1,6 @@
 #ifndef _ONL_MON_V1495__H_
 #define _ONL_MON_V1495__H_
 #include "OnlMonClient.h"
-class SQSpill;
-class SQEvent;
-class SQHitVector;
 
 class OnlMonV1495: public OnlMonClient {
  public:

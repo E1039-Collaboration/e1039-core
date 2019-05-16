@@ -1,9 +1,6 @@
 #ifndef _ONL_MON_HODO__H_
 #define _ONL_MON_HODO__H_
 #include "OnlMonClient.h"
-class SQSpill;
-class SQEvent;
-class SQHitVector;
 
 class OnlMonHodo: public OnlMonClient {
  public:
