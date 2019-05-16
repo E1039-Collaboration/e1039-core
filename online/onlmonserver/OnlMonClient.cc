@@ -14,15 +14,21 @@
 #include "OnlMonClient.h"
 using namespace std;
 
+std::vector<OnlMonClient*> OnlMonClient::m_list_us;
+bool OnlMonClient::m_bl_clear_us = true;
+
 OnlMonClient::OnlMonClient() :
   SubsysReco("OnlMonClient"), m_title("Client Title"), m_n_can(1)
 {
   memset(m_list_can, 0, sizeof(m_list_can));
+  m_list_us.push_back(this);
 }
 
 OnlMonClient::~OnlMonClient()
 {
   ClearHistList();
+  ClearCanvasList();
+  m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
 }
 
 int OnlMonClient::Init(PHCompositeNode* topNode)
@@ -45,8 +51,8 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 
 int OnlMonClient::End(PHCompositeNode* topNode)
 {
+  ClearCanvasList();
   for (int ii = 0; ii < m_n_can; ii++) {
-    if (m_list_can[ii]) delete m_list_can[ii];
     m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, m_run_id);
     m_list_can[ii]->PreDraw();
   }
@@ -125,8 +131,12 @@ int OnlMonClient::DrawMonitor()
 
 int OnlMonClient::StartMonitor()
 {
-  for (int ii = 0; ii < m_n_can; ii++) {
-    if (m_list_can[ii]) delete m_list_can[ii];
+  if (GetClearUsFlag()) {
+    for (SelfList_t::iterator it = m_list_us.begin(); it != m_list_us.end(); it++) {
+      (*it)->ClearCanvasList();
+    }
+  } else { // Clear only its own canvases
+    ClearCanvasList();
   }
 
   ReceiveHist();
@@ -209,3 +219,14 @@ OnlMonCanvas* OnlMonClient::GetCanvas(const int num)
   }
   return m_list_can[num]; 
 }
+
+void OnlMonClient::ClearCanvasList()
+{
+  for (int ii = 0; ii < m_n_can; ii++) {
+    if (m_list_can[ii]) {
+      delete m_list_can[ii];
+      m_list_can[ii] = 0;
+    }
+  }
+}
+

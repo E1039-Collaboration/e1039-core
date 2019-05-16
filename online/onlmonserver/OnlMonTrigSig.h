@@ -10,6 +10,8 @@ class OnlMonTrigSig: public OnlMonClient {
   TH2* h2_ai_fpga;
   TH2* h2_bi_nim;
   TH2* h2_ai_nim;
+  TH2* h2_rf;
+  TH2* h2_stop;
 
  public:
   OnlMonTrigSig();
@@ -21,6 +23,9 @@ class OnlMonTrigSig: public OnlMonClient {
   int EndOnlMon(PHCompositeNode *topNode);
   int FindAllMonHist();
   int DrawMonitor();
+
+ private:
+  void DrawTH2WithPeakPos(TH2* h2, const double cont_min=100);
 };
 
 #endif /* _ONL_MON_TRIG_SIG__H_ */

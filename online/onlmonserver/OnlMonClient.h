@@ -20,6 +20,11 @@ class OnlMonClient: public SubsysReco {
   typedef std::vector<TObject*> ObjList_t;
   ObjList_t m_list_obj;
 
+  /// List of OnlMonClient objects created.  Used to clear all canvases opened by all objects.
+  typedef std::vector<OnlMonClient*> SelfList_t;
+  static SelfList_t m_list_us;
+  static bool m_bl_clear_us;
+
  public:
   OnlMonClient();
   virtual ~OnlMonClient();
@@ -43,6 +48,9 @@ class OnlMonClient: public SubsysReco {
   virtual int FindAllMonHist();
   virtual int DrawMonitor();
 
+  static void SetClearUsFlag(const bool val) { m_bl_clear_us = val; }
+  static bool GetClearUsFlag() { return m_bl_clear_us; }
+
  protected:  
   int ReceiveHist();
   void ClearHistList();
@@ -50,6 +58,7 @@ class OnlMonClient: public SubsysReco {
   void NumCanvases(const int num) { m_n_can = num; }
   int  NumCanvases() { return m_n_can; }
   OnlMonCanvas* GetCanvas(const int num=0);
+  void ClearCanvasList();
 };
 
 #endif /* _ONL_MON_CLIENT__H_ */

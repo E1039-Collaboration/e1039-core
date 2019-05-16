@@ -13,6 +13,8 @@ class OnlMonCanvas {
   typedef enum { OK, WARN, ERROR, UNDEF } MonStatus_t;
 
  protected:
+  //static bool m_clear_all_can;
+
   std::string m_name;
   std::string m_title;
   int         m_num;
@@ -34,6 +36,10 @@ class OnlMonCanvas {
 
   void PreDraw();
   void PostDraw(const bool at_end=false);
+
+  //static void WillClearAllCanvases(const bool val) { m_clear_all_can = val; }
+  //static bool WillClearAllCanvases() { return m_clear_all_can; }
+  //static void ClearAllCanvases();
 };
 
 #endif /* _ONL_MON_CANVAS__H_ */

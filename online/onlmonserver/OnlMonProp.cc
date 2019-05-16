@@ -125,10 +125,9 @@ int OnlMonProp::DrawMonitor()
   pad0->Divide(2, 2);
   for (int pl = 0; pl < N_PL; pl++) {
     pad0->cd(pl+1);
-    //if (h1_ele[pl]->Integral() > 1000) gPad->SetLogy();
     h1_ele[pl]->Draw();
   }
-  can0->AddMessage("Always Okay ;^D");
+  can0->AddMessage("OK");
   can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
@@ -137,11 +136,10 @@ int OnlMonProp::DrawMonitor()
   pad1->Divide(2, 2);
   for (int pl = 0; pl < N_PL; pl++) {
     pad1->cd(pl+1);
-    //if (h1_time[pl]->Integral() > 1000) gPad->SetLogy();
     UtilHist::AutoSetRange(h1_time[pl]);
     h1_time[pl]->Draw();
   }
-  can1->AddMessage("Always Okay ;^D");
+  can1->AddMessage("OK");
   can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;

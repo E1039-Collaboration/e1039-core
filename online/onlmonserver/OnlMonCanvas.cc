@@ -1,10 +1,15 @@
+#include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <TROOT.h>
 #include <TSystem.h>
+#include <TStyle.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include "OnlMonCanvas.h"
 using namespace std;
+
+//bool OnlMonCanvas::m_clear_all_can = true;
 
 OnlMonCanvas::OnlMonCanvas(const std::string name, const std::string title, const int num, const int run) :
   m_name(name), m_title(title), m_num(num), m_run(run),
@@ -61,6 +66,9 @@ void OnlMonCanvas::PreDraw()
   pate2->SetFillColor(kWhite);
   pate2->AddText(oss.str().c_str());
   pate2->Draw();
+
+  gStyle->SetOptStat(0000);
+  gStyle->SetHistMinimumZero(true);
 }
 
 void OnlMonCanvas::PostDraw(const bool at_end)
@@ -88,3 +96,14 @@ void OnlMonCanvas::PostDraw(const bool at_end)
     gErrorIgnoreLevel = lvl;
   }
 }
+
+//void OnlMonCanvas::ClearAllCanvases()
+//{
+//  TIter next(gROOT->GetListOfCanvases());
+//  TObject* obj;
+//  while ((obj = next())) {
+//    string name = obj->ClassName();
+//    cout << "OBJ " << name << " " << obj->GetName() << endl;
+//    if (name == "TCanvas") dynamic_cast<TCanvas*>(obj)->Close();
+//  }
+//}

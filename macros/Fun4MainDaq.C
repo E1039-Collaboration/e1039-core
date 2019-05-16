@@ -39,7 +39,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(1);
   in->EventSamplingFactor(100);
-//  if (is_online) in->PretendSpillInterval(20);
+  if (is_online) in->PretendSpillInterval(20);
 
   in->DirParam("/seaquest/production/runs");
   in->fileopen(fn_in);
@@ -61,21 +61,21 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H3X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H4X, 1));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H1X));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H2X));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H3X));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H4X));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H1Y));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H2Y));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H4Y1));
-    se->registerSubsystem(new OnlMonHodo(OnlMonHodo::H4Y2));
-    se->registerSubsystem(new OnlMonCham(OnlMonCham::D0));
-    se->registerSubsystem(new OnlMonCham(OnlMonCham::D1));
-    se->registerSubsystem(new OnlMonCham(OnlMonCham::D2));
-    se->registerSubsystem(new OnlMonCham(OnlMonCham::D3p));
-    se->registerSubsystem(new OnlMonCham(OnlMonCham::D3m));
-    se->registerSubsystem(new OnlMonProp(OnlMonProp::P1));
-    se->registerSubsystem(new OnlMonProp(OnlMonProp::P2));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H1X));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H2X));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H3X));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4X));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H1Y));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H2Y));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y1));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y2));
+    se->registerSubsystem(new OnlMonCham (OnlMonCham::D0));
+    se->registerSubsystem(new OnlMonCham (OnlMonCham::D1));
+    se->registerSubsystem(new OnlMonCham (OnlMonCham::D2));
+    se->registerSubsystem(new OnlMonCham (OnlMonCham::D3p));
+    se->registerSubsystem(new OnlMonCham (OnlMonCham::D3m));
+    se->registerSubsystem(new OnlMonProp (OnlMonProp::P1));
+    se->registerSubsystem(new OnlMonProp (OnlMonProp::P2));
   }
 
   se->run(nevent);

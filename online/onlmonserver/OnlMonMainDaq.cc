@@ -122,17 +122,9 @@ int OnlMonMainDaq::DrawMonitor()
   pad->SetGrid();
   pad->Divide(1, 4);
 
-  pad->cd(1);
-  //if (h1_trig->Integral() > 100) gPad->SetLogy();
-  h1_trig->Draw();
-
-  pad->cd(2);
-  //if (h1_evt_qual->Integral() > 100) gPad->SetLogy();
-  h1_evt_qual->Draw();
-
-  pad->cd(3);
-  //if (h1_flag_v1495->Integral() > 100) gPad->SetLogy();
-  h1_flag_v1495->Draw();
+  pad->cd(1);  h1_trig->Draw();
+  pad->cd(2);  h1_evt_qual->Draw();
+  pad->cd(3);  h1_flag_v1495->Draw();
 
   pad->cd(4);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
@@ -159,7 +151,7 @@ int OnlMonMainDaq::DrawMonitor()
   pate->AddText(oss.str().c_str());
   pate->Draw();
 
-  can->AddMessage("Always Okay ;^D");
+  can->AddMessage("OK");
   can->SetStatus(OnlMonCanvas::OK);
 
   return 0;

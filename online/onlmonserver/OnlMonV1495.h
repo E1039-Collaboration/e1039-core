@@ -15,6 +15,7 @@ class OnlMonV1495: public OnlMonClient {
   int m_pl0;
   int m_n_pl;
   TH1* h1_ele    [99];
+  TH1* h1_ele_in [99];
   TH1* h1_time   [99];
   TH1* h1_time_in[99];
 

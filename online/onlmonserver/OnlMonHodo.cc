@@ -64,6 +64,13 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[pl]->SetTitle(oss.str().c_str());
 
+    oss.str("");
+    oss << "h1_ele_in_" << pl;
+    h1_ele_in[pl] = new TH1D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5);
+    oss.str("");
+    oss << name << ";Element ID;In-time hit count";
+    h1_ele_in[pl]->SetTitle(oss.str().c_str());
+
     const double DT = 4/9.0; // 4/9 ns per single count of Taiwan TDC
     const int NT = 4000;
     const double T0 = 0.5*DT;
@@ -88,6 +95,7 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
     h1_time_in[pl]->SetTitle(oss.str().c_str());
 
     hm->registerHisto(h1_ele    [pl]);
+    hm->registerHisto(h1_ele_in [pl]);
     hm->registerHisto(h1_time   [pl]);
     hm->registerHisto(h1_time_in[pl]);
   }
@@ -106,7 +114,10 @@ int OnlMonHodo::ProcessEventOnlMon(PHCompositeNode* topNode)
     if (pl < 0 || pl >= m_n_pl) continue;
     h1_ele [pl]->Fill((*it)->get_element_id());
     h1_time[pl]->Fill((*it)->get_tdc_time  ());
-    if ((*it)->is_in_time()) h1_time_in[pl]->Fill((*it)->get_tdc_time());
+    if ((*it)->is_in_time()) {
+      h1_ele_in [pl]->Fill((*it)->get_element_id());
+      h1_time_in[pl]->Fill((*it)->get_tdc_time());
+    }
   }
   
   return Fun4AllReturnCodes::EVENT_OK;
@@ -125,6 +136,10 @@ int OnlMonHodo::FindAllMonHist()
     oss << "h1_ele_" << pl;
     h1_ele[pl] = (TH1*)FindMonObj(oss.str().c_str());
     if (! h1_ele[pl]) return 1;
+    oss.str("");
+    oss << "h1_ele_in_" << pl;
+    h1_ele_in[pl] = (TH1*)FindMonObj(oss.str().c_str());
+    if (! h1_ele_in[pl]) return 1;
     oss.str("");
     oss << "h1_time_" << pl;
     h1_time[pl] = (TH1*)FindMonObj(oss.str().c_str());
@@ -145,10 +160,14 @@ int OnlMonHodo::DrawMonitor()
   pad0->Divide(1, 2);
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad0->cd(pl+1);
-    //if (h1_ele[pl]->Integral() > 1000) gPad->SetLogy();
+    //h1_ele[pl]->SetMinimum(0);
+    h1_ele[pl]->SetLineColor(kBlack);
     h1_ele[pl]->Draw();
+    h1_ele_in[pl]->SetLineColor(kBlue);
+    h1_ele_in[pl]->SetFillColor(kBlue-7);
+    h1_ele_in[pl]->Draw("same");
   }
-  can0->AddMessage("Always Okay ;^D");
+  can0->AddMessage("OK");
   can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
@@ -157,14 +176,14 @@ int OnlMonHodo::DrawMonitor()
   pad1->Divide(1, 2);
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad1->cd(pl+1);
-    //if (h1_time[pl]->Integral() > 1000) gPad->SetLogy();
     UtilHist::AutoSetRange(h1_time[pl]);
+    h1_time[pl]->SetLineColor(kBlack);
     h1_time[pl]->Draw();
-    h1_time_in[pl]->SetLineColor(kRed);
-    h1_time_in[pl]->SetFillColor(kRed-7);
+    h1_time_in[pl]->SetLineColor(kBlue);
+    h1_time_in[pl]->SetFillColor(kBlue-7);
     h1_time_in[pl]->Draw("same");
   }
-  can1->AddMessage("Always Okay ;^D");
+  can1->AddMessage("OK");
   can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;
