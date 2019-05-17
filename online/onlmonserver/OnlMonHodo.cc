@@ -153,7 +153,6 @@ int OnlMonHodo::DrawMonitor()
   pad0->Divide(1, 2);
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad0->cd(pl+1);
-    //h1_ele[pl]->SetMinimum(0);
     h1_ele[pl]->SetLineColor(kBlack);
     h1_ele[pl]->Draw();
     h1_ele_in[pl]->SetLineColor(kBlue);

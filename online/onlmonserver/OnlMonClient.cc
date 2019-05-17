@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <TStyle.h>
 #include <TH1D.h>
 #include <TSocket.h>
 #include <TClass.h>
@@ -40,6 +41,17 @@ int OnlMonClient::Init(PHCompositeNode* topNode)
 
 int OnlMonClient::InitRun(PHCompositeNode* topNode)
 {
+  /// These settings will be applied to histograms created in InitRunOnlMon().
+  /// Fine tunes should be necessary in the future.
+  /// Note: the label/title size is a percent of the pad _height_, and
+  ///       the offset is a relative scale to the default distance from axis.
+  gStyle->SetLabelSize  (0.05, "X");
+  gStyle->SetTitleSize  (0.05, "X");
+  gStyle->SetLabelSize  (0.06, "YZ");
+  gStyle->SetTitleSize  (0.06, "YZ");
+  gStyle->SetTitleOffset(0.90, "XY");
+  gStyle->SetTitleSize  (0.10, "");
+
   m_hm = new Fun4AllHistoManager(Name());
   OnlMonServer::instance()->registerHistoManager(m_hm);
   m_h1_basic_info = new TH1D("h1_basic_info", "", 10, 0.5, 10.5);

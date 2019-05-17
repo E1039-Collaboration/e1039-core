@@ -27,19 +27,34 @@ int OnlMonMainDaq::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  h1_trig = new TH1D("h1_trig", ";Trigger;N of events", 8, 0.5, 8.5);
-  h1_evt_qual = new TH1D("h1_evt_qual", ";Event-quality bit;N of events", 33, -0.5, 32.5);
-  h1_flag_v1495 = new TH1D("h1_flag_v1495", ";v1495 status flag; N of v1495 events", 4, -0.5, 3.5);
+  h1_trig = new TH1D("h1_trig", "Trigger Status;Trigger;N of events", 10, 0.5, 10.5);
+  h1_evt_qual = new TH1D("h1_evt_qual", "Event Status;Event-quality bit;N of events", 33, -0.5, 32.5);
+  h1_flag_v1495 = new TH1D("h1_flag_v1495", "V1495 Status;v1495 status bit; N of v1495 events", 5, -0.5, 4.5);
   h1_cnt = new TH1D("h1_cnt", ";Type;Count", 15, 0.5, 15.5);
 
-  h1_trig->GetXaxis()->SetBinLabel(1, "FPGA1");
-  h1_trig->GetXaxis()->SetBinLabel(2, "FPGA2");
-  h1_trig->GetXaxis()->SetBinLabel(3, "FPGA3");
-  h1_trig->GetXaxis()->SetBinLabel(4, "FPGA4");
-  h1_trig->GetXaxis()->SetBinLabel(5, "FPGA5");
-  h1_trig->GetXaxis()->SetBinLabel(6, "NIM1");
-  h1_trig->GetXaxis()->SetBinLabel(7, "NIM2");
-  h1_trig->GetXaxis()->SetBinLabel(8, "NIM3");
+  h1_trig->GetXaxis()->SetBinLabel( 1, "FPGA1");
+  h1_trig->GetXaxis()->SetBinLabel( 2, "FPGA2");
+  h1_trig->GetXaxis()->SetBinLabel( 3, "FPGA3");
+  h1_trig->GetXaxis()->SetBinLabel( 4, "FPGA4");
+  h1_trig->GetXaxis()->SetBinLabel( 5, "FPGA5");
+  h1_trig->GetXaxis()->SetBinLabel( 6, "NIM1");
+  h1_trig->GetXaxis()->SetBinLabel( 7, "NIM2");
+  h1_trig->GetXaxis()->SetBinLabel( 8, "NIM3");
+  h1_trig->GetXaxis()->SetBinLabel( 9, "NIM4");
+  h1_trig->GetXaxis()->SetBinLabel(10, "NIM5");
+
+  ostringstream oss;
+  h1_evt_qual->GetXaxis()->SetBinLabel(1, "OK");
+  for (int ii = 1; ii <= 32; ii++) {
+    oss.str("");  oss << ii;
+    h1_evt_qual->GetXaxis()->SetBinLabel(ii+1, oss.str().c_str());
+  }
+
+  h1_flag_v1495->GetXaxis()->SetBinLabel(1, "OK");
+  h1_flag_v1495->GetXaxis()->SetBinLabel(2, "d1ad");
+  h1_flag_v1495->GetXaxis()->SetBinLabel(3, "d2ad");
+  h1_flag_v1495->GetXaxis()->SetBinLabel(4, "d3ad");
+  h1_flag_v1495->GetXaxis()->SetBinLabel(5, "Other");
 
   RegisterHist(h1_trig);
   RegisterHist(h1_evt_qual);
@@ -55,14 +70,16 @@ int OnlMonMainDaq::ProcessEventOnlMon(PHCompositeNode* topNode)
   SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (! run || ! event) return Fun4AllReturnCodes::ABORTEVENT;
 
-  if (event->get_trigger(SQEvent::MATRIX1)) h1_trig->Fill(1);
-  if (event->get_trigger(SQEvent::MATRIX2)) h1_trig->Fill(2);
-  if (event->get_trigger(SQEvent::MATRIX3)) h1_trig->Fill(3);
-  if (event->get_trigger(SQEvent::MATRIX4)) h1_trig->Fill(4);
-  if (event->get_trigger(SQEvent::MATRIX5)) h1_trig->Fill(5);
-  if (event->get_trigger(SQEvent::NIM1   )) h1_trig->Fill(6);
-  if (event->get_trigger(SQEvent::NIM2   )) h1_trig->Fill(7);
-  if (event->get_trigger(SQEvent::NIM3   )) h1_trig->Fill(8);
+  if (event->get_trigger(SQEvent::MATRIX1)) h1_trig->Fill( 1);
+  if (event->get_trigger(SQEvent::MATRIX2)) h1_trig->Fill( 2);
+  if (event->get_trigger(SQEvent::MATRIX3)) h1_trig->Fill( 3);
+  if (event->get_trigger(SQEvent::MATRIX4)) h1_trig->Fill( 4);
+  if (event->get_trigger(SQEvent::MATRIX5)) h1_trig->Fill( 5);
+  if (event->get_trigger(SQEvent::NIM1   )) h1_trig->Fill( 6);
+  if (event->get_trigger(SQEvent::NIM2   )) h1_trig->Fill( 7);
+  if (event->get_trigger(SQEvent::NIM3   )) h1_trig->Fill( 8);
+  if (event->get_trigger(SQEvent::NIM4   )) h1_trig->Fill( 9);
+  if (event->get_trigger(SQEvent::NIM5   )) h1_trig->Fill(10);
 
   h1_cnt->SetBinContent( 1, run->get_n_spill        ());
   h1_cnt->SetBinContent( 2, run->get_n_evt_all      ());
@@ -88,7 +105,7 @@ int OnlMonMainDaq::ProcessEventOnlMon(PHCompositeNode* topNode)
 
   int v1495 = event->get_flag_v1495();
   if (v1495 == 0) h1_flag_v1495->Fill(0);
-  for (int bit = 0; bit < 3; bit++) {
+  for (int bit = 0; bit < 4; bit++) {
     if ((v1495 >> bit) & 0x1) h1_flag_v1495->Fill(bit + 1);
   }
 
