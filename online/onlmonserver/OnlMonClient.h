@@ -13,7 +13,7 @@ class OnlMonClient: public SubsysReco {
   int m_n_can;
   OnlMonCanvas* m_list_can[9];
 
-  typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3 } BasicInfoBin_t;
+  typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_N_EVT = 4 } BasicInfoBin_t;
   TH1* m_h1_basic_info;
   typedef std::vector<TH1*> HistList_t;
   HistList_t m_list_h1;
@@ -37,7 +37,7 @@ class OnlMonClient: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
-  void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0);
+  void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0, int* n_evt=0);
   int StartMonitor();
   TH1* FindMonHist(const std::string name, const bool non_null=true);
   TObject* FindMonObj(const std::string name, const bool non_null=true);

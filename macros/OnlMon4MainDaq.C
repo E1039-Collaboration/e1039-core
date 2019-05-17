@@ -46,11 +46,17 @@ int OnlMon4MainDaq()
   for (unsigned int ii = 0; ii < list_omc.size(); ii++) {
     button[ii] = new TGTextButton(frame, list_omc[ii]->Title().c_str());
     button[ii]->Connect("Clicked()", "OnlMonClient", list_omc[ii], "StartMonitor()");
-    frame->AddFrame(button[ii], new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 5,5,10,10)); // (l, r, t, b) 
+    frame->AddFrame(button[ii], new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 2,2,5,5)); // (l, r, t, b) 
   }
-  
+
+  TGCheckButton* check = new TGCheckButton(frame, new TGHotString("Auto-close all canvases"), 99);
+  check->SetToolTipText("When checked, all existing canvases are closed by clicking any button above.");
+  check->SetState(OnlMonClient::GetClearUsFlag() ? kButtonDown : kButtonUp);
+  check->Connect("Toggled(Bool_t)", "OnlMonClient", list_omc[0], "SetClearUsFlag(Bool_t)");
+  frame->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
+ 
   TGTextButton* fExit = new TGTextButton(frame, "Exit","gApplication->Terminate(0)");
-  frame->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 5,5,10,10));
+  frame->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,5,5));
 
   frame->SetWindowName("E1039 Online Monitor");
   frame->MapSubwindows();

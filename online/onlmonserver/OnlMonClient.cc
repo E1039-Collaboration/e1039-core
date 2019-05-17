@@ -58,6 +58,7 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   if (!event) return Fun4AllReturnCodes::ABORTEVENT;
   m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
   m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
+  m_h1_basic_info->AddBinContent(BIN_N_EVT, 1);
 
   return ProcessEventOnlMon(topNode);
 }
@@ -69,8 +70,9 @@ int OnlMonClient::End(PHCompositeNode* topNode)
 
   ClearCanvasList();
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, run_id);
-    m_list_can[ii]->PreDraw();
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+    m_list_can[ii]->SetBasicInfo(run_id);
+    m_list_can[ii]->PreDraw(true);
   }
 
   int ret = DrawMonitor();
@@ -85,11 +87,12 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   return EndOnlMon(topNode);
 }
 
-void OnlMonClient::GetBasicInfo(int* run_id, int* spill_id, int* event_id)
+void OnlMonClient::GetBasicInfo(int* run_id, int* spill_id, int* event_id, int* n_evt)
 {
   if (run_id  ) *run_id   = (int)m_h1_basic_info->GetBinContent(BIN_RUN);
   if (spill_id) *spill_id = (int)m_h1_basic_info->GetBinContent(BIN_SPILL);
   if (event_id) *event_id = (int)m_h1_basic_info->GetBinContent(BIN_EVENT);
+  if (n_evt   ) *n_evt    = (int)m_h1_basic_info->GetBinContent(BIN_N_EVT);
 }
 
 TH1* OnlMonClient::FindMonHist(const std::string name, const bool non_null)
@@ -167,10 +170,11 @@ int OnlMonClient::StartMonitor()
   if (! m_h1_basic_info) return 1;
   FindAllMonHist();
 
-  int run_id;
-  GetBasicInfo(&run_id);
+  int run_id, spill_id, event_id, n_evt;
+  GetBasicInfo(&run_id, &spill_id, &event_id, &n_evt);
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii, run_id);
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+    m_list_can[ii]->SetBasicInfo(run_id, spill_id, event_id, n_evt);
     m_list_can[ii]->PreDraw();
   }
 
@@ -185,7 +189,11 @@ int OnlMonClient::StartMonitor()
 
 void OnlMonClient::RegisterHist(TH1* h1)
 {
-  m_hm->registerHisto(h1);
+  if (m_hm) m_hm->registerHisto(h1);
+  else {
+    cerr << "WARNING:  OnlMonClient::RegisterHist():  Cannot register hist (" << h1->GetName()
+         << ").  You must call this function in InitRunOnlMon(), not InitOnlMon().  Do nothing." << endl;
+  }
 }
 
 int OnlMonClient::ReceiveHist()
