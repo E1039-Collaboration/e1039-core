@@ -14,6 +14,9 @@
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
+
+#include <algorithm>
+
 using namespace std;
 
 std::vector<OnlMonClient*> OnlMonClient::m_list_us;
