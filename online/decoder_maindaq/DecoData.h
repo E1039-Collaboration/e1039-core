@@ -172,6 +172,7 @@ struct HitData {
   short chan;
   short det;
   short ele;
+  short lvl;
   double         time;
   HitData();
   virtual ~HitData() {;}

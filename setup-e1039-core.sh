@@ -9,6 +9,15 @@ if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     export           CPATH=$MY_INSTALL/include:$CPATH
     export    LIBRARY_PATH=$MY_INSTALL/lib:$LIBRARY_PATH
     export LD_LIBRARY_PATH=$MY_INSTALL/lib:$LD_LIBRARY_PATH
+elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' ] ; then
+    source /e906/app/users/yuhw/setup.sh
+    export OFFLINE_MAIN=$(dirname $DIR_E1039_CORE)/e1039-core-build/inst
+    export MY_INSTALL=$OFFLINE_MAIN
+
+    export            PATH=$MY_INSTALL/bin:$PATH
+    export           CPATH=$MY_INSTALL/include:$CPATH
+    export    LIBRARY_PATH=$MY_INSTALL/lib:$LIBRARY_PATH
+    export LD_LIBRARY_PATH=$MY_INSTALL/lib:$LD_LIBRARY_PATH
 else
     echo "Using the non-host-specific setting.  This might not work on your environment."
     export  CC=gcc-4.9

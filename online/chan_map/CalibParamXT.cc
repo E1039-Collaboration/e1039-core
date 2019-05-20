@@ -93,7 +93,17 @@ void CalibParamXT::Add(
   const std::string det,
   const double t, const double x, const double dx)
 {
-  const int ele = 1; // any element is OK??
+  /// The X-T curve of the prop tubes is given per plane pair in the TSV file (at present), 
+  /// namely P1H, P1V, P2V and P2H.  Since CalibParamXT needs one X-T curve per plane,
+  /// two X-T curves are being made from one input (ex. P1H1f & P1H1b from P1H).
+  /// In the future, the X-T curve is expected to be given per plane, like the drift chamber.
+  if (det[0] == 'P' && det.length() == 3) {
+    Add(det + "1f", t, x, dx);
+    Add(det + "1b", t, x, dx);
+    return;
+  }
+
+  const int ele = 1; // Any element is OK since the X-T curve is single per plane.
   GeomSvc* geom = GeomSvc::instance();
   string det_new = det;
   int    ele_new = ele;
@@ -101,12 +111,12 @@ void CalibParamXT::Add(
   int det_id = geom->getDetectorID(det_new);
   Add(det, det_id, t, x, dx);
 
-  if (ele_new != ele) { // I know the current version cannot handle "P4" properly!!
-    cout << "!WARNING!  CalibParamXT::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
-         << "  From det = " << det << ", ele = " << ele << "\n"
-         << "  To   det = " << det_new << " (id=" << det_id << "), ele = " << ele_new << "\n"
-         << "  The mapping result will be incorrect!!" << endl;
-  }
+  //if (ele_new != ele) {
+  //  cout << "!WARNING!  CalibParamXT::Add():  The GeomSvc conversion changed element ID unexpectedly:\n"
+  //       << "  From det = " << det << ", ele = " << ele << "\n"
+  //       << "  To   det = " << det_new << " (id=" << det_id << "), ele = " << ele_new << "\n"
+  //       << "  The mapping result will be incorrect!!" << endl;
+  //}
 }
 
 void CalibParamXT::Add(
