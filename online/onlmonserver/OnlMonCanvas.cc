@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <TROOT.h>
+#include <TError.h>
 #include <TSystem.h>
 #include <TStyle.h>
 #include <TCanvas.h>
