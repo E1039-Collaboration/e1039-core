@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <algorithm>
 #include <TStyle.h>
 #include <TH1D.h>
 #include <TSocket.h>
@@ -14,9 +15,6 @@
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
-
-#include <algorithm>
-
 using namespace std;
 
 std::vector<OnlMonClient*> OnlMonClient::m_list_us;
