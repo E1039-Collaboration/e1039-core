@@ -229,10 +229,36 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   syncobject->RunNumber       (rd->run_id);
   syncobject->EventNumber     (ed->event.eventID);
 
-  if (run_header->get_run_id() == INT_MAX) { // Any better way to check if initialized??
-    run_header->set_run_id(rd->run_id);
-    run_header->set_spill_count(0); // not implemented
+  run_header->set_run_id         (rd->run_id);
+  run_header->set_unix_time_begin(rd->utime_b);
+  run_header->set_unix_time_end  (rd->utime_e);
+  for (int ii = 0; ii < 5; ii++) {
+    run_header->set_fpga_enabled (ii, rd->fpga_enabled [ii]);
+    run_header->set_fpga_prescale(ii, rd->fpga_prescale[ii]);
+    run_header->set_nim_enabled  (ii, rd-> nim_enabled [ii]);
   }
+  for (int ii = 0; ii < 3; ii++) {
+    run_header->set_nim_prescale(ii, rd->nim_prescale[ii]);
+  }
+  run_header->set_run_desc       (rd->run_desc);
+  run_header->set_n_fee_event    (rd->n_fee_event);
+  run_header->set_n_fee_prescale (rd->n_fee_prescale);
+  run_header->set_n_run_desc     (rd->n_run_desc);
+  run_header->set_n_spill        (rd->n_spill);
+  run_header->set_n_evt_all      (rd->n_evt_all);
+  run_header->set_n_evt_dec      (rd->n_evt_dec);
+  run_header->set_n_phys_evt     (rd->n_phys_evt);
+  run_header->set_n_phys_evt_bad (rd->n_phys_evt_bad);
+  run_header->set_n_flush_evt    (rd->n_flush_evt);
+  run_header->set_n_flush_evt_bad(rd->n_flush_evt_bad);
+  run_header->set_n_hit          (rd->n_hit);
+  run_header->set_n_t_hit        (rd->n_t_hit);
+  run_header->set_n_hit_bad      (rd->n_hit_bad);
+  run_header->set_n_t_hit_bad    (rd->n_t_hit_bad);
+  run_header->set_n_v1495        (rd->n_v1495);
+  run_header->set_n_v1495_d1ad   (rd->n_v1495_d1ad);
+  run_header->set_n_v1495_d2ad   (rd->n_v1495_d2ad);
+  run_header->set_n_v1495_d3ad   (rd->n_v1495_d3ad);
 
   SQSpill* spill = spill_map->get(sd->spill_id);
   if (! spill) {
@@ -273,7 +299,31 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   event_header->set_coda_event_id(ed->event.codaEventID);
   event_header->set_data_quality (ed->event.dataQuality);
   event_header->set_vme_time     (ed->event.vmeTime);
-  //event_header->set_trigger_bits      (ed->event.trigger_bits);
+  event_header->set_trigger      (SQEvent::MATRIX1, ed->event.MATRIX[0]);
+  event_header->set_trigger      (SQEvent::MATRIX2, ed->event.MATRIX[1]);
+  event_header->set_trigger      (SQEvent::MATRIX3, ed->event.MATRIX[2]);
+  event_header->set_trigger      (SQEvent::MATRIX4, ed->event.MATRIX[3]);
+  event_header->set_trigger      (SQEvent::MATRIX5, ed->event.MATRIX[4]);
+  event_header->set_trigger      (SQEvent::NIM1   , ed->event.NIM   [0]);
+  event_header->set_trigger      (SQEvent::NIM2   , ed->event.NIM   [1]);
+  event_header->set_trigger      (SQEvent::NIM3   , ed->event.NIM   [2]);
+  event_header->set_trigger      (SQEvent::NIM4   , ed->event.NIM   [3]);
+  event_header->set_trigger      (SQEvent::NIM5   , ed->event.NIM   [4]);
+  for (int ii=0; ii<5; ii++) {
+    event_header->set_raw_matrix      (ii, ed->event.RawMATRIX     [ii]);
+    event_header->set_after_inh_matrix(ii, ed->event.AfterInhMATRIX[ii]);
+  }
+  for (int ii=0; ii<4; ii++) event_header->set_qie_presum(ii, ed->event.sums[ii]);
+  event_header->set_qie_trigger_count(ed->event.triggerCount);
+  event_header->set_qie_turn_id      (ed->event.turnOnset);
+  event_header->set_qie_rf_id        (ed->event.rfOnset);
+  for (int ii=0; ii<33; ii++) event_header->set_qie_rf_intensity(ii-16, ed->event.rf[ii]);
+  event_header->set_flag_v1495        (ed->event.flag_v1495);
+  event_header->set_n_board_qie       (ed->n_qie   );
+  event_header->set_n_board_v1495     (ed->n_v1495 );
+  event_header->set_n_board_taiwan    (ed->n_tdc   );
+  event_header->set_n_board_trig_bit  (ed->n_trig_b);
+  event_header->set_n_board_trig_count(ed->n_trig_c);
 
   for (HitDataList::iterator it = ed->list_hit.begin(); it != ed->list_hit.end(); it++) {
     HitData* hd = &*it;
@@ -281,6 +331,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     hit_vec->push_back(hit);
     delete hit;
@@ -292,6 +343,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     trig_hit_vec->push_back(hit);
     delete hit;

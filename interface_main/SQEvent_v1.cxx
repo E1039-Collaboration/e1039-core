@@ -20,10 +20,21 @@ _event_id(INT_MAX),
 _coda_event_id(INT_MAX),
 _trigger(0),
 _data_quality(INT_MAX),
-_vme_time(INT_MAX)
+_vme_time(INT_MAX), 
+_qie_trig_cnt(INT_MAX), 
+_qie_turn_id(INT_MAX), 
+_qie_rf_id(INT_MAX), 
+_flag_v1495(INT_MAX), 
+_n_board_qie(INT_MAX), 
+_n_board_v1495(INT_MAX), 
+_n_board_taiwan(INT_MAX), 
+_n_board_trig_b(INT_MAX), 
+_n_board_trig_c(INT_MAX)
 {
-	for(int i=0;i<5;++i) _raw_matrix[i] = 0;
-	for(int i=0;i<5;++i) _after_inh_matrix[i] = 0;
+        memset(_raw_matrix      , 0, sizeof(_raw_matrix));
+        memset(_after_inh_matrix, 0, sizeof(_after_inh_matrix));
+        memset(_qie_presums     , 0, sizeof(_qie_presums));
+        memset(_qie_rf_inte     , 0, sizeof(_qie_rf_inte));
 }
 
 SQEvent_v1::~SQEvent_v1() {
@@ -31,14 +42,26 @@ SQEvent_v1::~SQEvent_v1() {
 }
 
 void SQEvent_v1::Reset() {
-	_run_id        = INT_MAX;
-	_spill_id      = INT_MAX;
-	_event_id      = INT_MAX;
-	_coda_event_id = INT_MAX;
-	_trigger       = 0;
-	_data_quality  = INT_MAX;
-	_vme_time      = INT_MAX;
-
+	_run_id         = INT_MAX;
+	_spill_id       = INT_MAX;
+	_event_id       = INT_MAX;
+	_coda_event_id  = INT_MAX;
+	_trigger        = 0;
+	_data_quality   = INT_MAX;
+	_vme_time       = INT_MAX;
+        _qie_trig_cnt   = INT_MAX;
+        _qie_turn_id    = INT_MAX;
+        _qie_rf_id      = INT_MAX;
+        _flag_v1495     = INT_MAX;
+        _n_board_qie    = INT_MAX;
+        _n_board_v1495  = INT_MAX;
+        _n_board_taiwan = INT_MAX;
+        _n_board_trig_b = INT_MAX;
+        _n_board_trig_c = INT_MAX;
+        memset(_raw_matrix      , 0, sizeof(_raw_matrix));
+        memset(_after_inh_matrix, 0, sizeof(_after_inh_matrix));
+        memset(_qie_presums     , 0, sizeof(_qie_presums));
+        memset(_qie_rf_inte     , 0, sizeof(_qie_rf_inte));
 	return;
 }
 

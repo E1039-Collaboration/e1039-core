@@ -20,9 +20,18 @@ FeeData::FeeData() :
 }
 
 RunData::RunData() : 
-  run_id(0), run_desc(""),
-  n_fee_event(0), n_fee_prescale(0), n_run_desc(0)
+  run_id(0), utime_b(0), utime_e(0), run_desc(""),
+  n_fee_event(0), n_fee_prescale(0), n_run_desc(0),
+  n_spill(0), n_evt_all(0), n_evt_dec(0), 
+  n_phys_evt(0), n_phys_evt_bad(0), n_flush_evt(0), n_flush_evt_bad(0),
+  n_hit(0), n_t_hit(0), n_hit_bad(0), n_t_hit_bad(0), 
+  n_v1495(0), n_v1495_d1ad(0), n_v1495_d2ad(0), n_v1495_d3ad(0)
 {
+  memset( fpga_enabled, 0, sizeof( fpga_enabled));
+  memset(  nim_enabled, 0, sizeof(  nim_enabled));
+  memset(fpga_prescale, 0, sizeof(fpga_prescale));
+  memset( nim_prescale, 0, sizeof( nim_prescale));
+
   memset(trig_bit, 0, sizeof(trig_bit));
   memset(prescale, 0, sizeof(prescale));
 }
@@ -59,15 +68,15 @@ SpillData::SpillData() :
 //
 
 HitData::HitData() :
-  event(0), id(0), roc(0), board(0), chan(0), det(0), ele(0), time(0)
+  event(0), id(0), roc(0), board(0), chan(0), det(0), ele(0), lvl(0), time(0)
 {
   ;
 }
 
 EventInfo::EventInfo() :
   eventID(0), codaEventID(0), runID(0), spillID(0), 
-  dataQuality(0), vmeTime(0), trigger_bits(0),
-  qieFlag(0), triggerCount(0), turnOnset(0), rfOnset(0)
+  dataQuality(0), vmeTime(0), trigger_bits(0), 
+  triggerCount(0), turnOnset(0), rfOnset(0), flag_v1495(0)
 {
     memset(RawMATRIX     , 0, sizeof(RawMATRIX     ));
     memset(AfterInhMATRIX, 0, sizeof(AfterInhMATRIX));

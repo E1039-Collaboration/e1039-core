@@ -66,12 +66,19 @@ struct FeeData : public TObject {
 
   FeeData();
   virtual ~FeeData() {;}
-  //ClassDef(FeeData, 1);
 };
 typedef std::vector<FeeData> FeeDataList;
 
 struct RunData : public TObject {
   int run_id;
+  int utime_b;
+  int utime_e; // not implemented
+
+  int fpga_enabled [5];
+  int  nim_enabled [5];
+  int fpga_prescale[5];
+  int  nim_prescale[3];
+
   int trig_bit[10];
   int prescale[ 8];
   FeeDataList fee;
@@ -80,11 +87,24 @@ struct RunData : public TObject {
   int n_fee_event;
   int n_fee_prescale;
   int n_run_desc;
+  int n_spill;
+  int n_evt_all; //< N of all real (i.e. triggered) events
+  int n_evt_dec; //< N of decoded real events
+  int n_phys_evt; //< N of Coda physics events
+  int n_phys_evt_bad;
+  int n_flush_evt; //< N of Coda flush events
+  int n_flush_evt_bad;
+  int n_hit; //< N of Taiwan-TDC hits
+  int n_t_hit; //< N of v1495-TDC hits
+  int n_hit_bad; //< N of bad hits
+  int n_t_hit_bad; //< N of bad t-hits.  Not implemented
+  int n_v1495; //< N of v1495 events
+  int n_v1495_d1ad;
+  int n_v1495_d2ad;
+  int n_v1495_d3ad;
 
   RunData();
   virtual ~RunData() {;}
-
-  //ClassDef(RunData, 1);
 };
 
 ////////////////////////////////////////////////////////////////
@@ -100,8 +120,6 @@ struct SlowControlData {
 
   SlowControlData();
   virtual ~SlowControlData() {;}
-
-  //ClassDef(SlowControlData, 1);
 };
 typedef std::vector<SlowControlData> SlowControlDataList;
 
@@ -116,8 +134,6 @@ struct ScalerData {
 
   ScalerData();
   virtual ~ScalerData() {;}
-
-  //ClassDef(ScalerData, 1);
 };
 typedef std::vector<ScalerData> ScalerDataList;
 
@@ -141,8 +157,6 @@ struct SpillData {
 
   SpillData();
   virtual ~SpillData() {;}
-
-  //ClassDef(SpillData, 1);
 };
 typedef std::map<unsigned int, SpillData> SpillDataMap;
 
@@ -158,6 +172,7 @@ struct HitData {
   short chan;
   short det;
   short ele;
+  short lvl;
   double         time;
   HitData();
   virtual ~HitData() {;}
@@ -176,13 +191,12 @@ struct EventInfo {
   int NIM[5];
   int MATRIX[5];
   int trigger_bits;
-  
-  int qieFlag;
   unsigned int sums[4];
   unsigned int triggerCount;
   unsigned int turnOnset;
   unsigned int rfOnset;
   unsigned int rf[33];
+  short flag_v1495;
 
   EventInfo();
   ~EventInfo() {;}

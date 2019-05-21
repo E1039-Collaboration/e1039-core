@@ -1,4 +1,4 @@
-/// OnlMonCham.C
+/// OnlMonProp.C
 #include <iomanip>
 #include <TH1D.h>
 #include <interface_main/SQRun.h>
@@ -11,28 +11,25 @@
 #include <geom_svc/GeomSvc.h>
 //#include <chan_map/CalibParamInTimeTaiwan.h>
 #include "OnlMonServer.h"
-#include "OnlMonCham.h"
+#include "OnlMonProp.h"
 #include "UtilHist.h"
 using namespace std;
 
-OnlMonCham::OnlMonCham(const ChamType_t type) : m_type(type)
+OnlMonProp::OnlMonProp(const PropType_t type) : m_type(type)
 {
   NumCanvases(2);
   switch (m_type) {
-  case D0 :  m_pl0 =  1;  Name("OnlMonChamD0" );  Title( "D0 Chamber");  break;
-  case D1 :  m_pl0 =  7;  Name("OnlMonChamD1" );  Title( "D1 Chamber");  break;
-  case D2 :  m_pl0 = 13;  Name("OnlMonChamD2" );  Title( "D2 Chamber");  break;
-  case D3p:  m_pl0 = 19;  Name("OnlMonChamD3p");  Title("D3p Chamber");  break;
-  case D3m:  m_pl0 = 25;  Name("OnlMonChamD3m");  Title("D3m Chamber");  break;
+  case P1 :  m_pl0 = 47;  Name("OnlMonPropP1" );  Title( "P1 Prop Tube");  break;
+  case P2 :  m_pl0 = 51;  Name("OnlMonPropP2" );  Title( "P2 Prop Tube");  break;
   }
 }
 
-int OnlMonCham::InitOnlMon(PHCompositeNode* topNode)
+int OnlMonProp::InitOnlMon(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonCham::InitRunOnlMon(PHCompositeNode* topNode)
+int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
 {
   //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
@@ -53,8 +50,8 @@ int OnlMonCham::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 20/9.0; // 4/9 ns per single count of Taiwan TDC
-    const int NT = 1000;
+    const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
+    const int NT = 500;
     const double T0 = 0.5*DT;
     const double T1 = (NT+0.5)*DT;
 
@@ -76,7 +73,7 @@ int OnlMonCham::InitRunOnlMon(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonCham::ProcessEventOnlMon(PHCompositeNode* topNode)
+int OnlMonProp::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
   SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
@@ -92,12 +89,12 @@ int OnlMonCham::ProcessEventOnlMon(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonCham::EndOnlMon(PHCompositeNode* topNode)
+int OnlMonProp::EndOnlMon(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int OnlMonCham::FindAllMonHist()
+int OnlMonProp::FindAllMonHist()
 {
   ostringstream oss;
   for (int pl = 0; pl < N_PL; pl++) {
@@ -113,12 +110,12 @@ int OnlMonCham::FindAllMonHist()
   return 0;
 }
 
-int OnlMonCham::DrawMonitor()
+int OnlMonProp::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
   pad0->SetGrid();
-  pad0->Divide(2, 3);
+  pad0->Divide(2, 2);
   for (int pl = 0; pl < N_PL; pl++) {
     pad0->cd(pl+1);
     h1_ele[pl]->Draw();
@@ -129,7 +126,7 @@ int OnlMonCham::DrawMonitor()
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
   pad1->SetGrid();
-  pad1->Divide(2, 3);
+  pad1->Divide(2, 2);
   for (int pl = 0; pl < N_PL; pl++) {
     pad1->cd(pl+1);
     UtilHist::AutoSetRange(h1_time[pl]);
