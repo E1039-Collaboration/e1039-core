@@ -299,7 +299,16 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   event_header->set_coda_event_id(ed->event.codaEventID);
   event_header->set_data_quality (ed->event.dataQuality);
   event_header->set_vme_time     (ed->event.vmeTime);
-  event_header->set_trigger      (ed->event.trigger_bits);
+  event_header->set_trigger      (SQEvent::MATRIX1, ed->event.MATRIX[0]);
+  event_header->set_trigger      (SQEvent::MATRIX2, ed->event.MATRIX[1]);
+  event_header->set_trigger      (SQEvent::MATRIX3, ed->event.MATRIX[2]);
+  event_header->set_trigger      (SQEvent::MATRIX4, ed->event.MATRIX[3]);
+  event_header->set_trigger      (SQEvent::MATRIX5, ed->event.MATRIX[4]);
+  event_header->set_trigger      (SQEvent::NIM1   , ed->event.NIM   [0]);
+  event_header->set_trigger      (SQEvent::NIM2   , ed->event.NIM   [1]);
+  event_header->set_trigger      (SQEvent::NIM3   , ed->event.NIM   [2]);
+  event_header->set_trigger      (SQEvent::NIM4   , ed->event.NIM   [3]);
+  event_header->set_trigger      (SQEvent::NIM5   , ed->event.NIM   [4]);
   for (int ii=0; ii<5; ii++) {
     event_header->set_raw_matrix      (ii, ed->event.RawMATRIX     [ii]);
     event_header->set_after_inh_matrix(ii, ed->event.AfterInhMATRIX[ii]);
@@ -322,6 +331,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     hit_vec->push_back(hit);
     delete hit;
@@ -333,6 +343,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
     hit->set_element_id (hd->ele );
+    hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
     trig_hit_vec->push_back(hit);
     delete hit;

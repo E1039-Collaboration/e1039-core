@@ -57,8 +57,9 @@ int CalibXT::process_event(PHCompositeNode* topNode)
       int ele = hit->get_element_id();
       double center, width;
       if (! m_cal_int->Find(det, ele, center, width)) {
-        cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << ".\n";
-        return Fun4AllReturnCodes::ABORTEVENT;
+        cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << " in CalibXT.\n";
+        continue;
+        //return Fun4AllReturnCodes::ABORTEVENT;
       }
       float t0 = center + width / 2;
       float drift_time = t0 - hit->get_tdc_time();

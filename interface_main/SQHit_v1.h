@@ -39,6 +39,9 @@ public:
   virtual short        get_element_id() const                    {return _element_id;}
   virtual void         set_element_id(const short id)            {_element_id = id;}
 
+  virtual short        get_level() const                         {return _level;}
+  virtual void         set_level(const short level)              {_level = level;}
+
   virtual float        get_tdc_time() const                      {return _tdc_time;}
   virtual void         set_tdc_time(const float a)               {_tdc_time=a;}
 
@@ -62,6 +65,7 @@ private:
   int _hit_id;                   ///< hitID
   short _detector_id;            ///< mapping from detector name to ID
   short _element_id;             ///< elementID
+  short _level;                  ///< level of v1495 (meaningful only for trigger hit)
 
   float _tdc_time;               ///< tdcTime
   float _drift_distance;         ///< driftDistance

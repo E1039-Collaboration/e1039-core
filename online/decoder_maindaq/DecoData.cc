@@ -68,7 +68,7 @@ SpillData::SpillData() :
 //
 
 HitData::HitData() :
-  event(0), id(0), roc(0), board(0), chan(0), det(0), ele(0), time(0)
+  event(0), id(0), roc(0), board(0), chan(0), det(0), ele(0), lvl(0), time(0)
 {
   ;
 }
