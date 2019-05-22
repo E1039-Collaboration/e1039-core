@@ -283,7 +283,10 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
   case PRESTART_INFO:
     ret = ProcessPhysPrestart(words);
     break;
-  case STANDARD_PHYSICS: // do nothing
+  case STANDARD_PHYSICS:
+    dec_par.eventIDstd++;
+    SetEventInfo(&(*list_ed)[dec_par.eventIDstd].event, dec_par.eventIDstd);
+    ret = ProcessPhysFlush(words); // This function handles STANDARD_PHYSICS as well.
     break;
   case SPILL_COUNTER:
     ret = ProcessPhysSpillCounter(words);
@@ -639,6 +642,14 @@ int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e
   else if ( e906flag == (int)0xe906f01b ) idx = ProcessBoardFeeQIE      (words, idx);
   else if ( e906flag == (int)0xE906F014 ) idx = ProcessBoardTriggerCount(words, idx);
   else if ( e906flag == (int)0xE906F00F ) idx = ProcessBoardTriggerBit  (words, idx);
+
+  // todo: "0xE906F999" below must be changed together with the hardware setting.
+  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdV1495TDC(words, idx);
+  else if ( e906flag == (int)0xE906F010 ) idx = ProcessBoardStdJyTDC2  (words, idx, idx_roc_end);
+  else if ( e906flag == (int)0xe906f013 ) idx = ProcessBoardStdFeeQIE      (words, idx);
+  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdTriggerCount(words, idx);
+  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdTriggerBit  (words, idx);
+
   else {
     cerr << "Unexpected board flag in CODA Event " << dec_par.codaID << " ROC " << (int)dec_par.rocID 
 	 << ": e906flag = " << e906flag << " @ " << idx-1 << "\n";
@@ -921,7 +932,6 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
     return idx_end;
 }
 
-
 /** Process a set of words from board "e906flag=0xe906f018".
  *
  * @param[in]  idx_begin    The index of word "ID&N" (i.e. next to the e906flag word) of this board.
@@ -1056,6 +1066,221 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   }
   
   return idx_events_end;
+}
+
+int MainDaqParser::ProcessBoardStdTriggerBit (int* words, int idx)
+{
+  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+  ed->n_trig_b++;
+  EventInfo* evt = &ed->event;
+
+  int triggerBits = words[idx];
+  evt->trigger_bits = triggerBits;
+  for (int i = 0; i <  5; i++) {
+    // This function doesn't support the bit order for old runs (# < 4923).
+    evt->MATRIX[i] = get_bin_bit (triggerBits, i  );
+    evt->NIM   [i] = get_bin_bit (triggerBits, i+5);
+  }
+  
+  return idx + 1;
+}
+
+int MainDaqParser::ProcessBoardStdTriggerCount (int* words, int idx)
+{
+  // KN: Do we need to check this as done in the previous version???  14 means STANDARD_PHYSICS
+  //if (get_hex_bits (words[1], 7, 4) == 14)
+
+  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+  ed->n_trig_c++;
+  EventInfo* evt = &ed->event;
+
+  for (int ii = 0; ii < 5; ii++) {
+    evt->RawMATRIX     [ii] = words[idx + ii    ];
+    evt->AfterInhMATRIX[ii] = words[idx + ii + 5];
+  }
+  
+  return idx + 10;
+}
+
+/** Process one QIE event in standard physics event.
+ *
+ * @param[in]  idx    The index of word "ID&N" (i.e. next to the e906flag word) of this board.
+ * @return     The index that points to the e906flag of the next board.
+ */
+int MainDaqParser::ProcessBoardStdFeeQIE (int* words, int idx)
+{
+  if (dec_par.runID < 22400) Abort("StdFeeQIE does not support run < 22400.");
+
+  while (words[idx] == (int)0xe906e906) idx++; // Still necessary??
+
+  // int boardID = get_hex_bits (words[idx], 7, 4);
+  int n_wd = get_hex_bits (words[idx], 3, 4);
+  int idx_end = idx + n_wd + 1; // It points to the 1st word of the next board.
+  idx++;
+  if (n_wd == 0) return idx;
+  
+  while (words[idx] == (int)0xe906e906) { idx++; idx_end++; }
+  
+  int n_wd2 = get_hex_bits(words[idx], 7, 4);
+  if (n_wd2 == 0x2C) idx += 5;
+  idx++; // skip the number-of-words word for this TDC
+
+  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+  ed->n_qie++;
+  EventInfo* evt = &ed->event;
+
+  unsigned int sums_vals[4]; // QIE records four intensity sums (called "presum")
+  for (int i_sum = 0; i_sum < 4 ; i_sum++) {
+    evt->sums[i_sum] = get_hex_bits(words[idx],7,4)*65536 + get_hex_bits(words[idx+1],7,4);
+    idx += 2;
+  }
+  //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+  
+  evt->triggerCount = words[idx] | ( get_hex_bits (words[idx+1], 7, 4) );
+  idx += 2;
+  //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+
+  evt->turnOnset = words[idx] | ( get_hex_bits (words[idx+1], 7, 4) );
+  if (evt->turnOnset > dec_par.turn_id_max) dec_par.turn_id_max = evt->turnOnset;
+  idx += 2;
+  //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+  
+  evt->rfOnset = get_hex_bits(words[idx],7,4);
+  idx++;
+  
+  unsigned int rf_vals[25];
+  for (int i_rf = 0; i_rf < 25; i_rf++) { // RF-12...RF+12
+    if (words[idx] == (int)0xe906e906) Abort("Unexpected 0xe906e906 in QIE.");
+    evt->rf[i_rf+4] = get_hex_bits(words[idx],7,4);
+    idx++;
+  }
+ 
+  if (idx != idx_end) {
+    cout << idx << " != " << idx_end;
+    Abort("idx != idx_end in StdFeeQIE().");
+  }
+  return idx_end;
+}
+
+/** Process one v1495-TDC event in standard physics event.
+ *
+ */
+int MainDaqParser::ProcessBoardStdV1495TDC (int* words, int idx)
+{
+  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+  ed->n_v1495++;
+  EventInfo* evt = &ed->event;
+
+  int boardID   = words[idx++]; // was get_hex_bits (words[idx], 3, 4);
+
+  // Check to see if there is an error in next word
+  // If so, don't submit the information from this board for this event
+  bool ignore = (get_bin_bit(words[idx + 1], 12) != 1);
+
+  if ((words[idx] & 0xFFFF) == (int)0xd1ad) {
+    evt->flag_v1495 |= 0x1;
+    run_data.n_v1495_d1ad++;
+  }
+  if ((words[idx + 1] & 0xFFFF) == (int)0xd2ad) {
+    evt->flag_v1495 |= 0x2;
+    run_data.n_v1495_d2ad++;
+  } else if ((words[idx + 1] & 0xFFFF) == (int)0xd3ad) {
+    evt->flag_v1495 |= 0x4;
+    run_data.n_v1495_d3ad++;
+  }
+  run_data.n_v1495++;
+
+  // Contains 0x000000xx where xx is number of channel entries
+  int numChannels = (words[idx] & 0x0000FFFF);
+  if (numChannels > 255) {
+    //printf("number of Channels stated in v1495 readout exceeds 255. Skipping...\n");
+    return idx + 2;
+  }
+  idx++;
+
+  // Next contains 0x00001xxx where xxx is the stop time
+  unsigned int stopTime = (words[idx] & 0x00000FFF);
+  idx++;
+
+  if (! ignore) {
+    HitData hit;
+    hit.event = dec_par.eventIDstd;
+    hit.roc   = dec_par.rocID;
+    hit.board = boardID;
+
+    for (int kk = 0; kk < numChannels; kk++) {
+      unsigned int channel     = get_hex_bits(words[idx+kk], 3, 2);
+      unsigned int channelTime = get_hex_bits(words[idx+kk], 1, 2);
+      double tdcTime = stopTime - channelTime;
+      hit.id    = ++dec_par.hitID;
+      hit.chan  = channel;
+      hit.time  = tdcTime;
+      ed->list_hit_trig.push_back(hit);
+    }
+  }
+
+  return idx + numChannels;
+}
+
+/** Process a set of words from the Taiwan-TDC board in standard-physics event.
+ *
+ * @param[in]  idx_begin    The index of word "ID&N" (i.e. next to the e906flag word) of this board.
+ * @param[in]  idx_roc_end  The last index of the current ROC (not board).
+ * @return     The index that points to the e906flag of the next board, i.e. the excluding endpoint of this board.
+ */
+int MainDaqParser::ProcessBoardStdJyTDC2 (int* words, int idx_begin, int idx_roc_end)
+{
+  int boardID     = get_hex_bits (words[idx_begin], 6, 3);
+  int nWordsBoard = get_hex_bits (words[idx_begin], 3, 4);
+  if (nWordsBoard == 0) return idx_begin + 1;
+  int idx_end = idx_begin + nWordsBoard;
+  if (idx_end > idx_roc_end) {
+    cerr << "WARNING: Word overflow.  Skip ROC (" << dec_par.rocID << ")" << endl;
+    return -1;
+  }
+
+  int idx = idx_begin + 1;
+  if (words[idx] == (int)0xe906e906) idx++; // Dummy word *could* exist.  Skip it
+
+  int    trigger_clock_cycle = get_hex_bit(words[idx], 0);
+  double trigger_rough = 4.0 * get_hex_bits(words[idx], 3, 3);
+  double trigger_fine;
+  if (get_bin_bit(words[idx], 16)) { // rising-edge mode
+    trigger_fine = 4.0 - trigger_clock_cycle * 4.0 / 9.0;
+  } else {
+    trigger_fine = 0.5 * trigger_clock_cycle;
+  }
+  double trigger_time = trigger_rough + trigger_fine;
+  idx++;
+
+  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+  ed->n_tdc++;
+  HitData hit;
+  hit.event = dec_par.eventIDstd;
+  hit.roc   = (int)dec_par.rocID;
+  hit.board = boardID;
+      
+  while (idx < idx_end) {
+    bool rising = get_bin_bit(words[idx], 16);
+    if (rising && (words[idx] & 0x80000000) == 0) {
+      double fine  = 4.0 - get_hex_bit (words[idx], 0) * 4.0 / 9.0;
+      double rough = 4.0 * get_hex_bits(words[idx], 3, 3);
+      double time = trigger_time - (fine + rough);
+      if (time < 0) time += 4096;
+
+      int cable_chan = get_hex_bit (words[idx], 6);
+      int cable_id   = get_bin_bits(words[idx], 29, 2);
+      int chan       = cable_chan + 16*cable_id;
+
+      hit.id    = ++dec_par.hitID;
+      hit.chan  = chan;
+      hit.time  = time;
+      ed->list_hit.push_back(hit);
+    }
+    idx++;
+  }
+  
+  return idx_end;
 }
 
 int MainDaqParser::PackOneSpillData()

@@ -43,6 +43,12 @@ class MainDaqParser {
   int ProcessBoardV1495TDC    (int* words, int idx);
   int ProcessBoardJyTDC2      (int* words, int idx_begin, int idx_roc_end);
 
+  int ProcessBoardStdTriggerBit  (int* words, int idx);
+  int ProcessBoardStdTriggerCount(int* words, int idx);
+  int ProcessBoardStdFeeQIE      (int* words, int idx);
+  int ProcessBoardStdV1495TDC    (int* words, int idx);
+  int ProcessBoardStdJyTDC2      (int* words, int idx_begin, int idx_roc_end);
+
   int PackOneSpillData();
   int ParseOneSpill();
   void SetEventInfo(EventInfo* evt, const int eventID);
