@@ -34,7 +34,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/
 #set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool -lg4testbench")
 
 add_library(onlmonserver SHARED ${sources} onlmonserver_Dict.cc)
-target_link_libraries(onlmonserver -L$ENV{OFFLINE_MAIN}/lib -lfun4all db_svc chan_map)
+target_link_libraries(onlmonserver -L$ENV{OFFLINE_MAIN}/lib -lfun4all db_svc chan_map -lktracker)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

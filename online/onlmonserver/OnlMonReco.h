@@ -6,7 +6,8 @@ class OnlMonReco: public OnlMonClient {
  public:
 
  private:
-  TH1* h1_pt;
+  TH1* h1_rec_stats;
+  TH1* h1_sgmu_pt;
   TH1* h1_dimu_mass;
 
  public:
