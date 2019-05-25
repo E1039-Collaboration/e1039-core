@@ -23,7 +23,6 @@ else
     framework/fun4all
     interface_main
     online/chan_map
-    online/onlmonserver
     online/decoder_maindaq
     packages/Half
     packages/vararray
@@ -45,6 +44,7 @@ else
     packages/PHGenFitPkg/PHGenFit
     packages/ktracker
     packages/embedding
+    online/onlmonserver
     module_example
 	)
 fi
