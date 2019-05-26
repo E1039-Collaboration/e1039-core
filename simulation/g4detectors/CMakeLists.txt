@@ -3,12 +3,11 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4detectors CXX C)
 
 # source code
-include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/")
 if(${CMAKE_VERSION} VERSION_GREATER "2.8.1") 
   message("SET CMP0015 OLD")
   cmake_policy(SET CMP0015 OLD)
 endif()
-link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
@@ -48,15 +47,13 @@ foreach(LinkDefh ${LinkDefhs})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
-  -c
-  -I$ENV{MY_INSTALL}/include 
-  -I$ENV{OFFLINE_MAIN}/include 
+  -c -p
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{MY_INSTALL}/include/ -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
 add_library(g4detectors_io SHARED
   ${PROJECT_SOURCE_DIR}/PHG4Parameters.cc

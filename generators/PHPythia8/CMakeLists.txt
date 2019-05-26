@@ -3,15 +3,14 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phpythia8 CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 add_custom_command (
   OUTPUT PHPythia8_Dict.C
   COMMAND rootcint
-  ARGS -f PHPythia8_Dict.C -c
-  -I$ENV{OFFLINE_MAIN}/include
+  ARGS -f PHPythia8_Dict.C -c -p
   ${PROJECT_SOURCE_DIR}/PHPythia8.h
   ${PROJECT_SOURCE_DIR}/PHPy8GenTrigger.h
   ${PROJECT_SOURCE_DIR}/PHPy8ParticleTrigger.h
@@ -30,7 +29,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} -std=c++0x ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 add_library(PHPythia8 SHARED
   PHPythia8.C
@@ -40,7 +39,6 @@ add_library(PHPythia8 SHARED
 )
 
 target_link_libraries(PHPythia8 -L./
-  -L$ENV{OFFLINE_MAIN}/lib
   -lgsl
   -lgslcblas
   -lphool

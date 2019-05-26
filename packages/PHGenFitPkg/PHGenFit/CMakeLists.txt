@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phgenfit CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -34,11 +33,11 @@ execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUT
 string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11 ")
 message("CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 
 add_library(phgenfit SHARED ${sources})
-target_link_libraries(phgenfit -L./ -L$ENV{OFFLINE_MAIN}/lib -lgenfit2 -lgenfitexp -lphfield)
+target_link_libraries(phgenfit -lgenfit2 -lgenfitexp -lphfield)
 
 install(TARGETS phgenfit 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

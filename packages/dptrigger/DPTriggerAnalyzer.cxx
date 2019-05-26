@@ -19,13 +19,13 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 
-#include <g4main/PHG4TruthInfoContainer.h>
-#include <g4main/PHG4HitContainer.h>
-#include <g4main/PHG4Hit.h>
-#include <g4main/PHG4Hitv1.h>
-#include <g4main/PHG4Particle.h>
-#include <g4main/PHG4HitDefs.h>
-#include <g4main/PHG4VtxPoint.h>
+//#include <g4main/PHG4TruthInfoContainer.h>
+//#include <g4main/PHG4HitContainer.h>
+//#include <g4main/PHG4Hit.h>
+//#include <g4main/PHG4Hitv1.h>
+//#include <g4main/PHG4Particle.h>
+//#include <g4main/PHG4HitDefs.h>
+//#include <g4main/PHG4VtxPoint.h>
 
 #include <iomanip>
 #include <cmath>

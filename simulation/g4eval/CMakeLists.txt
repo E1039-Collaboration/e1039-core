@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4eval CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -39,21 +39,20 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${DictC})
 	list(APPEND dicts ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
-  -c
-  -I$ENV{OFFLINE_MAIN}/include 
+  -c -p
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -msse2 -std=c++11 -I$ENV{OFFLINE_MAIN}/include/ -I${GEANT4_PREFIX}/include/ -I${ROOT_PREFIX}/include/")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -msse2 -std=c++11 -I${GEANT4_PREFIX}/include/ -I${ROOT_PREFIX}/include/")
 
 add_library(g4eval SHARED
   ${PROJECT_SOURCE_DIR}/PHG4DSTReader.cc
   PHG4DSTReader_Dict.C
 )
 
-target_link_libraries(g4eval -L./ -L$ENV{OFFLINE_MAIN}/lib -lfun4all -lg4dst)
+target_link_libraries(g4eval -lfun4all -lg4dst)
 
 install(TARGETS g4eval DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
