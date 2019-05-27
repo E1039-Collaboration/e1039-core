@@ -13,9 +13,14 @@ class CalibXT: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
+  std::string GetDBConf() { return m_db_conf; }
+  void        SetDBConf(const std::string db_conf) { m_db_conf = db_conf; }
+
  private:
   CalibParamXT* m_cal_xt;
   CalibParamInTimeTaiwan* m_cal_int;
+
+  std::string m_db_conf;
 };
 
 #endif /* __CALIB_XT_H__ */

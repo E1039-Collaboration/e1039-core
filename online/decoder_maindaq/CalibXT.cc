@@ -12,6 +12,7 @@
 using namespace std;
 
 CalibXT::CalibXT(const std::string& name) : SubsysReco(name), m_cal_xt(0), m_cal_int(0)
+, m_db_conf("/seaquest/analysis/kenichi/e1039/my.cnf")
 {
   ;
 }
@@ -33,10 +34,12 @@ int CalibXT::InitRun(PHCompositeNode* topNode)
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
 
   if (! m_cal_xt) m_cal_xt = new CalibParamXT();
+  m_cal_xt->SetDBConf(m_db_conf);
   m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
   m_cal_xt->ReadFromDB();
 
   if (! m_cal_int) m_cal_int = new CalibParamInTimeTaiwan();
+  m_cal_int->SetDBConf(m_db_conf);
   m_cal_int->SetMapIDbyDB(run_header->get_run_id());
   m_cal_int->ReadFromDB();
 

@@ -12,6 +12,7 @@
 using namespace std;
 
 CalibInTime::CalibInTime(const std::string& name) : SubsysReco(name), m_cal_taiwan(0), m_cal_v1495(0)
+, m_db_conf("/seaquest/analysis/kenichi/e1039/my.cnf")
 {
   ;
 }
@@ -33,10 +34,12 @@ int CalibInTime::InitRun(PHCompositeNode* topNode)
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
 
   if (! m_cal_taiwan) m_cal_taiwan = new CalibParamInTimeTaiwan();
+  m_cal_taiwan->SetDBConf(m_db_conf);
   m_cal_taiwan->SetMapIDbyDB(run_header->get_run_id());
   m_cal_taiwan->ReadFromDB();
 
   if (! m_cal_v1495) m_cal_v1495 = new CalibParamInTimeV1495();
+  m_cal_v1495->SetDBConf(m_db_conf);
   m_cal_v1495->SetMapIDbyDB(run_header->get_run_id());
   m_cal_v1495->ReadFromDB();
 
