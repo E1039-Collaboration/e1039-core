@@ -14,6 +14,7 @@ class RunParamBase {
   std::string m_label;
   std::string m_header;
   std::string m_map_id;
+  std::string m_db_conf;
   ParamRunRange m_range;
 
  public:
@@ -25,6 +26,8 @@ class RunParamBase {
 
   std::string GetMapID() { return m_map_id; }
   void        SetMapID(const std::string map_id) { m_map_id = map_id; }
+  std::string GetDBConf() { return m_db_conf; }
+  void        SetDBConf(const std::string db_conf) { m_db_conf = db_conf; }
   void SetMapIDbyFile(const std::string map_id);
   void SetMapIDbyDB  (const std::string map_id);
   void SetMapIDbyFile(const int run);

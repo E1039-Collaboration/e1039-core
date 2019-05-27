@@ -103,7 +103,7 @@ void RunParamBase::ReadFromDB()
   //cout <<   "  Schema = " << name_schema
   //     << "\n  Table  = " << name_table << "\n";
 
-  DbSvc db(DbSvc::DB1);
+  DbSvc db(DbSvc::DB1, DbSvc::Guest, m_db_conf);
   db.UseSchema(name_schema);
   db.HasTable(name_table, true);
   ReadDbTable(db);
@@ -121,7 +121,7 @@ void RunParamBase::WriteToDB()
   cout <<   "  Schema = " << name_schema
        << "\n  Table  = " << name_table << "\n";
 
-  DbSvc db(DbSvc::DB1);
+  DbSvc db(DbSvc::DB1, DbSvc::Guest, m_db_conf);
   db.UseSchema(name_schema, true);
   db.DropTable(name_table);
   WriteDbTable(db);
