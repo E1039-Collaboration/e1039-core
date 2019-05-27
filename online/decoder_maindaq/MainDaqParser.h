@@ -62,6 +62,7 @@ public:
   MainDaqParser();
   ~MainDaqParser();
 
+  CodaInputManager* GetCoda() { return coda; }
   int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
   bool NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd);
   int End();

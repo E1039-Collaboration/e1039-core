@@ -597,6 +597,10 @@ int MainDaqParser::ProcessPhysFlush(int* words)
       //cout << "  board " << idx << " " << e906flag << endl;
       if (get_hex_bits(e906flag, 7, 4) != (int)0xe906) {
 	cerr << "Seems not e906flag (0x" << hex << e906flag << dec << ")" << endl;
+        if (dec_par.verbose > 1) {
+          cout << "  At idx = " << idx << " / " << evLength << ".\n";
+          PrintWords(words, 0, idx + 20);
+        }
 	idx = idx_roc_end; // try to move to the next ROC
 	break;
       }
@@ -680,10 +684,10 @@ int MainDaqParser::ProcessBoardScaler (int* words, int idx)
       data.value = value;
       //if (! dec_par.map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
       if (! dec_par.chan_map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
-	if (dec_par.verbose > 1) cout << "  Unmapped Scaler: " << data.roc << " " << data.board << " " << data.chan << "\n";
+	if (dec_par.verbose > 2) cout << "  Unmapped Scaler: " << data.roc << " " << data.board << " " << data.chan << "\n";
 	continue;
       }
-      if (dec_par.verbose > 1) cout << "  scaler " << dec_par.spillID << " " << data.type << " " << data.name << " " << data.value << "\n";
+      if (dec_par.verbose > 2) cout << "  scaler " << dec_par.spillID << " " << data.type << " " << data.name << " " << data.value << "\n";
       spill_data->list_scaler.push_back(data);
     }
 
@@ -1315,13 +1319,13 @@ int MainDaqParser::PackOneSpillData()
     for (unsigned int ih = 0; ih < n_taiwan; ih++) {
       HitData* hd = &ed->list_hit[ih];
       if (! dec_par.chan_map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
-        if (dec_par.verbose > 1) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+        if (dec_par.verbose > 2) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
     for (unsigned int ih = 0; ih < n_v1495; ih++) {
       HitData* hd = &ed->list_hit_trig[ih];
       if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, hd->lvl)) {
-        if (dec_par.verbose > 1) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+        if (dec_par.verbose > 2) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
   }

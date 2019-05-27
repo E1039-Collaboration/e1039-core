@@ -15,10 +15,10 @@ DecoParam::DecoParam() :
 
 int DecoParam::InitMapper()
 {
-  if (dir_param.length() == 0) {
-    cout << "!!ERROR!!  DecoParam::InitMapper(): dir_param is empty.\n";
-    return 1;
-  }
+  //if (dir_param.length() == 0) {
+  //  cout << "!!ERROR!!  DecoParam::InitMapper(): dir_param is empty.\n";
+  //  return 1;
+  //}
   if (runID == 0) {
     cout << "!!ERROR!!  DecoParam::InitMapper(): runID = 0.\n";
     return 1;

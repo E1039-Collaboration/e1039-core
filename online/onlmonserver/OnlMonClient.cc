@@ -97,6 +97,12 @@ int OnlMonClient::End(PHCompositeNode* topNode)
     m_list_can[ii]->PostDraw(true);
   }
 
+  ostringstream oss;
+  oss << "/dev/shm/onlmon/" << setfill('0') << setw(6) << run_id;
+  gSystem->mkdir(oss.str().c_str(), true);
+  oss << "/" << Name() << ".root";
+  m_hm->dumpHistos(oss.str());
+
   return EndOnlMon(topNode);
 }
 
