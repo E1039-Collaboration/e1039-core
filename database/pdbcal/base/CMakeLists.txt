@@ -29,13 +29,13 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "_LinkDef.h" "_dict.C" DictC ${LinkDefh})
 	list(APPEND dicts ${DictC})
   #message("Dicth: " ${PROJECT_SOURCE_DIR}/${Dicth})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${PROJECT_SOURCE_DIR}/${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p -I$ENV{OFFLINE_MAIN}/include ${PROJECT_SOURCE_DIR}/${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
   OUTPUT PdbBankManagerFactory_dict.C
   COMMAND rootcint
-  ARGS -f PdbBankManagerFactory_dict.C -c
+  ARGS -f PdbBankManagerFactory_dict.C -c -p
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h
@@ -46,7 +46,7 @@ add_custom_command (
 add_custom_command (
   OUTPUT RunToTimeFactory_dict.C
   COMMAND rootcint
-  ARGS -f RunToTimeFactory_dict.C -c
+  ARGS -f RunToTimeFactory_dict.C -c -p
 	-I$ENV{OFFLINE_MAIN}/include
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h

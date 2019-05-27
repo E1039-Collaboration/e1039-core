@@ -6,8 +6,7 @@ project(vararray CXX C)
 add_custom_command (
   OUTPUT VariableArrayDict.cc
   COMMAND rootcint
-  ARGS -f VariableArrayDict.cc -c
-	-I$ENV{OFFLINE_MAIN}/include
+  ARGS -f VariableArrayDict.cc -c -p
   ${PROJECT_SOURCE_DIR}/VariableArray.h
   ${PROJECT_SOURCE_DIR}/VariableArrayContainer.h
   ${PROJECT_SOURCE_DIR}/VariableArrayLinkDef.h

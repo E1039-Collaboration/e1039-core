@@ -21,7 +21,7 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND pcms  ${DictPcm})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 # ROOT

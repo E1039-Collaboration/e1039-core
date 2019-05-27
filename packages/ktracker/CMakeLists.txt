@@ -27,11 +27,11 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
 	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -61,10 +61,10 @@ execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUT
 string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
-target_link_libraries(ktracker -L$ENV{OFFLINE_MAIN}/lib -lgenfitexp -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
+target_link_libraries(ktracker -lgenfitexp -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

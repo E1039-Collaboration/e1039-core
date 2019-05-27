@@ -259,10 +259,10 @@ void OnlMonClient::ClearHistList()
   }
   m_list_h1.clear();
 
-  //for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
-  //  delete *it;
-  //}
-  //m_list_obj.clear();
+  for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
+    delete *it;
+  }
+  m_list_obj.clear();
 }
 OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
 {
