@@ -26,7 +26,6 @@ std::string ExpandEnvironmentals( const std::string& input )
     wordexp_t exp_result;
     if(wordexp(input.c_str(), &exp_result, 0) != 0)
     {
-        //this is a fatal error so throw
         std::cout << "ExpandEnvironmentals - ERROR - Your string '" << input << "' cannot be understood!" << endl;
         return "";
     }
@@ -45,6 +44,7 @@ DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cn
   } else {
     if (usr_id == Guest) {
       m_my_cnf = ExpandEnvironmentals("$E1039_RESOURCE/db_conf/my.cnf");
+      //LogInfo("Using "<< m_my_cnf);
       if (!FileExist(m_my_cnf)) {
         LogInfo("DB Conf. "<< m_my_cnf << " doesn't exist");
       }
