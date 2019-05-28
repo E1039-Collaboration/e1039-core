@@ -2,12 +2,38 @@
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include <fstream>
+#include <wordexp.h> //to expand environmentals
 #include <TMySQLServer.h>
 #include <TSQLStatement.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 #include "DbSvc.h"
+
+#define LogInfo(message) std::cout << "DEBUG: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
+
 using namespace std;
+
+bool FileExist(const std::string fileName)
+{
+    std::ifstream infile(fileName.c_str());
+    return infile.good();
+}
+
+std::string ExpandEnvironmentals( const std::string& input )
+{
+    // expand any environment variables in the file name
+    wordexp_t exp_result;
+    if(wordexp(input.c_str(), &exp_result, 0) != 0)
+    {
+        std::cout << "ExpandEnvironmentals - ERROR - Your string '" << input << "' cannot be understood!" << endl;
+        return "";
+    }
+
+    const string output( exp_result.we_wordv[0]);
+
+    return output;
+}
 
 DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cnf)
 {
@@ -16,7 +42,13 @@ DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cn
   if (my_cnf.length() > 0) {
     m_my_cnf = my_cnf;
   } else {
-    if (usr_id == Guest) m_my_cnf = "/seaquest/analysis/kenichi/e1039/my.cnf";
+    if (usr_id == Guest) {
+      m_my_cnf = ExpandEnvironmentals("$E1039_RESOURCE/db_conf/guest.cnf");
+      //LogInfo("Using "<< m_my_cnf);
+      if (!FileExist(m_my_cnf)) {
+        LogInfo("DB Conf. "<< m_my_cnf << " doesn't exist");
+      }
+    }
     else /* == Prod */   m_my_cnf = "my.cnf"; // not supported yet.
   }
   SelectServer();
