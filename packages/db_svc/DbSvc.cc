@@ -43,7 +43,7 @@ DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cn
     m_my_cnf = my_cnf;
   } else {
     if (usr_id == Guest) {
-      m_my_cnf = ExpandEnvironmentals("$E1039_RESOURCE/db_conf/my.cnf");
+      m_my_cnf = ExpandEnvironmentals("$E1039_RESOURCE/db_conf/guest.cnf");
       //LogInfo("Using "<< m_my_cnf);
       if (!FileExist(m_my_cnf)) {
         LogInfo("DB Conf. "<< m_my_cnf << " doesn't exist");
