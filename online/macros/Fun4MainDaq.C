@@ -5,28 +5,21 @@ R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
 #endif
 
-int Fun4MainDaq(const int run=28700, const int nevent=0)
+int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
+  gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
 
-  const bool is_online  = false;
-  const bool is_e1039   = true;
   const bool use_onlmon = true;
-  const char* dir_in  = is_e1039 ? "/data2/analysis/kenichi/e1039/codadata" : "/data3/data/mainDAQ";
-  const char* dir_out = is_e1039 ? "/data2/analysis/kenichi/e1039/codadata" : ".";
 
   ostringstream oss;
-  oss << setfill('0') 
-      << dir_in << "/run_" << setw(6) << run;
-  if (is_e1039) oss << "_spin";
-  oss << ".dat";
+  oss << UtilOnline::GetCodaFileDir() << "/" << UtilOnline::RunNum2CodaFile(run);
   string fn_in = oss.str();
   oss.str("");
-  oss << dir_out << "/run_" << setw(6) << run;
-  if (is_e1039) oss << "_spin";
-  oss << ".root";
+  oss << UtilOnline::GetDstFileDir() << "/" << UtilOnline::RunNum2DstFile(run);
   string fn_out = oss.str();
+  gSystem->mkdir(UtilOnline::GetDstFileDir().c_str(), true);
 
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
@@ -34,9 +27,7 @@ int Fun4MainDaq(const int run=28700, const int nevent=0)
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(2);
   in->SetOnline(is_online);
-  if (! is_e1039) in->EventSamplingFactor(100);
   //if (is_online) in->PretendSpillInterval(20);
-  //in->DirParam("/seaquest/production/runs");
   in->fileopen(fn_in);
   se->registerInputManager(in);
 

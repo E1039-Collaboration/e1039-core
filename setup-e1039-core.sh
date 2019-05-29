@@ -1,10 +1,9 @@
-DIR_E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
-export E1039_CORE=$DIR_E1039_CORE # DIR_E1039_CORE will be replaced with this soon
+export E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
 
 if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     source /opt/e1039-share/this-share.sh
-    export OFFLINE_MAIN=$DIR_E1039_SHARE/inst
-    export MY_INSTALL=$(dirname $DIR_E1039_CORE)/e1039-core-build/inst # ~/tmp/e1039-core
+    export OFFLINE_MAIN=$E1039_SHARE
+    export MY_INSTALL=$(dirname $E1039_CORE)/e1039-core-build/inst
 
     export            PATH=$MY_INSTALL/bin:$PATH
     export           CPATH=$MY_INSTALL/include:$CPATH
@@ -15,7 +14,7 @@ if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
 
 elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' ] ; then
     source /e906/app/users/yuhw/setup.sh
-    export OFFLINE_MAIN=$(dirname $DIR_E1039_CORE)/e1039-core-build/inst
+    export OFFLINE_MAIN=$(dirname $E1039_CORE)/e1039-core-build/inst
     export MY_INSTALL=$OFFLINE_MAIN
 
     export            PATH=$MY_INSTALL/bin:$PATH
