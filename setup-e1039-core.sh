@@ -1,4 +1,5 @@
 DIR_E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
+export E1039_CORE=$DIR_E1039_CORE # DIR_E1039_CORE will be replaced with this soon
 
 if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     source /opt/e1039-share/this-share.sh
@@ -9,6 +10,9 @@ if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     export           CPATH=$MY_INSTALL/include:$CPATH
     export    LIBRARY_PATH=$MY_INSTALL/lib:$LIBRARY_PATH
     export LD_LIBRARY_PATH=$MY_INSTALL/lib:$LD_LIBRARY_PATH
+
+    export E1039_RESOURCE=/opt/e1039-resource
+
 elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' ] ; then
     source /e906/app/users/yuhw/setup.sh
     export OFFLINE_MAIN=$(dirname $DIR_E1039_CORE)/e1039-core-build/inst
@@ -18,6 +22,9 @@ elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' ] ; then
     export           CPATH=$MY_INSTALL/include:$CPATH
     export    LIBRARY_PATH=$MY_INSTALL/lib:$LIBRARY_PATH
     export LD_LIBRARY_PATH=$MY_INSTALL/lib:$LD_LIBRARY_PATH
+
+    export E1039_RESOURCE=/e906/app/software/osg/users/yuhw/e1039/resource
+
 else
     echo "Using the non-host-specific setting.  This might not work on your environment."
     export  CC=gcc-4.9
