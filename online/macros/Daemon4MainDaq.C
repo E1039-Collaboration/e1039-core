@@ -26,7 +26,7 @@ void StartDecoder(const int run)
   oss << "/log_" << setfill('0') << setw(6) << run << ".txt";
   string fn_log = oss.str();
   oss.str("");
-  oss << "root -b -q '" << gSystem->Getenv("E1039_CORE")
+  oss << "root -b -q '" << gSystem->Getenv("E1039_CORE_SRC")
       << "/online/macros/Fun4MainDaq.C(" << run << ", 0, true)' &>" << fn_log << " &";
 
   cout << "Start the decoder for run " << run << ":\n"
