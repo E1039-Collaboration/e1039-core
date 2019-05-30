@@ -10,7 +10,7 @@ if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
     export    LIBRARY_PATH=$MY_INSTALL/lib:$LIBRARY_PATH
     export LD_LIBRARY_PATH=$MY_INSTALL/lib:$LD_LIBRARY_PATH
 
-    export E1039_RESOURCE=/opt/e1039-resource
+    export E1039_RESOURCE=/data2/e1039/resource
 
 elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' ] ; then
     source /e906/app/users/yuhw/setup.sh
