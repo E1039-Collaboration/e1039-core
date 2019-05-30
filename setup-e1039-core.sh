@@ -1,6 +1,7 @@
 export E1039_CORE_SRC=$(dirname $(readlink -f $BASH_SOURCE))
 
-if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' ] ; then
+if [ $HOSTNAME = 'seaquestdaq01.fnal.gov' -o \
+    ${HOSTNAME:0:12} = 'spinquestana' ] ; then
     source /opt/e1039-share/this-share.sh
     export OFFLINE_MAIN=$E1039_SHARE
     export MY_INSTALL=$(dirname $E1039_CORE_SRC)/e1039-core-build/inst
