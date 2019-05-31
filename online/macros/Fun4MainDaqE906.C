@@ -26,7 +26,7 @@ int Fun4MainDaqE906(const int run=28700, const int nevent=0)
   //se->Verbosity(1);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
-  in->Verbosity(2);
+  in->Verbosity(1);
   in->SetOnline(false);
   in->EventSamplingFactor(100);
   //if (is_online) in->PretendSpillInterval(20);

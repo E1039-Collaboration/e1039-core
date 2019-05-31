@@ -284,9 +284,10 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     ret = ProcessPhysPrestart(words);
     break;
   case STANDARD_PHYSICS:
-    dec_par.eventIDstd++;
-    SetEventInfo(&(*list_ed)[dec_par.eventIDstd].event, dec_par.eventIDstd);
-    ret = ProcessPhysFlush(words); // This function handles STANDARD_PHYSICS as well.
+    /// Ignore this for now; on 2019-05-30 by Kenichi
+    //dec_par.eventIDstd++;
+    //SetEventInfo(&(*list_ed)[dec_par.eventIDstd].event, dec_par.eventIDstd);
+    //ret = ProcessPhysFlush(words); // This function handles STANDARD_PHYSICS as well.
     break;
   case SPILL_COUNTER:
     ret = ProcessPhysSpillCounter(words);
