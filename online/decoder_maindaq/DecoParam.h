@@ -39,6 +39,7 @@ struct DecoParam {
   unsigned int codaID; //< current Coda event ID
   short spillType; //< current spill type
   short rocID; //< current ROC ID
+  int eventIDstd; //< current event ID of standard physics events
   long int hitID; //< current hit ID, commonly used by Hit and TriggerHit.
 
   bool at_bos;
