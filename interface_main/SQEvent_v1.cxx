@@ -24,12 +24,12 @@ _vme_time(INT_MAX),
 _qie_trig_cnt(INT_MAX), 
 _qie_turn_id(INT_MAX), 
 _qie_rf_id(INT_MAX), 
-_flag_v1495(INT_MAX), 
-_n_board_qie(INT_MAX), 
-_n_board_v1495(INT_MAX), 
-_n_board_taiwan(INT_MAX), 
-_n_board_trig_b(INT_MAX), 
-_n_board_trig_c(INT_MAX)
+_flag_v1495(SHRT_MAX), 
+_n_board_qie(SHRT_MAX), 
+_n_board_v1495(SHRT_MAX), 
+_n_board_taiwan(SHRT_MAX), 
+_n_board_trig_b(SHRT_MAX), 
+_n_board_trig_c(SHRT_MAX)
 {
         memset(_raw_matrix      , 0, sizeof(_raw_matrix));
         memset(_after_inh_matrix, 0, sizeof(_after_inh_matrix));
@@ -52,12 +52,12 @@ void SQEvent_v1::Reset() {
         _qie_trig_cnt   = INT_MAX;
         _qie_turn_id    = INT_MAX;
         _qie_rf_id      = INT_MAX;
-        _flag_v1495     = INT_MAX;
-        _n_board_qie    = INT_MAX;
-        _n_board_v1495  = INT_MAX;
-        _n_board_taiwan = INT_MAX;
-        _n_board_trig_b = INT_MAX;
-        _n_board_trig_c = INT_MAX;
+        _flag_v1495     = SHRT_MAX;
+        _n_board_qie    = SHRT_MAX;
+        _n_board_v1495  = SHRT_MAX;
+        _n_board_taiwan = SHRT_MAX;
+        _n_board_trig_b = SHRT_MAX;
+        _n_board_trig_c = SHRT_MAX;
         memset(_raw_matrix      , 0, sizeof(_raw_matrix));
         memset(_after_inh_matrix, 0, sizeof(_after_inh_matrix));
         memset(_qie_presums     , 0, sizeof(_qie_presums));

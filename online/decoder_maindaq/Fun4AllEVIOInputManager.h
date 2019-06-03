@@ -26,6 +26,7 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   int GetSyncObject(SyncObject **mastersync);
   int SyncIt(const SyncObject *mastersync);
 
+  void SetOnline(const bool is_online);
   void EventSamplingFactor(const int factor);
   void DirParam(const std::string dir);
   void PretendSpillInterval(const int sec);

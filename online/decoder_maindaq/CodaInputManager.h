@@ -24,7 +24,7 @@ class CodaInputManager {
 
   void SetVerbosity(const int verb) { m_verb = verb; }
   void SetRunNumber(const int run ) { m_run  = run ; }
-  void SetOnline() { m_online = true; }
+  void SetOnline   (const bool val) { m_online = val; }
   void ForceEnd () { m_go_end = true; }
   bool IsEnded  () { return m_go_end; }
 

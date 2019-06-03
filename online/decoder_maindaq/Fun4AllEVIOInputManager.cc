@@ -1,6 +1,7 @@
 #include "Fun4AllEVIOInputManager.h"
 
 #include "MainDaqParser.h"
+#include "CodaInputManager.h"
 #include "DecoData.h"
 
 //#include <event/EVIO_Event.h>
@@ -531,6 +532,10 @@ Fun4AllEVIOInputManager::SyncIt(const SyncObject *mastersync)
   return Fun4AllReturnCodes::SYNC_OK;
 }
 
+void Fun4AllEVIOInputManager::SetOnline(const bool is_online)
+{
+  parser->GetCoda()->SetOnline(is_online);
+}
 
 void Fun4AllEVIOInputManager::EventSamplingFactor(const int factor)
 {

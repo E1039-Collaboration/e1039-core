@@ -1,47 +1,33 @@
-/** Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
- * 
- * To run this macro on a local computer, you need copy Coda file and also
- *  mapping files.  You can use the following commands;
-     RUN=28700
-     DIR_LOCAL=/data/e906
-     
-     mkdir -p $DIR_LOCAL/runs
-     RUN6=$(printf '%06i' $RUN)
-     scp -p  e906-gat6.fnal.gov:/data3/data/mainDAQ/run_$RUN6.dat $DIR_LOCAL
-     scp -pr e906-gat6.fnal.gov:/data2/production/runs/run_$RUN6  $DIR_LOCAL/runs
- */
+/// Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
 #endif
 
-int Fun4MainDaq(const int nevent = 0, const int run = 28700)
+int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
+  gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
 
-  const char* dir_in  = "/data3/data/mainDAQ";
-  const char* dir_out = ".";
-  const bool is_online = true; // false;
+  const bool use_onlmon = true;
 
   ostringstream oss;
-  oss << setfill('0') 
-      << dir_in << "/run_" << setw(6) << run << ".dat";
+  oss << UtilOnline::GetCodaFileDir() << "/" << UtilOnline::RunNum2CodaFile(run);
   string fn_in = oss.str();
   oss.str("");
-  oss << dir_out << "/run_" << setw(6) << run << ".root";
+  oss << UtilOnline::GetDstFileDir() << "/" << UtilOnline::RunNum2DstFile(run);
   string fn_out = oss.str();
+  gSystem->mkdir(UtilOnline::GetDstFileDir().c_str(), true);
 
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
-  in->Verbosity(1);
-  in->EventSamplingFactor(100);
-//  if (is_online) in->PretendSpillInterval(20);
-
-  in->DirParam("/seaquest/production/runs");
+  in->Verbosity(2);
+  in->SetOnline(is_online);
+  //if (is_online) in->PretendSpillInterval(20);
   in->fileopen(fn_in);
   se->registerInputManager(in);
 
@@ -53,7 +39,7 @@ int Fun4MainDaq(const int nevent = 0, const int run = 28700)
   se->registerSubsystem(new CalibInTime());
   se->registerSubsystem(new CalibXT());
 
-  if (is_online) { // Register the online-monitoring clients
+  if (use_onlmon) { // Register the online-monitoring clients
     se->StartServer();
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());

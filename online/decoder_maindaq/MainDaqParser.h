@@ -43,6 +43,12 @@ class MainDaqParser {
   int ProcessBoardV1495TDC    (int* words, int idx);
   int ProcessBoardJyTDC2      (int* words, int idx_begin, int idx_roc_end);
 
+  int ProcessBoardStdTriggerBit  (int* words, int idx);
+  int ProcessBoardStdTriggerCount(int* words, int idx);
+  int ProcessBoardStdFeeQIE      (int* words, int idx);
+  int ProcessBoardStdV1495TDC    (int* words, int idx);
+  int ProcessBoardStdJyTDC2      (int* words, int idx_begin, int idx_roc_end);
+
   int PackOneSpillData();
   int ParseOneSpill();
   void SetEventInfo(EventInfo* evt, const int eventID);
@@ -56,6 +62,7 @@ public:
   MainDaqParser();
   ~MainDaqParser();
 
+  CodaInputManager* GetCoda() { return coda; }
   int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
   bool NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd);
   int End();

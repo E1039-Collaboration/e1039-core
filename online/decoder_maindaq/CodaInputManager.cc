@@ -93,7 +93,10 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
     // Re-open the file, requring a larger file size
     ret = OpenFile(m_fname, m_file_size + 32768, 5, 2, m_event_count);
   }
-  if (ret != 0) return false;
+  if (ret != 0) {
+    ForceEnd();
+    return false;
+  }
   coda_id = m_event_count++;
   words   = event_words;
   return true;
@@ -216,12 +219,13 @@ void Abort(const char* message)
 
 void PrintWords(int* words, int idx_begin, int idx_end, int idx_atte)
 {
-  cout << "PrintWords[" << idx_begin << "-" << idx_end << "] " << hex;
+  cout << "  PrintWords[" << idx_begin << "-" << idx_end << "]:\n";
   for (int idx = idx_begin; idx < idx_end; idx++) {
-    cout << " " << words[idx];
+    if (idx % 5 == 0) cout << "\n  " << setw(6) << idx << ": ";
+    cout << " " << hex << setw(8) << words[idx] << dec;
     if (idx == idx_atte) cout << "!";
   }
-  cout << dec << endl;
+  cout << endl;
 }
 
 /** Print out lists of ROCs and boards found in one Coda event.
