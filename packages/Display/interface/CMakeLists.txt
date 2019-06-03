@@ -31,7 +31,22 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
+# Geant4
+find_program(G4CONF "geant4-config")
+if(G4CONF)
+  message("-- Detecting Geant4:  found at ${G4CONF}")
+else()
+  message(FATAL_ERROR "-- Detecting Geant4:  not found")
+endif()
+#find_package(Geant4 REQUIRED vis_all)
+execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+# Warning suppression
+string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
+string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 add_library(pheve_interface SHARED ${sources} ${dicts})
 target_link_libraries(pheve_interface -lpheve_display -lpheve_modules -lboost_thread -lboost_system -lboost_chrono -lSubsysReco ${ROOT_LINK})

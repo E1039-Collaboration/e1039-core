@@ -49,7 +49,7 @@
 #include <TThread.h>
 #include <TStyle.h>
 
-#include <PHEventDisplay.h>
+#include "PHEventDisplay.h"
 
 using boost::bind;
 
