@@ -10,7 +10,7 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
 	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR}/ ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
 # source code

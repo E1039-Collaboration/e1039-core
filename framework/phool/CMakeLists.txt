@@ -2,9 +2,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phool CXX C)
 
-execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
-string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
-
 file(GLOB pcms "")
 file(GLOB dicts "")
 # ROOT dict generation
@@ -13,7 +10,6 @@ file(GLOB pcms "")
 file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 foreach(LinkDefh ${LinkDefhs})
   string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-  #string(REPLACE "${PROJECT_SOURCE_DIR}/" "${CMAKE_PROJECT_NAME}/" Dicth ${Dicth})
   string(REPLACE "LinkDef.h" "_Dict.cc" DictC ${LinkDefh})
   string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
   string(REPLACE ".cc" "_rdict.pcm" DictPcm ${DictC})
@@ -59,6 +55,8 @@ file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 list(REMOVE_ITEM dist_headers ${non_dist_headers})
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
+execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
+string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
 if (ROOT_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up ${pcms} ${CMAKE_INSTALL_PREFIX}/lib)
    add_dependencies(install_pcm phool)

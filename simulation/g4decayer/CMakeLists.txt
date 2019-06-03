@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4decayer CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -32,7 +31,7 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 
 
 set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -std=c++11 -I$ENV{OFFLINE_MAIN}/include/ -I${GEANT4_PREFIX}/include/"
+  "${CMAKE_CXX_FLAGS} -std=c++11 -I${GEANT4_PREFIX}/include/"
 )
 
 add_library(g4decayer SHARED
@@ -43,7 +42,7 @@ add_library(g4decayer SHARED
   ${PROJECT_SOURCE_DIR}/P6DExtDecayerPhysics.cc
 )
 
-target_link_libraries(g4decayer -L./ -L$ENV{OFFLINE_MAIN}/lib -lPythia6)
+target_link_libraries(g4decayer -lPythia6)
 
 install(TARGETS g4decayer 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

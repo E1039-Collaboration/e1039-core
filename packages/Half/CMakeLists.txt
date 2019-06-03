@@ -2,11 +2,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(half CXX C)
 
-# source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/")
-
 add_library(half SHARED
   ${PROJECT_SOURCE_DIR}/half.cpp
 )

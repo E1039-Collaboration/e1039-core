@@ -39,7 +39,8 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 add_custom_command (
   OUTPUT PHG4_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4_Dict.cc -c -p
+  ARGS -f PHG4_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/HepMCNodeReader.h
   ${PROJECT_SOURCE_DIR}/PHG4ConsistencyCheck.h
@@ -65,7 +66,8 @@ add_custom_command (
 add_custom_command (
   OUTPUT PHG4Hit_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4Hit_Dict.cc -c -p
+  ARGS -f PHG4Hit_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/PHG4EventHeader.h
   ${PROJECT_SOURCE_DIR}/PHG4EventHeaderv1.h
