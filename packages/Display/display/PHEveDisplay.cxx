@@ -96,14 +96,13 @@ PHEveDisplay::~PHEveDisplay()
 void 
 PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
 {
-
   TFile* geom = new TFile();
-  if(_use_geofile){
-  geom = TFile::Open(geo_filename.c_str());
-  if (!geom)
-    throw std::runtime_error("Could not open sphenix_geo.root geometry file, aborting.");
+  if (_use_geofile) {
+    geom = TFile::Open(geo_filename.c_str());
+    if (!geom)
+      throw std::runtime_error("Could not open sphenix_geo.root geometry file, aborting.");
     geve->GetGeometry(geo_filename.c_str());
-  //gGeoManager->DefaultColors();
+    //gGeoManager->DefaultColors();
   } else {
     PHGeomUtility::GetTGeoManager(topNode);
     assert(gGeoManager);
@@ -112,39 +111,41 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
   gStyle->SetPalette(1);
   TGeoVolume* top = gGeoManager->GetTopVolume();
   const int nd = top->GetNdaughters();
-  std::cout<<"nd= "<<nd<<std::endl;
+  std::cout << "nd= " << nd << std::endl;
   TGeoNode* node[nd];
   TEveGeoTopNode* tnode[nd];
-    int det_config = 0;
-    //bool is_supp_struc = false;
-    if (strcmp(geo_filename.c_str(),"sphenix_mie_geo.root")==0 && _use_geofile) det_config = 1;
-    else if(strcmp(geo_filename.c_str(),"sphenix_maps+tpc_geo.root")==0 && _use_geofile) det_config = 2;
-      for(int i=0 ; i< nd; i++)
-      {
-        if(det_config==1 && i==18) continue;
-        if(det_config==2 && (i>10 && i<71)) continue;
-        node[i]=top->GetNode(i);
-        std::cout<< "Node "<< i << " : "<<node[i]->GetName() << std::endl;    
-	std::string name = node[i]->GetName();
-	if(name.find("CEMC")<4 && name.find("SUPPORT")>10) continue;
-        node[i]->GetVolume()->SetTransparency(70);// 0: opaque, 100: transparent
-	if(name.find("InnerHcal")<5 || name.find("OuterHcal")<5)
-	{ // make hcal transparent
-	    TGeoVolume* hcalvol = node[i]->GetVolume();
-	    const int nhcal = hcalvol->GetNdaughters();
-	    TGeoNode* node_hcal[nhcal];
-	      for(int j=0 ; j<nhcal; j++)
-	      {
-	      node_hcal[j] = hcalvol->GetNode(j);
-	      node_hcal[j]->GetVolume()->SetTransparency(90);
-	    }
-	}
-        tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);  
-        geve->AddGlobalElement(tnode[i]);
+  int det_config = 0;
+  //bool is_supp_struc = false;
+  if (strcmp(geo_filename.c_str(), "sphenix_mie_geo.root") == 0 && _use_geofile)
+    det_config = 1;
+  else if (strcmp(geo_filename.c_str(), "sphenix_maps+tpc_geo.root") == 0 && _use_geofile)
+    det_config = 2;
+  for (int i = 0; i < nd; i++) {
+    if (det_config == 1 && i == 18)
+      continue;
+    if (det_config == 2 && (i > 10 && i < 71))
+      continue;
+    node[i] = top->GetNode(i);
+    std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
+    std::string name = node[i]->GetName();
+    if (name.find("CEMC") < 4 && name.find("SUPPORT") > 10)
+      continue;
+    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
+    if (name.find("InnerHcal") < 5 || name.find("OuterHcal") < 5) { // make hcal transparent
+      TGeoVolume* hcalvol = node[i]->GetVolume();
+      const int nhcal = hcalvol->GetNdaughters();
+      TGeoNode* node_hcal[nhcal];
+      for (int j = 0; j < nhcal; j++) {
+        node_hcal[j] = hcalvol->GetNode(j);
+        node_hcal[j]->GetVolume()->SetTransparency(90);
       }
-  if(_use_geofile){
-  geom->Close();
-  delete geom;
+    }
+    tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);
+    geve->AddGlobalElement(tnode[i]);
+  }
+  if (_use_geofile) {
+    geom->Close();
+    delete geom;
   }
 }
 
@@ -170,12 +171,12 @@ PHEveDisplay::config_bfields(const PHField *field)
 {
   if (_use_fieldmap) {
     if (verbosity > 1)
+      std::cout << "PHEveDisplay::config_bfields:" << "Field from file deprecated!!" << std::endl;
+  } else {
+    if (verbosity > 1)
       std::cout << "PHEveDisplay::config_bfields:" << "Using PHField fields for track propagation" << std::endl;
     cnt_prop = new TEveTrackPropagator("cnt_prop", "Central Field Propagator", new MappedField(field));
     cnt_prop->SetMaxStep(2);
-  } else {
-    if (verbosity > 1)
-      std::cout << "PHEveDisplay::config_bfields:" << "Analytic Form of Approximate Magnetic Field Not Availiable Yet." << std::endl;
   }
 
   cnt_prop->SetStepper(TEveTrackPropagator::kHelix);

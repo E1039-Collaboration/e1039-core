@@ -55,8 +55,8 @@ using boost::bind;
 
 PHEventDisplay::PHEventDisplay(int w = 1920,
 				 int h = 1080,
-				 bool _use_fieldmap = true,
-				 bool _use_geofile = true,
+				 bool _use_fieldmap = false,
+				 bool _use_geofile = false,
 				 const std::string& _mapname = "sPHEBIX.2d.root",
 				 const std::string& _geoname = "geo.root") :
   SubsysReco("PHEventDisplay"),
