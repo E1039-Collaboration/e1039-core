@@ -8,7 +8,7 @@
 using namespace std;
 
 RunParamBase::RunParamBase(const std::string type, const std::string label, const std::string header) :
-  m_dir_base("/seaquest/analysis/kenichi/e1039"), 
+  m_dir_base("/seaquest/e1039"), 
   m_type(type), m_label(label), m_header(header), m_map_id("")
 {
   ;

@@ -31,6 +31,9 @@ static TThread *ServerThread = NULL;
 
 pthread_mutex_t mutex;
 
+std::string onl_mon_server = "localhost";
+int         onl_mon_port = 9081;
+
 static int MONIPORT=9081;
 static int NUMMONIPORT=5;
 
@@ -370,7 +373,7 @@ handleconnection(void *arg)
 
 void send_test_message()
 {
-  TSocket sock("localhost", MONIPORT);
+  TSocket sock(onl_mon_server.c_str(), MONIPORT);
 //  TMessage *mess;
   sock.Send("Test");
   sock.Close();
@@ -378,7 +381,7 @@ void send_test_message()
 
 void receive_hist_all()
 {
-  TSocket sock("localhost", MONIPORT);
+  TSocket sock(onl_mon_server.c_str(), MONIPORT);
   sock.Send("ALL");
 
   TMessage *mess = NULL;
@@ -411,7 +414,7 @@ int monitor_subsys(const char* name, std::vector<TH1*>& hist_list)
   ostringstream oss;
   oss << "SUBSYS:" << name;
 
-  TSocket sock("localhost", MONIPORT);
+  TSocket sock(onl_mon_server.c_str(), MONIPORT);
   sock.Send(oss.str().c_str());
 
   TMessage *mess = NULL;

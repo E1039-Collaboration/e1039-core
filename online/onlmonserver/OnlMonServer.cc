@@ -2,6 +2,7 @@
 
 using namespace std;
 
+
 OnlMonServer *OnlMonServer::instance()
 {
   if (! __instance)
@@ -22,5 +23,25 @@ OnlMonServer::OnlMonServer(const std::string &name)
 OnlMonServer::~OnlMonServer()
 {
   return;
+}
+
+void OnlMonServer::SetServer(const std::string server)
+{
+  onl_mon_server = server;
+}
+
+void OnlMonServer::SetPort(const int port)
+{
+  onl_mon_port = port;
+}
+
+std::string OnlMonServer::GetServer()
+{
+  return onl_mon_server;
+}
+
+int OnlMonServer::GetPort()
+{
+  return onl_mon_port;
 }
 

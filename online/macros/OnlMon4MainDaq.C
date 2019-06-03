@@ -14,6 +14,8 @@ int OnlMon4MainDaq()
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
 
+  OnlMonServer::SetServer("seaquestdaq01.fnal.gov"); // default = localhost
+
   vector<OnlMonClient*> list_omc;
   list_omc.push_back(new OnlMonMainDaq());
   list_omc.push_back(new OnlMonTrigSig());

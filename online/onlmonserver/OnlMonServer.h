@@ -20,6 +20,11 @@ class OnlMonServer : public Fun4AllServer
   static OnlMonServer *instance();
   virtual ~OnlMonServer();
 
+  static void SetServer(const std::string server);
+  static void SetPort  (const int port);
+  static std::string GetServer();
+  static int         GetPort  ();
+
   void StartServer() {setup_server();}
 #ifndef __CINT__
   void GetMutex(pthread_mutex_t &lock) {lock = mutex;}

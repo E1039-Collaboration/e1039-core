@@ -218,14 +218,12 @@ void OnlMonClient::RegisterHist(TH1* h1)
 
 int OnlMonClient::ReceiveHist()
 {
-  const char* ONL_MON_SVR = "localhost";
-  const int ONL_MON_PORT = 9081;
   string comm = "SUBSYS:";
   comm += Name();
 
   cout << "OnlMonClient::ReceiveHist(): "
-       << ONL_MON_SVR << ":" << ONL_MON_PORT << " " << comm << endl;
-  TSocket sock(ONL_MON_SVR, ONL_MON_PORT);
+       << onl_mon_server << ":" << onl_mon_port << " " << comm << endl;
+  TSocket sock(onl_mon_server.c_str(), onl_mon_port);
   sock.Send(comm.c_str());
 
   ClearHistList();
