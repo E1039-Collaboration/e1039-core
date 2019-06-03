@@ -82,15 +82,11 @@ PHEveDisplay::PHEveDisplay(int w,
 
 PHEveDisplay::~PHEveDisplay()
 {
-  try
-    {
-	TEveManager::Terminate();
-    }
-  catch(std::exception &e)
-    {
-	std::cout << "Exception caught during deconstruction: " << e.what() << std::endl;
-    }
-
+  try {
+    TEveManager::Terminate();
+  } catch (std::exception &e) {
+    std::cout << "Exception caught during deconstruction: " << e.what() << std::endl;
+  }
 }
 
 void 
@@ -104,6 +100,9 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
     geve->GetGeometry(geo_filename.c_str());
     //gGeoManager->DefaultColors();
   } else {
+    if(verbosity) {
+      std::cout << "PHEveDisplay::load_geometry:" << "Using PHGeomUtility for Geometry" << std::endl;
+    }
     PHGeomUtility::GetTGeoManager(topNode);
     assert(gGeoManager);
   }
@@ -121,25 +120,33 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
   else if (strcmp(geo_filename.c_str(), "sphenix_maps+tpc_geo.root") == 0 && _use_geofile)
     det_config = 2;
   for (int i = 0; i < nd; i++) {
-    if (det_config == 1 && i == 18)
-      continue;
-    if (det_config == 2 && (i > 10 && i < 71))
-      continue;
+
+//    if (det_config == 1 && i == 18)
+//      continue;
+//    if (det_config == 2 && (i > 10 && i < 71))
+//      continue;
+
     node[i] = top->GetNode(i);
-    std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
-    std::string name = node[i]->GetName();
-    if (name.find("CEMC") < 4 && name.find("SUPPORT") > 10)
-      continue;
-    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
-    if (name.find("InnerHcal") < 5 || name.find("OuterHcal") < 5) { // make hcal transparent
-      TGeoVolume* hcalvol = node[i]->GetVolume();
-      const int nhcal = hcalvol->GetNdaughters();
-      TGeoNode* node_hcal[nhcal];
-      for (int j = 0; j < nhcal; j++) {
-        node_hcal[j] = hcalvol->GetNode(j);
-        node_hcal[j]->GetVolume()->SetTransparency(90);
-      }
+
+//    std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
+//    std::string name = node[i]->GetName();
+//    if (name.find("CEMC") < 4 && name.find("SUPPORT") > 10)
+//      continue;
+//    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
+//    if (name.find("InnerHcal") < 5 || name.find("OuterHcal") < 5) { // make hcal transparent
+//      TGeoVolume* hcalvol = node[i]->GetVolume();
+//      const int nhcal = hcalvol->GetNdaughters();
+//      TGeoNode* node_hcal[nhcal];
+//      for (int j = 0; j < nhcal; j++) {
+//        node_hcal[j] = hcalvol->GetNode(j);
+//        node_hcal[j]->GetVolume()->SetTransparency(90);
+//      }
+//    }
+
+    if(verbosity) {
+      std::cout << "TEveGeoTopNode: " << node[i]->GetName() << "Added" << std::endl;
     }
+
     tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);
     geve->AddGlobalElement(tnode[i]);
   }
