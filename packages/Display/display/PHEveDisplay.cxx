@@ -123,16 +123,20 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
 
 //    if (det_config == 1 && i == 18)
 //      continue;
+
 //    if (det_config == 2 && (i > 10 && i < 71))
 //      continue;
 
     node[i] = top->GetNode(i);
+    std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
 
-//    std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
 //    std::string name = node[i]->GetName();
+
 //    if (name.find("CEMC") < 4 && name.find("SUPPORT") > 10)
 //      continue;
-//    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
+
+    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
+
 //    if (name.find("InnerHcal") < 5 || name.find("OuterHcal") < 5) { // make hcal transparent
 //      TGeoVolume* hcalvol = node[i]->GetVolume();
 //      const int nhcal = hcalvol->GetNdaughters();
@@ -142,10 +146,6 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
 //        node_hcal[j]->GetVolume()->SetTransparency(90);
 //      }
 //    }
-
-    if(verbosity) {
-      std::cout << "TEveGeoTopNode: " << node[i]->GetName() << " Added" << std::endl;
-    }
 
     tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);
     geve->AddGlobalElement(tnode[i]);

@@ -54,11 +54,11 @@
 using boost::bind;
 
 PHEventDisplay::PHEventDisplay(int w = 1920,
-				 int h = 1080,
-				 bool _use_fieldmap = false,
-				 bool _use_geofile = false,
-				 const std::string& _mapname = "sPHEBIX.2d.root",
-				 const std::string& _geoname = "geo.root") :
+  int h = 1080,
+  bool _use_fieldmap = false,
+  bool _use_geofile = false,
+  const std::string& _mapname = "sPHEBIX.2d.root",
+  const std::string& _geoname = "geo.root") :
   SubsysReco("PHEventDisplay"),
   _pending_update(false),
   _modules(),
@@ -94,8 +94,8 @@ PHEventDisplay::PHEventDisplay(int w = 1920,
 
   gEve->FullRedraw3D(kTRUE);  
   TGLViewer*  v = gEve->GetDefaultGLViewer();
-  //  v->ColorSet().Background().SetColor(kMagenta+4);
-        v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
+  //v->ColorSet().Background().SetColor(kMagenta+4);
+  v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   v->RefreshPadEditor(v);
   v->CurrentCamera().RotateRad(0.0, 1.5707);// theta, phi
   v->DoDraw();
@@ -171,6 +171,7 @@ int PHEventDisplay::process_event(PHCompositeNode *topNode)
 		bind(&mPHEveModuleBase::event,
 		_1,
 		topNode));
+  update_scene();
   return 0;
 }
 
@@ -227,7 +228,9 @@ void PHEventDisplay::draw_default()
   //  v->ColorSet().Background().SetColor(kMagenta+4);
   v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   v->RefreshPadEditor(v);
-  v->CurrentCamera().RotateRad(0.0, 1.5707);// theta, phi
+  //v->CurrentCamera().RotateRad(0.0, 1.5707);// theta, phi
+  //v->CurrentCamera().RotateRad(1.5707, 1.5707);// theta, phi
+  v->CurrentCamera().Zoom(2.0, 0, 0);
   v->DoDraw();
 
 }
