@@ -191,11 +191,11 @@ void PHEventDisplay::update_scene()
 
 void PHEventDisplay::run_evt_in_thread()
 {
-  if(verbosity) std::cout << "PHEventDisplay - run_evt_in_thread() nevent = "<<nevent<<std::endl;
-  if( !pthread_mutex_trylock(&_mutex) ) 
-  {
-    if( _pending_update ){
-	update_scene();
+  if (verbosity)
+    std::cout << "PHEventDisplay - run_evt_in_thread() nevent = " << nevent << std::endl;
+  if (!pthread_mutex_trylock(&_mutex)) {
+    if (_pending_update) {
+      update_scene();
     }
     _pending_update = false;
     _update_thread = boost::make_shared<boost::thread>(bind(&PHEventDisplay::reco_thread, this));

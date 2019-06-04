@@ -101,7 +101,7 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
     //gGeoManager->DefaultColors();
   } else {
     if(verbosity) {
-      std::cout << "PHEveDisplay::load_geometry:" << "Using PHGeomUtility for Geometry" << std::endl;
+      std::cout << "PHEveDisplay::load_geometry:" << " Using PHGeomUtility for Geometry" << std::endl;
     }
     PHGeomUtility::GetTGeoManager(topNode);
     assert(gGeoManager);
@@ -144,7 +144,7 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
 //    }
 
     if(verbosity) {
-      std::cout << "TEveGeoTopNode: " << node[i]->GetName() << "Added" << std::endl;
+      std::cout << "TEveGeoTopNode: " << node[i]->GetName() << " Added" << std::endl;
     }
 
     tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);
@@ -178,10 +178,10 @@ PHEveDisplay::config_bfields(const PHField *field)
 {
   if (_use_fieldmap) {
     if (verbosity > 1)
-      std::cout << "PHEveDisplay::config_bfields:" << "Field from file deprecated!!" << std::endl;
+      std::cout << "PHEveDisplay::config_bfields:" << " Field from file deprecated!!" << std::endl;
   } else {
     if (verbosity > 1)
-      std::cout << "PHEveDisplay::config_bfields:" << "Using PHField fields for track propagation" << std::endl;
+      std::cout << "PHEveDisplay::config_bfields:" << " Using PHField fields for track propagation" << std::endl;
     cnt_prop = new TEveTrackPropagator("cnt_prop", "Central Field Propagator", new MappedField(field));
     cnt_prop->SetMaxStep(2);
   }

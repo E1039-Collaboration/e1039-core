@@ -41,14 +41,14 @@ mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
   mPHEveModuleBase(),
   _evedisp(dispin),
   _prop(NULL),
-  _svtx_tracks(NULL)     
+  _reco_tracks(NULL)
 {
 
   verbosity = _evedisp->get_verbosity();
   _evemanager = _evedisp->get_eve_manager();
   _prop = _evedisp->get_cnt_prop();
-  _svtx_tracks = new TEveTrackList("Svtx Tracks");
-  _evemanager->AddElement(_svtx_tracks,_evedisp->get_svtx_list());
+  _reco_tracks = new TEveTrackList("Svtx Tracks");
+  _evemanager->AddElement(_reco_tracks,_evedisp->get_svtx_list());
 
 }
 
@@ -70,20 +70,18 @@ bool
 mTrkEveDisplay::event(PHCompositeNode* topNode)
 {
   clear();
-  
-  if(verbosity) std::cout<<"mTrkEveDisplay - event() begins."<<std::endl;
-  try
-    {
-      create_nodes(topNode);
-      draw_tracks();      
-    }
-  catch(std::exception& e)
-    {
-      static bool first(true);
-      if( first )
-	std::cout << "mTrkEveDisplay::event Exception: " << e.what() << std::endl;
-      first = false;
-    }
+
+  if (verbosity)
+    std::cout << "mTrkEveDisplay - event() begins." << std::endl;
+  try {
+    create_nodes(topNode);
+    draw_tracks();
+  } catch (std::exception& e) {
+    static bool first(true);
+    if (first)
+      std::cout << "mTrkEveDisplay::event Exception: " << e.what() << std::endl;
+    first = false;
+  }
 
   return true;
 
@@ -158,7 +156,7 @@ mTrkEveDisplay::draw_tracks()
       trk->MakeTrack();
       if (verbosity > 2)
         std::cout << "mTrkEveDisplay - track made. " << std::endl;
-      _svtx_tracks->AddElement(trk);
+      _reco_tracks->AddElement(trk);
     }	///< SvtxVertex: TrackIter
   }	///< SvtxVertexMAp
 #endif
@@ -177,5 +175,5 @@ void
 mTrkEveDisplay::clear()
 {
   _prop->IncDenyDestroy(); // Keep the track propagator from being destroyed
-  _svtx_tracks->DestroyElements();
+  _reco_tracks->DestroyElements();
 }

@@ -47,7 +47,7 @@ class mTrkEveDisplay : public mPHEveModuleBase
   SQHitVector *_sqhit_col;
 
   TEveTrackPropagator* _prop;
-  TEveTrackList* _svtx_tracks;
+  TEveTrackList* _reco_tracks;
 
   int verbosity; 
 };
