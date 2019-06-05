@@ -10,7 +10,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 add_custom_command (
   OUTPUT PHPythia8_Dict.C
   COMMAND rootcint
-  ARGS -f PHPythia8_Dict.C -c -p
+  ARGS -f PHPythia8_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/PHPythia8.h
   ${PROJECT_SOURCE_DIR}/PHPy8GenTrigger.h
   ${PROJECT_SOURCE_DIR}/PHPy8ParticleTrigger.h

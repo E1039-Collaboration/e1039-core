@@ -6,16 +6,14 @@ project(onlmonserver CXX C)
 add_custom_command (
   OUTPUT onlmonserver_Dict.cc
   COMMAND rootcint
-  ARGS -f onlmonserver_Dict.cc -c -p
+  ARGS -f onlmonserver_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+    -I${PROJECT_SOURCE_DIR}/
     -I${ROOT_PREFIX}/include/
     ${PROJECT_SOURCE_DIR}/OnlMon*.h
     ${PROJECT_SOURCE_DIR}/LinkDef.h
 )
 
 # source code
-include_directories("${PROJECT_SOURCE_DIR}/" "$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/")
-link_directories("./" "$ENV{MY_INSTALL}/lib/" "$ENV{OFFLINE_MAIN}/lib/")
-
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -30,11 +28,10 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L$ENV{OFFLINE_MAIN}/lib -lphool -lg4testbench")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ${ROOT_CFLAGS}")
 
 add_library(onlmonserver SHARED ${sources} onlmonserver_Dict.cc)
-target_link_libraries(onlmonserver -L$ENV{OFFLINE_MAIN}/lib -lfun4all db_svc chan_map -lktracker)
+target_link_libraries(onlmonserver -lfun4all db_svc chan_map -lktracker)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

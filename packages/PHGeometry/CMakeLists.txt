@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phgeom CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -21,7 +20,7 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND pcms  ${DictPcm})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 # ROOT
@@ -35,7 +34,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} -std=c++0x ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 add_library(phgeom SHARED
   ${PROJECT_SOURCE_DIR}/PHGeomTGeo.cc
@@ -51,9 +50,9 @@ add_library(phgeom_io SHARED
   PHGeomIOTGeo_Dict.cc 
 )
 
-target_link_libraries(phgeom_io -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -L${ROOT_PREFIX}/lib -lGeom)
+target_link_libraries(phgeom_io -lphool -L${ROOT_PREFIX}/lib -lGeom)
 
-target_link_libraries(phgeom -L./ -lphgeom_io -L$ENV{OFFLINE_MAIN}/lib -lSubsysReco)
+target_link_libraries(phgeom -lphgeom_io -lSubsysReco)
 
 install(TARGETS phgeom_io	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phgeom	  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

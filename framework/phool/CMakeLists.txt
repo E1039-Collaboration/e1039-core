@@ -2,23 +2,27 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phool CXX C)
 
-# ROOT dict generation
-add_custom_command (
-  OUTPUT PHBase_dict.cc
-  COMMAND rootcint
-  ARGS -f PHBase_dict.cc -c
-	${PROJECT_SOURCE_DIR}/PHFlag.h
-	${PROJECT_SOURCE_DIR}/phool.h
-	${PROJECT_SOURCE_DIR}/PHObject.h
-	${PROJECT_SOURCE_DIR}/PHRandomSeed.h
-	${PROJECT_SOURCE_DIR}/PHTimeServer.h
-	${PROJECT_SOURCE_DIR}/PHTimeStamp.h
-	${PROJECT_SOURCE_DIR}/recoConsts.h
-	${PROJECT_SOURCE_DIR}/PHBase_LinkDef.h
-	)
-
 file(GLOB pcms "")
-list(APPEND pcms "PHBase_dict_rdict.pcm")
+file(GLOB dicts "")
+# ROOT dict generation
+file(GLOB dicts "")
+file(GLOB pcms "")
+file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+foreach(LinkDefh ${LinkDefhs})
+  string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
+  string(REPLACE "LinkDef.h" "_Dict.cc" DictC ${LinkDefh})
+  string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
+  string(REPLACE ".cc" "_rdict.pcm" DictPcm ${DictC})
+  list(APPEND dicts ${DictC})
+  list(APPEND pcms  ${DictPcm})
+  #add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths  -inlineInputHeader -c -p ${Dicth} ${LinkDefh})
+  add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR}/ ${Dicth} ${LinkDefh})
+endforeach(LinkDefh)
+
+#file(GLOB root_dicts "")
+#file(GLOB root5_dicts "")
+#list(APPEND root_dicts  PHObject_Dict.cc PHTimeStamp_Dict.cc)
+#list(APPEND root5_dicts PHMessage_Dict.cc PHRandomSeed_Dict.cc PHFlag_Dict.cc PHTimeServer_Dict.cc recoConsts_Dict.cc)
 
 # source code
 include_directories(${PROJECT_SOURCE_DIR}/)
@@ -38,7 +42,8 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ROOT_LINK}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include ${ROOT_CFLAGS} -std=c++11 ")
-add_library(phool SHARED ${sources} PHBase_dict.cc)
+#add_library(phool SHARED ${sources} ${root_dicts} ${root5_dicts})
+add_library(phool SHARED ${sources} ${dicts})
 target_link_libraries(phool ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})

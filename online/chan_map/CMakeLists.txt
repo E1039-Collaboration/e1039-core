@@ -11,8 +11,8 @@ if (ROOT_VER GREATER 5)
   add_custom_command (
     OUTPUT ChanMap_Dict.cc
     COMMAND rootcint
-    ARGS -f ChanMap_Dict.cc -c
-      -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+    ARGS -f ChanMap_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+      -I${PROJECT_SOURCE_DIR}/
       ${PROJECT_SOURCE_DIR}/ParamRunRange.h
       ${PROJECT_SOURCE_DIR}/RunParamBase.h
       ${PROJECT_SOURCE_DIR}/ChanMap*.h
@@ -20,9 +20,6 @@ if (ROOT_VER GREATER 5)
       ${PROJECT_SOURCE_DIR}/LinkDef.h
   )
 endif()
-
-link_directories("./" "$ENV{OFFLINE_MAIN}/lib/")
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc ${PROJECT_SOURCE_DIR}/*.c)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)

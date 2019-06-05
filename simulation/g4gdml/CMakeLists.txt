@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(g4gdml CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -33,7 +32,7 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DG4INTY_USE_XT -DG4VIS_USE_OPENGL -DG4UI_USE_TCSH -DG4UI_USE_XM -DG4VIS_USE_OPENGLXM -DG4VIS_USE_RAYTRACERX -DG4VIS_USE_OPENGLX")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -I$ENV{XERCESCROOT}/include -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/"
+  "${CMAKE_CXX_FLAGS} -I$ENV{XERCESCROOT}/include -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/"
 )
 
 add_library(phg4gdml SHARED
@@ -48,7 +47,7 @@ add_library(phg4gdml SHARED
   ${PROJECT_SOURCE_DIR}/PHG4GDMLConfig.cc
 )
 
-target_link_libraries(phg4gdml -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lSubsysReco -lfun4all -L$ENV{XERCESCROOT}/lib -lxerces-c ${GEANT4_LINK})
+target_link_libraries(phg4gdml -lphool -lSubsysReco -lfun4all -L$ENV{XERCESCROOT}/lib -lxerces-c ${GEANT4_LINK})
 
 install(TARGETS phg4gdml 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

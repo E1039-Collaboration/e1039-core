@@ -47,7 +47,8 @@ foreach(LinkDefh ${LinkDefhs})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
-  -c -p
+  -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
@@ -172,7 +173,7 @@ add_library(g4detectors SHARED
 
 target_link_libraries(g4detectors_io -lphool -lboost_filesystem -lboost_system -lpdbcalBase -lphparameter -lg4testbench -L${ROOT_PREFIX}/lib -lXMLIO)
 add_dependencies(g4detectors g4detectors_io)
-target_link_libraries(g4detectors    -lg4detectors_io -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench)
+target_link_libraries(g4detectors    -linterface_main -lgeom_svc -lphg4gdml -lphool -lSubsysReco -lg4testbench -L./ -lg4detectors_io)
 
 install(TARGETS g4detectors_io  					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4detectors     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

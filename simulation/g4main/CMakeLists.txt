@@ -39,7 +39,8 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 add_custom_command (
   OUTPUT PHG4_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4_Dict.cc -c -p
+  ARGS -f PHG4_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/HepMCNodeReader.h
   ${PROJECT_SOURCE_DIR}/PHG4ConsistencyCheck.h
@@ -65,7 +66,8 @@ add_custom_command (
 add_custom_command (
   OUTPUT PHG4Hit_Dict.cc
   COMMAND rootcint
-  ARGS -f PHG4Hit_Dict.cc -c -p
+  ARGS -f PHG4Hit_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4/
   ${PROJECT_SOURCE_DIR}/PHG4EventHeader.h
   ${PROJECT_SOURCE_DIR}/PHG4EventHeaderv1.h
@@ -152,7 +154,7 @@ add_library(g4testbench SHARED
 )
 
 target_link_libraries(phg4hit      -lphool -lSubsysReco -lfun4all ${GEANT4_LINK})
-target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc_io -lxerces-c ${GEANT4_LINK} -lphgeom -lphg4gdml -lphg4hit)
+target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc_io -lxerces-c -lphgeom -lphg4gdml -L./ -lphg4hit ${GEANT4_LINK})
 
 install(TARGETS phg4hit     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4testbench 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

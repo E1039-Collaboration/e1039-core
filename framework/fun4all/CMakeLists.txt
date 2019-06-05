@@ -7,10 +7,9 @@ file(GLOB pcms "")
 add_custom_command (
   OUTPUT Fun4All_Dict.cc
   COMMAND rootcint
-  ARGS -f Fun4All_Dict.cc -c
-  -I$ENV{MY_INSTALL}/include
-	-I$ENV{OFFLINE_MAIN}/include
-	${PROJECT_SOURCE_DIR}/Fun4AllDstInputManager.h
+  ARGS -f Fun4All_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
+  ${PROJECT_SOURCE_DIR}/Fun4AllDstInputManager.h
   ${PROJECT_SOURCE_DIR}/Fun4AllDstOutputManager.h
   ${PROJECT_SOURCE_DIR}/Fun4AllDummyInputManager.h
   ${PROJECT_SOURCE_DIR}/Fun4AllHistoManager.h
@@ -20,19 +19,18 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/Fun4AllOutputManager.h
   ${PROJECT_SOURCE_DIR}/Fun4AllServer.h
   ${PROJECT_SOURCE_DIR}/Fun4AllLinkDef.h
-	)
+  )
 list(APPEND pcms "Fun4All_Dict_rdict.pcm")
 
 add_custom_command (
   OUTPUT SubsysReco_Dict.cc
   COMMAND rootcint
-  ARGS -f SubsysReco_Dict.cc -c
-  -I$ENV{MY_INSTALL}/include
-	-I$ENV{OFFLINE_MAIN}/include
+  ARGS -f SubsysReco_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/Fun4AllBase.h
   ${PROJECT_SOURCE_DIR}/SubsysReco.h
   ${PROJECT_SOURCE_DIR}/SubsysRecoLinkDef.h	
-	)
+  )
 list(APPEND pcms "SubsysReco_Dict_rdict.pcm")
 
 # source code

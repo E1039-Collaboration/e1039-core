@@ -6,9 +6,8 @@ project(ffaobjects CXX C)
 add_custom_command (
   OUTPUT libffaobjects_Dict.cc
   COMMAND rootcint
-  ARGS -f libffaobjects_Dict.cc -c
-  -I$ENV{MY_INSTALL}/include
-	-I$ENV{OFFLINE_MAIN}/include
+  ARGS -f libffaobjects_Dict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/FlagSave.h
   ${PROJECT_SOURCE_DIR}/FlagSavev1.h
   ${PROJECT_SOURCE_DIR}/RunHeader.h
