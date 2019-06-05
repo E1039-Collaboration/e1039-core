@@ -12,7 +12,7 @@ add_custom_command(
   ARGS "//*** this is a generated empty file. Do not commit, do not edit" > g4dst.C
 )
 
-target_link_libraries(g4dst -L./ -L$ENV{OFFLINE_MAIN}/lib -lphg4hit -lg4detectors_io -lphgeom_io -lphhepmc_io -lphfield_io)
+target_link_libraries(g4dst -lphg4hit -lg4detectors_io -lphgeom_io -lphhepmc_io -lphfield_io)
 
 install(TARGETS g4dst	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phparameter CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -21,7 +20,7 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND pcms  ${DictPcm})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p -I$ENV{OFFLINE_MAIN}/include ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 # ROOT
@@ -35,7 +34,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
 
 add_library(phparameter SHARED
   ${PROJECT_SOURCE_DIR}/PHParameters.cc
@@ -48,7 +47,7 @@ add_library(phparameter SHARED
   PHParameterContainerInterface_Dict.cc
 )
 
-target_link_libraries(phparameter -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -lpdbcalBase -lboost_system)
+target_link_libraries(phparameter -lphool -lpdbcalBase -lboost_system)
 
 install(TARGETS phparameter 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

@@ -6,17 +6,17 @@ project(vararray CXX C)
 add_custom_command (
   OUTPUT VariableArrayDict.cc
   COMMAND rootcint
-  ARGS -f VariableArrayDict.cc -c -p
+  ARGS -f VariableArrayDict.cc -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/VariableArray.h
   ${PROJECT_SOURCE_DIR}/VariableArrayContainer.h
   ${PROJECT_SOURCE_DIR}/VariableArrayLinkDef.h
-	)
+  )
 
 file(GLOB pcms "")
 list(APPEND pcms "VariableArrayDict_rdict.pcm")
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -31,8 +31,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
 
 add_library(vararray SHARED
   ${PROJECT_SOURCE_DIR}/VariableArray.cc
@@ -40,7 +39,7 @@ add_library(vararray SHARED
   VariableArrayDict.cc
   ${PROJECT_SOURCE_DIR}/VariableArrayUtils.cc
 )
-target_link_libraries(vararray -L./ -L$ENV{OFFLINE_MAIN}/lib -lhalf -lphool )
+target_link_libraries(vararray -lhalf -lphool )
 
 install(TARGETS vararray 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __H_OnlMonServer__H__
+#define __H_OnlMonServer__H__
+
 #include "HistoServer.h"
 #include <vector>
 #include <fun4all/Fun4AllServer.h>
@@ -41,3 +43,5 @@ class OnlMonServer : public Fun4AllServer
 #endif
 
 };
+
+#endif

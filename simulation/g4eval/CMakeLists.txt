@@ -39,7 +39,8 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${DictC})
 	list(APPEND dicts ${DictC})
 	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}
-  -c -p
+  -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}
   -I${GEANT4_PREFIX}/include 
   ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)

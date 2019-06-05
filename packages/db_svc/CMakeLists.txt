@@ -6,14 +6,11 @@ project(db_svc CXX)
 add_custom_command (
   OUTPUT DbSvc_Dict.cc
   COMMAND rootcint
-  ARGS -f DbSvc_Dict.cc -c
-    -I$ENV{OFFLINE_MAIN}/include/ -I${ROOT_PREFIX}/include/
+  ARGS -f DbSvc_Dict.cc -noIncludePaths -inlineInputHeader -c
+    -I${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/DbSvc.h
     ${PROJECT_SOURCE_DIR}/LinkDef.h
 )
-
-link_directories("./" "$ENV{OFFLINE_MAIN}/lib/")
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc ${PROJECT_SOURCE_DIR}/*.c)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)

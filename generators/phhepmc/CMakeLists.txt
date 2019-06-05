@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(phhepmc CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
-link_directories("$ENV{MY_INSTALL}/lib" "$ENV{OFFLINE_MAIN}/lib")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -19,13 +17,14 @@ foreach(LinkDefh ${LinkDefhs})
 	list(APPEND dicts ${DictC})
   #message("Dicth: " ${Dicth})
   #message("DictC: " ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} ${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
   OUTPUT PHHepMC_io_Dict.C
   COMMAND rootcint
-  ARGS -f PHHepMC_io_Dict.C -c -p
+  ARGS -f PHHepMC_io_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/PHGenEvent.h
   ${PROJECT_SOURCE_DIR}/PHGenEventv1.h
   ${PROJECT_SOURCE_DIR}/PHGenEventList.h
@@ -47,7 +46,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} -std=c++0x ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 add_library(phhepmc SHARED
   ${PROJECT_SOURCE_DIR}/PHHepMCGenHelper.cc

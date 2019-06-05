@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(pdbcalbase CXX C)
 
 # source code
-include_directories("$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
@@ -24,19 +23,19 @@ list(REMOVE_ITEM LinkDefhs "RunToTimeFactory_LinkDef.h")
 
 file(GLOB dicts "")
 foreach(LinkDefh ${LinkDefhs})
-	#message("LinkDefh: " ${LinkDefh})
-	string(REPLACE "_LinkDef.h" ".h" Dicth ${LinkDefh})
-	string(REPLACE "_LinkDef.h" "_dict.C" DictC ${LinkDefh})
-	list(APPEND dicts ${DictC})
+  #message("LinkDefh: " ${LinkDefh})
+  string(REPLACE "_LinkDef.h" ".h" Dicth ${LinkDefh})
+  string(REPLACE "_LinkDef.h" "_dict.C" DictC ${LinkDefh})
+  list(APPEND dicts ${DictC})
   #message("Dicth: " ${PROJECT_SOURCE_DIR}/${Dicth})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -c -p -I$ENV{OFFLINE_MAIN}/include ${PROJECT_SOURCE_DIR}/${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
+  add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR}/ ${PROJECT_SOURCE_DIR}/${Dicth} ${LinkDefh} DEPENDS ${LinkDefh})
 endforeach(LinkDefh)
 
 add_custom_command (
   OUTPUT PdbBankManagerFactory_dict.C
   COMMAND rootcint
-  ARGS -f PdbBankManagerFactory_dict.C -c -p
-	-I$ENV{OFFLINE_MAIN}/include
+  ARGS -f PdbBankManagerFactory_dict.C -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h
   PdbBankManagerFactory_LinkDef.h
@@ -46,8 +45,8 @@ add_custom_command (
 add_custom_command (
   OUTPUT RunToTimeFactory_dict.C
   COMMAND rootcint
-  ARGS -f RunToTimeFactory_dict.C -c -p
-	-I$ENV{OFFLINE_MAIN}/include
+  ARGS -f RunToTimeFactory_dict.C -noIncludePaths -inlineInputHeader -c -p
+  -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/PHGenericFactoryT.h
   ${PROJECT_SOURCE_DIR}/PdbBankManagerFactory.h
   PdbBankManagerFactory_LinkDef.h
@@ -65,7 +64,7 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
 
 
 add_library(pdbcalBase SHARED
@@ -101,7 +100,8 @@ add_library(pdbcalBase SHARED
   ${PROJECT_SOURCE_DIR}/RunToTime.cc 
   RunToTime_dict.C
 )
-target_link_libraries(pdbcalBase -L./ -L$ENV{OFFLINE_MAIN}/lib -lphool -L${ROOT_PREFIX}/lib -lXMLIO)
+
+target_link_libraries(pdbcalBase -lphool -L${ROOT_PREFIX}/lib -lXMLIO)
 
 install(TARGETS pdbcalBase 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
