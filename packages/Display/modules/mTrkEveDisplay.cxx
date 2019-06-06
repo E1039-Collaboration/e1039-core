@@ -26,16 +26,22 @@
 #include <TEveElement.h>
 #include <TEveCaloData.h>
 #include <TEveCalo.h>
+#include <TEveQuadSet.h>
+#include <TEveTrans.h>
 #include <TH2F.h>
+#include <TNamed.h>
 
 #include <interface_main/SQHitVector.h>
 #include <interface_main/SQHit.h>
+#include <ktracker/SRecEvent.h>
+#include <geom_svc/GeomSvc.h>
 
 #include <pheve_display/PHEveDisplay.h>
 
 #include "mTrkEveDisplay.h"
 
 using boost::bind;
+
 
 mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
   mPHEveModuleBase(),
@@ -48,6 +54,20 @@ mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
   _evemanager = _evedisp->get_eve_manager();
   _prop = _evedisp->get_cnt_prop();
   _reco_tracks = new TEveTrackList("Svtx Tracks");
+
+  GeomSvc* gs = GeomSvc::instance();
+  TEveRGBAPalette *pal = new TEveRGBAPalette(0, 100, true, true, true);
+  for(int i=0; i<NDETPLANES; ++i) {
+    _hit_wires[i] = new TEveQuadSet(std::to_string(i).c_str());
+    _hit_wires[i]->SetOwnIds(kTRUE);
+    _hit_wires[i]->SetPalette(pal);
+    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, kFALSE, 32);
+    _hit_wires[i]->RefitPlex();
+    TEveTrans& t =  _hit_wires[i]->RefMainTrans();
+    t.SetPos(0, 0, gs->getPlaneCenterZ(i));
+    _evemanager->AddElement(_hit_wires[i]);
+  }
+
   _evemanager->AddElement(_reco_tracks,_evedisp->get_svtx_list());
 
 }
@@ -74,7 +94,8 @@ mTrkEveDisplay::event(PHCompositeNode* topNode)
   if (verbosity)
     std::cout << "mTrkEveDisplay - event() begins." << std::endl;
   try {
-    create_nodes(topNode);
+    get_nodes(topNode);
+    draw_hits();
     draw_tracks();
   } catch (std::exception& e) {
     static bool first(true);
@@ -93,73 +114,178 @@ mTrkEveDisplay::end(PHCompositeNode* topNode)
 }
 
 void 
-mTrkEveDisplay::create_nodes(PHCompositeNode* topNode)
+mTrkEveDisplay::get_nodes(PHCompositeNode* topNode)
 {
   _sqhit_col = findNode::getClass<SQHitVector>(topNode,"SQHitVector");
   if(!_sqhit_col) std::cout<< "SQHitVector node not found!!"<<std::endl;
-  if(verbosity) std::cout<<"mTrkEveDisplay - nodes created."<<std::endl;
+  if(verbosity) std::cout<<"mTrkEveDisplay - SQHitVector nodes found."<<std::endl;
 
+  _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+  if(!_recEvent) std::cout<< "SRecEvent node not found!!"<<std::endl;
+  if(verbosity) std::cout<<"mTrkEveDisplay - SRecEvent nodes found."<<std::endl;
 }
 
+int mTrkEveDisplay::hit_to_wire(const int det_id, const int elm_id, double& x, double& y, double& dx, double& dy) {
+  GeomSvc *gs = GeomSvc::instance();
+  if (!gs) return -1;
+
+  double pos = gs->getMeasurement(det_id, elm_id);
+
+  double cos = gs->getCostheta(det_id);
+  double sin = gs->getSintheta(det_id);
+  double n[2] = {cos, -sin};
+
+  double xc = gs->getPlaneCenterX(det_id);
+  double yc = gs->getPlaneCenterY(det_id);
+  double vc[2] = {xc, yc};
+
+  double y1 = gs->getPlane(det_id).y1;
+  double y2 = gs->getPlane(det_id).y2;
+  double x1 = gs->getPlane(det_id).x1;
+  double x2 = gs->getPlane(det_id).x2;
+
+  // (v - v_c) dot n = pos
+  // v0*n0 +v1*n1 = pos + v_c0*n0+v_c1*n1
+  if(fabs(n[0])<0.01) { // horizontal wire
+    y1 = (pos + xc*n[0] + yc*n[1] - x1*n[0])/n[1];
+    y2 = (pos + xc*n[0] + yc*n[1] - x2*n[0])/n[1];
+  } else { // non-horizontal wire
+    x1 = (pos + xc*n[0] + yc*n[1] - y1*n[1])/n[0];
+    x2 = (pos + xc*n[0] + yc*n[1] - y2*n[1])/n[0];
+  }
+
+  x = x1;
+  y = y1;
+  dx = x2 - x1;
+  dy = y2 - y1;
+
+  return 0;
+}
+
+
+void
+mTrkEveDisplay::draw_hits()
+{
+  // svtx tracks
+  for (SQHitVector::ConstIter it = _sqhit_col->begin(); it != _sqhit_col->end(); it++) {
+    SQHit * hit = *it;
+    auto det_id = hit->get_detector_id();
+    //if(det_id>30) continue;
+    auto elm_id = hit->get_element_id();
+    double x, y, dx, dy;
+    hit_to_wire(det_id, elm_id, x, y, dx, dy);
+
+    std::cout
+    << "mTrkEveDisplay::draw_hits: {" << det_id << ", " << elm_id << "} => "
+    << " {" << x << ", " << y << ", " << dx << ", " << dy << "}"
+    << std::endl;
+
+    _hit_wires[det_id]->AddLine(x, y, dx, dy);
+
+    _hit_wires[det_id]->QuadId(new TNamed(Form("%d",elm_id),"element id"));
+
+    if(det_id<31)      _hit_wires[det_id]->QuadValue(10);
+    else if(det_id<47) _hit_wires[det_id]->QuadValue(50);
+    else               _hit_wires[det_id]->QuadValue(99);
+  }
+}
 void
 mTrkEveDisplay::draw_tracks()
 {
-  // svtx tracks
-#ifdef _ALL_
-  for (SvtxVertexMap::Iter iter = _vertexmap->begin(); iter != _vertexmap->end(); ++iter) {
-    SvtxVertex *vertex = iter->second;
-    float vx = vertex->get_x();
-    float vy = vertex->get_y();
-    float vz = vertex->get_z();
+  LogInfo(_recEvent->getNTracks());
+  if(_recEvent->getNTracks()<=0) return;
+  LogInfo(_recEvent->getNTracks());
 
-    for (SvtxVertex::TrackIter iter = vertex->begin_tracks(); iter != vertex->end_tracks(); ++iter) {
-      SvtxTrack *track = _trackmap->get(*iter);
-      float px = track->get_px();
-      float py = track->get_py();
-      float pz = track->get_pz();
-      int charge = track->get_charge();
-      //int  pid = track->get_pid();
-      int pid = 0; //place holder
-      TEveRecTrackT<double>* trk_reco = new TEveRecTrackT<double>();
-      trk_reco->fV.Set(vx, vy, vz);
-      trk_reco->fP.Set(px, py, pz);
-      trk_reco->fSign = charge;
-      if (!pid_cut(pid))
-        continue;
-      TEveTrack* trk = new TEveTrack(trk_reco, _prop);
-      trk->SetSmooth(kTRUE);
+  GeomSvc* gs = GeomSvc::instance();
+  double vz_st1 = gs->getPlaneCenterZ(gs->getDetectorID("D1X"));
+
+  std::map<int, int> hitID_ihit;
+  // If using vector, index it first
+  for(int ihit=0; ihit<_sqhit_col->size(); ++ihit) {
+    SQHit *hit = _sqhit_col->at(ihit);
+    int hitID = hit->get_hit_id();
+    hitID_ihit[hitID] = ihit;
+  }
+
+  for(int itrack=0; itrack<_recEvent->getNTracks(); ++itrack){
+    SRecTrack srecTrack = _recEvent->getTrack(itrack);
+
+    TEveRecTrackT<double>* eve_rec_trk = new TEveRecTrackT<double>();
+
+    int charge = srecTrack.getCharge();
+
+    double vx, vy, vz;
+    double px, py, pz;
+    srecTrack.getMomentumSt1(px, py, pz);
+    srecTrack.getPositionSt1(vx, vy);
+    vz = vz_st1;
+
+    eve_rec_trk->fV.Set(vx, vy, vz);
+    eve_rec_trk->fP.Set(px, py, pz);
+
+    if(verbosity) {
+      std::cout << "--------- itrack: " << itrack << " ---------"<< std::endl;
+      std::cout
+      << " { " << vx << "," << vy << "," << vz << " } "
+      << " { " << px << "," << py << "," << pz << " } "
+      << std::endl;
+    }
+
+
+    TVector3 rec_vtx = srecTrack.getTargetPos();
+    TVector3 rec_mom = srecTrack.getTargetMom();
+    eve_rec_trk->fV.Set(rec_vtx.x(), rec_vtx.y(), rec_vtx.z());
+    eve_rec_trk->fP.Set(rec_mom.x(), rec_mom.y(), rec_mom.z());
+
+    eve_rec_trk->fSign = charge;
+    TEveTrack* trk = new TEveTrack(eve_rec_trk, _prop);
+    trk->SetSmooth(kTRUE);
+    if (charge > 0)
+      trk->SetLineColor(kYellow);
+    else
+      trk->SetLineColor(kCyan);
+    trk->SetLineWidth(1);
+
+    for(int ihit=0; ihit<srecTrack.getNHits();++ihit) {
+      int hitID = srecTrack.getHitIndex(ihit);
+
+      // signed hitID to hitID
+      hitID = abs(hitID);
+
+      if(hitID_ihit.find(hitID)==hitID_ihit.end()) continue;
+
+      SQHit *hit = _sqhit_col->at(hitID_ihit[hitID]);
+      if(!hit) {LogInfo("!hit");}
+
+      double wx, wy, wz;
+      double wdx, wdy;
+
+      auto det_id = hit->get_detector_id();
+      //if(det_id>30) continue;
+      auto elm_id = hit->get_element_id();
+      double x, y, dx, dy;
+      hit_to_wire(det_id, elm_id, wx, wy, wdx, wdy);
+      wz = gs->getPlaneCenterZ(det_id);
+
+      trk->AddPathMark(
+          TEvePathMarkD(TEvePathMarkD::kLineSegment,
+              TEveVectorD(wx, wy, wz),
+              TEveVectorD(0, 0, 1),
+              TEveVectorD(wdx, wdy, 0)));
+      trk->SetRnrPoints(kTRUE);
+      trk->SetMarkerStyle(1);
+      trk->SetMarkerSize(1);
       if (charge > 0)
-        trk->SetLineColor(kYellow);
+        trk->SetMarkerColor(kYellow);
       else
-        trk->SetLineColor(kCyan);
-      trk->SetLineWidth(2.5);
-      for (SvtxTrack::ConstClusterIter iter = track->begin_clusters(); iter != track->end_clusters(); ++iter) {
-        unsigned int cluster_id = *iter;
-        SvtxCluster* cluster = _sqhit_col->get(cluster_id);
-        //unsigned int layer = cluster->get_layer();
-        //float cluste = cluster->get_e();
-        //if(e < 0.1) continue;
-        float posx = cluster->get_position(0);
-        float posy = cluster->get_position(1);
-        float posz = cluster->get_position(2);
-        if (verbosity > 2)
-          std::cout << "posx= " << posx << ", posy= " << posy << ", posz= " << posz << std::endl;
-        trk->AddPathMark(TEvePathMarkD(TEvePathMarkD::kDaughter, TEveVectorD(posx, posy, posz)));
-        trk->SetRnrPoints(kTRUE);
-        trk->SetMarkerStyle(25);
-        trk->SetMarkerSize(1);
-        if (charge > 0)
-          trk->SetMarkerColor(kYellow);
-        else
-          trk->SetMarkerColor(kCyan);
-      }///< SvtxTrack: ClusterIter
-      trk->MakeTrack();
-      if (verbosity > 2)
-        std::cout << "mTrkEveDisplay - track made. " << std::endl;
-      _reco_tracks->AddElement(trk);
-    }	///< SvtxVertex: TrackIter
-  }	///< SvtxVertexMAp
-#endif
+        trk->SetMarkerColor(kCyan);
+    }
+
+    trk->MakeTrack();
+    if (verbosity > 2)
+      std::cout << "mTrkEveDisplay - track made. " << std::endl;
+    _reco_tracks->AddElement(trk);
+  }
 }
 
 bool 
@@ -171,9 +297,19 @@ if (pid == 0) return true;//always return true
 return false;
 }
 
+
 void 
 mTrkEveDisplay::clear()
 {
   _prop->IncDenyDestroy(); // Keep the track propagator from being destroyed
+
+  GeomSvc* gs = GeomSvc::instance();
+  for(int i=0; i<NDETPLANES; ++i) {
+    //_hit_wires[i]->DestroyElements();
+    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, kFALSE, 32);
+    _hit_wires[i]->RefitPlex();
+    TEveTrans& t =  _hit_wires[i]->RefMainTrans();
+    t.SetPos(0, 0, gs->getPlaneCenterZ(i));
+  }
   _reco_tracks->DestroyElements();
 }

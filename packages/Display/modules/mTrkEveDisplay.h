@@ -22,6 +22,11 @@ class TH2F;
 
 class SQHit;
 class SQHitVector;
+class SRecEvent;
+
+class TEveQuadSet;
+
+#define NDETPLANES 55
 
 class mTrkEveDisplay : public mPHEveModuleBase
 {
@@ -36,7 +41,14 @@ class mTrkEveDisplay : public mPHEveModuleBase
   bool event(PHCompositeNode* topNode);
   void end(PHCompositeNode* topNode);
   
-  void create_nodes(PHCompositeNode* topNode);
+  void get_nodes(PHCompositeNode* topNode);
+  /** Get a wire param from detector id and element id
+   *  @param[in]   det,    elm input
+   *  @param[out]  x, y    1 end point of the wire
+   *  @param[out]  dx, dy  wire span in x and y
+   */
+  int hit_to_wire(const int det, const int elm, double & x, double & y, double &dx, double &dy);
+  void draw_hits();
   void draw_tracks();
   bool pid_cut(int pid);
   void clear();
@@ -45,9 +57,11 @@ class mTrkEveDisplay : public mPHEveModuleBase
 
   boost::shared_ptr<PHEveDisplay> _evedisp;
   SQHitVector *_sqhit_col;
+  SRecEvent *_recEvent;
 
   TEveTrackPropagator* _prop;
   TEveTrackList* _reco_tracks;
+  TEveQuadSet* _hit_wires[NDETPLANES];
 
   int verbosity; 
 };

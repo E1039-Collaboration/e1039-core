@@ -95,9 +95,8 @@ PHEventDisplay::PHEventDisplay(int w = 1920,
   gEve->FullRedraw3D(kTRUE);  
   TGLViewer*  v = gEve->GetDefaultGLViewer();
   //v->ColorSet().Background().SetColor(kMagenta+4);
-  v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
+  //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   v->RefreshPadEditor(v);
-  v->CurrentCamera().RotateRad(0.0, 1.5707);// theta, phi
   v->DoDraw();
 
   _PHEveDisplay->set_eve_manager(gEve);
@@ -165,6 +164,7 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
 int PHEventDisplay::process_event(PHCompositeNode *topNode)
 {
   if (verbosity) std::cout<<"PHEventDisplay - setting up to process event." <<std::endl;
+  nevent++;
 
   std::for_each(_modules.begin(),
 		_modules.end(),
@@ -184,9 +184,9 @@ void PHEventDisplay::update_scene()
 {
   if (verbosity) std::cout << "PHEventDisplay - update_scene() nevent = " <<nevent<<std::endl;
   TThread::Lock(); // Keep the autorotator from segfaulting
+  draw_default();
   std::for_each(_modules.begin(),_modules.end(),
 		bind(&mPHEveModuleBase::clear,_1));
-  draw_default();
   TThread::UnLock();
 }
 
@@ -207,7 +207,6 @@ void PHEventDisplay::run_evt_in_thread()
 void PHEventDisplay::reco_thread()
 {
   if (verbosity) std::cout<< "PHEventDisplay - reco_thread() nevent = "<<nevent<<std::endl;
-  nevent++;
   Fun4AllServer* se = Fun4AllServer::instance();
   se->run(1);
   if (verbosity>1) std::cout <<"reco_thread() run(1) complete."<<std::endl;
@@ -226,12 +225,21 @@ void PHEventDisplay::draw_default()
   if (verbosity>1) std::cout<<"draw_default() TGLViewer." <<std::endl;
   TGLViewer*  v = gEve->GetDefaultGLViewer();
   //  v->ColorSet().Background().SetColor(kMagenta+4);
-  v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
+  //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   v->RefreshPadEditor(v);
-  //v->CurrentCamera().RotateRad(0.0, 1.5707);// theta, phi
-  //v->CurrentCamera().RotateRad(1.5707, 1.5707);// theta, phi
-  v->CurrentCamera().Zoom(2.0, 0, 0);
+
+  // top view
+  v->CurrentCamera().RotateRad(-3.14/2,0);
+  v->CurrentCamera().Zoom(350, 0, 0);
+  v->CurrentCamera().Truck(3000,0);
+
+  // 3D view
+//  v->CurrentCamera().RotateRad(-3.14/8., -3.14/8.);
+//  v->CurrentCamera().Zoom(350, 0, 0);
+//  v->CurrentCamera().Truck(2500,0);
+
   v->DoDraw();
+  //gEve->Redraw3D(kTRUE);
 
 }
 

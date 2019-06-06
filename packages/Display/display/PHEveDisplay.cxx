@@ -112,44 +112,30 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
   const int nd = top->GetNdaughters();
   std::cout << "nd= " << nd << std::endl;
   TGeoNode* node[nd];
-  TEveGeoTopNode* tnode[nd];
-  int det_config = 0;
-  //bool is_supp_struc = false;
-  if (strcmp(geo_filename.c_str(), "sphenix_mie_geo.root") == 0 && _use_geofile)
-    det_config = 1;
-  else if (strcmp(geo_filename.c_str(), "sphenix_maps+tpc_geo.root") == 0 && _use_geofile)
-    det_config = 2;
+
   for (int i = 0; i < nd; i++) {
-
-//    if (det_config == 1 && i == 18)
-//      continue;
-
-//    if (det_config == 2 && (i > 10 && i < 71))
-//      continue;
-
     node[i] = top->GetNode(i);
     std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
 
-//    std::string name = node[i]->GetName();
+    node[i]->GetVolume()->SetTransparency(90); // 0: opaque, 100: transparent
 
-//    if (name.find("CEMC") < 4 && name.find("SUPPORT") > 10)
-//      continue;
-
-    node[i]->GetVolume()->SetTransparency(70); // 0: opaque, 100: transparent
-
-//    if (name.find("InnerHcal") < 5 || name.find("OuterHcal") < 5) { // make hcal transparent
-//      TGeoVolume* hcalvol = node[i]->GetVolume();
-//      const int nhcal = hcalvol->GetNdaughters();
-//      TGeoNode* node_hcal[nhcal];
-//      for (int j = 0; j < nhcal; j++) {
-//        node_hcal[j] = hcalvol->GetNode(j);
-//        node_hcal[j]->GetVolume()->SetTransparency(90);
-//      }
-//    }
-
-    tnode[i] = new TEveGeoTopNode(gGeoManager, node[i]);
-    geve->AddGlobalElement(tnode[i]);
+    std::string name(node[i]->GetName());
+    if (name.find("fmag") < 5 || name.find("kmag") < 5) { // make fmag
+      TGeoVolume* subvol = node[i]->GetVolume();
+      const int nsub = subvol->GetNdaughters();
+      TGeoNode* subnod[nsub];
+      for (int j = 0; j < nsub; j++) {
+        subnod[j] = subvol->GetNode(j);
+        subnod[j]->GetVolume()->SetTransparency(100);
+      }
+    }
   }
+
+  TGeoNode *node_c = gGeoManager->GetCurrentNode();
+  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
+  gEve->AddGlobalElement(tnode_c);
+
+
   if (_use_geofile) {
     geom->Close();
     delete geom;
@@ -186,9 +172,9 @@ PHEveDisplay::config_bfields(const PHField *field)
     cnt_prop->SetMaxStep(2);
   }
 
-  cnt_prop->SetStepper(TEveTrackPropagator::kHelix);
-  cnt_prop->SetMaxR(350);
-  cnt_prop->SetMaxZ(450);
+  cnt_prop->SetStepper(TEveTrackPropagator::kRungeKutta);
+  cnt_prop->SetMaxR(300);
+  cnt_prop->SetMaxZ(2500);
 }
 
 void
@@ -250,9 +236,15 @@ PHEveDisplay::MappedField::GetFieldD(Double_t x, Double_t y, Double_t z) const
   //_fieldmap->get_bfield(&loc[0],&bvec[0]);
   _fieldmap->GetFieldValue(loc, bvec);
   TEveVectorD vec(
-      bvec[0]/gauss,
-		  bvec[1]/gauss,
-		  bvec[2]/gauss); // unit is Gauss  (1Tesla = 10000 Gauss)
+      bvec[0]/(gauss),
+		  bvec[1]/(gauss),
+		  bvec[2]/(gauss)); // unit is Gauss  (1Tesla = 10000 Gauss)
+//  std::cout
+//  << "GetFieldD: "
+//  << " { " << x << ", " << y << ", " << z << " } "
+//  << " { " << bvec[0]/tesla << ", " << bvec[1]/tesla << ", " << bvec[2]/tesla << " } "
+//  << std::endl;
+  //TEveVectorD vec(0, 0, 0); // unit is Gauss  (1Tesla = 10000 Gauss)
 
   return vec;
 }
