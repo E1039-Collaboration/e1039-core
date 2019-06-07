@@ -39,3 +39,5 @@ else
     export MY_INSTALL=$OFFLINE_MAIN
     export LD_LIBRARY_PATH=$OFFLINE_MAIN/lib:$LD_LIBRARY_PATH
 fi
+
+export ROOT_INCLUDE_PATH=$(find $MY_INSTALL/include -type d -printf '%p:')$CPATH

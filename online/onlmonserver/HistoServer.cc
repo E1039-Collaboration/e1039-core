@@ -76,11 +76,8 @@ static void *server(void *arg)
   //  int thread_arg[5];
   //pthread_mutex_lock(&mutex);
 
-  //Fun4AllHistoManager* hm = new Fun4AllHistoManager("D1");
-  //se->registerHistoManager(hm);
-
-  TH1 *h1 = new TH1F("serverhisto","serverhisto info histo",2,0,1);
-  se->registerHisto(h1);
+  //TH1 *h1 = new TH1F("serverhisto","serverhisto info histo",2,0,1);
+  //se->registerHisto(h1);
 
   TServerSocket *ss = NULL;
   sleep(5);
@@ -146,23 +143,9 @@ static void *server(void *arg)
   //pthread_mutex_unlock(&mutex);
   //cout << "mutex released" << endl;
   delete s0;
-  /*
-    if (!aargh)
-    {
-    cout << "making thread" << endl;
-    aargh = new TThread(handletest,(void *)0);
-    aargh->Run();
-    }
-  */ 
   //cout << "closing socket" << endl;
   //s0->Close();
   goto again;
-}
-
-void handletest(void *arg)
-{
-  //  cout << "threading" << endl;
-  return ;
 }
 
 void
@@ -202,28 +185,15 @@ handleconnection(void *arg)
           string strpp = str; // to be unified with str...
           delete mess;
           mess = 0;
-          if (se->Verbosity() > 2)
-            {
-              cout << "received message" << str << endl;
-            }
+          if (se->Verbosity() > 2) cout << "received message" << str << endl;
+
           if (!strcmp(str, "Finished"))
             {
-              break;
-            }
-          else if (!strcmp(str, "WriteRootFile"))
-            {
-//              se->WriteHistoFile();
-              s0->Send("Finished");
               break;
             }
           else if (!strcmp(str, "Ack"))
             {
               continue;
-            }
-          else if (!strcmp(str, "Test"))
-            {
-	      cout << "got Test" << endl;
-              break;
             }
           else if (!strcmp(str, "HistoList"))
             {
@@ -249,29 +219,6 @@ handleconnection(void *arg)
                       msg << "Problem receiving message: return code: " << nbytes ;
 		      cout << msg.str() << endl;
 
-                    }
-                }
-              s0->Send("Finished");
-            }
-          else if (!strcmp(str, "ALL"))
-            {
-              Fun4AllHistoManager* hm = se->getHistoManager("MainDaq");
-              if (se->Verbosity() > 2)
-                {
-                  cout << "number of histos: " << hm->nHistos() << endl;
-                }
-              for (unsigned int i = 0; i < hm->nHistos(); i++)
-                {
-                  TH1 *histo = (TH1 *) hm->getHisto(i);
-                  if (histo)
-                    {
-                      outgoing.Reset();
-                      outgoing.WriteObject(histo);
-                      s0->Send(outgoing);
-                      outgoing.Reset();
-                      s0->Recv(mess);
-                      delete mess;
-                      mess = 0;
                     }
                 }
               s0->Send("Finished");
@@ -371,73 +318,65 @@ handleconnection(void *arg)
   return ;
 }
 
-void send_test_message()
-{
-  TSocket sock(onl_mon_server.c_str(), MONIPORT);
-//  TMessage *mess;
-  sock.Send("Test");
-  sock.Close();
-}
-
-void receive_hist_all()
-{
-  TSocket sock(onl_mon_server.c_str(), MONIPORT);
-  sock.Send("ALL");
-
-  TMessage *mess = NULL;
-  while (true) { // incoming hist
-    sock.Recv(mess);
-    if (!mess) {
-      break;
-    } else if (mess->What() == kMESS_STRING) {
-      char str[200];
-      mess->ReadString(str, 200);
-      delete mess;
-      mess = 0;
-      if (!strcmp(str, "Finished")) break;
-    } else if (mess->What() == kMESS_OBJECT) {
-      TClass* cla = mess->GetClass();
-      TH1*    obj = (TH1*)mess->ReadObject(cla);
-      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
-      obj->Print();
-      delete mess;
-      mess = 0;
-      sock.Send("got it");
-    }
-  }
-  sock.Close();
-}
+//void receive_hist_all()
+//{
+//  TSocket sock(onl_mon_server.c_str(), MONIPORT);
+//  sock.Send("ALL");
+//
+//  TMessage *mess = NULL;
+//  while (true) { // incoming hist
+//    sock.Recv(mess);
+//    if (!mess) {
+//      break;
+//    } else if (mess->What() == kMESS_STRING) {
+//      char str[200];
+//      mess->ReadString(str, 200);
+//      delete mess;
+//      mess = 0;
+//      if (!strcmp(str, "Finished")) break;
+//    } else if (mess->What() == kMESS_OBJECT) {
+//      TClass* cla = mess->GetClass();
+//      TH1*    obj = (TH1*)mess->ReadObject(cla);
+//      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
+//      obj->Print();
+//      delete mess;
+//      mess = 0;
+//      sock.Send("got it");
+//    }
+//  }
+//  sock.Close();
+//}
 
 
-int monitor_subsys(const char* name, std::vector<TH1*>& hist_list)
-{
-  ostringstream oss;
-  oss << "SUBSYS:" << name;
-
-  TSocket sock(onl_mon_server.c_str(), MONIPORT);
-  sock.Send(oss.str().c_str());
-
-  TMessage *mess = NULL;
-  while (true) { // incoming hist
-    sock.Recv(mess);
-    if (!mess) {
-      break;
-    } else if (mess->What() == kMESS_STRING) {
-      char str[200];
-      mess->ReadString(str, 200);
-      delete mess;
-      mess = 0;
-      if (!strcmp(str, "Finished")) break;
-    } else if (mess->What() == kMESS_OBJECT) {
-      TClass* cla = mess->GetClass();
-      TH1*    obj = (TH1*)mess->ReadObject(cla);
-      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
-      hist_list.push_back( (TH1*)obj->Clone() );
-      delete mess;
-      mess = 0;
-      sock.Send("NEXT"); // Any text is ok for now
-    }
-  }
-  sock.Close();
-  return 0;
-}
+//int monitor_subsys(const char* name, std::vector<TH1*>& hist_list)
+//{
+//  ostringstream oss;
+//  oss << "SUBSYS:" << name;
+//
+//  TSocket sock(onl_mon_server.c_str(), MONIPORT);
+//  sock.Send(oss.str().c_str());
+//
+//  TMessage *mess = NULL;
+//  while (true) { // incoming hist
+//    sock.Recv(mess);
+//    if (!mess) {
+//      break;
+//    } else if (mess->What() == kMESS_STRING) {
+//      char str[200];
+//      mess->ReadString(str, 200);
+//      delete mess;
+//      mess = 0;
+//      if (!strcmp(str, "Finished")) break;
+//    } else if (mess->What() == kMESS_OBJECT) {
+//      TClass* cla = mess->GetClass();
+//      TH1*    obj = (TH1*)mess->ReadObject(cla);
+//      cout << "Receive a class: " << cla->GetName() << " " << obj->GetName() << endl;
+//      hist_list.push_back( (TH1*)obj->Clone() );
+//      delete mess;
+//      mess = 0;
+//      sock.Send("NEXT"); // Any text is ok for now
+//    }
+//  }
+//  sock.Close();
+//  return 0;
+//}
