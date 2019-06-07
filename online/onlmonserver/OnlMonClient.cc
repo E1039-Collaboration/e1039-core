@@ -221,9 +221,11 @@ int OnlMonClient::ReceiveHist()
   string comm = "SUBSYS:";
   comm += Name();
 
-  cout << "OnlMonClient::ReceiveHist(): "
-       << onl_mon_server << ":" << onl_mon_port << " " << comm << endl;
-  TSocket sock(onl_mon_server.c_str(), onl_mon_port);
+  string host = OnlMonServer::GetHost();
+  int    port = OnlMonServer::GetPort();
+
+  cout << "OnlMonClient::ReceiveHist(): " << host << ":" << port << " " << comm << endl;
+  TSocket sock(host.c_str(), port);
   sock.Send(comm.c_str());
 
   ClearHistList();
