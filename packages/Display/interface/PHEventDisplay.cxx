@@ -38,6 +38,11 @@
 #include "TGeoVolume.h"
 #include "TGLAutoRotator.h"
 #include "TGLViewer.h"
+#include "TEveViewer.h"
+#include "TEveScene.h"
+#include "TEveProjectionManager.h"
+#include "TEveProjectionAxes.h"
+#include "TEveGeoNode.h"
 #include "TFile.h"
 
 
@@ -53,6 +58,59 @@
 #include "PHEventDisplay.h"
 
 using boost::bind;
+
+void MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s)
+{
+  // Create a scene and a viewer in the given slot.
+  v = new TEveViewer("Viewer");
+  v->SpawnGLViewer((TGedEditor*)gEve->GetEditor());
+  slot->ReplaceWindow(v);
+  gEve->GetViewers()->AddElement(v);
+  s = gEve->SpawnNewScene("Scene");
+  v->AddScene(s);
+}
+
+TEveElement* MakeProjection (
+TEveWindowSlot* slot,
+TEveElement* element,
+const double start_z,
+const double end_z = 200,
+const char* name = "Projection"
+) {
+
+  TEveViewer* v; TEveScene* s;
+  MakeViewerScene(slot, v, s);
+  v->SetElementName(Form("Viewer - %s",name));
+  s->SetElementName(Form("Scene - %s",name));
+  auto mng = new TEveProjectionManager();
+  mng->SetProjection(TEveProjection::kPT_RPhi);
+  auto axes = new TEveProjectionAxes(mng);
+  mng->ImportElements(element);
+  s->AddElement(axes);
+  s->AddElement(element);
+
+  TGeoNode *node_c = gGeoManager->GetCurrentNode();
+  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
+  s->AddElement(tnode_c);
+
+  gEve->AddToListTree(axes, kTRUE);
+  gEve->AddToListTree(mng, kTRUE);
+
+  auto vv = v->GetGLViewer();
+
+  double mean_z = 0.5*(start_z + end_z);
+  double extd_z = end_z - start_z;
+
+  double clip_par[] = {0,0,mean_z,300,300,extd_z};
+  vv->GetClipSet()->SetClipType(TGLClip::kClipBox);
+  vv->UpdateScene();
+  vv->GetClipSet()->SetClipState(TGLClip::kClipBox, clip_par);
+  vv->GetClipSet()->GetCurrentClip()->SetMode(TGLClip::kOutside);
+  //vv->DoDraw();
+  vv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+
+  return 0;
+}
 
 PHEventDisplay::PHEventDisplay(int w = 1920,
   int h = 1080,
@@ -144,11 +202,11 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
   try {
 
     if (verbosity)
-      std::cout << "PHEventDisplay - load_geometry() begins. " << std::endl;
-    _PHEveDisplay->load_geometry(topNode, gEve);
-    if (verbosity)
       std::cout << "PHEventDisplay - add_elements() begins." << std::endl;
     _PHEveDisplay->add_elements(gEve);
+    if (verbosity)
+      std::cout << "PHEventDisplay - load_geometry() begins. " << std::endl;
+    _PHEveDisplay->load_geometry(topNode, gEve);
     if (verbosity)
       std::cout << "PHEventDisplay - config_bfield() begins." << std::endl;
     PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
@@ -233,25 +291,51 @@ void PHEventDisplay::draw_default()
   if (verbosity) std::cout<<"PHEventDisplay - draw_default() begins."<<std::endl;
   if (verbosity>1) std::cout<<"draw_default() FullRedraw3D." <<std::endl;
   gEve->FullRedraw3D(kTRUE);
+
+  if(nevent==1) {
+
+    // Extra tabs
+    _slot_dc  = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    auto packH = _slot_dc->MakePack();
+    packH->SetElementName("2D View");
+    packH->SetHorizontal();
+    packH->SetShowTitleBar(kFALSE);
+    _slot_dc = packH->NewSlot();
+    auto pack0  = _slot_dc->MakePack();
+    pack0->SetShowTitleBar(kFALSE);
+    _slot_dc_00 = pack0->NewSlot();
+    _slot_dc_10 = pack0->NewSlot();
+    _slot_dc = packH->NewSlot();
+    auto pack1  = _slot_dc->MakePack();
+    pack1->SetShowTitleBar(kFALSE);
+    _slot_dc_01 = pack1->NewSlot();
+    _slot_dc_11 = pack1->NewSlot();
+
+    MakeProjection(_slot_dc_00, _PHEveDisplay->get_top_list(), 550,  700,  "ST1");
+    MakeProjection(_slot_dc_01, _PHEveDisplay->get_top_list(), 1300, 1450, "ST2");
+    MakeProjection(_slot_dc_10, _PHEveDisplay->get_top_list(), 1870, 1970, "ST3");
+    MakeProjection(_slot_dc_11, _PHEveDisplay->get_top_list(), 2085, 2450, "ST4");
+  }
+
+  gEve->Redraw3D(kTRUE);
+
   if (verbosity>1) std::cout<<"draw_default() TGLViewer." <<std::endl;
   TGLViewer*  v = gEve->GetDefaultGLViewer();
-  //  v->ColorSet().Background().SetColor(kMagenta+4);
+  //v->ColorSet().Background().SetColor(kMagenta+4);
   //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
-  v->RefreshPadEditor(v);
+  //v->RefreshPadEditor(v);
 
   // top view
-  v->CurrentCamera().RotateRad(-3.14/2,0);
-  v->CurrentCamera().Zoom(400, 0, 0);
-  v->CurrentCamera().Truck(3000,0);
+//  v->CurrentCamera().RotateRad(-3.14/2,0);
+//  v->CurrentCamera().Zoom(400, 0, 0);
+//  v->CurrentCamera().Truck(3000,0);
 
   // 3D view
-//  v->CurrentCamera().RotateRad(-3.14/8., -3.14/8.);
-//  v->CurrentCamera().Zoom(400, 0, 0);
-//  v->CurrentCamera().Truck(2500,0);
+  v->CurrentCamera().RotateRad(-3.14/8., -3.14/8.);
+  v->CurrentCamera().Zoom(350, 0, 0);
+  v->CurrentCamera().Truck(2500,0);
 
   v->DoDraw();
-  //gEve->Redraw3D(kTRUE);
-
 }
 
 

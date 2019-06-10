@@ -29,6 +29,7 @@ class TEveManager;
 class TGLViewer;
 class TGLAutoRotator;
 class mPHEveModuleBase;
+class TEveWindowSlot;
 
 class PHEventDisplay : public SubsysReco
 {
@@ -72,7 +73,7 @@ private:
   void draw_default();  
   void update_scene();
 
-#ifndef __CINT__
+#ifndef _CLING__
   typedef boost::shared_ptr<mPHEveModuleBase> pBase;
 
   template<typename T> boost::shared_ptr<T>
@@ -87,7 +88,7 @@ private:
   bool _pending_update;
 
   //! Reconstruction mutex
-#ifndef __CINT__
+#ifndef _CLING__
   std::vector<boost::shared_ptr<mPHEveModuleBase> > _modules;
   pthread_mutex_t _mutex;
   boost::shared_ptr<boost::thread> _update_thread;
@@ -96,7 +97,7 @@ private:
 
   TGLAutoRotator* _rot;
 
-#ifndef __CINT__
+#ifndef _CLING__
   boost::shared_ptr<boost::thread> _status_thread;
 #endif
   float jet_pt_threshold;
@@ -116,6 +117,14 @@ private:
   std::string geoname;
   int nevent;
   int verbosity;
+
+  TEveWindowSlot* _slot_dc;
+  TEveWindowSlot* _slot_dc_00;
+  TEveWindowSlot* _slot_dc_01;
+  TEveWindowSlot* _slot_dc_10;
+  TEveWindowSlot* _slot_dc_11;
+
+
 };
 
 #endif // __PHEVENTDISPLAY_H__

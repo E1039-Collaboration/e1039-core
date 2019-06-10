@@ -65,7 +65,7 @@ mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
     _hit_wires[i]->RefitPlex();
     TEveTrans& t =  _hit_wires[i]->RefMainTrans();
     t.SetPos(0, 0, gs->getPlaneCenterZ(i));
-    _evemanager->AddElement(_hit_wires[i]);
+    _evemanager->AddElement(_hit_wires[i],_evedisp->get_svtx_list());
   }
 
   _evemanager->AddElement(_reco_tracks,_evedisp->get_svtx_list());
@@ -129,14 +129,16 @@ int mTrkEveDisplay::hit_to_wire(const int det_id, const int elm_id, double& x, d
   GeomSvc *gs = GeomSvc::instance();
   if (!gs) return -1;
 
+  //double pos = gs->getMeasurement(det_id, elm_id) - gs->getPlane(det_id).deltaW - gs->getPlane(det_id).xoffset;
   double pos = gs->getMeasurement(det_id, elm_id);
 
   double cos = gs->getCostheta(det_id);
   double sin = gs->getSintheta(det_id);
   double n[2] = {cos, sin};
 
-  double xc = gs->getPlaneCenterX(det_id);
-  double yc = gs->getPlaneCenterY(det_id);
+  // Some ref point
+  double xc = 0; //gs->getPlane(det_id).x0;
+  double yc = 0; //gs->getPlane(det_id).y0;
   double vc[2] = {xc, yc};
 
   double y1 = gs->getPlane(det_id).y1;
@@ -184,9 +186,9 @@ mTrkEveDisplay::draw_hits()
 
     _hit_wires[det_id]->QuadId(new TNamed(Form("%d",elm_id),"element id"));
 
-    if(det_id<31)      _hit_wires[det_id]->QuadValue(10);
+    if(det_id<31)      _hit_wires[det_id]->QuadValue(200);
     else if(det_id<47) _hit_wires[det_id]->QuadValue(50);
-    else               _hit_wires[det_id]->QuadValue(99);
+    else               _hit_wires[det_id]->QuadValue(-10);
   }
 }
 void
@@ -250,7 +252,7 @@ mTrkEveDisplay::draw_tracks()
     }
     trk->SetLineWidth(1);
 
-    for (int iz = -3; iz<26; ++iz) {
+    for (int iz = -1; iz<26; ++iz) {
       double z = iz * 100;
       double x, y;
       srecTrack.getExpPositionFast(z, x, y);
