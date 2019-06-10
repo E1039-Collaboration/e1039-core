@@ -133,7 +133,7 @@ int mTrkEveDisplay::hit_to_wire(const int det_id, const int elm_id, double& x, d
 
   double cos = gs->getCostheta(det_id);
   double sin = gs->getSintheta(det_id);
-  double n[2] = {cos, -sin};
+  double n[2] = {cos, sin};
 
   double xc = gs->getPlaneCenterX(det_id);
   double yc = gs->getPlaneCenterY(det_id);
@@ -240,46 +240,62 @@ mTrkEveDisplay::draw_tracks()
     eve_rec_trk->fSign = charge;
     TEveTrack* trk = new TEveTrack(eve_rec_trk, _prop);
     trk->SetSmooth(kTRUE);
-    if (charge > 0)
+    if (charge > 0) {
+      trk->SetPdg(-13);
       trk->SetLineColor(kYellow);
-    else
+    }
+    else {
+      trk->SetPdg(13);
       trk->SetLineColor(kCyan);
+    }
     trk->SetLineWidth(1);
 
-    for(int ihit=0; ihit<srecTrack.getNHits();++ihit) {
-      int hitID = srecTrack.getHitIndex(ihit);
+    for (int iz = -3; iz<26; ++iz) {
+      double z = iz * 100;
+      double x, y;
+      srecTrack.getExpPositionFast(z, x, y);
 
-      // signed hitID to hitID
-      hitID = abs(hitID);
-
-      if(hitID_ihit.find(hitID)==hitID_ihit.end()) continue;
-
-      SQHit *hit = _sqhit_col->at(hitID_ihit[hitID]);
-      if(!hit) {LogInfo("!hit");}
-
-      double wx, wy, wz;
-      double wdx, wdy;
-
-      auto det_id = hit->get_detector_id();
-      //if(det_id>30) continue;
-      auto elm_id = hit->get_element_id();
-      double x, y, dx, dy;
-      hit_to_wire(det_id, elm_id, wx, wy, wdx, wdy);
-      wz = gs->getPlaneCenterZ(det_id);
-
-      trk->AddPathMark(
-          TEvePathMarkD(TEvePathMarkD::kLineSegment,
-              TEveVectorD(wx, wy, wz),
-              TEveVectorD(0, 0, 1),
-              TEveVectorD(wdx, wdy, 0)));
-      trk->SetRnrPoints(kTRUE);
-      trk->SetMarkerStyle(1);
-      trk->SetMarkerSize(1);
-      if (charge > 0)
-        trk->SetMarkerColor(kYellow);
-      else
-        trk->SetMarkerColor(kCyan);
+      trk->AddPathMark(TEvePathMarkD(
+          TEvePathMarkD::kDaughter,
+          TEveVectorD(x, y, z)
+          ));
     }
+
+//    for(int ihit=0; ihit<srecTrack.getNHits();++ihit) {
+//      int hitID = srecTrack.getHitIndex(ihit);
+//
+//      // signed hitID to hitID
+//      hitID = abs(hitID);
+//
+//      if(hitID_ihit.find(hitID)==hitID_ihit.end()) continue;
+//
+//      SQHit *hit = _sqhit_col->at(hitID_ihit[hitID]);
+//      if(!hit) {LogInfo("!hit");}
+//
+//      double wx, wy, wz;
+//      double wdx, wdy;
+//
+//      auto det_id = hit->get_detector_id();
+//      //if(det_id>30) continue;
+//      auto elm_id = hit->get_element_id();
+//      double x, y, dx, dy;
+//      hit_to_wire(det_id, elm_id, wx, wy, wdx, wdy);
+//      wz = gs->getPlaneCenterZ(det_id);
+//
+//      trk->AddPathMark(
+//          TEvePathMarkD(TEvePathMarkD::kLineSegment,
+//              TEveVectorD(wx, wy, wz),
+//              TEveVectorD(0, 0, 1),
+//              TEveVectorD(wdx, wdy, 0)));
+//    }
+
+    trk->SetRnrPoints(kTRUE);
+    trk->SetMarkerStyle(1);
+    trk->SetMarkerSize(1);
+    if (charge > 0)
+      trk->SetMarkerColor(kYellow);
+    else
+      trk->SetMarkerColor(kCyan);
 
     trk->MakeTrack();
     if (verbosity > 2)

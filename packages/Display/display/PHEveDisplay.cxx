@@ -168,7 +168,7 @@ PHEveDisplay::config_bfields(const PHField *field)
   } else {
     if (verbosity > 1)
       std::cout << "PHEveDisplay::config_bfields:" << " Using PHField fields for track propagation" << std::endl;
-    cnt_prop = new TEveTrackPropagator("cnt_prop", "Central Field Propagator", new MappedField(field));
+    cnt_prop = new TEveTrackPropagator("cnt_prop", "Current Propagator", new MappedField(field));
     cnt_prop->SetMaxStep(2);
   }
 
@@ -235,10 +235,11 @@ PHEveDisplay::MappedField::GetFieldD(Double_t x, Double_t y, Double_t z) const
   double bvec[3];
   //_fieldmap->get_bfield(&loc[0],&bvec[0]);
   _fieldmap->GetFieldValue(loc, bvec);
+  const double unit = tesla; // gauss, tesla
   TEveVectorD vec(
-      bvec[0]/(gauss),
-		  bvec[1]/(gauss),
-		  bvec[2]/(gauss)); // unit is Gauss  (1Tesla = 10000 Gauss)
+      bvec[0]/unit,
+		  bvec[1]/unit,
+		  bvec[2]/unit); // unit is Gauss  (1Tesla = 10000 Gauss)
 //  std::cout
 //  << "GetFieldD: "
 //  << " { " << x << ", " << y << ", " << z << " } "

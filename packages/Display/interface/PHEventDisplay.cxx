@@ -31,6 +31,7 @@
 
 // EVE framework includes
 #include "TEveManager.h"
+#include "TApplication.h"
 #include "TEveBrowser.h"
 #include "TEveWindow.h"
 #include "TGeoManager.h"
@@ -86,10 +87,19 @@ PHEventDisplay::PHEventDisplay(int w = 1920,
   verbosity(0)
 {
 
-  TEveManager::Create(kTRUE,"V");
+  // Alan's method
+  //TEveManager::Create(kTRUE,"V");
+  //TEveWindow::SetMainFrameDefWidth(width);
+  //TEveWindow::SetMainFrameDefHeight(height);
+
+  // Haiwang's method
+  TApplication::NeedGraphicsLibs();
+  gApplication->InitializeGraphics();
+  TEveUtil::SetupEnvironment();
+  TEveUtil::SetupGUI();
+  gEve = new TEveManager(width, height, true, "V");
+
   gEve->GetBrowser()->HideBottomTab();
-  TEveWindow::SetMainFrameDefWidth(width);
-  TEveWindow::SetMainFrameDefHeight(height);
   TFile::SetCacheFileDir(".");
 
   gEve->FullRedraw3D(kTRUE);  
@@ -166,6 +176,9 @@ int PHEventDisplay::process_event(PHCompositeNode *topNode)
   if (verbosity) std::cout<<"PHEventDisplay - setting up to process event." <<std::endl;
   nevent++;
 
+  std::for_each(_modules.begin(),_modules.end(),
+    bind(&mPHEveModuleBase::clear,_1));
+
   std::for_each(_modules.begin(),
 		_modules.end(),
 		bind(&mPHEveModuleBase::event,
@@ -185,8 +198,6 @@ void PHEventDisplay::update_scene()
   if (verbosity) std::cout << "PHEventDisplay - update_scene() nevent = " <<nevent<<std::endl;
   TThread::Lock(); // Keep the autorotator from segfaulting
   draw_default();
-  std::for_each(_modules.begin(),_modules.end(),
-		bind(&mPHEveModuleBase::clear,_1));
   TThread::UnLock();
 }
 
@@ -230,12 +241,12 @@ void PHEventDisplay::draw_default()
 
   // top view
   v->CurrentCamera().RotateRad(-3.14/2,0);
-  v->CurrentCamera().Zoom(350, 0, 0);
+  v->CurrentCamera().Zoom(400, 0, 0);
   v->CurrentCamera().Truck(3000,0);
 
   // 3D view
 //  v->CurrentCamera().RotateRad(-3.14/8., -3.14/8.);
-//  v->CurrentCamera().Zoom(350, 0, 0);
+//  v->CurrentCamera().Zoom(400, 0, 0);
 //  v->CurrentCamera().Truck(2500,0);
 
   v->DoDraw();
