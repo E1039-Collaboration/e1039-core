@@ -66,6 +66,7 @@ public:
   void set_calo_e_threshold(float e){_calo_e_threshold = e;}
   float get_calo_e_threshold() const {return _calo_e_threshold;}
   int get_verbosity() const {return verbosity;}
+  void set_verbosity(const int a) {verbosity = a;}
 
 protected:
 

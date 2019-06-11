@@ -200,7 +200,7 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
     std::cout << "PHEventDisplay - initialize run. " << std::endl;
 
   try {
-
+    _PHEveDisplay->set_verbosity(verbosity);
     if (verbosity)
       std::cout << "PHEventDisplay - add_elements() begins." << std::endl;
     _PHEveDisplay->add_elements(gEve);
@@ -218,7 +218,7 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
         std::cout << "PHEventDisplay - mSvtxEveDisplay module registered." << std::endl;
     }
 
-    std::for_each(_modules.begin(), _modules.end(), bind(&mPHEveModuleBase::init, _1, topNode));
+    std::for_each(_modules.begin(), _modules.end(), bind(&mPHEveModuleBase::init_run, _1, topNode));
     if (verbosity)
       std::cout << "PHEventDisplay - all modules registered. " << std::endl;
 
@@ -234,15 +234,23 @@ int PHEventDisplay::process_event(PHCompositeNode *topNode)
   if (verbosity) std::cout<<"PHEventDisplay - setting up to process event." <<std::endl;
   nevent++;
 
+  // Clean up TEveElement list drawn from last events
+  if (verbosity) std::cout<<"PHEventDisplay - clear" <<std::endl;
   std::for_each(_modules.begin(),_modules.end(),
     bind(&mPHEveModuleBase::clear,_1));
 
+  // Process this event, reco objects to TEve objects
+  if (verbosity) std::cout<<"PHEventDisplay - process" <<std::endl;
   std::for_each(_modules.begin(),
 		_modules.end(),
 		bind(&mPHEveModuleBase::event,
 		_1,
 		topNode));
+
+  // Draw this event
+  if (verbosity) std::cout<<"PHEventDisplay - draw" <<std::endl;
   update_scene();
+
   return 0;
 }
 

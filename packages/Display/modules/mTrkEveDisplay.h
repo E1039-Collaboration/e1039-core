@@ -25,6 +25,7 @@ class SQHitVector;
 class SRecEvent;
 
 class TEveQuadSet;
+class GeomSvc;
 
 #define NDETPLANES 55
 
@@ -62,6 +63,8 @@ class mTrkEveDisplay : public mPHEveModuleBase
   TEveTrackPropagator* _prop;
   TEveTrackList* _reco_tracks;
   TEveQuadSet* _hit_wires[NDETPLANES];
+
+  GeomSvc* _geom_svc;
 
   int verbosity; 
 };
