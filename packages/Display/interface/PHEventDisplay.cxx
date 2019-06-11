@@ -129,11 +129,9 @@ PHEventDisplay::PHEventDisplay(int w = 1920,
   jet_pt_threshold(5.),
   jet_e_scale(30.),
   calo_e_threshold(0.2),
-  is_svtx_on(true),
-  is_cemc_on(true),
-  is_hcalin_on(true),
-  is_hcalout_on(true),
-  is_jet_on(true),
+  is_dc_on(true),
+  is_hodo_on(true),
+  is_prop_on(true),
   is_truth_on(true),
   use_fieldmap(_use_fieldmap),
   use_geofile(_use_geofile),
@@ -185,10 +183,12 @@ int PHEventDisplay::Init(PHCompositeNode *topNode)
   _PHEveDisplay->set_calo_e_threshold(calo_e_threshold);
 
   std::cout.precision(5);
-  std::cout<< "jet pt threshold: "<< jet_pt_threshold<<std::endl;
-  std::cout<< "jet e scale: " << jet_e_scale<< std::endl;
-  std::cout<< "calo e threshold: " << calo_e_threshold << std::endl;
-  std::cout<< "svtx :" << is_svtx_on << ", cemc : "<< is_cemc_on << ", hcalin : "<< is_hcalin_on << ", hcalout : "<< is_hcalout_on << ", jet : "<<is_jet_on <<", truth : "<< is_truth_on <<", verbosity : " << verbosity <<std::endl;
+  std::cout
+  << "dc :" << is_dc_on
+  << ", hodo : "<< is_hodo_on
+  << ", prop : "<< is_prop_on
+  << ", truth : " << is_truth_on
+  << ", verbosity : " << verbosity <<std::endl;
 
   return 0;
 }
@@ -212,10 +212,11 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
     PHField* field = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
     _PHEveDisplay->config_bfields(field);
 
-    if (is_svtx_on) {
-      register_module<mTrkEveDisplay>();
-      if (verbosity)
-        std::cout << "PHEventDisplay - mSvtxEveDisplay module registered." << std::endl;
+    register_module<mTrkEveDisplay>();
+    if (verbosity)
+      std::cout << "PHEventDisplay - mSvtxEveDisplay module registered." << std::endl;
+
+    if (is_dc_on) {
     }
 
     std::for_each(_modules.begin(), _modules.end(), bind(&mPHEveModuleBase::init_run, _1, topNode));
@@ -297,8 +298,6 @@ void PHEventDisplay::reco_thread()
 void PHEventDisplay::draw_default()
 {
   if (verbosity) std::cout<<"PHEventDisplay - draw_default() begins."<<std::endl;
-  if (verbosity>1) std::cout<<"draw_default() FullRedraw3D." <<std::endl;
-  gEve->FullRedraw3D(kTRUE);
 
   if(nevent==1) {
 
@@ -325,10 +324,12 @@ void PHEventDisplay::draw_default()
     MakeProjection(_slot_dc_11, _PHEveDisplay->get_top_list(), 2085, 2450, "ST4");
   }
 
-  gEve->Redraw3D(kTRUE);
+  if (verbosity>1) std::cout<<"draw_default() FullRedraw3D." <<std::endl;
+  gEve->FullRedraw3D(kTRUE);
 
   if (verbosity>1) std::cout<<"draw_default() TGLViewer." <<std::endl;
   TGLViewer*  v = gEve->GetDefaultGLViewer();
+  v->UpdateScene();
   //v->ColorSet().Background().SetColor(kMagenta+4);
   //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   //v->RefreshPadEditor(v);
@@ -339,11 +340,13 @@ void PHEventDisplay::draw_default()
 //  v->CurrentCamera().Truck(3000,0);
 
   // 3D view
-  v->CurrentCamera().RotateRad(-3.14/8., -3.14/8.);
+  v->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
   v->CurrentCamera().Zoom(350, 0, 0);
-  v->CurrentCamera().Truck(2500,0);
-
+  v->CurrentCamera().Truck(2000,-1500);
   v->DoDraw();
+
+  //gEve->Redraw3D(kTRUE);
+  gEve->DoRedraw3D();
 }
 
 

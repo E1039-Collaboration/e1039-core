@@ -54,9 +54,9 @@ public:
   TEveManager* get_eve_manager() const { return _eve_manager;}
   TEveTrackPropagator* get_cnt_prop() const { return cnt_prop; }
   TEveElementList* get_top_list() const { return _top_list;}
-  TEveElementList* get_svtx_list() const { return _svtx_list;}
-  TEveElementList* get_calo_list() const { return _calo_list;}
-  TEveElementList* get_jet_list() const {return _jet_list;}
+  TEveElementList* get_dc_list() const { return _dc_list;}
+  TEveElementList* get_hodo_list() const { return _hodo_list;}
+  TEveElementList* get_prop_list() const {return _prop_list;}
   TEveElementList* get_true_list() const { return _true_list;}  
   
   void set_jet_pt_threshold(float pt){_jet_pt_threshold = pt;}
@@ -72,9 +72,9 @@ protected:
 
   TEveManager *_eve_manager; 
   TEveElementList* _top_list;
-  TEveElementList* _svtx_list;
-  TEveElementList* _calo_list;
-  TEveElementList* _jet_list;
+  TEveElementList* _dc_list;
+  TEveElementList* _hodo_list;
+  TEveElementList* _prop_list;
   TEveElementList* _true_list;
 
   TEveTrackPropagator* cnt_prop;

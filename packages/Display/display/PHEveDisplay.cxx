@@ -56,9 +56,9 @@ PHEveDisplay::PHEveDisplay(int w,
 			   const std::string& filename,
 			   int verb) :
   _top_list(NULL),
-  _svtx_list(NULL),
-  _calo_list(NULL),
-  _jet_list(NULL),
+  _dc_list(NULL),
+  _hodo_list(NULL),
+  _prop_list(NULL),
   _true_list(NULL),
   cnt_prop(NULL),
   mapped_field(NULL),
@@ -146,16 +146,16 @@ void
 PHEveDisplay::add_elements(TEveManager* geve)
 {
 
-  _top_list = new TEveElementList("TOP");
-  _svtx_list = new TEveElementList("SVTX");
-  _calo_list = new TEveElementList("CALO");
-  _jet_list = new TEveElementList("JET");
+  _top_list  = new TEveElementList("TOP");
+  _dc_list   = new TEveElementList("DC");
+  _hodo_list = new TEveElementList("HODO");
+  _prop_list = new TEveElementList("PROP");
   _true_list = new TEveElementList("TRUE"); 
   
   geve->AddElement(_top_list);
-  geve->AddElement(_svtx_list,_top_list);
-  geve->AddElement(_calo_list,_top_list);
-  geve->AddElement(_jet_list,_top_list);
+  geve->AddElement(_dc_list,  _top_list);
+  geve->AddElement(_hodo_list,_top_list);
+  geve->AddElement(_prop_list,_top_list);
   geve->AddElement(_true_list,_top_list);
 }
 

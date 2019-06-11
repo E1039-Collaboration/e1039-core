@@ -59,11 +59,9 @@ public:
   void set_jet_pt_threshold(float pt){jet_pt_threshold = pt;}
   void set_jet_e_scale(float e_scale){jet_e_scale = e_scale;}
   void set_calo_e_threshold(float e){calo_e_threshold = e;}
-  void set_svtx_on(bool svtx_on) {is_svtx_on = svtx_on;}
-  void set_cemc_on(bool cemc_on) {is_cemc_on = cemc_on;}
-  void set_hcalin_on(bool hcalin_on){is_hcalin_on = hcalin_on;}
-  void set_hcalout_on(bool hcalout_on){is_hcalout_on = hcalout_on;}
-  void set_jet_on(bool jet_on) {is_jet_on = jet_on;}
+  void set_dc_on(bool dc_on) {is_dc_on = dc_on;}
+  void set_hodo_on(bool hodo_on) {is_hodo_on = hodo_on;}
+  void set_prop_on(bool prop_on){is_prop_on = prop_on;}
   void set_truth_on(bool truth_on) {is_truth_on = truth_on;}
   void set_verbosity(int verb) {verbosity = verb;}
 
@@ -103,12 +101,12 @@ private:
   float jet_pt_threshold;
   float jet_e_scale;
   float calo_e_threshold;
-  bool is_svtx_on;
-  bool is_cemc_on;
-  bool is_hcalin_on;
-  bool is_hcalout_on;
-  bool is_jet_on;
+
+  bool is_dc_on;
+  bool is_hodo_on;
+  bool is_prop_on;
   bool is_truth_on;
+
   bool use_fieldmap;
   bool use_geofile;
   int width;

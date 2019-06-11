@@ -60,15 +60,18 @@ mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
   for(int i=0; i<NDETPLANES; ++i) {
     _hit_wires[i] = new TEveQuadSet(std::to_string(i).c_str());
     _hit_wires[i]->SetOwnIds(kTRUE);
-    _hit_wires[i]->SetPalette(pal);
-    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, kFALSE, 32);
+    //_hit_wires[i]->SetPalette(pal);
+    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, true, 32);
     _hit_wires[i]->RefitPlex();
+    _hit_wires[i]->SetPickable(true);
     TEveTrans& t =  _hit_wires[i]->RefMainTrans();
     t.SetPos(0, 0, _geom_svc->getPlaneCenterZ(i));
-    _evemanager->AddElement(_hit_wires[i],_evedisp->get_svtx_list());
+    if(i<=30)       _evemanager->AddElement(_hit_wires[i],_evedisp->get_dc_list());
+    else if(i<=46)  _evemanager->AddElement(_hit_wires[i],_evedisp->get_hodo_list());
+    else if(i<=54)  _evemanager->AddElement(_hit_wires[i],_evedisp->get_prop_list());
   }
 
-  _evemanager->AddElement(_reco_tracks,_evedisp->get_svtx_list());
+  _evemanager->AddElement(_reco_tracks,_evedisp->get_top_list());
 
 }
 
@@ -204,7 +207,8 @@ mTrkEveDisplay::draw_hits()
         continue;
       }
 
-      if(fabs(x) > 300 or fabs(y) > 300 or fabs(dx) > 300 or fabs(dy) > 300) {
+      const float geom_limit = 1000;
+      if(fabs(x) > geom_limit or fabs(y) > geom_limit or fabs(dx) > geom_limit or fabs(dy) > geom_limit) {
          if(verbosity > 2) LogInfo(" {" << x << ", " << y << ", " << dx << ", " << dy << "}");
          continue;
       }
@@ -221,9 +225,9 @@ mTrkEveDisplay::draw_hits()
 
       _hit_wires[det_id]->QuadId(new TNamed(Form("%d",elm_id),"element id"));
 
-      if(det_id<31)      _hit_wires[det_id]->QuadValue(200);
-      else if(det_id<47) _hit_wires[det_id]->QuadValue(50);
-      else               _hit_wires[det_id]->QuadValue(-10);
+      if(det_id<31)      _hit_wires[det_id]->DigitColor(kBlue);
+      else if(det_id<47) _hit_wires[det_id]->DigitColor(kGreen);
+      else               _hit_wires[det_id]->DigitColor(kRed);
     } catch (std::exception &e ) {
       std::cout << "Exception caught mTrkEveDisplay::draw_hits " << e.what() << std::endl;
     }
@@ -361,7 +365,7 @@ mTrkEveDisplay::clear()
 
   for(int i=0; i<NDETPLANES; ++i) {
     //_hit_wires[i]->DestroyElements();
-    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, kFALSE, 32);
+    _hit_wires[i]->Reset(TEveQuadSet::kQT_LineXYFixedZ, true, 32);
     _hit_wires[i]->RefitPlex();
     TEveTrans& t =  _hit_wires[i]->RefMainTrans();
     t.SetPos(0, 0, _geom_svc->getPlaneCenterZ(i));
