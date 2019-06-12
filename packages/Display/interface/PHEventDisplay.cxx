@@ -83,19 +83,21 @@ const char* name = "Projection"
   MakeViewerScene(slot, v, s);
   v->SetElementName(Form("Viewer - %s",name));
   s->SetElementName(Form("Scene - %s",name));
-  auto mng = new TEveProjectionManager();
-  mng->SetProjection(TEveProjection::kPT_RPhi);
-  auto axes = new TEveProjectionAxes(mng);
-  mng->ImportElements(element);
-  s->AddElement(axes);
+
   s->AddElement(element);
 
-  TGeoNode *node_c = gGeoManager->GetCurrentNode();
-  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
-  s->AddElement(tnode_c);
+//  auto mng = new TEveProjectionManager();
+//  mng->SetProjection(TEveProjection::kPT_RPhi);
+//  auto axes = new TEveProjectionAxes(mng);
+//  mng->ImportElements(element);
+//  s->AddElement(axes);
 
-  gEve->AddToListTree(axes, kTRUE);
-  gEve->AddToListTree(mng, kTRUE);
+//  TGeoNode *node_c = gGeoManager->GetCurrentNode();
+//  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
+//  s->AddElement(tnode_c);
+
+//  gEve->AddToListTree(axes, kTRUE);
+//  gEve->AddToListTree(mng, kTRUE);
 
   auto vv = v->GetGLViewer();
 
