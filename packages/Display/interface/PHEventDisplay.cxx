@@ -86,18 +86,9 @@ const char* name = "Projection"
 
   s->AddElement(element);
 
-//  auto mng = new TEveProjectionManager();
-//  mng->SetProjection(TEveProjection::kPT_RPhi);
-//  auto axes = new TEveProjectionAxes(mng);
-//  mng->ImportElements(element);
-//  s->AddElement(axes);
-
-//  TGeoNode *node_c = gGeoManager->GetCurrentNode();
-//  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
-//  s->AddElement(tnode_c);
-
-//  gEve->AddToListTree(axes, kTRUE);
-//  gEve->AddToListTree(mng, kTRUE);
+  TGeoNode *node_c = gGeoManager->GetCurrentNode();
+  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
+  s->AddElement(tnode_c);
 
   auto vv = v->GetGLViewer();
 
@@ -109,7 +100,6 @@ const char* name = "Projection"
   vv->UpdateScene();
   vv->GetClipSet()->SetClipState(TGLClip::kClipBox, clip_par);
   vv->GetClipSet()->GetCurrentClip()->SetMode(TGLClip::kOutside);
-  //vv->DoDraw();
   vv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
 
   TGLCameraOverlay* co = vv->GetCameraOverlay();
@@ -134,17 +124,7 @@ const char* name = "Hodo"
   v->SetElementName(Form("Viewer - %s",name));
   s->SetElementName(Form("Scene - %s",name));
 
-//  auto mng = new TEveProjectionManager();
-//  mng->SetProjection(TEveProjection::kPT_RhoZ);
-//  auto axes = new TEveProjectionAxes(mng);
-//  mng->ImportElements(element);
-//
-//  s->AddElement(mng);
-//  s->AddElement(axes);
   s->AddElement(element);
-
-  //  gEve->AddToListTree(axes, kTRUE);
-  //  gEve->AddToListTree(mng, kTRUE);
 
   TGeoNode *node_c = gGeoManager->GetCurrentNode();
   TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
@@ -369,10 +349,12 @@ void PHEventDisplay::draw_default()
     _slot_dc_01 = pack1->NewSlot();
     _slot_dc_11 = pack1->NewSlot();
 
+    // 1970 | 2085 separate by absorber
+    // 2185 logic separation
     MakeProjection(_slot_dc_00, _PHEveDisplay->get_top_list(), 550,  700,  "ST1");
     MakeProjection(_slot_dc_01, _PHEveDisplay->get_top_list(), 1300, 1450, "ST2");
-    MakeProjection(_slot_dc_10, _PHEveDisplay->get_top_list(), 1870, 1970, "ST3");
-    MakeProjection(_slot_dc_11, _PHEveDisplay->get_top_list(), 2085, 2450, "ST4");
+    MakeProjection(_slot_dc_10, _PHEveDisplay->get_top_list(), 1870, 2185, "ST3");
+    MakeProjection(_slot_dc_11, _PHEveDisplay->get_top_list(), 2185, 2450, "ST4");
 
     _slot_hodo  = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
     auto pack_hodo = _slot_hodo->MakePack();

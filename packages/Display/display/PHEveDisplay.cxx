@@ -117,7 +117,7 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
     node[i] = top->GetNode(i);
     std::cout << "Node " << i << " : " << node[i]->GetName() << std::endl;
 
-    node[i]->GetVolume()->SetTransparency(90); // 0: opaque, 100: transparent
+    node[i]->GetVolume()->SetTransparency(95); // 0: opaque, 100: transparent
 
     std::string name(node[i]->GetName());
     if (name.find("fmag") < 5 || name.find("kmag") < 5) { // make fmag
