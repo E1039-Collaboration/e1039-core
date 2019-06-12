@@ -43,6 +43,7 @@
 #include "TEveProjectionManager.h"
 #include "TEveProjectionAxes.h"
 #include "TEveGeoNode.h"
+#include "TGLCameraOverlay.h"
 #include "TFile.h"
 
 
@@ -108,6 +109,54 @@ const char* name = "Projection"
   vv->GetClipSet()->GetCurrentClip()->SetMode(TGLClip::kOutside);
   //vv->DoDraw();
   vv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+
+  TGLCameraOverlay* co = vv->GetCameraOverlay();
+  co->SetShowOrthographic(kTRUE);
+  co->SetOrthographicMode(TGLCameraOverlay::kGridFront);
+
+  return 0;
+}
+
+
+TEveElement* DrawHodo (
+TEveWindowSlot* slot,
+TEveElement* element,
+const double zoom = 0.1,
+const double hrot = 0,
+const double vrot = 0,
+const char* name = "Hodo"
+) {
+
+  TEveViewer* v; TEveScene* s;
+  MakeViewerScene(slot, v, s);
+  v->SetElementName(Form("Viewer - %s",name));
+  s->SetElementName(Form("Scene - %s",name));
+
+//  auto mng = new TEveProjectionManager();
+//  mng->SetProjection(TEveProjection::kPT_RhoZ);
+//  auto axes = new TEveProjectionAxes(mng);
+//  mng->ImportElements(element);
+//
+//  s->AddElement(mng);
+//  s->AddElement(axes);
+  s->AddElement(element);
+
+  //  gEve->AddToListTree(axes, kTRUE);
+  //  gEve->AddToListTree(mng, kTRUE);
+
+  TGeoNode *node_c = gGeoManager->GetCurrentNode();
+  TEveGeoTopNode* tnode_c = new TEveGeoTopNode(gGeoManager, node_c);
+  s->AddElement(tnode_c);
+
+  auto vv = v->GetGLViewer();
+
+  TGLViewer::ECameraType cam_type = TGLViewer::kCameraOrthoZOX;
+  double cent[3] = {0, 0, 1000};
+  vv->SetOrthoCamera(cam_type, zoom, 0, cent, hrot, vrot);
+  vv->SetCurrentCamera(cam_type);
+  TGLCameraOverlay* co = vv->GetCameraOverlay();
+  co->SetShowOrthographic(kTRUE);
+  co->SetOrthographicMode(TGLCameraOverlay::kGridFront);
 
   return 0;
 }
@@ -303,16 +352,16 @@ void PHEventDisplay::draw_default()
 
     // Extra tabs
     _slot_dc  = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-    auto packH = _slot_dc->MakePack();
-    packH->SetElementName("2D View");
-    packH->SetHorizontal();
-    packH->SetShowTitleBar(kFALSE);
-    _slot_dc = packH->NewSlot();
+    auto pack_dc = _slot_dc->MakePack();
+    pack_dc->SetElementName("Station View");
+    pack_dc->SetHorizontal();
+    pack_dc->SetShowTitleBar(kFALSE);
+    _slot_dc = pack_dc->NewSlot();
     auto pack0  = _slot_dc->MakePack();
     pack0->SetShowTitleBar(kFALSE);
     _slot_dc_00 = pack0->NewSlot();
     _slot_dc_10 = pack0->NewSlot();
-    _slot_dc = packH->NewSlot();
+    _slot_dc = pack_dc->NewSlot();
     auto pack1  = _slot_dc->MakePack();
     pack1->SetShowTitleBar(kFALSE);
     _slot_dc_01 = pack1->NewSlot();
@@ -322,6 +371,23 @@ void PHEventDisplay::draw_default()
     MakeProjection(_slot_dc_01, _PHEveDisplay->get_top_list(), 1300, 1450, "ST2");
     MakeProjection(_slot_dc_10, _PHEveDisplay->get_top_list(), 1870, 1970, "ST3");
     MakeProjection(_slot_dc_11, _PHEveDisplay->get_top_list(), 2085, 2450, "ST4");
+
+    _slot_hodo  = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    auto pack_hodo = _slot_hodo->MakePack();
+    pack_hodo->SetElementName("Hodo View");
+    pack_hodo->SetVertical();
+    pack_hodo->SetShowTitleBar(kFALSE);
+    _slot_hodo = pack_hodo->NewSlot();
+    auto pack_hodo_0  = _slot_hodo->MakePack();
+    pack_hodo_0->SetShowTitleBar(kFALSE);
+    _slot_hodo_xz = pack_hodo_0->NewSlot();
+    _slot_hodo = pack_hodo->NewSlot();
+    auto pack_hodo_1  = _slot_hodo->MakePack();
+    pack_hodo_1->SetShowTitleBar(kFALSE);
+    _slot_hodo_yz = pack_hodo_1->NewSlot();
+
+    DrawHodo(_slot_hodo_xz, _PHEveDisplay->get_hodo_list(), 0.25,        0.05, 3.14, "XZ");
+    DrawHodo(_slot_hodo_yz, _PHEveDisplay->get_hodo_list(), 0.25, 3.14/2-0.05, 3.14, "YZ");
   }
 
   if (verbosity>1) std::cout<<"draw_default() FullRedraw3D." <<std::endl;

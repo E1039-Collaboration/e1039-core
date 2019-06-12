@@ -123,6 +123,11 @@ private:
   TEveWindowSlot* _slot_dc_11;
 
 
+  TEveWindowSlot* _slot_hodo;
+  TEveWindowSlot* _slot_hodo_xz;
+  TEveWindowSlot* _slot_hodo_yz;
+
+
 };
 
 #endif // __PHEVENTDISPLAY_H__
