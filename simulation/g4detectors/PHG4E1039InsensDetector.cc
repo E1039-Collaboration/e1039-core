@@ -55,13 +55,13 @@ void PHG4E1039InsensDetector::Construct( G4LogicalVolume* logicWorld )
   //mysql_real_connect(con,mySettings->sqlServer, mySettings->login, mySettings->password, mySettings->geometrySchema, mySettings->sqlPort, NULL, 0);
 
   mysql_real_connect(
-  		con,
-  		"seaquestdb01.fnal.gov",
-			"seaguest",
-			"qqbar2mu+mu-",
-			"geometry_G17_run3",
-			3310,
-			NULL, 0);
+    con,
+    "e906-db1.fnal.gov",
+    "seaguest",
+    "qqbar2mu+mu-",
+    "geometry_G17_run3",
+    3306,
+    NULL, 0);
 
   G4cout << "begin Construct routine..." << endl;
 
