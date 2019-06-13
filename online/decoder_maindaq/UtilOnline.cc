@@ -6,12 +6,12 @@ using namespace std;
 
 std::string UtilOnline::GetCodaFileDir()
 {
-  return "/data2/analysis/kenichi/e1039/codadata";
+  return "/data2/e1039/codadata";
 }
 
 std::string UtilOnline::GetDstFileDir()
 {
-  return "/data2/analysis/kenichi/e1039/dst";
+  return "/data2/e1039/dst";
 }
 
 /// Convert the name of a Coda file to its run number.
