@@ -1,4 +1,6 @@
 #include "Fun4AllHepMCInputManager.h"
+#include "PHHepMCGenEvent.h"
+#include "PHHepMCGenEventMap.h"
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllServer.h>
@@ -6,11 +8,9 @@
 #include <phool/getClass.h>
 #include <phool/recoConsts.h>
 
-#include <PHHepMCGenEvent.h>
-#include <PHHepMCGenEventMap.h>
 #include <ffaobjects/RunHeader.h>
 
-#include <frog/FROG.h>
+//#include <frog/FROG.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHDataNode.h>
 
@@ -97,8 +97,9 @@ int Fun4AllHepMCInputManager::fileopen(const string &filenam)
     fileclose();
   }
   filename = filenam;
-  FROG frog;
-  string fname(frog.location(filename.c_str()));
+  //FROG frog;
+  //string fname(frog.location(filename.c_str()));
+  string fname(filename);
   if (verbosity > 0)
   {
     cout << ThisName << ": opening file " << fname << endl;
