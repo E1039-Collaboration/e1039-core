@@ -98,11 +98,14 @@ int PatternDBGen::TruthEval(PHCompositeNode* topNode)
   if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT)
     std::cout << "Entering PatternDBGen::TruthEval: " << _event << std::endl;
 
-  PHG4HitContainer *D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
+  PHG4HitContainer *D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D0X");
+  if (!D1X_hits)
+    D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
+
   if (!D1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
-    return Fun4AllReturnCodes::ABORTRUN;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT)
+        cout << Name() << " Could not locate g4 hit node " << "G4HIT_D0X or G4HIT_D1X" << endl;
   }
 
   ResetEvalVars();
@@ -202,7 +205,7 @@ int PatternDBGen::TruthEval(PHCompositeNode* topNode)
           if(verbosity >= 2) {
             hit->identify();
           }
-          if(hit) {
+          if(hit and D1X_hits) {
             PHG4Hit* g4hit =  D1X_hits->findHit(hit->get_g4hit_id());
             if (g4hit) {
               if(verbosity >= 2) {
