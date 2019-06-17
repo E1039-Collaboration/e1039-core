@@ -238,7 +238,7 @@ SRawEvent* KalmanFastTrackingWrapper::BuildSRawEvent() {
       h.detectorID = sq_hit->get_detector_id();
       h.elementID = sq_hit->get_element_id();
       h.tdcTime = sq_hit->get_tdc_time();
-      h.driftDistance = 0;
+      h.driftDistance = fabs(sq_hit->get_drift_distance()); //MC L-R info removed here
       h.pos = sq_hit->get_pos();
 
       if(sq_hit->is_in_time()) h.setInTime();

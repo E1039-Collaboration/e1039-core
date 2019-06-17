@@ -103,7 +103,7 @@ KalmanDSTrk::KalmanDSTrk(
 				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB NOT loaded. Try to build. " << std::endl;
 				_timers["build_db"]->restart();
         _pattern_db = new PatternDB();
-				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_bad.root", *_pattern_db);
+				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_tmp.root", *_pattern_db);
 				_timers["build_db"]->stop();
 				_timers["load_db"]->restart();
 				//_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
