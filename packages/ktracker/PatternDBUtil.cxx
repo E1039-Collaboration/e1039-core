@@ -89,7 +89,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 		return -1;
 	}
 
-	TTree *T = (TTree*) f_in->Get("Truth");
+	TTree *T = (TTree*) f_in->Get("T");
 	if(!T) {
 		LogInfo("TTree T not found in " << fin);
 		return -1;
