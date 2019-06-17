@@ -49,8 +49,14 @@ execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 add_library(phhepmc SHARED
+  ${PROJECT_SOURCE_DIR}/Fun4AllHepMCInputManager.cc
+  ${PROJECT_SOURCE_DIR}/Fun4AllHepMCOutputManager.cc
+  #${PROJECT_SOURCE_DIR}/Fun4AllOscarInputManager.cc
   ${PROJECT_SOURCE_DIR}/PHHepMCGenHelper.cc
   ${PROJECT_SOURCE_DIR}/PHHepMCParticleSelectorDecayProductChain.cc
+  Fun4AllHepMCInputManager_Dict.C
+  Fun4AllHepMCOutputManager_Dict.C
+  #Fun4AllOscarInputManager_Dict.C
   PHHepMCGenHelper_Dict.C
   PHHepMCParticleSelectorDecayProductChain_Dict.C
 )
@@ -78,6 +84,9 @@ install(TARGETS phhepmc     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
+  Fun4AllHepMCInputManager.h
+  Fun4AllHepMCOutputManager.h
+  #Fun4AllOscarInputManager.h
   PHGenEvent.h
   PHGenEventv1.h
   PHGenEventList.h
