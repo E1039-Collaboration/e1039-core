@@ -123,11 +123,14 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
     run_id      = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
-  if (!C1X_hits)
+  PHG4HitContainer *D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D0X");
+  if (!D1X_hits)
+    D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
+
+  if (!D1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
-    return Fun4AllReturnCodes::ABORTRUN;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT)
+        cout << Name() << " Could not locate g4 hit node " << "G4HIT_D0X or G4HIT_D1X" << endl;
   }
 
 	std::map<int, int> parID_nhits_dc;
@@ -346,8 +349,8 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 					if(verbosity >= Fun4AllBase::VERBOSITY_A_LOT) {
 						hit->identify();
 					}
-					if(hit) {
-						PHG4Hit* g4hit =  C1X_hits->findHit(hit->get_g4hit_id());
+					if(hit and D1X_hits) {
+						PHG4Hit* g4hit =  D1X_hits->findHit(hit->get_g4hit_id());
 						if (g4hit) {
 							if(verbosity >= 2) {
 								g4hit->identify();
@@ -411,11 +414,14 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
     run_id      = _event_header->get_run_id();
   }
 
-  PHG4HitContainer *C1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
-  if (!C1X_hits)
+  PHG4HitContainer *D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D0X");
+  if (!D1X_hits)
+    D1X_hits = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_D1X");
+
+  if (!D1X_hits)
   {
-    cout << Name() << " Could not locate g4 hit node " << "G4HIT_D1X" << endl;
-    return Fun4AllReturnCodes::ABORTRUN;
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT)
+        cout << Name() << " Could not locate g4 hit node " << "G4HIT_D0X or G4HIT_D1X" << endl;
   }
 
 	std::map<int, int> parID_nhits_dc;
@@ -643,8 +649,8 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
 					if(verbosity >= 2) {
 						hit->identify();
 					}
-  				if(hit) {
-  					PHG4Hit* g4hit =  C1X_hits->findHit(hit->get_g4hit_id());
+					if(hit and D1X_hits) {
+  					PHG4Hit* g4hit =  D1X_hits->findHit(hit->get_g4hit_id());
   					if (g4hit) {
   						if(verbosity >= 2) {
   							g4hit->identify();
