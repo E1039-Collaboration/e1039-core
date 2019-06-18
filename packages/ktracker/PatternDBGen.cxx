@@ -298,7 +298,7 @@ int PatternDBGen::InitEvalTree() {
   _tout_truth->Branch("gndc",          gndc,                "gndc[n_tracks]/I");
 //  _tout_truth->Branch("gnhodo",        gnhodo,              "gnhodo[n_tracks]/I");
 //  _tout_truth->Branch("gnprop",        gnprop,              "gnprop[n_tracks]/I");
-  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_tracks][54]/I");
+  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_tracks][55]/I");
 
   return 0;
 }
