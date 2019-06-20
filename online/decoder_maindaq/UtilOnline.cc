@@ -6,7 +6,8 @@ using namespace std;
 
 std::string UtilOnline::GetCodaFileDir()
 {
-  return "/data2/e1039/codadata";
+  return "/data3/data/mainDAQ";
+  //return "/data2/e1039/codadata";
 }
 
 std::string UtilOnline::GetDstFileDir()

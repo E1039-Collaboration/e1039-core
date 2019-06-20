@@ -214,7 +214,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
       fileclose();
       goto readagain;
     }
-  if (verbosity > 1)
+  if (verbosity > 3)
     {
       cout << ThisName << ":  run " << rd->run_id << ", spill " << sd->spill_id << ", event " << ed->event.eventID << endl;
     }

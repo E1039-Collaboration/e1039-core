@@ -99,7 +99,7 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   }
 
   ostringstream oss;
-  oss << "/dev/shm/onlmon/" << setfill('0') << setw(6) << run_id;
+  oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << run_id;
   gSystem->mkdir(oss.str().c_str(), true);
   oss << "/" << Name() << ".root";
   m_hm->dumpHistos(oss.str());

@@ -1290,7 +1290,7 @@ int MainDaqParser::ProcessBoardStdJyTDC2 (int* words, int idx_begin, int idx_roc
 
 int MainDaqParser::PackOneSpillData()
 {
-  if (dec_par.verbose) cout << "PackOneSpillData(): n=" << list_ed->size() << endl;
+  if (dec_par.verbose > 2) cout << "PackOneSpillData(): n=" << list_ed->size() << endl;
 
   sd_now = &(*list_sd)[dec_par.spillID];
   run_data.n_evt_all += list_ed->size();
