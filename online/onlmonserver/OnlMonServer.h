@@ -11,6 +11,8 @@ class OnlMonServer : public Fun4AllServer
   static std::string m_onl_mon_host;
   static int         m_onl_mon_port;
 
+  bool m_go_end;
+
  public:
   static OnlMonServer *instance();
   virtual ~OnlMonServer();
@@ -23,8 +25,11 @@ class OnlMonServer : public Fun4AllServer
   static int         GetPort  () { return m_onl_mon_port; }
 
   void StartServer();
+  bool CloseExistingServer();
   static void* FuncServer(void* arg);
   void HandleConnection(TSocket* sock);
+  void SetGoEnd(const bool val) { m_go_end = val; }
+  bool GetGoEnd()        { return m_go_end; }
 
 #ifndef __CINT__
   void GetMutex(pthread_mutex_t &lock) {lock = mutex;}

@@ -1,4 +1,6 @@
 export E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
+export OFFLINE_MAIN=$E1039_CORE
+export   MY_INSTALL=$E1039_CORE
 
 if [ -z "$E1039_RESOURCE" ] ; then
     echo "E1039_RESOURCE is not defined.  Probably this program won't work."

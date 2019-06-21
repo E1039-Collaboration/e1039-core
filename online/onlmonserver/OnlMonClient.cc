@@ -186,8 +186,11 @@ int OnlMonClient::StartMonitor()
   }
 
   ReceiveHist();
-  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
-  if (! m_h1_basic_info) return 1;
+  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info", false);
+  if (! m_h1_basic_info) {
+    cout << "WARNING: Probably the online-monitor server is NOT running.\n";
+    return 1;
+  }
   FindAllMonHist();
 
   int run_id, spill_id, event_id, n_evt;
@@ -271,6 +274,7 @@ void OnlMonClient::ClearHistList()
   }
   m_list_obj.clear();
 }
+
 OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
 {
   if (num >= m_n_can) {

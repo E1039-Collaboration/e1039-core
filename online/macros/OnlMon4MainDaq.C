@@ -11,6 +11,10 @@ R__LOAD_LIBRARY(libonlmonserver)
 
 int OnlMon4MainDaq()
 {
+  if (gROOT->IsBatch()) {
+    cout << "ERROR: This macro cannot run in the batch mode (-b).  Abort.\n";
+    exit(1);
+  }
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
 

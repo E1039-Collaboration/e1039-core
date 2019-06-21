@@ -40,7 +40,7 @@ OnlMonServer *OnlMonServer::instance()
 }
 
 OnlMonServer::OnlMonServer(const std::string &name)
-  : Fun4AllServer(name)
+  : Fun4AllServer(name), m_go_end(false)
 {
   pthread_mutex_unlock(&mutex);
   return;
@@ -63,7 +63,12 @@ void OnlMonServer::StartServer()
   pthread_t ThreadId = 0;
   if (!ServerThread)
     {
+      while (CloseExistingServer()) {
+        if (Verbosity() > 0) cout << "Closing the existing server." << endl;
+        sleep(1);
+      }
       if (Verbosity() > 2) cout << "  Creating server thread." << endl;
+
 #ifdef SERVER
       ServerThread = pthread_create(&ThreadId, NULL, FuncServer, this);
       SetThreadId(ThreadId);
@@ -78,6 +83,24 @@ void OnlMonServer::StartServer()
   //pthread_mutex_unlock(&mutex);
   if (Verbosity() > 1) cout << "OnlMonServer::StartServer(): finish." << endl;
   return;
+}
+
+/// Close an existing server process if such exists.
+/** It is possible that multiple decoding processes run in parallel on multiple runs.
+ *  This function tries to keep the server of only the lastest process (which is expected to hanle the lastest run).
+ */
+bool OnlMonServer::CloseExistingServer()
+{
+  string host = OnlMonServer::GetHost();
+  int    port = OnlMonServer::GetPort();
+  TSocket sock(host.c_str(), port);
+  if (! sock.IsValid()) return false;
+
+  sock.Send("Suicide");
+  TMessage *mess = 0;
+  sock.Recv(mess); // Just check a response.
+  delete mess;
+  return true;
 }
 
 void* OnlMonServer::FuncServer(void* arg)
@@ -162,6 +185,7 @@ void* OnlMonServer::FuncServer(void* arg)
   delete s0;
   //cout << "closing socket" << endl;
   //s0->Close();
+  if (se->GetGoEnd()) return 0;
   goto again;
 }
 
@@ -194,6 +218,9 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       
       if (msg_str == "Finished") {
         break;
+      } else if (msg_str == "Suicide") {
+        m_go_end = true;
+        sock->Send("OK");
       } else if (msg_str == "Ack") {
         if (Verbosity() > 2) cout << "  Acknowledged." << endl;
         continue;
