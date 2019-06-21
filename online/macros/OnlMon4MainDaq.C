@@ -60,6 +60,17 @@ int OnlMon4MainDaq()
   check->SetState(OnlMonClient::GetClearUsFlag() ? kButtonDown : kButtonUp);
   check->Connect("Toggled(Bool_t)", "OnlMonClient", list_omc[0], "SetClearUsFlag(Bool_t)");
   frame->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
+
+  OnlMonUI* ui = new OnlMonUI(&list_omc);
+  //ui->SetCycleInterval(5); // default = 10 sec
+  ui->SetAutoCycleFlag(true);
+  ui->StartAutoCycle();
+
+  TGCheckButton* cycle = new TGCheckButton(frame, new TGHotString("Auto-cycle all subsystems"), 99);
+  cycle->SetToolTipText("When checked, all subsystems are automatically drawn.");
+  cycle->SetState(ui->GetAutoCycleFlag() ? kButtonDown : kButtonUp);
+  cycle->Connect("Toggled(Bool_t)", "OnlMonUI", ui, "SetAutoCycleFlag(Bool_t)");
+  frame->AddFrame(cycle, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
  
   TGTextButton* fExit = new TGTextButton(frame, "Exit","gApplication->Terminate(0)");
   frame->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,5,5));
