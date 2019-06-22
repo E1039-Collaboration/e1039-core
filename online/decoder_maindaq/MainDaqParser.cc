@@ -520,7 +520,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 	data->eos_vme_time = codaEvVmeTime;
 	data->n_eos_spill++;
       }
-      if (dec_par.verbose > 1) cout << "  " << type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << "\n";
+      if (dec_par.verbose > 2) cout << "  " << type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << "\n";
     }
     /// Skip ROC 25 in END_SPILL since unknown words are placed for debug by Xinkun(?).
     if (type != TYPE_BOS && rocID == 25) idx = idx_roc_end + 1;

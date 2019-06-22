@@ -5,11 +5,12 @@
 #include <fstream>
 #include <unistd.h>
 #include "evio.h"
+#include "UtilOnline.h"
 #include "CodaInputManager.h"
 using namespace std;
 
 CodaInputManager::CodaInputManager() : 
-  m_verb(0), m_online(true), m_go_end(false), m_handle(0), m_run(0)
+  m_verb(0), m_online(true), m_go_end(false), m_handle(-1), m_run(0)
 {
   ;
 }
@@ -42,13 +43,14 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
     sleep (sec_wait);
   }
   if (! size_ok) {
-    cout << "File size not enough.  Wait timeout.  Exiting..." << endl;
+    cout << "File size not enough (<" << file_size_min << ").  Wait timeout.  Exiting..." << endl;
     return 2;
   }
   
   if (m_verb) {
     cout << "Loading " << fname << "...\n";
   }
+  CloseFile();
   int ret = evOpen((char*)fname.c_str(), (char*)"r", &m_handle);
   if (ret != 0) {
     cout << "Failed at opening the Coda file.  ret = " << ret << ".  Exiting..." << endl;
@@ -65,7 +67,10 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
 
 int CodaInputManager::CloseFile()
 {
-  return evClose(m_handle);
+  if (m_handle < 0) return 0; // Do nothing since no file is opened.
+  int ret = evClose(m_handle);
+  m_handle = -1;
+  return ret;
 }
 
 bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
@@ -73,25 +78,22 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
   if (m_go_end) return false;
   int ret = evRead(m_handle, event_words, buflen);
   if (ret != 0 && m_online && m_run > 0) { // try to recover
-    cout << "Try to recover..." << endl;
-    ostringstream oss;
-    oss << "/seaquest/e906daq/coda/data/END/" << m_run << ".end";
-    string fn_end = oss.str();
+    cout << "No new event seems available for now.  Try to recover." << endl;
+    string fn_end = UtilOnline::GetEndFileDir() + "/" + UtilOnline::RunNum2EndFile(m_run);
     if (file_exists(fn_end)) {
       cout << "Exiting since the END file exists.\n";
       ForceEnd();
       return false;
     }
-    oss.str("");
-    oss << setfill('0') << "/codadata/run_" << setw(6) << (m_run+1) << ".dat";
-    string fn_next_run = oss.str();
+
+    string fn_next_run = UtilOnline::GetCodaFileDir() + "/" + UtilOnline::RunNum2CodaFile(m_run+1);
     if (file_exists(fn_next_run)) {
       cout << "Exiting since the next run file exists.\n";
       ForceEnd();
       return false;
     }
     // Re-open the file, requring a larger file size
-    ret = OpenFile(m_fname, m_file_size + 32768, 5, 2, m_event_count);
+    ret = OpenFile(m_fname, m_file_size + 32768, 5, 20, m_event_count);
   }
   if (ret != 0) {
     ForceEnd();
