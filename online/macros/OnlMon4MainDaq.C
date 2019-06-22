@@ -20,7 +20,7 @@ int OnlMon4MainDaq()
 
   //OnlMonServer::SetHost("seaquestdaq01.fnal.gov"); // default = localhost
 
-  vector<OnlMonClient*> list_omc;
+  OnlMonClientList_t list_omc;
   list_omc.push_back(new OnlMonMainDaq());
   list_omc.push_back(new OnlMonTrigSig());
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H1X, 1));
@@ -63,7 +63,7 @@ int OnlMon4MainDaq()
 
   OnlMonUI* ui = new OnlMonUI(&list_omc);
   //ui->SetCycleInterval(5); // default = 10 sec
-  ui->SetAutoCycleFlag(true);
+  //ui->SetAutoCycleFlag(true); // default = false
   ui->StartAutoCycle();
 
   TGCheckButton* cycle = new TGCheckButton(frame, new TGHotString("Auto-cycle all subsystems"), 99);

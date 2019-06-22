@@ -36,6 +36,12 @@ OnlMonClient::~OnlMonClient()
   m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
 }
 
+OnlMonClient* OnlMonClient::Clone()
+{
+  cerr << "!!ERROR!!  OnlMonClient::Clone(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
 int OnlMonClient::Init(PHCompositeNode* topNode)
 {
   return InitOnlMon(topNode);

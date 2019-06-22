@@ -13,6 +13,7 @@ class OnlMonTrigSig: public OnlMonClient {
  public:
   OnlMonTrigSig();
   virtual ~OnlMonTrigSig() {}
+  OnlMonClient* Clone() { return new OnlMonTrigSig(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);

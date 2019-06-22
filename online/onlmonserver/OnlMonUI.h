@@ -3,16 +3,16 @@
 #include <vector>
 class OnlMonClient;
 
-typedef std::vector<OnlMonClient*> ClientList_t;
+typedef std::vector<OnlMonClient*> OnlMonClientList_t;
 
 class OnlMonUI {
   bool m_auto_cycle;
   int  m_interval; //< Cycle interval in second
   pthread_t m_thread_id;
-  ClientList_t m_list_omc;
+  OnlMonClientList_t m_list_omc;
 
  public:
-  OnlMonUI(ClientList_t* list);
+  OnlMonUI(OnlMonClientList_t* list);
   ~OnlMonUI() {;}
 
   void SetAutoCycleFlag(bool value) { m_auto_cycle = value; }

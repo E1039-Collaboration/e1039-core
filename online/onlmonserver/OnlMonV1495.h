@@ -19,6 +19,7 @@ class OnlMonV1495: public OnlMonClient {
  public:
   OnlMonV1495(const HodoType_t type, const int lvl);
   virtual ~OnlMonV1495() {}
+  OnlMonClient* Clone() { return new OnlMonV1495(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);

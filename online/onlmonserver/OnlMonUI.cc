@@ -3,11 +3,11 @@
 #include "OnlMonUI.h"
 using namespace std;
 
-OnlMonUI::OnlMonUI(ClientList_t* list) :
+OnlMonUI::OnlMonUI(OnlMonClientList_t* list) :
   m_auto_cycle(false), m_interval(10), m_thread_id(0)
 {
-  for (ClientList_t::iterator it = list->begin(); it != list->end(); it++) {
-    m_list_omc.push_back(new OnlMonClient(**it));
+  for (OnlMonClientList_t::iterator it = list->begin(); it != list->end(); it++) {
+    m_list_omc.push_back((*it)->Clone());
   }
 }
 
