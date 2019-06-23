@@ -488,6 +488,13 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
     }
   };
 
+  if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) {
+    for(int i=1; i<55; ++i) {
+      std::cout << p_geomSvc->getPlane(i) << std::endl;
+      std::cout << digiPlanes[i] << std::endl;
+    }
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 #endif
@@ -701,8 +708,9 @@ int DPDigitizer::process_event(PHCompositeNode* topNode) {
     PHG4HitContainer *hits = findNode::getClass<PHG4HitContainer>(topNode, hitnodename.c_str());
     if (!hits)
     {
-      cout << Name() << " Could not locate g4 hit node " << hitnodename << endl;
-      exit(1);
+      if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT)
+        cout << Name() << " Could not locate g4 hit node " << hitnodename << endl;
+      continue;
     }
 
     if(Verbosity() > 2) {

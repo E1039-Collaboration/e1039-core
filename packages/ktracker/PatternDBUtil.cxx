@@ -89,7 +89,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 		return -1;
 	}
 
-	TTree *T = (TTree*) f_in->Get("Truth");
+	TTree *T = (TTree*) f_in->Get("T");
 	if(!T) {
 		LogInfo("TTree T not found in " << fin);
 		return -1;
@@ -125,13 +125,22 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 			if(!(gndc[ipar]>17)) continue;
 
+#define _D1_1_6_
+#ifdef _D1_1_6_
+      unsigned int D1U  = elmid[ipar][1];
+      unsigned int D1Up = elmid[ipar][2];
+      unsigned int D1X  = elmid[ipar][3];
+      unsigned int D1Xp = elmid[ipar][4];
+      unsigned int D1V  = elmid[ipar][5];
+      unsigned int D1Vp = elmid[ipar][6];
+#else
 			unsigned int D1V  = elmid[ipar][7];
 			unsigned int D1Vp = elmid[ipar][8];
 			unsigned int D1X  = elmid[ipar][9];
 			unsigned int D1Xp = elmid[ipar][10];
 			unsigned int D1U  = elmid[ipar][11];
 			unsigned int D1Up = elmid[ipar][12];
-
+#endif
 			unsigned int D2V  = elmid[ipar][13];
 			unsigned int D2Vp = elmid[ipar][14];
 			unsigned int D2Xp = elmid[ipar][15];

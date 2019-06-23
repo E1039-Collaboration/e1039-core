@@ -162,10 +162,13 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.y2 - plane.y1
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.nElements
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.angleFromVert
-       << std::setw(10) << std::setiosflags(std::ios::right) << plane.z0
-       << std::setw(10) << std::setiosflags(std::ios::right) << plane.x0
-       << std::setw(10) << std::setiosflags(std::ios::right) << plane.y0
-       << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW;
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.xc
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.yc
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.zc
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW << "\n"
+       << ", nVec: {" << plane.nVec[0] << ", " << plane.nVec[1] << ", " << plane.nVec[2] << "} "
+       << ", uVec: {" << plane.uVec[0] << ", " << plane.uVec[1] << ", " << plane.uVec[2] << "} "
+       << ", vVec: {" << plane.vVec[0] << ", " << plane.vVec[1] << ", " << plane.vVec[2] << "} ";
     if(plane.detectorID>=nChamberPlanes+nHodoPlanes+1 && plane.detectorID<=nChamberPlanes+nHodoPlanes+nPropPlanes) {
     	os << "\n";
     	for(int i=0; i<9; ++i)
@@ -288,7 +291,7 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+17));
 
     // TODO temp solution
-    for(int i=7; i<=18; ++i) {
+    for(int i=1; i<=18; ++i) {
     	map_detid_material[i] = "G4_Ar";
     	map_detid_scale_z[i]  = 6;
     }
@@ -323,6 +326,13 @@ void GeomSvc::init()
     }
 
   	//init map_dname_group
+    map_dname_group["D0U"]      = "D0U";
+    map_dname_group["D0Up"]     = "D0U";
+    map_dname_group["D0V"]      = "D0V";
+    map_dname_group["D0Vp"]     = "D0V";
+    map_dname_group["D0X"]      = "D0X";
+    map_dname_group["D0Xp"]     = "D0X";
+
   	map_dname_group["D1U"]      = "D1U";
   	map_dname_group["D1Up"]     = "D1U";
   	map_dname_group["D1V"]      = "D1V";
@@ -379,6 +389,9 @@ void GeomSvc::init()
   	map_dname_group["P2X1"]     = "P2X1";
   	map_dname_group["P2X2"]     = "P2X2";
 
+    vector_default_sim_group.push_back("D0U");
+    vector_default_sim_group.push_back("D0X");
+    vector_default_sim_group.push_back("D0V");
     vector_default_sim_group.push_back("D1U");
     vector_default_sim_group.push_back("D1X");
     vector_default_sim_group.push_back("D1V");
@@ -1041,37 +1054,40 @@ bool GeomSvc::isInTime(int detectorID, double tdcTime)
 
 void GeomSvc::printWirePosition()
 {
-    for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
+  for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
+  {
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    int detectorID = (*iter).second;
+    std::cout << " ====================== " << (*iter).first << " ==================== " << std::endl;
+    for(int i = 1; i <= planes[detectorID].nElements; ++i)
     {
-        int detectorID = (*iter).second;
-        std::cout << " ====================== " << (*iter).first << " ==================== " << std::endl;
-        for(int i = 1; i <= planes[detectorID].nElements; ++i)
-        {
-            std::cout << std::setw(6) << std::setiosflags(std::ios::right) << detectorID;
-            std::cout << std::setw(6) << std::setiosflags(std::ios::right) << (*iter).first;
-            std::cout << std::setw(6) << std::setiosflags(std::ios::right) << i;
-            std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)];
-            std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] - 0.5*planes[detectorID].cellWidth;
-            std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] + 0.5*planes[detectorID].cellWidth;
-            std::cout << std::endl;
-        }
+        std::cout << std::setw(6) << std::setiosflags(std::ios::right) << detectorID;
+        std::cout << std::setw(6) << std::setiosflags(std::ios::right) << (*iter).first;
+        std::cout << std::setw(6) << std::setiosflags(std::ios::right) << i;
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)];
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] - 0.5*planes[detectorID].cellWidth;
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] + 0.5*planes[detectorID].cellWidth;
+        std::cout << std::endl;
     }
+  }
 }
 
 void GeomSvc::printAlignPar()
 {
-    std::cout << "detectorID         DetectorName            offset_pos             offset_z             offset_phi" << std::endl;
-    for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
-    {
-        std::cout << iter->second << "     " << iter->first << "    " << planes[(*iter).second].deltaW << "     " << planes[(*iter).second].deltaZ << "      " << planes[(*iter).second].rotZ << std::endl;
-    }
+  std::cout << "detectorID         DetectorName            offset_pos             offset_z             offset_phi" << std::endl;
+  for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
+  {
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    std::cout << iter->second << "     " << iter->first << "    " << planes[(*iter).second].deltaW << "     " << planes[(*iter).second].deltaZ << "      " << planes[(*iter).second].rotZ << std::endl;
+  }
 }
 
 void GeomSvc::printTable()
 {
-    std::cout << "detectorID detectorName planeType    Spacing     Xoffset     overlap     width       height       nElement       angleFromVertical     z0     x0     y0     deltaW" << std::endl;
-    for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
-    {
-        std::cout << planes[iter->second] << std::endl;
-    }
+  std::cout << "detectorID detectorName planeType    Spacing     Xoffset     overlap     width       height       nElement       angleFromVertical     z0     x0     y0     deltaW" << std::endl;
+  for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
+  {
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    std::cout << planes[iter->second] << std::endl;
+  }
 }
