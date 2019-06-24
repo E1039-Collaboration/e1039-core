@@ -364,8 +364,10 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
     _event_header->identify();
   }
 
+  _event++;
+
   if(Verbosity() >= Fun4AllBase::VERBOSITY_EVEN_MORE)
-    std::cout << "Leaving DPTriggerAnalyzer::process_event: " << _event++ << std::endl;
+    std::cout << "Leaving DPTriggerAnalyzer::process_event: " << _event << std::endl;
 
   return Fun4AllReturnCodes::EVENT_OK;
 
