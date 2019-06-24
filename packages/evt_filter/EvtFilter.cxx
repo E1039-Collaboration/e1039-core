@@ -47,10 +47,6 @@ EvtFilter::~EvtFilter()
 
 int EvtFilter::InitRun(PHCompositeNode* topNode) {
 
-  int ret = GetNodes(topNode);
-  if (ret != Fun4AllReturnCodes::EVENT_OK)
-    return ret;
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -58,6 +54,10 @@ int EvtFilter::process_event(PHCompositeNode* topNode) {
 
   if(Verbosity() >= Fun4AllBase::VERBOSITY_EVEN_MORE)
     std::cout << "Entering EvtFilter::process_event: " << _event << std::endl;
+
+  int ret = GetNodes(topNode);
+  if (ret != Fun4AllReturnCodes::EVENT_OK)
+    return ret;
 
   if(_event_header) {
     if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
