@@ -53,7 +53,7 @@ public:
   int End(PHCompositeNode *topNode);
 
   /// Threaded access to Fun4All server
-  void run_evt_in_thread();
+  //void run_evt_in_thread();
   void start_rotation();
   void go_fullscreen();
   void set_jet_pt_threshold(float pt){jet_pt_threshold = pt;}
@@ -68,8 +68,8 @@ public:
 
 private:
   void reco_thread();
-  void draw_default();  
-  void update_scene();
+  void draw_default(PHCompositeNode *topNode);
+  void update_scene(PHCompositeNode *topNode);
 
 #ifndef _CLING__
   typedef boost::shared_ptr<mPHEveModuleBase> pBase;
