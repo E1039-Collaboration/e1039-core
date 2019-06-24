@@ -202,7 +202,7 @@ mTrkEveDisplay::draw_hits()
         << std::endl;
       }
 
-      if(det_id < 0 or det_id >= NDETPLANES) {
+      if(det_id <= 0 or det_id >= NDETPLANES) {
          if(verbosity > 2) LogInfo(det_id);
          continue;
       }
@@ -214,7 +214,12 @@ mTrkEveDisplay::draw_hits()
       }
 
       const float geom_limit = 1000;
-      if(fabs(x) > geom_limit or fabs(y) > geom_limit or fabs(dx) > geom_limit or fabs(dy) > geom_limit) {
+      if(
+          !(fabs(x) < geom_limit) or
+          !(fabs(y) < geom_limit) or
+          !(fabs(dx) < geom_limit) or
+          !(fabs(dy) < geom_limit)
+          ) {
          if(verbosity > 2) LogInfo(" {" << x << ", " << y << ", " << dx << ", " << dy << "}");
          continue;
       }
