@@ -177,6 +177,12 @@ int mTrkEveDisplay::hit_to_wire(const int det_id, const int elm_id, double& x, d
 void
 mTrkEveDisplay::draw_hits()
 {
+  if(!_sqhit_col) {
+    if(verbosity > 0)
+      LogInfo(!_sqhit_col);
+    return;
+  }
+
   for (SQHitVector::ConstIter it = _sqhit_col->begin(); it != _sqhit_col->end(); it++) {
     try {
       SQHit * hit = *it;
@@ -196,7 +202,7 @@ mTrkEveDisplay::draw_hits()
         << std::endl;
       }
 
-      if(det_id < 0 or det_id >= NDETPLANES) {
+      if(det_id <= 0 or det_id >= NDETPLANES) {
          if(verbosity > 2) LogInfo(det_id);
          continue;
       }
@@ -208,7 +214,12 @@ mTrkEveDisplay::draw_hits()
       }
 
       const float geom_limit = 1000;
-      if(fabs(x) > geom_limit or fabs(y) > geom_limit or fabs(dx) > geom_limit or fabs(dy) > geom_limit) {
+      if(
+          !(fabs(x) < geom_limit) or
+          !(fabs(y) < geom_limit) or
+          !(fabs(dx) < geom_limit) or
+          !(fabs(dy) < geom_limit)
+          ) {
          if(verbosity > 2) LogInfo(" {" << x << ", " << y << ", " << dx << ", " << dy << "}");
          continue;
       }
@@ -236,6 +247,12 @@ mTrkEveDisplay::draw_hits()
 void
 mTrkEveDisplay::draw_tracks()
 {
+  if(!_recEvent) {
+    if(verbosity > 0)
+      LogInfo(!_recEvent);
+    return;
+  }
+
   if(verbosity > 0)
     LogInfo(_recEvent->getNTracks());
   if(_recEvent->getNTracks()<=0) return;

@@ -28,6 +28,8 @@
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHField.h>
 
+#include <interface_main/SQEvent.h>
+
 
 // EVE framework includes
 #include "TEveManager.h"
@@ -44,6 +46,7 @@
 #include "TEveProjectionAxes.h"
 #include "TEveGeoNode.h"
 #include "TGLCameraOverlay.h"
+#include "TGLAnnotation.h"
 #include "TFile.h"
 
 
@@ -247,8 +250,8 @@ int PHEventDisplay::InitRun(PHCompositeNode *topNode)
     if (verbosity)
       std::cout << "PHEventDisplay - mSvtxEveDisplay module registered." << std::endl;
 
-    if (is_dc_on) {
-    }
+    if (verbosity)
+      std::cout << "_modules.size()" << _modules.size() << std::endl;
 
     std::for_each(_modules.begin(), _modules.end(), bind(&mPHEveModuleBase::init_run, _1, topNode));
     if (verbosity)
@@ -281,7 +284,7 @@ int PHEventDisplay::process_event(PHCompositeNode *topNode)
 
   // Draw this event
   if (verbosity) std::cout<<"PHEventDisplay - draw" <<std::endl;
-  update_scene();
+  update_scene(topNode);
 
   return 0;
 }
@@ -291,26 +294,26 @@ int PHEventDisplay::End(PHCompositeNode *topNode)
   return 0;
 }
 
-void PHEventDisplay::update_scene()
+void PHEventDisplay::update_scene(PHCompositeNode *topNode)
 {
   if (verbosity) std::cout << "PHEventDisplay - update_scene() nevent = " <<nevent<<std::endl;
   TThread::Lock(); // Keep the autorotator from segfaulting
-  draw_default();
+  draw_default(topNode);
   TThread::UnLock();
 }
 
-void PHEventDisplay::run_evt_in_thread()
-{
-  if (verbosity)
-    std::cout << "PHEventDisplay - run_evt_in_thread() nevent = " << nevent << std::endl;
-  if (!pthread_mutex_trylock(&_mutex)) {
-    if (_pending_update) {
-      update_scene();
-    }
-    _pending_update = false;
-    _update_thread = boost::make_shared<boost::thread>(bind(&PHEventDisplay::reco_thread, this));
-  }
-}
+//void PHEventDisplay::run_evt_in_thread()
+//{
+//  if (verbosity)
+//    std::cout << "PHEventDisplay - run_evt_in_thread() nevent = " << nevent << std::endl;
+//  if (!pthread_mutex_trylock(&_mutex)) {
+//    if (_pending_update) {
+//      update_scene();
+//    }
+//    _pending_update = false;
+//    _update_thread = boost::make_shared<boost::thread>(bind(&PHEventDisplay::reco_thread, this));
+//  }
+//}
 
 
 void PHEventDisplay::reco_thread()
@@ -326,7 +329,7 @@ void PHEventDisplay::reco_thread()
 
 }
 
-void PHEventDisplay::draw_default()
+void PHEventDisplay::draw_default(PHCompositeNode *topNode)
 {
   if (verbosity) std::cout<<"PHEventDisplay - draw_default() begins."<<std::endl;
 
@@ -380,6 +383,7 @@ void PHEventDisplay::draw_default()
   if (verbosity>1) std::cout<<"draw_default() TGLViewer." <<std::endl;
   TGLViewer*  v = gEve->GetDefaultGLViewer();
   v->UpdateScene();
+
   //v->ColorSet().Background().SetColor(kMagenta+4);
   //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   //v->RefreshPadEditor(v);
@@ -394,6 +398,30 @@ void PHEventDisplay::draw_default()
   v->CurrentCamera().Zoom(350, 0, 0);
   v->CurrentCamera().Truck(2000,-1500);
   v->DoDraw();
+
+  // Annotation
+
+  SQEvent* _sqevent = findNode::getClass<SQEvent>(topNode,"SQEvent");
+  if (_sqevent) {
+    if(verbosity) std::cout<<"PHEventDisplay - SQEvent nodes found."<<std::endl;
+    v->DeleteOverlayAnnotations();
+    TGLAnnotation* ann = new TGLAnnotation(v, Form("Run: %6d Event: %d", _sqevent->get_run_id(), _sqevent->get_event_id()), 0.55, 0.95);
+    ann->SetTextSize(0.04);
+    ann = new TGLAnnotation(v,
+        Form("NIM: {%d, %d, %d, %d, %d}  MATRIX: {%d, %d, %d, %d, %d}",
+            _sqevent->get_trigger(SQEvent::NIM1),
+            _sqevent->get_trigger(SQEvent::NIM2),
+            _sqevent->get_trigger(SQEvent::NIM3),
+            _sqevent->get_trigger(SQEvent::NIM4),
+            _sqevent->get_trigger(SQEvent::NIM5),
+            _sqevent->get_trigger(SQEvent::MATRIX1),
+            _sqevent->get_trigger(SQEvent::MATRIX2),
+            _sqevent->get_trigger(SQEvent::MATRIX3),
+            _sqevent->get_trigger(SQEvent::MATRIX4),
+            _sqevent->get_trigger(SQEvent::MATRIX5)
+            ), 0.55, 0.90);
+    ann->SetTextSize(0.04);
+  }
 
   //gEve->Redraw3D(kTRUE);
   gEve->DoRedraw3D();
