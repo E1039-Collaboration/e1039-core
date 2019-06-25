@@ -22,6 +22,7 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    packages/evt_filter
     online/chan_map
     online/decoder_maindaq
     packages/Half
@@ -45,6 +46,9 @@ else
     packages/ktracker
     packages/embedding
     online/onlmonserver
+    packages/Display/display
+    packages/Display/modules
+    packages/Display/interface
     module_example
 	)
 fi
