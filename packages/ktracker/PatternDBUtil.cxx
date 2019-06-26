@@ -15,6 +15,8 @@
 
 #define _DEBUG_
 
+#define _D1_1_6_
+
 #define _RESOLUTION1_ 2
 #define _RESOLUTION2_ 2
 #define _RESOLUTION3_ 2
@@ -23,6 +25,13 @@ int PatternDBUtil::verbosity = 0;
 
 
 std::map<unsigned int, unsigned int> PatternDBUtil::_detid_view = {
+		{3, 0},
+		{4, 1},
+		{1, 2},
+		{2, 3},
+		{5, 4},
+		{6, 5},
+
 		{9,  0},
 		{10, 1},
 		{11, 2},
@@ -125,14 +134,13 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 			if(!(gndc[ipar]>17)) continue;
 
-#define _D1_1_6_
 #ifdef _D1_1_6_
-      unsigned int D1U  = elmid[ipar][1];
-      unsigned int D1Up = elmid[ipar][2];
-      unsigned int D1X  = elmid[ipar][3];
-      unsigned int D1Xp = elmid[ipar][4];
-      unsigned int D1V  = elmid[ipar][5];
-      unsigned int D1Vp = elmid[ipar][6];
+      unsigned int D1U  = elmid[ipar][1];  // 1
+      unsigned int D1Up = elmid[ipar][2];  // 2
+      unsigned int D1X  = elmid[ipar][3];  // 3
+      unsigned int D1Xp = elmid[ipar][4];  // 4
+      unsigned int D1V  = elmid[ipar][5];  // 5
+      unsigned int D1Vp = elmid[ipar][6];  // 6
 #else
 			unsigned int D1V  = elmid[ipar][7];
 			unsigned int D1Vp = elmid[ipar][8];
@@ -442,7 +450,7 @@ TrackletKey PatternDBUtil::GetTrackletKey(
 		auto hit = &ptr_hit->hit;
 		if (hit->index < 0) continue;
 		unsigned int det_id = hit->detectorID;
-		if(station==PatternDB::DC1  and !(det_id>=7 and det_id<=12)) continue;
+		if(station==PatternDB::DC1  and !(det_id>=1 and det_id<=12)) continue;
 		if(station==PatternDB::DC2  and !(det_id>=13 and det_id<=18)) continue;
 		if(station==PatternDB::DC3p and !(det_id>=19 and det_id<=24)) continue;
 		if(station==PatternDB::DC3m and !(det_id>=25 and det_id<=30)) continue;
@@ -471,7 +479,7 @@ TrackletKey PatternDBUtil::GetTrackletKey(
 
 	for (auto pair : det_elem_pairs) {
 		unsigned int det_id = pair.first;
-		if(station==PatternDB::DC1  and !(det_id>=7 and det_id<=12)) continue;
+		if(station==PatternDB::DC1  and !(det_id>=1 and det_id<=12)) continue;
 		if(station==PatternDB::DC2  and !(det_id>=13 and det_id<=18)) continue;
 		if(station==PatternDB::DC3p and !(det_id>=19 and det_id<=24)) continue;
 		if(station==PatternDB::DC3m and !(det_id>=25 and det_id<=30)) continue;
