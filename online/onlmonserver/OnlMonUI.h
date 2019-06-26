@@ -2,6 +2,7 @@
 #define _ONL_MON_UI__H_
 #include <vector>
 class OnlMonClient;
+class TGTextButton;
 
 typedef std::vector<OnlMonClient*> OnlMonClientList_t;
 
@@ -10,6 +11,8 @@ class OnlMonUI {
   int  m_interval; //< Cycle interval in second
   pthread_t m_thread_id;
   OnlMonClientList_t m_list_omc;
+
+  TGTextButton*  button[99];
 
  public:
   OnlMonUI(OnlMonClientList_t* list);
@@ -20,6 +23,7 @@ class OnlMonUI {
   void SetCycleInterval(int val) { m_interval = val; }
   int  GetCycleInterval() { return m_interval; }
 
+  void BuildInterface();
   void StartAutoCycle();
 
  protected:

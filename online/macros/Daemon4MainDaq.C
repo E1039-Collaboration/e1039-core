@@ -13,9 +13,15 @@ void FindExistingRuns(vector<int>& list_run)
     int length = name.length();
     if (length < 4 || name.substr(length-4, 4) != ".dat") continue;
     int run = UtilOnline::CodaFile2RunNum(name);
-    //cout << "name = " << name << " " << run << endl;
     list_run.push_back(run);
   }
+
+  gSystem->FreeDirectory(dirp);
+
+  sort(list_run.begin(), list_run.end());
+  //cout << "Runs:";
+  //for (vector<int>::iterator it = list_run.begin(); it != list_run.end(); it++) cout << " " << *it;
+  //cout << endl;
 }
 
 void StartDecoder(const int run)
@@ -26,7 +32,7 @@ void StartDecoder(const int run)
   oss << "/log_" << setfill('0') << setw(6) << run << ".txt";
   string fn_log = oss.str();
   oss.str("");
-  oss << "root -b -q '" << gSystem->Getenv("E1039_CORE")
+  oss << "root.exe -b -q '" << gSystem->Getenv("E1039_CORE")
       << "/macros/Fun4MainDaq.C(" << run << ", 0, true)' &>" << fn_log << " &";
 
   cout << "Start the decoder for run " << run << ":\n"
@@ -35,7 +41,7 @@ void StartDecoder(const int run)
   gSystem->Exec(oss.str().c_str());
 }
 
-int Daemon4MainDaq(const string mode="daemon")
+int Daemon4MainDaq(const int interval=30)
 {
   gSystem->Load("libdecoder_maindaq.so");
 
@@ -44,8 +50,8 @@ int Daemon4MainDaq(const string mode="daemon")
   //list_run_done.clear(); // for test
 
   while (true) {
-    cout << "Sleep for 30 sec.  Hit Ctrl-C to quit..." << endl;
-    sleep(30);
+    cout << "Sleep for " << interval << " sec.  Hit Ctrl-C to quit..." << endl;
+    sleep(interval);
     vector<int> list_run;
     FindExistingRuns(list_run);
     for (vector<int>::iterator it = list_run.begin(); it != list_run.end(); it++) {
