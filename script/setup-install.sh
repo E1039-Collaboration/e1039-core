@@ -6,12 +6,12 @@ if [ -z "$1" ] ; then
     echo "Abort."
     return
 elif [ "X$1" = 'Xauto' ] ; then
-    export MY_INSTALL=$(readlink -f $DIR_SCRIPT/../../e1039-core-inst)
+    DIR_INST=$(readlink -f $DIR_SCRIPT/../../e1039-core-inst)
 else
-    export MY_INSTALL=$(readlink -f "$1")
+    DIR_INST=$(readlink -f "$1")
 fi
 echo "Use this installation directory:"
-echo "  MY_INSTALL = $MY_INSTALL"
+echo "  $DIR_INST"
 echo
 
 ##
@@ -42,12 +42,12 @@ echo
 ##
 ## Set up the setup script
 ##
-mkdir -p $MY_INSTALL
-\cp $DIR_SCRIPT/this-core-org.sh $MY_INSTALL/this-core.sh
-source $MY_INSTALL/this-core.sh
-export OFFLINE_MAIN=$MY_INSTALL
+mkdir -p $DIR_INST
+\cp $DIR_SCRIPT/this-core-org.sh $DIR_INST/this-core.sh
+source $DIR_INST/this-core.sh
+#export OFFLINE_MAIN=$DIR_INST
 echo "The setup script was installed and sourced:"
-echo "  $MY_INSTALL/this-core.sh"
+echo "  $DIR_INST/this-core.sh"
 echo 
 
 echo "Next you move to a build directory and execute 'build.sh'."

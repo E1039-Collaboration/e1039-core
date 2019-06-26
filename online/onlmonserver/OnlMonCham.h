@@ -16,6 +16,7 @@ class OnlMonCham: public OnlMonClient {
  public:
   OnlMonCham(const ChamType_t type);
   virtual ~OnlMonCham() {}
+  OnlMonClient* Clone() { return new OnlMonCham(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);
