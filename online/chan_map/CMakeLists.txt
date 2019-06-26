@@ -17,6 +17,7 @@ if (ROOT_VER GREATER 5)
       ${PROJECT_SOURCE_DIR}/RunParamBase.h
       ${PROJECT_SOURCE_DIR}/ChanMap*.h
       ${PROJECT_SOURCE_DIR}/CalibParam*.h
+      ${PROJECT_SOURCE_DIR}/GeomParam*.h
       ${PROJECT_SOURCE_DIR}/LinkDef.h
   )
 endif()

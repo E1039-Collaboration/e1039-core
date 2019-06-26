@@ -3,15 +3,19 @@
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
+#include <TSystem.h>
 #include <db_svc/DbSvc.h>
 #include "RunParamBase.h"
 using namespace std;
 
 RunParamBase::RunParamBase(const std::string type, const std::string label, const std::string header) :
-  m_dir_base("/seaquest/e1039"), 
   m_type(type), m_label(label), m_header(header), m_map_id("")
 {
-  ;
+  m_dir_base = gSystem->Getenv("E1039_RESOURCE");
+  if (m_dir_base.length() == 0) {
+    m_dir_base = "/data2/e1039/resource";
+    cout << "RunParamBase:  E1039_RESOURCE is empty.  Use '" << m_dir_base << "' as the data directory." << endl;
+  }
 }
 
 void RunParamBase::SetMapIDbyFile(const std::string map_id)

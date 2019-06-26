@@ -11,4 +11,6 @@
 #pragma link C++ class CalibParamInTimeV1495;
 #pragma link C++ class CalibParamXT;
 
+#pragma link C++ class GeomParamPlane;
+
 #endif /* __CINT__ */
