@@ -16,14 +16,13 @@ else
   declare -a packages=(
     packages/global_consts
     packages/jobopts_svc
-    packages/geom_svc
     packages/db_svc
+    packages/geom_svc
     framework/phool
     framework/ffaobjects
     framework/fun4all
     interface_main
     packages/evt_filter
-    online/chan_map
     online/decoder_maindaq
     packages/Half
     packages/vararray

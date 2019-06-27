@@ -6,8 +6,8 @@
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
 #include <TGraphErrors.h>
-#include <geom_svc/GeomSvc.h>
 #include <db_svc/DbSvc.h>
+#include "GeomSvc.h"
 #include "CalibParamXT.h"
 using namespace std;
 

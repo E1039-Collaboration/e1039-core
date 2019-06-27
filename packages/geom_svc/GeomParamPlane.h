@@ -3,6 +3,7 @@
 #include "RunParamBase.h"
 
 class GeomParamPlane : public GeomParamBase {
+ public:
   struct Plane {
     std::string det_name; // detectorName;
     int    n_ele; // numElements;
@@ -19,6 +20,8 @@ class GeomParamPlane : public GeomParamBase {
     double theta_y;
     double theta_z;
   };
+
+ private:
   typedef std::vector<Plane> List_t;
   List_t m_list; ///< Used to keep all information in the added order.
 
@@ -31,6 +34,8 @@ class GeomParamPlane : public GeomParamBase {
 
   void Add (const Plane& plane);
   bool Find(const std::string det_name, Plane*& plane);
+  int  GetNumPlanes() { return m_list.size(); }
+  Plane* GetPlane(const int idx) { return &m_list[idx]; }
   void Print(std::ostream& os);
 
  protected:
