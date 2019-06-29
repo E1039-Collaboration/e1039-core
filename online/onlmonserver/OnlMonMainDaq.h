@@ -12,6 +12,7 @@ class OnlMonMainDaq: public OnlMonClient {
  public:
   OnlMonMainDaq();
   virtual ~OnlMonMainDaq() {}
+  OnlMonClient* Clone() { return new OnlMonMainDaq(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);

@@ -1,4 +1,6 @@
 export E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))
+export OFFLINE_MAIN=$E1039_CORE
+export   MY_INSTALL=$E1039_CORE
 
 if [ -z "$E1039_RESOURCE" ] ; then
     echo "E1039_RESOURCE is not defined.  Probably this program won't work."
@@ -13,5 +15,5 @@ export    LIBRARY_PATH=$E1039_CORE/lib:$LIBRARY_PATH
 export LD_LIBRARY_PATH=$E1039_CORE/lib:$LD_LIBRARY_PATH
 
 if [ -d $E1039_CORE/include ] ; then
-    export ROOT_INCLUDE_PATH=$(find $E1039_CORE/include -type d -printf '%p:')$CPATH
+    export ROOT_INCLUDE_PATH=$(find $E1039_CORE/include -type d -printf '%p:')$ROOT_INCLUDE_PATH
 fi

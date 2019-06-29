@@ -28,6 +28,7 @@ class OnlMonClient: public SubsysReco {
  public:
   OnlMonClient();
   virtual ~OnlMonClient();
+  virtual OnlMonClient* Clone();
 
   void Title(const std::string &title) { m_title = title; }
   std::string Title() { return m_title; }

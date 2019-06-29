@@ -7,6 +7,7 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 using namespace std;
 
@@ -98,7 +99,7 @@ void OnlMonCanvas::PostDraw(const bool at_end)
 
   if (at_end) {
     ostringstream oss;
-    oss << "/dev/shm/onlmon/" << setfill('0') << setw(6) << m_run;
+    oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << m_run;
     gSystem->mkdir(oss.str().c_str(), true);
 
     int lvl = gErrorIgnoreLevel;

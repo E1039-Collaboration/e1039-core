@@ -36,6 +36,12 @@ OnlMonClient::~OnlMonClient()
   m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
 }
 
+OnlMonClient* OnlMonClient::Clone()
+{
+  cerr << "!!ERROR!!  OnlMonClient::Clone(): virtual function called.  Abort." << endl;
+  exit(1);
+}
+
 int OnlMonClient::Init(PHCompositeNode* topNode)
 {
   return InitOnlMon(topNode);
@@ -99,7 +105,7 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   }
 
   ostringstream oss;
-  oss << "/dev/shm/onlmon/" << setfill('0') << setw(6) << run_id;
+  oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << run_id;
   gSystem->mkdir(oss.str().c_str(), true);
   oss << "/" << Name() << ".root";
   m_hm->dumpHistos(oss.str());
@@ -186,8 +192,11 @@ int OnlMonClient::StartMonitor()
   }
 
   ReceiveHist();
-  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
-  if (! m_h1_basic_info) return 1;
+  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info", false);
+  if (! m_h1_basic_info) {
+    cout << "WARNING: Probably the online-monitor server is NOT running.\n";
+    return 1;
+  }
   FindAllMonHist();
 
   int run_id, spill_id, event_id, n_evt;
@@ -271,6 +280,7 @@ void OnlMonClient::ClearHistList()
   }
   m_list_obj.clear();
 }
+
 OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
 {
   if (num >= m_n_can) {

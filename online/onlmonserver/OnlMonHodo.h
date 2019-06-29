@@ -18,6 +18,7 @@ class OnlMonHodo: public OnlMonClient {
  public:
   OnlMonHodo(const HodoType_t type);
   virtual ~OnlMonHodo() {}
+  OnlMonClient* Clone() { return new OnlMonHodo(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);

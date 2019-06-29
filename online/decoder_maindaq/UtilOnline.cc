@@ -4,15 +4,11 @@
 #include "UtilOnline.h"
 using namespace std;
 
-std::string UtilOnline::GetCodaFileDir()
-{
-  return "/data2/e1039/codadata";
-}
+std::string UtilOnline::m_dir_end  = "/seaquest/e906daq/coda/data/END";
+std::string UtilOnline::m_dir_coda = "/localdata/codadata";
+std::string UtilOnline::m_dir_dst  = "/data2/e1039/dst";
 
-std::string UtilOnline::GetDstFileDir()
-{
-  return "/data2/e1039/dst";
-}
+// m_dir_coda could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
 
 /// Convert the name of a Coda file to its run number.
 /**
@@ -30,6 +26,14 @@ std::string UtilOnline::RunNum2CodaFile(const int run)
 {
   ostringstream oss;
   oss << setfill('0') << "run_" << setw(6) << run << "_spin.dat";
+  return oss.str();
+}
+
+/// Convert a run number to the corresponding name of END file.
+std::string UtilOnline::RunNum2EndFile(const int run)
+{
+  ostringstream oss;
+  oss << run << ".end";
   return oss.str();
 }
 

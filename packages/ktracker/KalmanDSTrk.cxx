@@ -1503,7 +1503,7 @@ void KalmanDSTrk::buildTrackletsInStation(int stationID, int listID, double* pos
                   _timers["search_db_2"]->restart();
 
             		PatternDB::STATION station = PatternDB::ERROR_STATION;
-            		if(stationID==2) station = PatternDB::DC1;
+            		if(stationID==1 or stationID==2) station = PatternDB::DC1;
             		if(stationID==3) station = PatternDB::DC2;
             		if(stationID==4) station = PatternDB::DC3p;
             		if(stationID==5) station = PatternDB::DC3m;

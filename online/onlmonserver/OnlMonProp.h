@@ -16,6 +16,7 @@ class OnlMonProp: public OnlMonClient {
  public:
   OnlMonProp(const PropType_t type);
   virtual ~OnlMonProp() {}
+  OnlMonClient* Clone() { return new OnlMonProp(*this); }
 
   int InitOnlMon(PHCompositeNode *topNode);
   int InitRunOnlMon(PHCompositeNode *topNode);
