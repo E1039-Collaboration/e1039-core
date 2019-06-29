@@ -266,6 +266,7 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
 int MainDaqParser::ProcessCodaPhysics(int* words)
 {
   run_data.n_phys_evt++;
+  dec_par.coda_phys_evt_status = 0;
   int eventCode = words[1];
   int ret = 0;
   switch (get_hex_bits(eventCode, 7, 4) ) {
@@ -273,9 +274,10 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     ////KN: test code to check if a specific word exists.
     //PrintWords(words, 0, evLength);
     //PrintCodaEventSummary(words);
+    if (! dec_par.has_1st_bos) break;
     run_data.n_flush_evt++;
     ret = ProcessPhysFlush(words);
-    if (ret < 0) run_data.n_flush_evt_bad++;
+    if (ret < 0 || dec_par.coda_phys_evt_status != 0) run_data.n_flush_evt_bad++;
     break;
   case SLOW_CONTROL:
     ret = ProcessPhysSlow(words);
@@ -285,6 +287,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     break;
   case STANDARD_PHYSICS:
     /// Ignore this for now; on 2019-05-30 by Kenichi
+    //if (! dec_par.has_1st_bos) break;
     //dec_par.eventIDstd++;
     //SetEventInfo(&(*list_ed)[dec_par.eventIDstd].event, dec_par.eventIDstd);
     //ret = ProcessPhysFlush(words); // This function handles STANDARD_PHYSICS as well.
@@ -306,7 +309,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     cout << "Unknown event code: " << eventCode << ".  Ignore.\n";
     break;
   }
-  if (ret != 0) run_data.n_phys_evt_bad++;
+  if (ret != 0 || dec_par.coda_phys_evt_status != 0) run_data.n_phys_evt_bad++;
   return ret;
 }
 
@@ -469,7 +472,8 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 {
   string type_str = (type == TYPE_BOS ? "BOS" : "EOS");
   if (type == TYPE_BOS) {
-    dec_par.at_bos = true;
+    dec_par.has_1st_bos = true;
+    dec_par.at_bos      = true;
     if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
       cout << "Error submitting data.  Exiting...\n";
       return 1;
@@ -972,8 +976,8 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     // According to Kun on 2017-Jan-01, the board sometimes gets to output only 
     // "0x8*******" or "0x9*******".  This "if" condition is strict enough to 
     // catch this error.  Shifter has to reset VME crate to clear this error.
+    dec_par.coda_phys_evt_status |= DecoParam::WORD_ONLY89;
     cerr << "WARNING: Strange 'ID&N' word (0x" << hex << words[idx_begin] << dec << ") @ " << roc << endl;
-    //for (int ii=0; ii<7; ii++) list_event[ii]->dataQuality |= 0x1<<(roc-1);
     return idx_begin + 1;
   }
 
@@ -985,13 +989,12 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     idx_events_end  ++;
   }
   if (idx_events_end > idx_roc_end) {
+    dec_par.coda_phys_evt_status |= DecoParam::WORD_OVERFLOW;
     cerr << "WARNING: Word overflow.  Skip ROC (" << roc << ")" << endl;
-    //for (int ii=0; ii<7; ii++) list_event[ii]->dataQuality |= EVT_ERR_FMT;
     return -1;
   }
 
   int i_evt = 0;
-  //int qual = 0;
   bool header_found = false;
   double time_header = 0;
   vector<int   > list_chan;
@@ -999,7 +1002,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   for (int idx = idx_events_begin; idx < idx_events_end; idx++) {
     if (get_hex_bits(words[idx], 7, 1) == 8) { // header = stop hit
       if (header_found) { // Not seen in run 23930, but seen in run 23751.
-	//qual |= 0x1<<(roc-1);
+        dec_par.coda_phys_evt_status |= DecoParam::MULTIPLE_HEADER;
 	cerr << "WARNING:  Header after header." << endl;
       }
       int word = words[idx];
@@ -1011,7 +1014,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     } else if (get_hex_bits(words[idx], 7, 1) == 0 &&
 	       get_hex_bits(words[idx], 6, 7) != 0   ) { // event ID
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-	//qual |= 0x1<<(roc-1);
+        dec_par.coda_phys_evt_status |= DecoParam::NO_EVT_ID;
 	cerr << "WARNING:  eventID without stop word." << endl; // Possible to miss a stop signal???
 	run_data.n_hit_bad++;
 	continue;
@@ -1021,7 +1024,6 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
       ed->n_tdc++;
       EventInfo* evt = &ed->event;
       SetEventInfo(evt, evt_id);
-      //evt->dataQuality |= qual;
 
       /// The data of one physics event are complete.  Let's insert hits to the storage.
       for (unsigned int ii = 0; ii < list_chan.size(); ii++) {
@@ -1036,20 +1038,19 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
 	//cout << " HIT " << dec_par.spillID << " " << evt_id << " " << (int)dec_par.rocID << " " << boardID << " " << list_chan[ii] << " " << list_time[ii] << endl;
       }
       i_evt++;
-      //qual = 0;
       header_found = false;
       list_chan.clear();
       list_time.clear();
     } else { // start hit
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-	//qual |= 0x1<<(roc-1);
+        dec_par.coda_phys_evt_status |= DecoParam::START_WO_STOP;
 	cerr << "WARNING:  Start without stop word." << endl; // Possible to miss a stop signal???
 	run_data.n_hit_bad++;
 	continue;
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) { // Not seen in run 23930, but seen in run 23751.
-	//qual |= 0x1<<(roc-1);
+        dec_par.coda_phys_evt_status |= DecoParam::START_NOT_RISE;
 	cerr << "WARNING:  Start signal is not rising." << endl;
 	run_data.n_hit_bad++;
       }
@@ -1066,7 +1067,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     }
   }
   if (header_found) { // Not seen in run 23930, but seen in run 23751.
-    //qual |= 0x1<<(roc-1);
+    dec_par.coda_phys_evt_status |= DecoParam::DIRTY_FINISH;
     cerr << "WARNING:  Not finished cleanly." << endl;
   }
   

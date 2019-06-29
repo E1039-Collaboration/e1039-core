@@ -42,7 +42,19 @@ struct DecoParam {
   int eventIDstd; //< current event ID of standard physics events
   long int hitID; //< current hit ID, commonly used by Hit and TriggerHit.
 
-  bool at_bos;
+  bool has_1st_bos; //< Set 'true' at the 1st BOS event.
+  bool at_bos; //< Set 'true' at BOS, which triggers parsing the data in one spill.
+
+  typedef enum {
+    WORD_ONLY89     = 0x01,
+    WORD_OVERFLOW   = 0x02,
+    MULTIPLE_HEADER = 0x04,
+    NO_EVT_ID       = 0x08,
+    START_WO_STOP   = 0x10,
+    START_NOT_RISE  = 0x20,
+    DIRTY_FINISH    = 0x40
+  } CodaPhysEvtStatus_t;
+  int coda_phys_evt_status; //< Bits to hold the status of an Coda event.
   
   /// Max turnOnset in a spill.  Used to drop NIM3 events that came after the beam stops.  See elog 15010
   unsigned int turn_id_max;

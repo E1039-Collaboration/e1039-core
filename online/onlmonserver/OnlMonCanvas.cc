@@ -13,7 +13,7 @@ using namespace std;
 
 OnlMonCanvas::OnlMonCanvas(const std::string name, const std::string title, const int num) :
   m_name(name), m_title(title), m_num(num), 
-  m_can("c1", "", 5+600*num, 5, 600, 800), 
+  m_can("c1", "", 200+600*num, 20, 600, 800), 
   m_pad_title("title", "", 0.0, 0.9, 1.0, 1.0),
   m_pad_main ("main" , "", 0.0, 0.1, 1.0, 0.9),
   m_pad_msg  ("msg"  , "", 0.0, 0.0, 1.0, 0.1),
@@ -40,6 +40,25 @@ void OnlMonCanvas::SetBasicInfo(const int run_id, const int spill_id, const int 
 void OnlMonCanvas::AddMessage(const char* msg)
 {
   m_pate_msg.AddText(msg);
+}
+
+
+void OnlMonCanvas::SetWorseStatus(const MonStatus_t stat)
+{
+  switch (stat) {
+  case OK:
+    if (m_mon_status == UNDEF) m_mon_status = OK;
+    break;
+  case WARN:  
+    if (m_mon_status == UNDEF || m_mon_status == OK) m_mon_status = WARN;
+    break;
+  case ERROR:
+    m_mon_status = ERROR;
+    break;
+  case UNDEF:
+    m_mon_status = UNDEF;
+    break;
+  }
 }
 
 TPad* OnlMonCanvas::GetMainPad()

@@ -40,7 +40,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   se->registerSubsystem(new CalibXT());
 
   if (use_onlmon) { // Register the online-monitoring clients
-    se->StartServer();
+    if (is_online) se->StartServer();
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));

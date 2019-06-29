@@ -34,7 +34,9 @@ class OnlMonCanvas {
 
   void SetBasicInfo(const int run_id, const int spill_id=0, const int event_id=0, const int n_evt=0);
   void AddMessage(const char* msg);
+  MonStatus_t GetStatus() { return m_mon_status; }
   void SetStatus(const MonStatus_t stat) { m_mon_status = stat; }
+  void SetWorseStatus(const MonStatus_t stat);
   TPad* GetMainPad();
 
   void  PreDraw(const bool at_end=false);
