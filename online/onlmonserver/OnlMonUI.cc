@@ -50,7 +50,7 @@ OnlMonUI::OnlMonUI(OnlMonClientList_t* list) :
 void OnlMonUI::BuildInterface()
 {
   TGMainFrame* frame = new TGMainFrame(gClient->GetRoot(), 200, 900);
-  //frame->SetWMPosition(50, 50); // This function doesn't work...
+  frame->SetWMPosition(0, 0); // Often ignored by the window manager
 
   TGTextView* head = new TGTextView(frame, 200, 50, "E1039 OnlMon Selector");
   frame->AddFrame(head); 
