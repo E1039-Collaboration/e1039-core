@@ -6,8 +6,8 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <chan_map/CalibParamXT.h>
-#include <chan_map/CalibParamInTimeTaiwan.h>
+#include <geom_svc/CalibParamXT.h>
+#include <geom_svc/CalibParamInTimeTaiwan.h>
 #include "CalibXT.h"
 using namespace std;
 

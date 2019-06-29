@@ -8,6 +8,7 @@
 
 
 #include "PatternDBGen.h"
+#include "SRecEvent.h"
 
 #include <interface_main/SQHit.h>
 #include <interface_main/SQHit_v1.h>
@@ -18,8 +19,6 @@
 #include <interface_main/SQRun_v1.h>
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
-
-#include <ktracker/SRecEvent.h>
 
 #include <geom_svc/GeomSvc.h>
 

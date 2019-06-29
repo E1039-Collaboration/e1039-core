@@ -27,7 +27,6 @@ and then prop. tubes
 #include <TVector3.h>
 #include <TSpline.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
 #include "GlobalConsts.h"
 
 class Plane
@@ -287,9 +286,6 @@ private:
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;
-
-    //Pointer to job option service
-    JobOptsSvc* p_jobOptsSvc;
 
     //singleton pointor
     static GeomSvc* p_geometrySvc;

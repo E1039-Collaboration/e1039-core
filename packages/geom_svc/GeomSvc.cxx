@@ -25,6 +25,7 @@ Created: 10-19-2011
 #include <TRotation.h>
 #include <TMatrixD.h>
 
+#include <jobopts_svc/JobOptsSvc.h>
 #include "GeomParamPlane.h"
 #include "GeomSvc.h"
 
@@ -511,13 +512,14 @@ void GeomSvc::init()
     else           initPlaneDirect();
 
     /////Here starts the user-defined part
-    //load alignment parameters
+    //load alignment parameterss
     calibration_loaded = false;
-    if(!p_jobOptsSvc->m_enableOnlineAlignment && (!p_jobOptsSvc->m_useIdealGeom))
+    JobOptsSvc* job_svc = JobOptsSvc::instance();
+    if(!job_svc->m_enableOnlineAlignment && (!job_svc->m_useIdealGeom))
     {
-        loadAlignment(p_jobOptsSvc->m_alignmentFileChamber, p_jobOptsSvc->m_alignmentFileHodo, p_jobOptsSvc->m_alignmentFileProp);
-        loadMilleAlignment(p_jobOptsSvc->m_alignmentFileMille);
-        loadCalibration(p_jobOptsSvc->m_calibrationsFile);
+        loadAlignment(job_svc->m_alignmentFileChamber, job_svc->m_alignmentFileHodo, job_svc->m_alignmentFileProp);
+        loadMilleAlignment(job_svc->m_alignmentFileMille);
+        loadCalibration(job_svc->m_calibrationsFile);
     }
 
     initWireLUT();
@@ -544,8 +546,8 @@ void GeomSvc::initPlaneDirect() {
 
     ///Initialize the geometrical variables which should be from MySQL database
     //Connect server
-    p_jobOptsSvc = JobOptsSvc::instance();
-    TSQLServer* con = TSQLServer::Connect(p_jobOptsSvc->GetInputMySQLURL().c_str(), "seaguest","qqbar2mu+mu-");
+    JobOptsSvc* job_svc = JobOptsSvc::instance();
+    TSQLServer* con = TSQLServer::Connect(job_svc->GetInputMySQLURL().c_str(), "seaguest","qqbar2mu+mu-");
 
     //Make query to Planes table
     char query[300];
@@ -553,7 +555,7 @@ void GeomSvc::initPlaneDirect() {
                              "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,theta_y,theta_z from %s.Planes WHERE"
                              " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR "
                              "detectorName LIKE 'P____'";
-    sprintf(query, buf_planes, p_jobOptsSvc->m_geomVersion.c_str());
+    sprintf(query, buf_planes, job_svc->m_geomVersion.c_str());
     TSQLResult* res = con->Query(query);
 
     unsigned int nRows = res->GetRowCount();
@@ -632,19 +634,19 @@ void GeomSvc::initPlaneDirect() {
 
         planes[i].update();
     }
-    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << p_jobOptsSvc->m_geomVersion << endl;
+    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << job_svc->m_geomVersion << endl;
 
     //load the initial value in the planeOffsets table
-    if(p_jobOptsSvc->m_enableOnlineAlignment)
+    if(job_svc->m_enableOnlineAlignment)
     {
-        loadMilleAlignment(p_jobOptsSvc->m_alignmentFileMille);    //final chance of overwrite resolution numbers in online mode
+        loadMilleAlignment(job_svc->m_alignmentFileMille);    //final chance of overwrite resolution numbers in online mode
         const char* buf_offsets = "SELECT detectorName,deltaX,deltaY,deltaZ,rotateAboutZ FROM %s.PlaneOffsets WHERE"
                                   " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR detectorName LIKE 'P____'";
-        sprintf(query, buf_offsets, p_jobOptsSvc->m_geomVersion.c_str());
+        sprintf(query, buf_offsets, job_svc->m_geomVersion.c_str());
         res = con->Query(query);
 
         nRows = res->GetRowCount();
-        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << p_jobOptsSvc->m_geomVersion.c_str() << endl;
+        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << job_svc->m_geomVersion.c_str() << endl;
         for(unsigned int i = 0; i < nRows; ++i)
         {
             TSQLRow* row = res->Next();
@@ -677,7 +679,7 @@ void GeomSvc::initPlaneDirect() {
 void GeomSvc::initPlaneDbSvc() {
   using namespace std;
   const int run = 1; // todo: need adjustable in the future
-  cout << "GeomSvc::initPlaneDbSvc():  Load the plane geometry info via DbSvc for run = " << run << "." << endl;
+  cout << "GeomSvc:  Load the plane geometry info via DbSvc for run = " << run << "." << endl;
 
   GeomParamPlane* geom = new GeomParamPlane();
   geom->SetMapIDbyDB(run);
@@ -690,6 +692,7 @@ void GeomSvc::initPlaneDbSvc() {
     toLocalDetectorName(detectorName, dummy);
     
     int detectorID = map_detectorID[detectorName];
+    //cout << "ii: " << ii << " " << detectorID << " " << detectorName << endl;
     planes[detectorID].detectorID    = detectorID;
     planes[detectorID].detectorName  = detectorName;
     planes[detectorID].spacing       = pl->cell_spacing;

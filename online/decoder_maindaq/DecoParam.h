@@ -1,8 +1,8 @@
 #ifndef __DECO_PARAM_H__
 #define __DECO_PARAM_H__
-#include <chan_map/ChanMapTaiwan.h>
-#include <chan_map/ChanMapV1495.h>
-#include <chan_map/ChanMapScaler.h>
+#include <geom_svc/ChanMapTaiwan.h>
+#include <geom_svc/ChanMapV1495.h>
+#include <geom_svc/ChanMapScaler.h>
 //#include "assert.h"
 class EventInfo;
 
