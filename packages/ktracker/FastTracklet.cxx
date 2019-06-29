@@ -16,6 +16,7 @@ Created: 05-28-2013
 #include <TMath.h>
 #include <TMatrixD.h>
 
+#include <jobopts_svc/JobOptsSvc.h>
 #include "FastTracklet.h"
 #include "TriggerRoad.h"
 
