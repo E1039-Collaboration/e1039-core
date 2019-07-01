@@ -27,7 +27,7 @@ class SRecEvent;
 class TEveQuadSet;
 class GeomSvc;
 
-#define NDETPLANES 55
+#define NDETPLANES 63
 
 class mTrkEveDisplay : public mPHEveModuleBase
 {

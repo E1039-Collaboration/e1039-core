@@ -69,6 +69,7 @@ mTrkEveDisplay::mTrkEveDisplay(boost::shared_ptr<PHEveDisplay> dispin) :
     if(i<=30)       _evemanager->AddElement(_hit_wires[i],_evedisp->get_dc_list());
     else if(i<=46)  _evemanager->AddElement(_hit_wires[i],_evedisp->get_hodo_list());
     else if(i<=54)  _evemanager->AddElement(_hit_wires[i],_evedisp->get_prop_list());
+    else if(i<=62)  _evemanager->AddElement(_hit_wires[i],_evedisp->get_dp_list());
   }
 
   _evemanager->AddElement(_reco_tracks,_evedisp->get_top_list());
@@ -238,7 +239,8 @@ mTrkEveDisplay::draw_hits()
 
       if(det_id<31)      _hit_wires[det_id]->DigitColor(kBlue);
       else if(det_id<47) _hit_wires[det_id]->DigitColor(kGreen);
-      else               _hit_wires[det_id]->DigitColor(kRed);
+      else if(det_id<45) _hit_wires[det_id]->DigitColor(kRed);
+      else if(det_id<63) _hit_wires[det_id]->DigitColor(kPink);
     } catch (std::exception &e ) {
       std::cout << "Exception caught mTrkEveDisplay::draw_hits " << e.what() << std::endl;
     }
