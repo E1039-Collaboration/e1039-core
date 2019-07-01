@@ -286,7 +286,7 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 
 #define NEW
 #ifdef NEW
-  for(unsigned int index = 1; index < 55; ++index)
+  for(unsigned int index = 1; index < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; ++index)
   {
     digiPlanes[index].detectorID = index;
 
@@ -489,7 +489,7 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
   };
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) {
-    for(int i=1; i<55; ++i) {
+    for(int i=1; i<nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; ++i) {
       std::cout << p_geomSvc->getPlane(i) << std::endl;
       std::cout << digiPlanes[i] << std::endl;
     }
