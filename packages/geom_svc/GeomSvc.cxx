@@ -792,12 +792,12 @@ void GeomSvc::initWireLUT() {
   }
 
   // 2. for hodoscopes and prop. tubes
-  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
+  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos;
-          if(i <= nChamberPlanes+nHodoPlanes)
+          if(i <= nChamberPlanes+nHodoPlanes or (i >nChamberPlanes+nHodoPlanes+nPropPlanes))
           {
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }

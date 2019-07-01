@@ -239,8 +239,8 @@ mTrkEveDisplay::draw_hits()
 
       if(det_id<31)      _hit_wires[det_id]->DigitColor(kBlue);
       else if(det_id<47) _hit_wires[det_id]->DigitColor(kGreen);
-      else if(det_id<45) _hit_wires[det_id]->DigitColor(kRed);
-      else if(det_id<63) _hit_wires[det_id]->DigitColor(kPink);
+      else if(det_id<55) _hit_wires[det_id]->DigitColor(kRed);
+      else if(det_id<63) _hit_wires[det_id]->DigitColor(kMagenta);
     } catch (std::exception &e ) {
       std::cout << "Exception caught mTrkEveDisplay::draw_hits " << e.what() << std::endl;
     }
