@@ -57,6 +57,7 @@ public:
   TEveElementList* get_dc_list() const { return _dc_list;}
   TEveElementList* get_hodo_list() const { return _hodo_list;}
   TEveElementList* get_prop_list() const {return _prop_list;}
+  TEveElementList* get_dp_list() const {return _dp_list;}
   TEveElementList* get_true_list() const { return _true_list;}  
   
   void set_jet_pt_threshold(float pt){_jet_pt_threshold = pt;}
@@ -75,6 +76,7 @@ protected:
   TEveElementList* _dc_list;
   TEveElementList* _hodo_list;
   TEveElementList* _prop_list;
+  TEveElementList* _dp_list;
   TEveElementList* _true_list;
 
   TEveTrackPropagator* cnt_prop;

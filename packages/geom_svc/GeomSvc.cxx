@@ -407,6 +407,15 @@ void GeomSvc::init()
   	map_dname_group["P2X1"]     = "P2X1";
   	map_dname_group["P2X2"]     = "P2X2";
 
+  	map_dname_group["DP1TL"]    = "DP1TL";
+  	map_dname_group["DP1TR"]    = "DP1TR";
+  	map_dname_group["DP1BL"]    = "DP1BL";
+  	map_dname_group["DP1BR"]    = "DP1BR";
+  	map_dname_group["DP2TL"]    = "DP2TL";
+  	map_dname_group["DP2TR"]    = "DP2TR";
+  	map_dname_group["DP2BL"]    = "DP2BL";
+  	map_dname_group["DP2BR"]    = "DP2BR";
+
     vector_default_sim_group.push_back("D0U");
     vector_default_sim_group.push_back("D0X");
     vector_default_sim_group.push_back("D0V");
@@ -448,6 +457,15 @@ void GeomSvc::init()
     vector_default_sim_group.push_back("P2X2");
     vector_default_sim_group.push_back("P2Y1");
     vector_default_sim_group.push_back("P2Y2");
+
+    vector_default_sim_group.push_back("DP1TL");
+    vector_default_sim_group.push_back("DP1TR");
+    vector_default_sim_group.push_back("DP1BL");
+    vector_default_sim_group.push_back("DP1BR");
+    vector_default_sim_group.push_back("DP2TL");
+    vector_default_sim_group.push_back("DP2TR");
+    vector_default_sim_group.push_back("DP2BL");
+    vector_default_sim_group.push_back("DP2BR");
 
 
   	//init map_dname_group
@@ -774,12 +792,12 @@ void GeomSvc::initWireLUT() {
   }
 
   // 2. for hodoscopes and prop. tubes
-  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
+  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos;
-          if(i <= nChamberPlanes+nHodoPlanes)
+          if(i <= nChamberPlanes+nHodoPlanes or (i >nChamberPlanes+nHodoPlanes+nPropPlanes))
           {
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }

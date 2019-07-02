@@ -33,6 +33,7 @@
 #endif
 
 #define LogDebug(exp)       std::cout<<"DEBUG: "  <<__FUNCTION__<<": "<<__LINE__<<": "<< exp << std::endl
+//#define DEBUG
 
 using namespace std;
 
@@ -286,7 +287,7 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
 
 #define NEW
 #ifdef NEW
-  for(unsigned int index = 1; index < 55; ++index)
+  for(unsigned int index = 1; index < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; ++index)
   {
     digiPlanes[index].detectorID = index;
 
@@ -489,7 +490,7 @@ int DPDigitizer::Init(PHCompositeNode *topNode)
   };
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) {
-    for(int i=1; i<55; ++i) {
+    for(int i=1; i<nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; ++i) {
       std::cout << p_geomSvc->getPlane(i) << std::endl;
       std::cout << digiPlanes[i] << std::endl;
     }
@@ -548,14 +549,21 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     int kt_detector_id = p_geomSvc->getDetectorID(detName);
 
     //TODO temp solution
-    if(kt_detector_id>54 || kt_detector_id<1) continue;
+    if(kt_detector_id>nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes || kt_detector_id<1) continue;
 
     auto up_digiHit = std::unique_ptr<SQMCHit_v1> (new SQMCHit_v1());
     auto digiHit = up_digiHit.get();
     digiHit->set_detector_id(kt_detector_id);
 
     //check if the track intercepts the plane
+#ifdef DEBUG
+    LogInfo("DEBUG: tx: "<< tx << ", ty: " << ty << ", { " << x0 << ", " << y0 << ", " << z0 << " }");
+    LogInfo("DEBUG: "<< digiPlanes[*dpid]);
+#endif
     if(!digiPlanes[*dpid].intercept(tx, ty, x0, y0, z0, pos, w)) continue;
+#ifdef DEBUG
+    LogInfo("DEBUG: { "<< pos[0] << ", " << pos[1] << ", " << pos[2] << " } , " << w);
+#endif
 
     int DP_elementID = TMath::Nint((digiPlanes[*dpid].nElements + 1.0)/2.0 +
       (w - digiPlanes[*dpid].xPrimeOffset - digiPlanes[*dpid].xc*digiPlanes[*dpid].costh - digiPlanes[*dpid].yc*digiPlanes[*dpid].sinth)/digiPlanes[*dpid].spacing) ;
@@ -567,6 +575,9 @@ void DPDigitizer::digitize(std::string detectorGroupName, PHG4Hit& g4hit)
     double wire_pos = p_geomSvc->getMeasurement(digiHit->get_detector_id(), digiHit->get_element_id());
     double driftDistance = w - wire_pos;
 
+#ifdef DEBUG
+    LogInfo("DEBUG: DP_elementID: "<< DP_elementID << ", nElements: " << digiPlanes[*dpid].nElements << ", driftDistance: " << driftDistance << ", cellWidth: " << 0.5*digiPlanes[*dpid].cellWidth);
+#endif
     if(DP_elementID < 1 || DP_elementID > digiPlanes[*dpid].nElements || fabs(driftDistance) > 0.5*digiPlanes[*dpid].cellWidth) continue;
 
     digiHit->set_track_id(track_id);

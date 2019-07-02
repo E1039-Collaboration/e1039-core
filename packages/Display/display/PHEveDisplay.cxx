@@ -59,6 +59,7 @@ PHEveDisplay::PHEveDisplay(int w,
   _dc_list(NULL),
   _hodo_list(NULL),
   _prop_list(NULL),
+  _dp_list(NULL),
   _true_list(NULL),
   cnt_prop(NULL),
   mapped_field(NULL),
@@ -150,12 +151,14 @@ PHEveDisplay::add_elements(TEveManager* geve)
   _dc_list   = new TEveElementList("DC");
   _hodo_list = new TEveElementList("HODO");
   _prop_list = new TEveElementList("PROP");
+  _dp_list   = new TEveElementList("DP");
   _true_list = new TEveElementList("TRUE"); 
   
   geve->AddElement(_top_list);
   geve->AddElement(_dc_list,  _top_list);
   geve->AddElement(_hodo_list,_top_list);
   geve->AddElement(_prop_list,_top_list);
+  geve->AddElement(_dp_list,  _top_list);
   geve->AddElement(_true_list,_top_list);
 }
 
