@@ -69,4 +69,10 @@ class CalibParamBase : public RunParamBase {
   virtual ~CalibParamBase() {;}
 };
 
+class GeomParamBase : public RunParamBase {
+ public:
+  GeomParamBase(const std::string label, const std::string header) : RunParamBase("geom", label, header) {;}
+  virtual ~GeomParamBase() {;}
+};
+
 #endif // __RUN_PARAM_BASE_H__

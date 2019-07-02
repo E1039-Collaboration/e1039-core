@@ -27,7 +27,6 @@ and then prop. tubes
 #include <TVector3.h>
 #include <TSpline.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
 #include "GlobalConsts.h"
 
 class Plane
@@ -119,6 +118,8 @@ public:
 
     ///Initialization, either from MySQL or from ascii file
     void init();
+    void initPlaneDirect();
+    void initPlaneDbSvc();
     void initWireLUT();
     void loadCalibration(const std::string& calibrateFile);
     void loadAlignment(const std::string& alignmentFile_chamber, const std::string& alignmentFile_hodo, const std::string& alignmentFile_prop);
@@ -248,10 +249,13 @@ public:
     void printTable();
     void printWirePosition();
 
+    static void UseDbSvc(const bool val) { use_dbsvc = val; }
+    static bool UseDbSvc()        { return use_dbsvc; }
+
 private:
 
     //All the detector planes
-    Plane planes[nChamberPlanes+nHodoPlanes+nPropPlanes+1];
+    Plane planes[nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1];
 
     //flag of loading calibration parameters
     bool calibration_loaded;
@@ -283,11 +287,10 @@ private:
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;
 
-    //Pointer to job option service
-    JobOptsSvc* p_jobOptsSvc;
-
     //singleton pointor
     static GeomSvc* p_geometrySvc;
+
+    static bool use_dbsvc;
 };
 
 #endif

@@ -25,6 +25,8 @@ Created: 10-19-2011
 #include <TRotation.h>
 #include <TMatrixD.h>
 
+#include <jobopts_svc/JobOptsSvc.h>
+#include "GeomParamPlane.h"
 #include "GeomSvc.h"
 
 Plane::Plane()
@@ -179,6 +181,7 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
 }
 
 GeomSvc* GeomSvc::p_geometrySvc = NULL;
+bool     GeomSvc::use_dbsvc = false;
 
 GeomSvc* GeomSvc::instance()
 {
@@ -195,7 +198,7 @@ void GeomSvc::close()
 {
     if(!p_geometrySvc)
     {
-        for(int i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
+        for(int i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
         {
             if(planes[i].rtprofile != NULL) delete planes[i].rtprofile;
         }
@@ -272,23 +275,34 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
     map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
 
-    map_detectorID.insert(nameToID("BeforeInhNIM"   , nChamberPlanes+nHodoPlanes+nPropPlanes+ 1));
-    map_detectorID.insert(nameToID("BeforeInhMatrix", nChamberPlanes+nHodoPlanes+nPropPlanes+ 2));
-    map_detectorID.insert(nameToID("AfterInhNIM"    , nChamberPlanes+nHodoPlanes+nPropPlanes+ 3));
-    map_detectorID.insert(nameToID("AfterInhMatrix" , nChamberPlanes+nHodoPlanes+nPropPlanes+ 4));
-    map_detectorID.insert(nameToID("BOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 5));
-    map_detectorID.insert(nameToID("EOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+ 6));
-    map_detectorID.insert(nameToID("L1"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 7));
-    map_detectorID.insert(nameToID("RF"             , nChamberPlanes+nHodoPlanes+nPropPlanes+ 8));
-    map_detectorID.insert(nameToID("STOP"           , nChamberPlanes+nHodoPlanes+nPropPlanes+ 9));
-    map_detectorID.insert(nameToID("L1PXtp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+10));
-    map_detectorID.insert(nameToID("L1PXtn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+11));
-    map_detectorID.insert(nameToID("L1PXbp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+12));
-    map_detectorID.insert(nameToID("L1PXbn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+13));
-    map_detectorID.insert(nameToID("L1NIMxt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+14));
-    map_detectorID.insert(nameToID("L1NIMxb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+15));
-    map_detectorID.insert(nameToID("L1NIMyt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+16));
-    map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+17));
+    map_detectorID.insert(nameToID("DP1TL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 1));
+    map_detectorID.insert(nameToID("DP1TR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 2));
+    map_detectorID.insert(nameToID("DP1BL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 3));
+    map_detectorID.insert(nameToID("DP1BR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 4));
+    map_detectorID.insert(nameToID("DP2TL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 5));
+    map_detectorID.insert(nameToID("DP2TR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 6));
+    map_detectorID.insert(nameToID("DP2BL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 7));
+    map_detectorID.insert(nameToID("DP2BR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 8));
+
+    map_detectorID.insert(nameToID("BeforeInhNIM"   , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 1));
+    map_detectorID.insert(nameToID("BeforeInhMatrix", nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 2));
+    map_detectorID.insert(nameToID("AfterInhNIM"    , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 3));
+    map_detectorID.insert(nameToID("AfterInhMatrix" , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 4));
+    map_detectorID.insert(nameToID("BOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 5));
+    map_detectorID.insert(nameToID("EOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 6));
+    map_detectorID.insert(nameToID("L1"             , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 7));
+    map_detectorID.insert(nameToID("RF"             , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 8));
+    map_detectorID.insert(nameToID("STOP"           , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 9));
+    map_detectorID.insert(nameToID("L1PXtp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+10));
+    map_detectorID.insert(nameToID("L1PXtn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+11));
+    map_detectorID.insert(nameToID("L1PXbp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+12));
+    map_detectorID.insert(nameToID("L1PXbn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+13));
+    map_detectorID.insert(nameToID("L1NIMxt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+14));
+    map_detectorID.insert(nameToID("L1NIMxb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+15));
+    map_detectorID.insert(nameToID("L1NIMyt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+16));
+    map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+17));
+
+
 
     // TODO temp solution
     for(int i=1; i<=18; ++i) {
@@ -307,9 +321,13 @@ void GeomSvc::init()
     	map_detid_material[i] = "G4_Ar";
     	map_detid_scale_z[i]  = 4;
     }
+    for(int i=nChamberPlanes+nHodoPlanes+nPropPlanes+1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) {
+    	map_detid_material[i] = "G4_PLASTIC_SC_VINYLTOLUENE";
+    	map_detid_scale_z[i]  = 0.635; // todo: correct?????
+    }
 
     // TODO temp solution
-    for(int i=1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes; ++i) {
+    for(int i=1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) {
     	map_detid_triggerlv[i] = -1;
     }
     for(int i=nChamberPlanes+1; i<=nChamberPlanes+4; ++i) {
@@ -389,6 +407,15 @@ void GeomSvc::init()
   	map_dname_group["P2X1"]     = "P2X1";
   	map_dname_group["P2X2"]     = "P2X2";
 
+  	map_dname_group["DP1TL"]    = "DP1TL";
+  	map_dname_group["DP1TR"]    = "DP1TR";
+  	map_dname_group["DP1BL"]    = "DP1BL";
+  	map_dname_group["DP1BR"]    = "DP1BR";
+  	map_dname_group["DP2TL"]    = "DP2TL";
+  	map_dname_group["DP2TR"]    = "DP2TR";
+  	map_dname_group["DP2BL"]    = "DP2BL";
+  	map_dname_group["DP2BR"]    = "DP2BR";
+
     vector_default_sim_group.push_back("D0U");
     vector_default_sim_group.push_back("D0X");
     vector_default_sim_group.push_back("D0V");
@@ -430,6 +457,15 @@ void GeomSvc::init()
     vector_default_sim_group.push_back("P2X2");
     vector_default_sim_group.push_back("P2Y1");
     vector_default_sim_group.push_back("P2Y2");
+
+    vector_default_sim_group.push_back("DP1TL");
+    vector_default_sim_group.push_back("DP1TR");
+    vector_default_sim_group.push_back("DP1BL");
+    vector_default_sim_group.push_back("DP1BR");
+    vector_default_sim_group.push_back("DP2TL");
+    vector_default_sim_group.push_back("DP2TR");
+    vector_default_sim_group.push_back("DP2BL");
+    vector_default_sim_group.push_back("DP2BR");
 
 
   	//init map_dname_group
@@ -490,10 +526,46 @@ void GeomSvc::init()
         map_detectorName.insert(idToName(iter->second, iter->first));
     }
 
+    if (use_dbsvc) initPlaneDbSvc();
+    else           initPlaneDirect();
+
+    /////Here starts the user-defined part
+    //load alignment parameterss
+    calibration_loaded = false;
+    JobOptsSvc* job_svc = JobOptsSvc::instance();
+    if(!job_svc->m_enableOnlineAlignment && (!job_svc->m_useIdealGeom))
+    {
+        loadAlignment(job_svc->m_alignmentFileChamber, job_svc->m_alignmentFileHodo, job_svc->m_alignmentFileProp);
+        loadMilleAlignment(job_svc->m_alignmentFileMille);
+        loadCalibration(job_svc->m_calibrationsFile);
+    }
+
+    initWireLUT();
+
+    ///Initialize channel mapping  --- not needed at the moment
+    xmin_kmag = -57.*2.54;
+    xmax_kmag = 57.*2.54;
+    ymin_kmag = -40.*2.54;
+    ymax_kmag = 40.*2.54;
+
+    zmin_kmag = 1064.26 - 120.*2.54;
+    zmax_kmag = 1064.26 + 120.*2.54;
+
+#ifdef _DEBUG_ON
+    for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
+    {
+        cout << planes[i] << endl;
+    }
+#endif
+}
+
+void GeomSvc::initPlaneDirect() {
+    using namespace std;
+
     ///Initialize the geometrical variables which should be from MySQL database
     //Connect server
-    p_jobOptsSvc = JobOptsSvc::instance();
-    TSQLServer* con = TSQLServer::Connect(p_jobOptsSvc->GetInputMySQLURL().c_str(), "seaguest","qqbar2mu+mu-");
+    JobOptsSvc* job_svc = JobOptsSvc::instance();
+    TSQLServer* con = TSQLServer::Connect(job_svc->GetInputMySQLURL().c_str(), "seaguest","qqbar2mu+mu-");
 
     //Make query to Planes table
     char query[300];
@@ -501,7 +573,7 @@ void GeomSvc::init()
                              "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,theta_y,theta_z from %s.Planes WHERE"
                              " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR "
                              "detectorName LIKE 'P____'";
-    sprintf(query, buf_planes, p_jobOptsSvc->m_geomVersion.c_str());
+    sprintf(query, buf_planes, job_svc->m_geomVersion.c_str());
     TSQLResult* res = con->Query(query);
 
     unsigned int nRows = res->GetRowCount();
@@ -509,7 +581,7 @@ void GeomSvc::init()
     for(unsigned int i = 0; i < nRows; ++i)
     {
         TSQLRow* row = res->Next();
-        string detectorName(row->GetField(0));
+        std::string detectorName(row->GetField(0));
         toLocalDetectorName(detectorName, dummy);
 
         int detectorID = map_detectorID[detectorName];
@@ -580,19 +652,19 @@ void GeomSvc::init()
 
         planes[i].update();
     }
-    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << p_jobOptsSvc->m_geomVersion << endl;
+    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << job_svc->m_geomVersion << endl;
 
     //load the initial value in the planeOffsets table
-    if(p_jobOptsSvc->m_enableOnlineAlignment)
+    if(job_svc->m_enableOnlineAlignment)
     {
-        loadMilleAlignment(p_jobOptsSvc->m_alignmentFileMille);    //final chance of overwrite resolution numbers in online mode
+        loadMilleAlignment(job_svc->m_alignmentFileMille);    //final chance of overwrite resolution numbers in online mode
         const char* buf_offsets = "SELECT detectorName,deltaX,deltaY,deltaZ,rotateAboutZ FROM %s.PlaneOffsets WHERE"
                                   " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR detectorName LIKE 'P____'";
-        sprintf(query, buf_offsets, p_jobOptsSvc->m_geomVersion.c_str());
+        sprintf(query, buf_offsets, job_svc->m_geomVersion.c_str());
         res = con->Query(query);
 
         nRows = res->GetRowCount();
-        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << p_jobOptsSvc->m_geomVersion.c_str() << endl;
+        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << job_svc->m_geomVersion.c_str() << endl;
         for(unsigned int i = 0; i < nRows; ++i)
         {
             TSQLRow* row = res->Next();
@@ -620,35 +692,91 @@ void GeomSvc::init()
     }
 
     delete con;
-
-    /////Here starts the user-defined part
-    //load alignment parameters
-    calibration_loaded = false;
-    if(!p_jobOptsSvc->m_enableOnlineAlignment && (!p_jobOptsSvc->m_useIdealGeom))
-    {
-        loadAlignment(p_jobOptsSvc->m_alignmentFileChamber, p_jobOptsSvc->m_alignmentFileHodo, p_jobOptsSvc->m_alignmentFileProp);
-        loadMilleAlignment(p_jobOptsSvc->m_alignmentFileMille);
-        loadCalibration(p_jobOptsSvc->m_calibrationsFile);
-    }
-
-    initWireLUT();
-
-    ///Initialize channel mapping  --- not needed at the moment
-    xmin_kmag = -57.*2.54;
-    xmax_kmag = 57.*2.54;
-    ymin_kmag = -40.*2.54;
-    ymax_kmag = 40.*2.54;
-
-    zmin_kmag = 1064.26 - 120.*2.54;
-    zmax_kmag = 1064.26 + 120.*2.54;
-
-#ifdef _DEBUG_ON
-    for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
-    {
-        cout << planes[i] << endl;
-    }
-#endif
 }
+
+void GeomSvc::initPlaneDbSvc() {
+  using namespace std;
+  const int run = 1; // todo: need adjustable in the future
+  cout << "GeomSvc:  Load the plane geometry info via DbSvc for run = " << run << "." << endl;
+
+  GeomParamPlane* geom = new GeomParamPlane();
+  geom->SetMapIDbyDB(run);
+  geom->ReadFromDB();
+  int dummy = 0;
+  for (int ii = 0; ii < geom->GetNumPlanes(); ii++) {
+    GeomParamPlane::Plane* pl = geom->GetPlane(ii);
+    
+    string detectorName(pl->det_name);
+    toLocalDetectorName(detectorName, dummy);
+    
+    int detectorID = map_detectorID[detectorName];
+    //cout << "ii: " << ii << " " << detectorID << " " << detectorName << endl;
+    planes[detectorID].detectorID    = detectorID;
+    planes[detectorID].detectorName  = detectorName;
+    planes[detectorID].spacing       = pl->cell_spacing;
+    planes[detectorID].cellWidth     = pl->cell_width;
+    planes[detectorID].overlap       = pl->cell_width - pl->cell_spacing;
+    planes[detectorID].angleFromVert = pl->angle_from_vert;
+    planes[detectorID].xoffset       = pl->xoffset;
+    planes[detectorID].thetaX        = pl->theta_x;
+    planes[detectorID].thetaY        = pl->theta_y;
+    planes[detectorID].thetaZ        = pl->theta_z;
+
+    //Following items need to be sumed or averaged over all modules
+    planes[detectorID].nElements    += pl->n_ele; // still needed in E1039??
+    double x0_i     = pl->x0;
+    double y0_i     = pl->y0;
+    double z0_i     = pl->z0;
+    double width_i  = pl->width;
+    double height_i = pl->height;
+    
+    double x1_i = x0_i - 0.5*width_i;
+    double x2_i = x0_i + 0.5*width_i;
+    double y1_i = y0_i - 0.5*height_i;
+    double y2_i = y0_i + 0.5*height_i;
+    
+    planes[detectorID].x0 += x0_i;
+    planes[detectorID].y0 += y0_i;
+    planes[detectorID].z0 += z0_i;
+    if(planes[detectorID].x1 > x1_i) planes[detectorID].x1 = x1_i;
+    if(planes[detectorID].x2 < x2_i) planes[detectorID].x2 = x2_i;
+    if(planes[detectorID].y1 > y1_i) planes[detectorID].y1 = y1_i;
+    if(planes[detectorID].y2 < y2_i) planes[detectorID].y2 = y2_i;
+    
+    //Calculated value
+    planes[detectorID].resolution = planes[detectorID].cellWidth/sqrt(12.);
+    planes[detectorID].update();
+    
+    //Set the plane type
+    if(detectorName.find("X") != string::npos || detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
+    {
+      planes[detectorID].planeType = 1;
+    }
+    else if((detectorName.find("U") != string::npos || detectorName.find("V") != string::npos) && planes[detectorID].angleFromVert > 0)
+    {
+      planes[detectorID].planeType = 2;
+    }
+    else if((detectorName.find("U") != string::npos || detectorName.find("V") != string::npos) && planes[detectorID].angleFromVert < 0)
+    {
+      planes[detectorID].planeType = 3;
+    }
+    else if(detectorName.find("Y") != string::npos || detectorName.find("L") != string::npos || detectorName.find("R") != string::npos)
+    {
+      planes[detectorID].planeType = 4;
+    }
+  }
+
+  //For prop. tube only, average over 9 modules
+  for(int i = nChamberPlanes+nHodoPlanes+1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; i++)
+  {
+    planes[i].x0 = planes[i].x0/9.;
+    planes[i].y0 = planes[i].y0/9.;
+    planes[i].z0 = planes[i].z0/9.;
+    
+    planes[i].update();
+  }
+}
+
 
 void GeomSvc::initWireLUT() {
 
@@ -664,12 +792,12 @@ void GeomSvc::initWireLUT() {
   }
 
   // 2. for hodoscopes and prop. tubes
-  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; ++i)
+  for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos;
-          if(i <= nChamberPlanes+nHodoPlanes)
+          if(i <= nChamberPlanes+nHodoPlanes or (i >nChamberPlanes+nHodoPlanes+nPropPlanes))
           {
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }

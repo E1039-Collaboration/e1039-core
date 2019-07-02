@@ -5,8 +5,8 @@
 #include <fstream>
 #include <TSQLServer.h>
 #include <TSQLStatement.h>
-#include <geom_svc/GeomSvc.h>
 #include <db_svc/DbSvc.h>
+#include "GeomSvc.h"
 #include "ChanMapTaiwan.h"
 using namespace std;
 

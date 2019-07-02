@@ -12,9 +12,11 @@ int UploadChanMap()
   //CalibParamXT map;
   //CalibParamInTimeTaiwan map;
   //CalibParamInTimeV1495 map;
+  //GeomParamPlane map;
 
   /// Set a map ID.
   const std::string map_id="e906run28740";
+//  const std::string map_id="G9_run5_2";
 
   map.SetMapIDbyFile(map_id);
   map.ReadFromFile();
