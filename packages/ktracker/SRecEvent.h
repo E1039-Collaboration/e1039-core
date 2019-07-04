@@ -305,7 +305,12 @@ public:
     SRecEvent();
 
     /// PHObject virtual overloads
-    void         identify(std::ostream& os = std::cout) const { os << "SRecEvent: TODO: NOT IMPLEMENTED!" << std::endl;}
+    void         identify(std::ostream& os = std::cout) const {
+      os
+      << " SRecEvent: { " << fRunID << ", " << fSpillID << ", " << fEventID << " } "
+      << " NTracks: " << fAllTracks.size()
+      << std::endl;
+    }
     void         Reset() {*this = SRecEvent();}
     int          isValid() const {return true;}
     SRecEvent*        Clone() const {return (new SRecEvent(*this));}
