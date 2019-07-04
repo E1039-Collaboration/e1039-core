@@ -80,7 +80,7 @@ void OnlMonCanvas::PreDraw(const bool at_end)
   m_pad_title.cd();
   TPaveText* pate = new TPaveText(.02, .52, .98, .98);
   oss.str("");
-  oss << m_title << " #" << m_num;
+  oss << m_title << ": C" << m_num;
   pate->AddText(oss.str().c_str());
   pate->Draw();
 

@@ -10,9 +10,7 @@ class OnlMonUI {
   bool m_auto_cycle;
   int  m_interval; //< Cycle interval in second
   pthread_t m_thread_id;
-  OnlMonClientList_t m_list_omc;
-
-  TGTextButton*  button[99];
+  OnlMonClientList_t* m_list_omc;
 
  public:
   OnlMonUI(OnlMonClientList_t* list);
@@ -22,11 +20,11 @@ class OnlMonUI {
   bool GetAutoCycleFlag()    { return m_auto_cycle; }
   void SetCycleInterval(int val) { m_interval = val; }
   int  GetCycleInterval() { return m_interval; }
-
-  void BuildInterface();
-  void StartAutoCycle();
+  void Run();
 
  protected:
+  void BuildInterface();
+  void StartAutoCycle();
   static void* FuncAutoCycle(void* arg);
   void RunAutoCycle();
 };
