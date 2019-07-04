@@ -76,11 +76,18 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 {
   SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (!event) return Fun4AllReturnCodes::ABORTEVENT;
+
+  pthread_mutex_t mutex;
+  OnlMonServer::instance()->GetMutex(mutex);
+  pthread_mutex_lock(&mutex);
+
   m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
   m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
   m_h1_basic_info->AddBinContent(BIN_N_EVT, 1);
 
-  return ProcessEventOnlMon(topNode);
+  int ret = ProcessEventOnlMon(topNode);
+  pthread_mutex_unlock(&mutex);
+  return ret;
 }
 
 int OnlMonClient::End(PHCompositeNode* topNode)

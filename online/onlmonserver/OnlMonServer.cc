@@ -23,8 +23,6 @@ int ServerThread = 0;
 static TThread *ServerThread = NULL;
 #endif
 
-pthread_mutex_t mutex;
-
 std::string OnlMonServer::m_out_dir      = "/data2/e1039/onlmon/plots";
 std::string OnlMonServer::m_onl_mon_host = "localhost";
 int         OnlMonServer::m_onl_mon_port = 9081;
@@ -91,9 +89,7 @@ void OnlMonServer::StartServer()
  */
 bool OnlMonServer::CloseExistingServer()
 {
-  string host = OnlMonServer::GetHost();
-  int    port = OnlMonServer::GetPort();
-  TSocket sock(host.c_str(), port);
+  TSocket sock(GetHost().c_str(), GetPort());
   if (! sock.IsValid()) return false;
 
   sock.Send("Suicide");
@@ -105,85 +101,54 @@ bool OnlMonServer::CloseExistingServer()
 
 void* OnlMonServer::FuncServer(void* arg)
 {
-  const int MONIPORT=9081;
-  const int NUMMONIPORT=5;
+  const int N_MONI_PORT = 1; // 5; // OnlMonClient supports only "1" at present.
   OnlMonServer* se = (OnlMonServer*)arg;
-
   if (se->Verbosity() > 1) cout << "OnlMonServer::FuncServer(): start." << endl;
 
-  int MoniPort = MONIPORT;
-  //  int thread_arg[5];
-  //pthread_mutex_lock(&mutex);
-
-  //TH1 *h1 = new TH1F("serverhisto","serverhisto info histo",2,0,1);
-  //se->registerHisto(h1);
-
-  TServerSocket *ss = NULL;
+  int MoniPort;
+  TServerSocket* ss = 0;
   sleep(5);
-  do
-    {
-      if (ss)
-        {
-          delete ss;
-        }
-      ss = new TServerSocket(MoniPort, kTRUE);
-      // Accept a connection and return a full-duplex communication socket.
-//      se->PortNumber(MoniPort);
-      MoniPort++;
-      if ((MoniPort - MONIPORT) >= NUMMONIPORT)
-        {
-          ostringstream msg;
-          msg << "Too many Online Monitors running on this machine, bailing out" ;
-	  cout << msg.str() << endl;
-          exit(1);
-        }
-      if (!ss->IsValid())
-        {
-          printf("Ignore ROOT error about socket in use, I try another one\n");
-        }
-    }
-  while (!ss->IsValid()); // from do{}while
-
-  if (se->Verbosity() > 1) cout << "OnlMonServer::RemoveSockets():" << endl;
+  for (int ip = 0; ip < N_MONI_PORT; ip++) {
+    MoniPort = GetPort() + ip;
+    ss = new TServerSocket(MoniPort, kTRUE);
+    if (ss->IsValid()) break;
+    delete ss;
+    ss = 0;
+  }
+  if (! ss) {
+    cout << "Too many Online Monitors running on this machine, bailing out." << endl;
+    exit(1);
+  }
+  se->SetPort(MoniPort);
+  if (se->Verbosity() > 1) {
+    cout << "  Port = " << MoniPort << endl
+         << "OnlMonServer::RemoveSockets():" << endl;
+  }
   // root keeps a list of sockets and tries to close them when quitting.
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
-
   sleep(5);
-  //pthread_mutex_unlock(&mutex);
 
  again:
   if (se->Verbosity() > 1) cout << "OnlMonServer::WaitForConnection():" << endl;
   TSocket *s0 = ss->Accept();
-  if (!s0)
-    {
-      cout << "Server socket " << MONIPORT
-	   << " in use, either go to a different node or" << endl
-	   << "change MONIPORT in server/PortNumber.h and recompile" << endl
-	   << "server and client" << endl;
-      exit(1);
-    }
+  if (!s0) {
+    cout << "Server socket " << MoniPort << " in use, either go to a different node or change MONIPORT and recompile server and client.  Abort." << endl;
+    exit(1);
+  }
   // mutex protected since writing of histo
   // to outgoing buffer and updating by other thread do not
   // go well together
-  if (se->Verbosity() > 2)
-    {
-      TInetAddress adr = s0->GetInetAddress();
-      cout << "got connection from " << endl;
-      adr.Print();
-    }
-  //  cout << "try locking mutex" << endl;
-  //pthread_mutex_lock(&mutex);
-  //cout << "got mutex" << endl;
+  if (se->Verbosity() > 2) {
+    TInetAddress adr = s0->GetInetAddress();
+    cout << "got connection from " << endl;
+    adr.Print();
+  }
   se->HandleConnection(s0);
-  //cout << "try releasing mutex" << endl;
-  //pthread_mutex_unlock(&mutex);
-  //cout << "mutex released" << endl;
   delete s0;
-  //cout << "closing socket" << endl;
   //s0->Close();
   if (se->GetGoEnd()) return 0;
   goto again;
@@ -228,6 +193,8 @@ void OnlMonServer::HandleConnection(TSocket* sock)
         string name_subsys = msg_str.substr(7);
         Fun4AllHistoManager* hm = getHistoManager(name_subsys);
         if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
+
+        pthread_mutex_lock(&mutex);
         for (unsigned int i = 0; i < hm->nHistos(); i++) {
           TH1 *histo = (TH1 *) hm->getHisto(i);
           if (! histo) continue;
@@ -239,6 +206,8 @@ void OnlMonServer::HandleConnection(TSocket* sock)
           delete mess;
           mess = 0;
         }
+        pthread_mutex_unlock(&mutex);
+
         sock->Send("Finished");
       } else {
         if (Verbosity() > 2) cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;

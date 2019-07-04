@@ -40,7 +40,7 @@ class OnlMonServer : public Fun4AllServer
   OnlMonServer(const std::string &name = "OnlMonServer");
 
 #ifndef __CINT__
-  pthread_mutex_t mutex;
+  pthread_mutex_t mutex; //< Control the access to subsystem histograms.
   pthread_t serverthreadid;
 #endif
 
