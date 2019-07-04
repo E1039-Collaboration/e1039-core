@@ -18,8 +18,7 @@ CodaInputManager::CodaInputManager() :
 int CodaInputManager::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait, const int n_evt_pre_read)
 {
   if (! file_exists(fname)) {
-    cerr << "!!ERROR!!  Coda file does not exist: " << fname << ".\n"
-	 << "Exiting...\n";
+    cerr << "!!ERROR!!  Coda file does not exist: " << fname << "." << endl;
     return 1;
   }
   m_fname = fname;
@@ -80,18 +79,18 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
   if (ret != 0 && m_online && m_run > 0) { // try to recover
     cout << "No new event seems available for now.  Try to recover." << endl;
     if (file_exists(UtilOnline::GetEndFilePath(m_run))) {
-      cout << "Exiting since the END file exists.\n";
+      cout << "Exiting since the END file exists." << endl;
       ForceEnd();
       return false;
     }
 
     if (file_exists(UtilOnline::GetCodaFilePath(m_run+1))) {
-      cout << "Exiting since the next run file exists.\n";
+      cout << "Exiting since the next run file exists." << endl;
       ForceEnd();
       return false;
     }
     // Re-open the file, requring a larger file size
-    ret = OpenFile(m_fname, m_file_size + 32768, 5, 20, m_event_count);
+    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20, m_event_count);
   }
   if (ret != 0) {
     ForceEnd();

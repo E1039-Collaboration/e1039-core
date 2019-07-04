@@ -24,7 +24,7 @@ void FindExistingRuns(vector<int>& list_run)
   //cout << endl;
 }
 
-void StartDecoder(const int run)
+void StartDecoder(const int run, const int n_evt=0, const bool is_online=true)
 {
   ostringstream oss;
   oss << "/dev/shm/decoder_maindaq";
@@ -33,7 +33,7 @@ void StartDecoder(const int run)
   string fn_log = oss.str();
   oss.str("");
   oss << "root.exe -b -q '" << gSystem->Getenv("E1039_CORE")
-      << "/macros/Fun4MainDaq.C(" << run << ", 0, true)' &>" << fn_log << " &";
+      << "/macros/Fun4MainDaq.C(" << run << ", " << n_evt << ", " << is_online << ")' &>" << fn_log << " &";
 
   cout << "Start the decoder for run " << run << ":\n"
        << "  Log file = " << fn_log << "\n"

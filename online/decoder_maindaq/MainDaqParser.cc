@@ -60,7 +60,7 @@ int MainDaqParser::ParseOneSpill()
   if (call_1st) call_1st = false;
   else if (dec_par.time_wait > 0) {
     cout << "...sleep(" << dec_par.time_wait << ") to pretend waiting for next spill..." << endl;
-    sleep(dec_par.time_wait);
+    for (int ii = dec_par.time_wait; ii > 0; ii--) sleep(1); // Looped to accept the online-monitor connection.
     cout << "...done." << endl;
   }
 
