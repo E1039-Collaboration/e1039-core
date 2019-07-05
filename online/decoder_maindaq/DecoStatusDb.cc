@@ -5,7 +5,7 @@
 using namespace std;
 
 DecoStatusDb::DecoStatusDb() :
-  m_name_schema("user_e1039_maindaq_decoder"),
+  m_name_schema("user_e1039_maindaq"),
   m_name_table ("deco_status")
 {
   m_db = new DbSvc(DbSvc::DB1);
@@ -23,11 +23,11 @@ void DecoStatusDb::InitTable(const bool refresh)
   if (refresh && m_db->HasTable(m_name_table)) m_db->DropTable(m_name_table);
   if (! m_db->HasTable(m_name_table)) {
     DbSvc::VarList list;
-    list.Add("run"    , "INT", true);
-    list.Add("status" , "INT");
-    list.Add("utime_b", "INT");
-    list.Add("utime_e", "INT");
-    list.Add("result" , "INT");
+    list.Add("run_id" , "INT", true);
+    list.Add("deco_status" , "INT");
+    list.Add("deco_utime_b", "INT");
+    list.Add("deco_utime_e", "INT");
+    list.Add("deco_result" , "INT");
     m_db->CreateTable(m_name_table, list);
   }
 
@@ -46,7 +46,7 @@ void DecoStatusDb::RunStarted(const int run, int utime)
   InitTable();
 
   ostringstream oss;
-  oss << "delete from " << m_name_table << " where run = " << run;
+  oss << "delete from " << m_name_table << " where run_id = " << run;
   if (! m_db->Con()->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DecoStatusDb::RunStarted()." << endl;
     return;
@@ -64,7 +64,7 @@ void DecoStatusDb::RunFinished(const int run, const int result, int utime)
   if (utime == 0) utime = time(0);
 
   ostringstream oss;
-  oss << "update " << m_name_table << " set status = " << FINISHED << ", utime_e = " << utime << ", result = " << result << " where run = " << run;
+  oss << "update " << m_name_table << " set deco_status = " << FINISHED << ", deco_utime_e = " << utime << ", deco_result = " << result << " where run_id = " << run;
   if (! m_db->Con()->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DecoStatusDb::RunFinished()." << endl;
     return;
