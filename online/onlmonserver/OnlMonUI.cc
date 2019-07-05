@@ -1,4 +1,6 @@
 #include <iostream>
+#include <sys/stat.h>
+#include <TSystem.h>
 #include <TGFrame.h>
 #include <TGTextView.h>
 #include <TGButton.h>
@@ -23,8 +25,17 @@ void OnlMonUI::BuildInterface()
   TGMainFrame* frame = new TGMainFrame(gClient->GetRoot(), 200, 900);
   frame->SetWMPosition(0, 0); // Often ignored by the window manager
 
-  TGTextView* head = new TGTextView(frame, 200, 50, "E1039 OnlMon Selector");
-  frame->AddFrame(head); 
+  string fn_img = gSystem->Getenv("E1039_RESOURCE");
+  fn_img += "/image/onlmon_banner.png";
+  struct stat st;
+  if (stat(fn_img.c_str(), &st) == 0) {
+    TGPictureButton* head2 = new TGPictureButton(frame, fn_img.c_str());
+    head2->SetCommand("cout << \">> E1039 Online Monitor <<\" << endl;");
+    frame->AddFrame(head2);
+  } else {
+    TGTextView* head = new TGTextView(frame, 200, 40, "E1039 Online Monitor");
+    frame->AddFrame(head); 
+  }
 
   TGTextButton*  button[99];
   for (unsigned int ii = 0; ii < m_list_omc->size(); ii++) {

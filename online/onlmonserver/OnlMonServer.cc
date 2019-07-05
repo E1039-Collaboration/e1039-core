@@ -23,9 +23,10 @@ int ServerThread = 0;
 static TThread *ServerThread = NULL;
 #endif
 
-std::string OnlMonServer::m_out_dir      = "/data2/e1039/onlmon/plots";
-std::string OnlMonServer::m_onl_mon_host = "localhost";
-int         OnlMonServer::m_onl_mon_port = 9081;
+std::string OnlMonServer::m_out_dir    = "/data2/e1039/onlmon/plots";
+std::string OnlMonServer::m_mon_host   = "localhost";
+int         OnlMonServer::m_mon_port   = 9081;
+int         OnlMonServer::m_mon_n_port = 5;
 
 OnlMonServer *OnlMonServer::instance()
 {
@@ -51,7 +52,7 @@ OnlMonServer::~OnlMonServer()
 
 void OnlMonServer::StartServer()
 {
-  if (Verbosity() > 2) cout << "OnlMonServer::StartServer(): start." << endl;
+  cout << "OnlMonServer::StartServer():  Start." << endl;
   //  gBenchmark->Start("phnxmon");
 
   //GetMutex(mutex);
@@ -61,12 +62,7 @@ void OnlMonServer::StartServer()
   pthread_t ThreadId = 0;
   if (!ServerThread)
     {
-      while (CloseExistingServer()) {
-        if (Verbosity() > 0) cout << "Closing the existing server." << endl;
-        sleep(1);
-      }
       if (Verbosity() > 2) cout << "  Creating server thread." << endl;
-
 #ifdef SERVER
       ServerThread = pthread_create(&ThreadId, NULL, FuncServer, this);
       SetThreadId(ThreadId);
@@ -79,55 +75,60 @@ void OnlMonServer::StartServer()
 
 #endif
   //pthread_mutex_unlock(&mutex);
-  if (Verbosity() > 1) cout << "OnlMonServer::StartServer(): finish." << endl;
+  //if (Verbosity() > 1) cout << "OnlMonServer::StartServer(): finish." << endl;
+  cout << "  Started." << endl;
   return;
 }
 
 /// Close an existing server process if such exists.
 /** It is possible that multiple decoding processes run in parallel on multiple runs.
  *  This function tries to keep the server of only the lastest process (which is expected to hanle the lastest run).
+ *
+ * Actually this function does not work properly, as found on 2019-07-05.  The existing onlmon server does suicides itself, but its port is kept open until the whole server process finishes.  Thus probably we need to use multiple ports, as done in the original PHENIX code.
  */
-bool OnlMonServer::CloseExistingServer()
+bool OnlMonServer::CloseExistingServer(const int port)
 {
-  TSocket sock(GetHost().c_str(), GetPort());
-  if (! sock.IsValid()) return false;
-
-  sock.Send("Suicide");
-  TMessage *mess = 0;
-  sock.Recv(mess); // Just check a response.
-  delete mess;
-  return true;
+  TSocket sock(m_mon_host.c_str(), port);
+  if (sock.IsValid()) {
+    cout << "  Close the existing onlmon server at " << port << "." << endl;
+    sock.Send("Suicide");
+    //TMessage *mess = 0;
+    //sock.Recv(mess); // Just check a response.
+    //delete mess;
+    return true;
+  } else {
+    //cout << "No onlmon server exists." << endl;
+    return false;
+  }
 }
 
 void* OnlMonServer::FuncServer(void* arg)
 {
-  const int N_MONI_PORT = 1; // 5; // OnlMonClient supports only "1" at present.
   OnlMonServer* se = (OnlMonServer*)arg;
   if (se->Verbosity() > 1) cout << "OnlMonServer::FuncServer(): start." << endl;
 
-  int MoniPort;
-  TServerSocket* ss = 0;
   sleep(5);
-  for (int ip = 0; ip < N_MONI_PORT; ip++) {
-    MoniPort = GetPort() + ip;
-    ss = new TServerSocket(MoniPort, kTRUE);
+  TServerSocket* ss = 0;
+  int port;
+  for (port = m_mon_port; port < m_mon_port + m_mon_n_port; port++) {
+    if (se->CloseExistingServer(port)) continue; // Not try to use the port closed now
+    ss = new TServerSocket(port, kTRUE);
     if (ss->IsValid()) break;
     delete ss;
     ss = 0;
   }
   if (! ss) {
-    cout << "Too many Online Monitors running on this machine, bailing out." << endl;
-    exit(1);
+    cout << "Too many online-monitor servers are running.  Start none." << endl;
+    return 0;
   }
-  se->SetPort(MoniPort);
-  if (se->Verbosity() > 1) {
-    cout << "  Port = " << MoniPort << endl
-         << "OnlMonServer::RemoveSockets():" << endl;
-  }
+  m_mon_port = port;
+  cout << "  Port = " << port << endl;
+
   // root keeps a list of sockets and tries to close them when quitting.
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
+  if (se->Verbosity() > 1) cout << "OnlMonServer::RemoveSockets():" << endl;
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
   sleep(5);
@@ -136,7 +137,7 @@ void* OnlMonServer::FuncServer(void* arg)
   if (se->Verbosity() > 1) cout << "OnlMonServer::WaitForConnection():" << endl;
   TSocket *s0 = ss->Accept();
   if (!s0) {
-    cout << "Server socket " << MoniPort << " in use, either go to a different node or change MONIPORT and recompile server and client.  Abort." << endl;
+    cout << "Server socket " << port << " in use, either go to a different node or change the port and recompile server and client.  Abort." << endl;
     exit(1);
   }
   // mutex protected since writing of histo
@@ -150,7 +151,10 @@ void* OnlMonServer::FuncServer(void* arg)
   se->HandleConnection(s0);
   delete s0;
   //s0->Close();
-  if (se->GetGoEnd()) return 0;
+  if (se->GetGoEnd()) {
+    cout << "OnlMonServer::FuncServer():  End." << endl;
+    return 0;
+  }
   goto again;
 }
 
@@ -184,11 +188,12 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       if (msg_str == "Finished") {
         break;
       } else if (msg_str == "Suicide") {
+        cout << "OnlMonServer::HandleConnection():  Suicide." << endl;
         m_go_end = true;
         sock->Send("OK");
-      } else if (msg_str == "Ack") {
-        if (Verbosity() > 2) cout << "  Acknowledged." << endl;
-        continue;
+      } else if (msg_str == "Ping") {
+        if (Verbosity() > 2) cout << "  Ping." << endl;
+        sock->Send("Pong");
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
         string name_subsys = msg_str.substr(7);
         Fun4AllHistoManager* hm = getHistoManager(name_subsys);
