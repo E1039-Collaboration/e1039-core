@@ -339,7 +339,7 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 			gphi[n_tracks] = mom.Phi();
 
 			// trackID + detID -> SQHit -> PHG4Hit -> momentum
-			for(int det_id=7; det_id<=12; ++det_id) {
+			for(int det_id=1; det_id<=12; ++det_id) {
 				auto iter = parID_detID_ihit.find(std::make_tuple(parID, det_id));
 				if(iter != parID_detID_ihit.end()) {
 					if(verbosity >= Fun4AllBase::VERBOSITY_A_LOT) {
@@ -639,7 +639,7 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
 			par_id[n_tracks] = parID;
 
   		// trackID + detID -> SQHit -> PHG4Hit -> momentum
-  		for(int det_id=7; det_id<=12; ++det_id) {
+  		for(int det_id=1; det_id<=12; ++det_id) {
   			auto iter = parID_detID_ihit.find(std::make_tuple(parID, det_id));
   			if(iter != parID_detID_ihit.end()) {
 					if(verbosity >= 2) {
