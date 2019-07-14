@@ -143,6 +143,7 @@ private:
 	int gndc[1000];
 	int gnhodo[1000];
 	int gnprop[1000];
+	int gndp[1000];
 	int ntruhits[1000];
 	int nhits[1000];
 	int charge[1000];
@@ -161,7 +162,7 @@ private:
 	float py_st1[1000];
 	float pz_st1[1000];
 
-	int gelmid[1000][55];
+	int gelmid[1000][128];
 
 	int gndimu;
 	float dimu_gpx[1000];

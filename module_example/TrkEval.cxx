@@ -48,6 +48,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#define NDET 62
 #define LogDebug(exp)		std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogError(exp)		std::cout<<"ERROR: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
 #define LogWarning(exp)	    std::cout<<"WARNING: "<<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
@@ -136,6 +137,7 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 	std::map<int, int> parID_nhits_dc;
 	std::map<int, int> parID_nhits_hodo;
 	std::map<int, int> parID_nhits_prop;
+	std::map<int, int> parID_nhits_dp;
 
 	std::map<int, std::map<int, int> > parID_detid_elmid;
 
@@ -173,6 +175,12 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
         		parID_nhits_prop[track_id] = parID_nhits_prop[track_id]+1;
         	else
         		parID_nhits_prop[track_id] = 1;
+      	}
+      	if(hit->get_detector_id() >= 55 and hit->get_detector_id() <=62) {
+        	if(parID_nhits_dp.find(track_id)!=parID_nhits_dp.end())
+        		parID_nhits_dp[track_id] = parID_nhits_dp[track_id]+1;
+        	else
+        		parID_nhits_dp[track_id] = 1;
       	}
       }
     }
@@ -339,7 +347,7 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
 			gphi[n_tracks] = mom.Phi();
 
 			// trackID + detID -> SQHit -> PHG4Hit -> momentum
-			for(int det_id=7; det_id<=12; ++det_id) {
+			for(int det_id=1; det_id<=12; ++det_id) {
 				auto iter = parID_detID_ihit.find(std::make_tuple(parID, det_id));
 				if(iter != parID_detID_ihit.end()) {
 					if(verbosity >= Fun4AllBase::VERBOSITY_A_LOT) {
@@ -370,11 +378,13 @@ int TrkEval::RecoEval(PHCompositeNode* topNode)
   		gnhits[n_tracks] =
   				parID_nhits_dc[parID] +
 					parID_nhits_hodo[parID] +
-					parID_nhits_prop[parID];
+					parID_nhits_prop[parID] +
+          parID_nhits_dp[parID];
 
   		gndc[n_tracks] = parID_nhits_dc[parID];
   		gnhodo[n_tracks] = parID_nhits_hodo[parID];
   		gnprop[n_tracks] = parID_nhits_prop[parID];
+  		gndp[n_tracks] = parID_nhits_dp[parID];
 		}
 		++n_tracks;
 		if(n_tracks>=1000) break;
@@ -427,6 +437,7 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
 	std::map<int, int> parID_nhits_dc;
 	std::map<int, int> parID_nhits_hodo;
 	std::map<int, int> parID_nhits_prop;
+	std::map<int, int> parID_nhits_dp;
 
 	std::map<int, std::map<int, int> > parID_detid_elmid;
 
@@ -486,6 +497,12 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
         		parID_nhits_prop[track_id] = parID_nhits_prop[track_id]+1;
         	else
         		parID_nhits_prop[track_id] = 1;
+      	}
+      	if(hit->get_detector_id() >= 55 and hit->get_detector_id() <=62) {
+        	if(parID_nhits_dp.find(track_id)!=parID_nhits_dp.end())
+        		parID_nhits_dp[track_id] = parID_nhits_dp[track_id]+1;
+        	else
+        		parID_nhits_dp[track_id] = 1;
       	}
 
 
@@ -639,7 +656,7 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
 			par_id[n_tracks] = parID;
 
   		// trackID + detID -> SQHit -> PHG4Hit -> momentum
-  		for(int det_id=7; det_id<=12; ++det_id) {
+  		for(int det_id=1; det_id<=12; ++det_id) {
   			auto iter = parID_detID_ihit.find(std::make_tuple(parID, det_id));
   			if(iter != parID_detID_ihit.end()) {
 					if(verbosity >= 2) {
@@ -671,17 +688,19 @@ int TrkEval::TruthEval(PHCompositeNode* topNode)
   		gnhits[n_tracks] =
   				parID_nhits_dc[parID] +
 					parID_nhits_hodo[parID] +
-					parID_nhits_prop[parID];
+					parID_nhits_prop[parID] +
+          parID_nhits_dp[parID];
 
   		gndc[n_tracks] = parID_nhits_dc[parID];
   		gnhodo[n_tracks] = parID_nhits_hodo[parID];
   		gnprop[n_tracks] = parID_nhits_prop[parID];
+  		gndp[n_tracks] = parID_nhits_dp[parID];
 
   		for(auto detid_elmid : parID_detid_elmid[parID]) {
   			int detid = detid_elmid.first;
   			int elmid = detid_elmid.second;
-  			if(detid>=55) {
-  				LogWarning("detid>=55");
+  			if(detid>NDET) {
+  				LogWarning("detid>NDET");
   				continue;
   			}
   			gelmid[n_tracks][detid] = elmid;
@@ -887,7 +906,8 @@ int TrkEval::InitEvalTree() {
   _tout_truth->Branch("gndc",          gndc,                "gndc[n_tracks]/I");
   _tout_truth->Branch("gnhodo",        gnhodo,              "gnhodo[n_tracks]/I");
   _tout_truth->Branch("gnprop",        gnprop,              "gnprop[n_tracks]/I");
-  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_tracks][54]/I");
+  _tout_truth->Branch("gndp",          gndp,                "gndp[n_tracks]/I");
+  _tout_truth->Branch("gelmid",        gelmid,              "gelmid[n_tracks][128]/I");
 
   _tout_truth->Branch("ntruhits",      ntruhits,            "ntruhits[n_tracks]/I");
   _tout_truth->Branch("nhits",         nhits,               "nhits[n_tracks]/I");
@@ -951,7 +971,8 @@ int TrkEval::InitEvalTree() {
   _tout_reco->Branch("gndc",          gndc,                "gndc[n_tracks]/I");
   _tout_reco->Branch("gnhodo",        gnhodo,              "gnhodo[n_tracks]/I");
   _tout_reco->Branch("gnprop",        gnprop,              "gnprop[n_tracks]/I");
-  //_tout_reco->Branch("gelmid",        gelmid,              "gelmid[n_tracks][54]/I");
+  _tout_reco->Branch("gndp",          gndp,                "gndp[n_tracks]/I");
+  //_tout_reco->Branch("gelmid",        gelmid,              "gelmid[n_tracks][128]/I");
 
   _tout_reco->Branch("ntruhits",      ntruhits,            "ntruhits[n_tracks]/I");
   _tout_reco->Branch("nhits",         nhits,               "nhits[n_tracks]/I");
@@ -1021,8 +1042,9 @@ int TrkEval::ResetEvalVars() {
     gndc[i]       = std::numeric_limits<int>::max();
     gnhodo[i]     = std::numeric_limits<int>::max();
     gnprop[i]     = std::numeric_limits<int>::max();
+    gndp[i]       = std::numeric_limits<int>::max();
 
-    for(int j=0; j<55; ++j) {
+    for(int j=0; j<NDET+1; ++j) {
     	gelmid[i][j] = std::numeric_limits<int>::max();
     }
 
