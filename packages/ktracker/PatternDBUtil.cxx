@@ -106,7 +106,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 	int n_particles = 0;
 	int gndc[1000];
-	int elmid [1000][128];
+	int elmid [1000][55];
 
 	T->SetBranchAddress("n_tracks", &n_particles);
 	T->SetBranchAddress("gelmid", &elmid);
