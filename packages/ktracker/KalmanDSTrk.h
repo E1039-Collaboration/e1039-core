@@ -49,7 +49,10 @@ public:
 			const PHField* field,
 			const TGeoManager *geom,
 			bool enable_KF = true,
-			int DS_level = KalmanDSTrk::NO_DS);
+			int DS_level = KalmanDSTrk::NO_DS,
+			const std::string sim_db_name = "",
+      const std::string pattern_db_name = ""
+			);
 
 	~KalmanDSTrk();
 
@@ -126,6 +129,22 @@ public:
 	/// Tool, a simple-minded chi square fit
 	/// Y = a*X + b
 	void chi2fit(int n, double x[], double y[], double& a, double& b);
+
+  const std::string& get_pattern_db_name() const {
+    return _pattern_db_name;
+  }
+
+  void set_pattern_db_name(const std::string& patternDbName) {
+    _pattern_db_name = patternDbName;
+  }
+
+  const std::string& get_sim_db_name() const {
+    return _sim_db_name;
+  }
+
+  void set_sim_db_name(const std::string& simDbName) {
+    _sim_db_name = simDbName;
+  }
 
 private:
 
@@ -222,7 +241,9 @@ private:
     const bool _enable_KF;
 
     // Dictionary search
-    const int _DS_level;
+    int _DS_level;
+    std::string _sim_db_name;
+    std::string _pattern_db_name;
 
     /*
     //typedef std::tuple<unsigned char, unsigned char, unsigned char, unsigned char> TrackletKey;
