@@ -106,7 +106,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 
 	int n_particles = 0;
 	int gndc[1000];
-	int elmid [1000][55];
+	int elmid [1000][128];
 
 	T->SetBranchAddress("n_tracks", &n_particles);
 	T->SetBranchAddress("gelmid", &elmid);
@@ -227,12 +227,12 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	      nacc_23 = 0;
 	      nacc_123 = 0;
 
-				LogInfo("ntrack: "<< ntrack);
-				LogInfo("acc_prob_1: "<< acc_prob_1);
-				LogInfo("acc_prob_2: "<< acc_prob_2);
-				LogInfo("acc_prob_3: "<< acc_prob_3);
-				LogInfo("acc_prob_23: "<< acc_prob_23);
-				LogInfo("acc_prob_123: "<< acc_prob_123);
+        //LogInfo("ntrack: "<< ntrack);
+        //LogInfo("acc_prob_1: "<< acc_prob_1);
+        //LogInfo("acc_prob_2: "<< acc_prob_2);
+        //LogInfo("acc_prob_3: "<< acc_prob_3);
+        //LogInfo("acc_prob_23: "<< acc_prob_23);
+        //LogInfo("acc_prob_123: "<< acc_prob_123);
 			}
 			++ntrack;
 #endif
@@ -242,7 +242,7 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	if(verbosity >= 2) {
 		LogInfo("PatternDBUtil::BuildPatternDB from " << fin);
 		LogInfo("db_st23.size(): " << db.St23.size());
-		db.print();
+		//db.print();
 	}
 
 	//TODO remove this debug code

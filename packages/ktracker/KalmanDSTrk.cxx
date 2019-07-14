@@ -108,6 +108,7 @@ KalmanDSTrk::KalmanDSTrk(
 			} else if(_sim_db_name != "") {
         std::cout <<"KalmanDSTrk::KalmanDSTrk: load DB from sim db: "<< _sim_db_name << std::endl;
 			  _timers["build_db"]->restart();
+        _pattern_db = new PatternDB();
         PatternDBUtil::BuildPatternDB(_sim_db_name, "PatternDB_tmp.root", *_pattern_db);
         _timers["build_db"]->stop();
 			} else {
