@@ -98,8 +98,6 @@ KalmanDSTrk::KalmanDSTrk(
 
   	if(_DS_level > KalmanDSTrk::NO_DS) {
 
-			PatternDBUtil::Verbosity(verbosity);
-
 			if(_pattern_db_name != "") {
 			  std::cout <<"KalmanDSTrk::KalmanDSTrk: load DB from pattern db: "<< _pattern_db_name << std::endl;
         _timers["load_db"]->restart();
