@@ -17,12 +17,15 @@
 
 #define _D1_1_6_
 
-#define _RESOLUTION1_ 2
-#define _RESOLUTION2_ 2
-#define _RESOLUTION3_ 2
+//#define _RESOLUTION1_ 2
+//#define _RESOLUTION2_ 2
+//#define _RESOLUTION3_ 2
 
 int PatternDBUtil::verbosity = 0;
-
+bool PatternDBUtil::_loose_mode = false;
+int PatternDBUtil::_RESOLUTION1_ = 2;
+int PatternDBUtil::_RESOLUTION2_ = 2;
+int PatternDBUtil::_RESOLUTION3_ = 2;
 
 std::map<unsigned int, unsigned int> PatternDBUtil::_detid_view = {
 		{3, 0},
@@ -227,12 +230,12 @@ int PatternDBUtil::BuildPatternDB(const std::string &fin, const std::string & fo
 	      nacc_23 = 0;
 	      nacc_123 = 0;
 
-				LogInfo("ntrack: "<< ntrack);
-				LogInfo("acc_prob_1: "<< acc_prob_1);
-				LogInfo("acc_prob_2: "<< acc_prob_2);
-				LogInfo("acc_prob_3: "<< acc_prob_3);
-				LogInfo("acc_prob_23: "<< acc_prob_23);
-				LogInfo("acc_prob_123: "<< acc_prob_123);
+        //LogInfo("ntrack: "<< ntrack);
+        //LogInfo("acc_prob_1: "<< acc_prob_1);
+        //LogInfo("acc_prob_2: "<< acc_prob_2);
+        //LogInfo("acc_prob_3: "<< acc_prob_3);
+        //LogInfo("acc_prob_23: "<< acc_prob_23);
+        //LogInfo("acc_prob_123: "<< acc_prob_123);
 			}
 			++ntrack;
 #endif
@@ -424,16 +427,26 @@ TrackletKey PatternDBUtil::EncodeTrackletKey(
 		return PatternDB::ERR_KEY;
 	}
 
-	if(X == 0 and U == 0 and V == 0) {
+  int x = X;
+  int u = U;
+  int v = V;
+
+  if(_loose_mode) {
+    x = X > 0 ? X : Xp;
+    u = U > 0 ? U : Up;
+    v = V > 0 ? V : Vp;
+  }
+
+	if(x == 0 and u == 0 and v == 0) {
 		return PatternDB::ERR_KEY;
 	}
 
 	if(ST == PatternDB::DC1)
-		return TrackletKey(ST, X/_RESOLUTION1_, U/_RESOLUTION1_, V/_RESOLUTION1_);
+		return TrackletKey(ST, x/_RESOLUTION1_, u/_RESOLUTION1_, v/_RESOLUTION1_);
 	else if(ST == PatternDB::DC2)
-		return TrackletKey(ST, X/_RESOLUTION2_, U/_RESOLUTION2_, V/_RESOLUTION2_);
+		return TrackletKey(ST, x/_RESOLUTION2_, u/_RESOLUTION2_, v/_RESOLUTION2_);
 	else
-		return TrackletKey(ST, X/_RESOLUTION3_, U/_RESOLUTION3_, V/_RESOLUTION3_);
+		return TrackletKey(ST, x/_RESOLUTION3_, u/_RESOLUTION3_, v/_RESOLUTION3_);
 }
 
 TrackletKey PatternDBUtil::GetTrackletKey(

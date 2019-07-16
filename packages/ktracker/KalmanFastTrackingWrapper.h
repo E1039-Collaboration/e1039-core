@@ -109,6 +109,22 @@ public:
 		_enable_event_reducer = enableEventReducer;
 	}
 
+  const std::string& get_pattern_db_name() const {
+    return _pattern_db_name;
+  }
+
+  void set_pattern_db_name(const std::string& patternDbName) {
+    _pattern_db_name = patternDbName;
+  }
+
+  const std::string& get_sim_db_name() const {
+    return _sim_db_name;
+  }
+
+  void set_sim_db_name(const std::string& simDbName) {
+    _sim_db_name = simDbName;
+  }
+
 private:
 
 	int InitField(PHCompositeNode *topNode);
@@ -125,6 +141,8 @@ private:
 	bool _enable_KF;
 	bool _enable_event_reducer;
 	int _DS_level;
+	std::string _sim_db_name;
+	std::string _pattern_db_name;
 
 	SRawEvent* BuildSRawEvent();
 

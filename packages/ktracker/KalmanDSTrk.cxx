@@ -37,10 +37,15 @@ KalmanDSTrk::KalmanDSTrk(
 		const PHField* field,
 		const TGeoManager *geom,
 		bool enable_KF,
-		int  DS_level)
+		int  DS_level,
+    const std::string sim_db_name,
+    const std::string pattern_db_name
+		)
 : verbosity(10)
 ,_enable_KF(enable_KF)
 ,_DS_level(DS_level)
+,_sim_db_name(sim_db_name)
+,_pattern_db_name(pattern_db_name)
 , _pattern_db(nullptr)
 {
     using namespace std;
@@ -93,28 +98,31 @@ KalmanDSTrk::KalmanDSTrk(
 
   	if(_DS_level > KalmanDSTrk::NO_DS) {
 
-			PatternDBUtil::Verbosity(10);
-			_timers["load_db"]->restart();
-			_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
-			_timers["load_db"]->stop();
-			if(_pattern_db) {
-				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB loaded. St23 size: "<< _pattern_db->St23.size() << std::endl;
-			} else {
-				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB NOT loaded. Try to build. " << std::endl;
-				_timers["build_db"]->restart();
+			if(_pattern_db_name != "") {
+			  std::cout <<"KalmanDSTrk::KalmanDSTrk: load DB from pattern db: "<< _pattern_db_name << std::endl;
+        _timers["load_db"]->restart();
+			  _pattern_db = PatternDBUtil::LoadPatternDB(_pattern_db_name);
+        _timers["load_db"]->stop();
+			} else if(_sim_db_name != "") {
+        std::cout <<"KalmanDSTrk::KalmanDSTrk: load DB from sim db: "<< _sim_db_name << std::endl;
+			  _timers["build_db"]->restart();
         _pattern_db = new PatternDB();
-				PatternDBUtil::BuildPatternDB("pattern_db.root", "PatternDB_tmp.root", *_pattern_db);
-				_timers["build_db"]->stop();
-				_timers["load_db"]->restart();
-				//_pattern_db = PatternDBUtil::LoadPatternDB("PatternDB.root");
-				_timers["load_db"]->stop();
+        PatternDBUtil::BuildPatternDB(_sim_db_name, "PatternDB_tmp.root", *_pattern_db);
+        _timers["build_db"]->stop();
+			} else {
+			  std::cout <<"KalmanDSTrk::KalmanDSTrk: no sim or pattern DB" << std::endl;
 			}
 
-			std::cout <<"KalmanDSTrk::KalmanDSTrk: St23 size: "<< _pattern_db->St23.size() << std::endl;
-    	std::cout << "================================================================" << std::endl;
-    	std::cout << "Build DB                    "<<_timers["build_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-    	std::cout << "Load DB                     "<<_timers["load_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-    	std::cout << "================================================================" << std::endl;
+			if(_pattern_db) {
+				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB loaded. St23 size: "<< _pattern_db->St23.size() << std::endl;
+	      std::cout << "================================================================" << std::endl;
+	      std::cout << "Build DB                    "<<_timers["build_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	      std::cout << "Load DB                     "<<_timers["load_db"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	      std::cout << "================================================================" << std::endl;
+			} else {
+				std::cout <<"KalmanDSTrk::KalmanDSTrk: DB NOT loaded - _DS_level set to 0 " << std::endl;
+				_DS_level = 0;
+			}
     }
 
     //Initialize minuit minimizer
