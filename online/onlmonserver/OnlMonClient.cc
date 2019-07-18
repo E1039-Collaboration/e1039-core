@@ -234,11 +234,12 @@ void OnlMonClient::RegisterHist(TH1* h1)
 int OnlMonClient::ReceiveHist()
 {
   string host = OnlMonServer::GetHost();
-  int   port0 = OnlMonServer::GetPort();
-  int  n_port = OnlMonServer::GetNumPorts();
+  int   port  = OnlMonServer::GetPort();
+  int   port0 = OnlMonServer::GetPort0();
+  int n_port  = OnlMonServer::GetNumPorts();
 
   TSocket* sock = 0;
-  for (int port = port0; port < port0 + n_port; port++) {
+  for (int ip = 0; ip < n_port; ip++) {
     bool port_ok = false;
     sock = new TSocket(host.c_str(), port);
     if (sock->IsValid()) {
@@ -260,8 +261,11 @@ int OnlMonClient::ReceiveHist()
     }
     delete sock;
     sock = 0;
+    port++;
+    if (port >= port0 + n_port) port -= n_port;
   }
   if (! sock) return 1;
+  OnlMonServer::SetPort(port);
   
   string comm = "SUBSYS:";
   comm += Name();

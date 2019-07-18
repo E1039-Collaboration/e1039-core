@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <TROOT.h>
@@ -121,10 +122,20 @@ void OnlMonCanvas::PostDraw(const bool at_end)
     oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << m_run;
     gSystem->mkdir(oss.str().c_str(), true);
 
+    oss << "/" << m_name << "_can" << m_num;
+    string path_base = oss.str(); // path without suffix
+
     int lvl = gErrorIgnoreLevel;
     gErrorIgnoreLevel = 1111; // Suppress the message by TCanvas::SaveAs().
-    oss << "/" << m_name << "_can" << m_num << ".png";
+    oss.str("");
+    oss << path_base << ".png";
     m_can.SaveAs(oss.str().c_str());
     gErrorIgnoreLevel = lvl;
+
+    oss.str("");
+    oss << path_base << ".txt";
+    ofstream ofs(oss.str().c_str());
+    ofs << m_mon_status << endl;
+    ofs.close();
   }
 }

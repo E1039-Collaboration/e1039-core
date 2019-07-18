@@ -26,6 +26,7 @@ static TThread *ServerThread = NULL;
 std::string OnlMonServer::m_out_dir    = "/data2/e1039/onlmon/plots";
 std::string OnlMonServer::m_mon_host   = "localhost";
 int         OnlMonServer::m_mon_port   = 9081;
+int         OnlMonServer::m_mon_port_0 = 9081;
 int         OnlMonServer::m_mon_n_port = 5;
 
 OnlMonServer *OnlMonServer::instance()
@@ -110,7 +111,7 @@ void* OnlMonServer::FuncServer(void* arg)
   sleep(5);
   TServerSocket* ss = 0;
   int port;
-  for (port = m_mon_port; port < m_mon_port + m_mon_n_port; port++) {
+  for (port = m_mon_port_0; port < m_mon_port_0 + m_mon_n_port; port++) {
     if (se->CloseExistingServer(port)) continue; // Not try to use the port closed now
     ss = new TServerSocket(port, kTRUE);
     if (ss->IsValid()) break;
@@ -189,8 +190,9 @@ void OnlMonServer::HandleConnection(TSocket* sock)
         break;
       } else if (msg_str == "Suicide") {
         cout << "OnlMonServer::HandleConnection():  Suicide." << endl;
-        m_go_end = true;
         sock->Send("OK");
+        m_go_end = true;
+        break;
       } else if (msg_str == "Ping") {
         if (Verbosity() > 2) cout << "  Ping." << endl;
         sock->Send("Pong");
@@ -215,9 +217,8 @@ void OnlMonServer::HandleConnection(TSocket* sock)
 
         sock->Send("Finished");
       } else {
-        if (Verbosity() > 2) cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;
-        delete mess;
-        mess = 0;
+        //if (Verbosity() > 2) 
+        cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;
       }
     } else {
       cerr << "OnlMonServer::HandleConnection():  Unexpected message ("
