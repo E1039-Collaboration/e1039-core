@@ -54,24 +54,24 @@ fi
 
 for package in "${packages[@]}"
 do
-	echo "================================================================"
-	echo $src/$package
+  echo "================================================================"
+  echo $src/$package
   if [ -d $build/$package ]; then
     echo "Previous build exists, will clean up."
     rm -rf $build/$package
   fi
 
-	mkdir -p $build/$package
-	cd $build/$package
-	echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
-	cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
-	make -j4 install
+  mkdir -p $build/$package
+  cd $build/$package
+  echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
+  cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
+  make -j4 install
 
-	ret=$?
-	if [ $ret -ne 0 ] ; then
-	    echo "Abort since ret = $ret."
-	    exit
-	fi
+  ret=$?
+  if [ $ret -ne 0 ] ; then
+    echo "Abort since ret = $ret."
+    exit
+  fi
 done
 
 cd $build
