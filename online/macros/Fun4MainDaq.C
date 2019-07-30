@@ -10,8 +10,10 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
-
   const bool use_onlmon = true;
+
+  DecoStatusDb deco_stat;
+  deco_stat.RunStarted(run);
 
   ostringstream oss;
   oss << UtilOnline::GetCodaFileDir() << "/" << UtilOnline::RunNum2CodaFile(run);
@@ -40,7 +42,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   se->registerSubsystem(new CalibXT());
 
   if (use_onlmon) { // Register the online-monitoring clients
-    se->StartServer();
+    if (is_online) se->StartServer();
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
@@ -66,6 +68,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   se->run(nevent);
   se->End();
+  deco_stat.RunFinished(run, 0); // always "result = 0" for now.
   
   delete se;
   cout << "Fun4MainDaq Done!" << endl;

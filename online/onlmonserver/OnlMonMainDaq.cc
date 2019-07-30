@@ -129,6 +129,8 @@ int OnlMonMainDaq::FindAllMonHist()
 int OnlMonMainDaq::DrawMonitor()
 {
   OnlMonCanvas* can = GetCanvas();
+  can->SetStatus(OnlMonCanvas::OK);
+
   TPad* pad = can->GetMainPad();
   pad->SetGrid();
   pad->Divide(1, 3);
@@ -152,25 +154,69 @@ int OnlMonMainDaq::DrawMonitor()
   oss.str("");
   oss << "N of triggered events = " << h1_cnt->GetBinContent(2) << " (all), " << h1_cnt->GetBinContent(3) << " (decoded)";
   pate->AddText(oss.str().c_str());
+
+  double n_all = h1_cnt->GetBinContent(4);
+  double n_bad = h1_cnt->GetBinContent(5);
   oss.str("");
-  oss << "N of Coda physics events = " << h1_cnt->GetBinContent(4) << " (all), " << h1_cnt->GetBinContent(5) << " (bad)";
+  oss << "N of Coda physics events = " << n_all << " (all), " << n_bad << " (bad)";
   pate->AddText(oss.str().c_str());
+
+  n_all = h1_cnt->GetBinContent(6);
+  n_bad = h1_cnt->GetBinContent(7);
   oss.str("");
-  oss << "N of Coda flush events = " << h1_cnt->GetBinContent(6) << " (all), " << h1_cnt->GetBinContent(7) << " (bad)";
+  oss << "N of Coda flush events = " << n_all << " (all), " << n_bad << " (bad)";
   pate->AddText(oss.str().c_str());
+  if (n_bad / n_all > 0.05) {
+    can->SetWorseStatus(OnlMonCanvas::ERROR);
+    can->AddMessage("Errors in >5% of Coda flush events.");
+  } else if (n_bad / n_all > 0.01) {
+    can->SetWorseStatus(OnlMonCanvas::WARN);
+    can->AddMessage("Errors in >1% of Coda flush events.");
+  }
+
+  n_all = h1_cnt->GetBinContent(8);
+  n_bad = h1_cnt->GetBinContent(10);
   oss.str("");
-  oss << "N of Taiwan TDC hits = " << h1_cnt->GetBinContent(8) << " (all), " << h1_cnt->GetBinContent(10) << " (bad)";
+  oss << "N of Taiwan TDC hits = " << n_all << " (all), " << n_bad << " (bad)";
   pate->AddText(oss.str().c_str());
+  if (n_bad / n_all > 0.05) {
+    can->SetWorseStatus(OnlMonCanvas::ERROR);
+    can->AddMessage("Errors in >5% of Taiwan TDC hits.");
+  } else if (n_bad / n_all > 0.01) {
+    can->SetWorseStatus(OnlMonCanvas::WARN);
+    can->AddMessage("Errors in >1% of Taiwan TDC hits.");
+  }
+
+  n_all = h1_cnt->GetBinContent(9);
+  n_bad = h1_cnt->GetBinContent(11);
   oss.str("");
-  oss << "N of v1495 TDC hits = " << h1_cnt->GetBinContent(9) << " (all), " << h1_cnt->GetBinContent(11) << " (bad)";
+  oss << "N of v1495 TDC hits = " << n_all << " (all), " << n_bad << " (bad)";
   pate->AddText(oss.str().c_str());
+  if (n_bad / n_all > 0.05) {
+    can->SetWorseStatus(OnlMonCanvas::ERROR);
+    can->AddMessage("Errors in >5% of v1495 TDC hits.");
+  } else if (n_bad / n_all > 0.01) {
+    can->SetWorseStatus(OnlMonCanvas::WARN);
+    can->AddMessage("Errors in >1% of v1495 TDC hits.");
+  }
+
+  n_all         = h1_cnt->GetBinContent(12);
+  double n_d1ad = h1_cnt->GetBinContent(13);
+  double n_d2ad = h1_cnt->GetBinContent(14);
+  double n_d3ad = h1_cnt->GetBinContent(15);
   oss.str("");
-  oss << "N of v1495 events = " << h1_cnt->GetBinContent(12) << " (all), " << h1_cnt->GetBinContent(13) << " (d1ad), " << h1_cnt->GetBinContent(14) << " (d2ad), " << h1_cnt->GetBinContent(15) << " (d3ad)";
+  oss << "N of v1495 events = " << n_all << " (all), " << n_d1ad << " (d1ad), " << n_d2ad << " (d2ad), " << n_d3ad << " (d3ad)";
   pate->AddText(oss.str().c_str());
   pate->Draw();
+  if ((n_d1ad + n_d2ad + n_d3ad) / n_all > 0.05) {
+    can->SetWorseStatus(OnlMonCanvas::ERROR);
+    can->AddMessage("Errors in >5% of v1495 events.");
+  } else if ((n_d1ad + n_d2ad + n_d3ad) / n_all > 0.01) {
+    can->SetWorseStatus(OnlMonCanvas::WARN);
+    can->AddMessage("Errors in >1% of v1495 events.");
+  }
 
-  can->AddMessage("OK");
-  can->SetStatus(OnlMonCanvas::OK);
+  if (can->GetStatus() == OnlMonCanvas::OK) can->AddMessage("OK");
 
   return 0;
 }

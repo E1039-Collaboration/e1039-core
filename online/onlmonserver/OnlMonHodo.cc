@@ -20,14 +20,14 @@ OnlMonHodo::OnlMonHodo(const HodoType_t type) : m_type(type)
   NumCanvases(2);
   m_n_pl = 2;
   switch (m_type) {
-  case H1X:  m_pl0 = 31;  Name("OnlMonHodoH1X" );  Title("H1X Hodo" );  break;
-  case H2X:  m_pl0 = 37;  Name("OnlMonHodoH2X" );  Title("H2X Hodo" );  break;
-  case H3X:  m_pl0 = 39;  Name("OnlMonHodoH3X" );  Title("H3X Hodo" );  break;
-  case H4X:  m_pl0 = 45;  Name("OnlMonHodoH4X" );  Title("H4X Hodo" );  break;
-  case H1Y:  m_pl0 = 33;  Name("OnlMonHodoH1Y" );  Title("H1Y Hodo" );  break;
-  case H2Y:  m_pl0 = 35;  Name("OnlMonHodoH2Y" );  Title("H2Y Hodo" );  break;
-  case H4Y1: m_pl0 = 41;  Name("OnlMonHodoH4Y1");  Title("H4Y1 Hodo");  break;
-  case H4Y2: m_pl0 = 43;  Name("OnlMonHodoH4Y2");  Title("H4Y2 Hodo");  break;
+  case H1X:  m_pl0 = 31;  Name("OnlMonHodoH1X" );  Title("Hodo: H1X" );  break;
+  case H2X:  m_pl0 = 37;  Name("OnlMonHodoH2X" );  Title("Hodo: H2X" );  break;
+  case H3X:  m_pl0 = 39;  Name("OnlMonHodoH3X" );  Title("Hodo: H3X" );  break;
+  case H4X:  m_pl0 = 45;  Name("OnlMonHodoH4X" );  Title("Hodo: H4X" );  break;
+  case H1Y:  m_pl0 = 33;  Name("OnlMonHodoH1Y" );  Title("Hodo: H1Y" );  break;
+  case H2Y:  m_pl0 = 35;  Name("OnlMonHodoH2Y" );  Title("Hodo: H2Y" );  break;
+  case H4Y1: m_pl0 = 41;  Name("OnlMonHodoH4Y1");  Title("Hodo: H4Y1");  break;
+  case H4Y2: m_pl0 = 43;  Name("OnlMonHodoH4Y2");  Title("Hodo: H4Y2");  break;
   }
 }
 
@@ -148,9 +148,11 @@ int OnlMonHodo::FindAllMonHist()
 int OnlMonHodo::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
+  can0->SetStatus(OnlMonCanvas::OK);
   TPad* pad0 = can0->GetMainPad();
   pad0->SetGrid();
   pad0->Divide(1, 2);
+  bool empty_ele = false;
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad0->cd(pl+1);
     h1_ele[pl]->SetLineColor(kBlack);
@@ -158,11 +160,17 @@ int OnlMonHodo::DrawMonitor()
     h1_ele_in[pl]->SetLineColor(kBlue);
     h1_ele_in[pl]->SetFillColor(kBlue-7);
     h1_ele_in[pl]->Draw("same");
+    if (h1_ele[pl]->GetMinimum() == 0) empty_ele = true;
   }
-  can0->AddMessage("OK");
-  can0->SetStatus(OnlMonCanvas::OK);
+  if (empty_ele) {
+    can0->SetStatus(OnlMonCanvas::WARN);
+    can0->AddMessage("No-hit element.");
+  } else {
+    can0->AddMessage("OK");
+  }
 
   OnlMonCanvas* can1 = GetCanvas(1);
+  can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();
   pad1->SetGrid();
   pad1->Divide(1, 2);
@@ -175,8 +183,7 @@ int OnlMonHodo::DrawMonitor()
     h1_time_in[pl]->SetFillColor(kBlue-7);
     h1_time_in[pl]->Draw("same");
   }
-  can1->AddMessage("OK");
-  can1->SetStatus(OnlMonCanvas::OK);
+  if (can1->GetStatus() == OnlMonCanvas::OK) can1->AddMessage("OK");
 
   return 0;
 }

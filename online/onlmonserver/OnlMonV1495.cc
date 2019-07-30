@@ -20,14 +20,14 @@ OnlMonV1495::OnlMonV1495(const HodoType_t type, const int lvl) : m_type(type), m
   NumCanvases(2);
   m_n_pl = 2;
   switch (m_type) {
-  case H1X:  m_pl0 = 31;  Name("OnlMonV1495H1X" );  Title("H1X v1495" );  break;
-  case H2X:  m_pl0 = 37;  Name("OnlMonV1495H2X" );  Title("H2X v1495" );  break;
-  case H3X:  m_pl0 = 39;  Name("OnlMonV1495H3X" );  Title("H3X v1495" );  break;
-  case H4X:  m_pl0 = 45;  Name("OnlMonV1495H4X" );  Title("H4X v1495" );  break;
-  case H1Y:  m_pl0 = 33;  Name("OnlMonV1495H1Y" );  Title("H1Y v1495" );  break;
-  case H2Y:  m_pl0 = 35;  Name("OnlMonV1495H2Y" );  Title("H2Y v1495" );  break;
-  case H4Y1: m_pl0 = 41;  Name("OnlMonV1495H4Y1");  Title("H4Y1 v1495");  break;
-  case H4Y2: m_pl0 = 43;  Name("OnlMonV1495H4Y2");  Title("H4Y2 v1495");  break;
+  case H1X:  m_pl0 = 31;  Name("OnlMonV1495H1X" );  Title("V1495: H1X" );  break;
+  case H2X:  m_pl0 = 37;  Name("OnlMonV1495H2X" );  Title("V1495: H2X" );  break;
+  case H3X:  m_pl0 = 39;  Name("OnlMonV1495H3X" );  Title("V1495: H3X" );  break;
+  case H4X:  m_pl0 = 45;  Name("OnlMonV1495H4X" );  Title("V1495: H4X" );  break;
+  case H1Y:  m_pl0 = 33;  Name("OnlMonV1495H1Y" );  Title("V1495: H1Y" );  break;
+  case H2Y:  m_pl0 = 35;  Name("OnlMonV1495H2Y" );  Title("V1495: H2Y" );  break;
+  case H4Y1: m_pl0 = 41;  Name("OnlMonV1495H4Y1");  Title("V1495: H4Y1");  break;
+  case H4Y2: m_pl0 = 43;  Name("OnlMonV1495H4Y2");  Title("V1495: H4Y2");  break;
   }
 }
 

@@ -8,7 +8,7 @@ DecoParam::DecoParam() :
   fn_in(""), dir_param(""), sampling(0), verbose(0), time_wait(0), 
   runID(0), spillID(0), spillID_cntr(0), spillID_slow(0),
   targPos(0), targPos_slow(0), codaID(0), rocID(0), eventIDstd(0), hitID(0), 
-  at_bos(false), turn_id_max(0)
+  has_1st_bos(false), at_bos(false), turn_id_max(0)
 {
   ;
 }

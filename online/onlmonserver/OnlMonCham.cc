@@ -19,11 +19,11 @@ OnlMonCham::OnlMonCham(const ChamType_t type) : m_type(type)
 {
   NumCanvases(2);
   switch (m_type) {
-  case D0 :  m_pl0 =  1;  Name("OnlMonChamD0" );  Title( "D0 Chamber");  break;
-  case D1 :  m_pl0 =  7;  Name("OnlMonChamD1" );  Title( "D1 Chamber");  break;
-  case D2 :  m_pl0 = 13;  Name("OnlMonChamD2" );  Title( "D2 Chamber");  break;
-  case D3p:  m_pl0 = 19;  Name("OnlMonChamD3p");  Title("D3p Chamber");  break;
-  case D3m:  m_pl0 = 25;  Name("OnlMonChamD3m");  Title("D3m Chamber");  break;
+  case D0 :  m_pl0 =  1;  Name("OnlMonChamD0" );  Title("Chamber: D0" );  break;
+  case D1 :  m_pl0 =  7;  Name("OnlMonChamD1" );  Title("Chamber: D1" );  break;
+  case D2 :  m_pl0 = 13;  Name("OnlMonChamD2" );  Title("Chamber: D2" );  break;
+  case D3p:  m_pl0 = 19;  Name("OnlMonChamD3p");  Title("Chamber: D3p");  break;
+  case D3m:  m_pl0 = 25;  Name("OnlMonChamD3m");  Title("Chamber: D3m");  break;
   }
 }
 

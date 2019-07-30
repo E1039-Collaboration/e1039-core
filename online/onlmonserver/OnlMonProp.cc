@@ -19,8 +19,8 @@ OnlMonProp::OnlMonProp(const PropType_t type) : m_type(type)
 {
   NumCanvases(2);
   switch (m_type) {
-  case P1 :  m_pl0 = 47;  Name("OnlMonPropP1" );  Title( "P1 Prop Tube");  break;
-  case P2 :  m_pl0 = 51;  Name("OnlMonPropP2" );  Title( "P2 Prop Tube");  break;
+  case P1 :  m_pl0 = 47;  Name("OnlMonPropP1" );  Title( "Prop Tube: P1");  break;
+  case P2 :  m_pl0 = 51;  Name("OnlMonPropP2" );  Title( "Prop Tube: P2");  break;
   }
 }
 

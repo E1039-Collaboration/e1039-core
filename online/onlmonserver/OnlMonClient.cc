@@ -76,11 +76,18 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 {
   SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (!event) return Fun4AllReturnCodes::ABORTEVENT;
+
+  pthread_mutex_t mutex;
+  OnlMonServer::instance()->GetMutex(mutex);
+  pthread_mutex_lock(&mutex);
+
   m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
   m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
   m_h1_basic_info->AddBinContent(BIN_N_EVT, 1);
 
-  return ProcessEventOnlMon(topNode);
+  int ret = ProcessEventOnlMon(topNode);
+  pthread_mutex_unlock(&mutex);
+  return ret;
 }
 
 int OnlMonClient::End(PHCompositeNode* topNode)
@@ -190,13 +197,12 @@ int OnlMonClient::StartMonitor()
   } else { // Clear only its own canvases
     ClearCanvasList();
   }
-
-  ReceiveHist();
-  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info", false);
-  if (! m_h1_basic_info) {
+  if (ReceiveHist() != 0) {
     cout << "WARNING: Probably the online-monitor server is NOT running.\n";
     return 1;
   }
+
+  m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
   FindAllMonHist();
 
   int run_id, spill_id, event_id, n_evt;
@@ -227,21 +233,49 @@ void OnlMonClient::RegisterHist(TH1* h1)
 
 int OnlMonClient::ReceiveHist()
 {
+  string host = OnlMonServer::GetHost();
+  int   port  = OnlMonServer::GetPort();
+  int   port0 = OnlMonServer::GetPort0();
+  int n_port  = OnlMonServer::GetNumPorts();
+
+  TSocket* sock = 0;
+  for (int ip = 0; ip < n_port; ip++) {
+    bool port_ok = false;
+    sock = new TSocket(host.c_str(), port);
+    if (sock->IsValid()) {
+      sock->Send("Ping");
+      if (sock->Select(TSocket::kRead, 2000) > 0) { // 2000 msec
+        TMessage* mess = 0;
+        sock->Recv(mess);
+        if (mess->What() == kMESS_STRING) {
+          char str[200];
+          mess->ReadString(str, 200);
+          if (strcmp(str, "Pong") == 0) port_ok = true;
+        }
+        delete mess;
+      }
+    }
+    if (port_ok) {
+      cout << "OnlMonClient::ReceiveHist(): " << host << ":" << port << " " << Name() << endl;
+      break;
+    }
+    delete sock;
+    sock = 0;
+    port++;
+    if (port >= port0 + n_port) port -= n_port;
+  }
+  if (! sock) return 1;
+  OnlMonServer::SetPort(port);
+  
   string comm = "SUBSYS:";
   comm += Name();
-
-  string host = OnlMonServer::GetHost();
-  int    port = OnlMonServer::GetPort();
-
-  cout << "OnlMonClient::ReceiveHist(): " << host << ":" << port << " " << comm << endl;
-  TSocket sock(host.c_str(), port);
-  sock.Send(comm.c_str());
+  sock->Send(comm.c_str());
 
   ClearHistList();
 
   TMessage *mess = NULL;
   while (true) { // incoming hist
-    sock.Recv(mess);
+    sock->Recv(mess);
     if (!mess) {
       break;
     } else if (mess->What() == kMESS_STRING) {
@@ -261,10 +295,11 @@ int OnlMonClient::ReceiveHist()
       //m_list_h1.push_back( (TH1*)obj->Clone() ); // copy
       delete mess;
       mess = 0;
-      sock.Send("NEXT"); // Any text is ok for now
+      sock->Send("NEXT"); // Any text is ok for now
     }
   }
-  sock.Close();
+  sock->Close();
+  delete sock;
   return 0;
 }
 

@@ -44,3 +44,18 @@ std::string UtilOnline::RunNum2DstFile(const int run)
   oss << setfill('0') << "run_" << setw(6) << run << "_spin.root";
   return oss.str();
 }
+
+std::string UtilOnline::GetCodaFilePath(const int run)
+{
+  return GetCodaFileDir() + "/" + RunNum2CodaFile(run);
+}
+
+std::string UtilOnline::GetEndFilePath(const int run)
+{
+  return GetEndFileDir() + "/" + RunNum2EndFile(run);
+}
+
+std::string UtilOnline::GetDstFilePath(const int run)
+{
+  return GetDstFileDir() + "/" + RunNum2DstFile(run);
+}

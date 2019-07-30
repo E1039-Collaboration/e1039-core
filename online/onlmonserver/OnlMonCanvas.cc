@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <TROOT.h>
@@ -13,7 +14,7 @@ using namespace std;
 
 OnlMonCanvas::OnlMonCanvas(const std::string name, const std::string title, const int num) :
   m_name(name), m_title(title), m_num(num), 
-  m_can("c1", "", 5+600*num, 5, 600, 800), 
+  m_can("c1", "", 200+600*num, 20, 600, 800), 
   m_pad_title("title", "", 0.0, 0.9, 1.0, 1.0),
   m_pad_main ("main" , "", 0.0, 0.1, 1.0, 0.9),
   m_pad_msg  ("msg"  , "", 0.0, 0.0, 1.0, 0.1),
@@ -42,6 +43,25 @@ void OnlMonCanvas::AddMessage(const char* msg)
   m_pate_msg.AddText(msg);
 }
 
+
+void OnlMonCanvas::SetWorseStatus(const MonStatus_t stat)
+{
+  switch (stat) {
+  case OK:
+    if (m_mon_status == UNDEF) m_mon_status = OK;
+    break;
+  case WARN:  
+    if (m_mon_status == UNDEF || m_mon_status == OK) m_mon_status = WARN;
+    break;
+  case ERROR:
+    m_mon_status = ERROR;
+    break;
+  case UNDEF:
+    m_mon_status = UNDEF;
+    break;
+  }
+}
+
 TPad* OnlMonCanvas::GetMainPad()
 {
   m_pad_main.cd();
@@ -61,7 +81,7 @@ void OnlMonCanvas::PreDraw(const bool at_end)
   m_pad_title.cd();
   TPaveText* pate = new TPaveText(.02, .52, .98, .98);
   oss.str("");
-  oss << m_title << " #" << m_num;
+  oss << m_title << ": C" << m_num;
   pate->AddText(oss.str().c_str());
   pate->Draw();
 
@@ -102,10 +122,20 @@ void OnlMonCanvas::PostDraw(const bool at_end)
     oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << m_run;
     gSystem->mkdir(oss.str().c_str(), true);
 
+    oss << "/" << m_name << "_can" << m_num;
+    string path_base = oss.str(); // path without suffix
+
     int lvl = gErrorIgnoreLevel;
     gErrorIgnoreLevel = 1111; // Suppress the message by TCanvas::SaveAs().
-    oss << "/" << m_name << "_can" << m_num << ".png";
+    oss.str("");
+    oss << path_base << ".png";
     m_can.SaveAs(oss.str().c_str());
     gErrorIgnoreLevel = lvl;
+
+    oss.str("");
+    oss << path_base << ".txt";
+    ofstream ofs(oss.str().c_str());
+    ofs << m_mon_status << endl;
+    ofs.close();
   }
 }
