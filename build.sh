@@ -4,7 +4,7 @@ test -z "$OFFLINE_MAIN" && echo "Need set 'OFFLINE_MAIN'.  Abort." && exit
 test -z "$MY_INSTALL"   && echo   "Need set 'MY_INSTALL'.  Abort." && exit
 
 src=$(dirname $(readlink -f $0))
-build=`pwd`
+build=`pwd`/build
 install=$MY_INSTALL
 
 if [ $# -eq 1 ]; then
@@ -56,11 +56,17 @@ for package in "${packages[@]}"
 do
 	echo "================================================================"
 	echo $src/$package
+  if [ -d $build/$package ]; then
+    echo "Previous build exists, will clean up."
+    rm -rf $build/$package
+  fi
+
 	mkdir -p $build/$package
 	cd $build/$package
 	echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
 	cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
 	make -j4 install
+
 	ret=$?
 	if [ $ret -ne 0 ] ; then
 	    echo "Abort since ret = $ret."
