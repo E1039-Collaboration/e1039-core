@@ -42,7 +42,7 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
     sleep (sec_wait);
   }
   if (! size_ok) {
-    cout << "File size not enough (<" << file_size_min << ").  Wait timeout.  Exiting..." << endl;
+    cout << "File size not enough (" << m_file_size << " < " << file_size_min << ").  Wait timeout.  Exiting..." << endl;
     return 2;
   }
   

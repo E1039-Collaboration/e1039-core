@@ -8,7 +8,7 @@ if [ -z "$1" ] ; then
 elif [ "X$1" = 'Xauto' ] ; then
     DIR_INST=$(readlink -f $DIR_SCRIPT/../../e1039-core-inst)
 else
-    DIR_INST=$(readlink -f "$1")
+    DIR_INST=$(readlink -m "$1")
 fi
 echo "Use this installation directory:"
 echo "  $DIR_INST"
