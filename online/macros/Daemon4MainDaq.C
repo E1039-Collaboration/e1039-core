@@ -3,10 +3,11 @@
 R__LOAD_LIBRARY(libdecoder_maindaq)
 #endif
 
-void FindExistingRuns(vector<int>& list_run)
+bool FindExistingRuns(vector<int>& list_run)
 {
   list_run.clear();
   void *dirp = gSystem->OpenDirectory(UtilOnline::GetCodaFileDir().c_str());
+  if (dirp == 0) return false; // The directory does not exist.
   const char* name_char;
   while ((name_char = gSystem->GetDirEntry(dirp))) {
     string name = name_char;
@@ -22,6 +23,7 @@ void FindExistingRuns(vector<int>& list_run)
   //cout << "Runs:";
   //for (vector<int>::iterator it = list_run.begin(); it != list_run.end(); it++) cout << " " << *it;
   //cout << endl;
+  return true;
 }
 
 void StartDecoder(const int run, const int n_evt=0, const bool is_online=true)
@@ -46,14 +48,20 @@ int Daemon4MainDaq(const int interval=30)
   gSystem->Load("libdecoder_maindaq.so");
 
   vector<int> list_run_done;
-  FindExistingRuns(list_run_done);
+  while (! FindExistingRuns(list_run_done)) {
+    cout << "The Coda-file directory seems not mounted.  Wait for 1 min." << endl;
+    sleep(60);
+  }
   //list_run_done.clear(); // for test
 
   while (true) {
     cout << "Sleep for " << interval << " sec.  Hit Ctrl-C to quit..." << endl;
     sleep(interval);
     vector<int> list_run;
-    FindExistingRuns(list_run);
+    if (! FindExistingRuns(list_run)) {
+      cout << "The Coda-file directory doesn't exist.  Strange but just wait." << endl;
+      continue;
+    }
     for (vector<int>::iterator it = list_run.begin(); it != list_run.end(); it++) {
       int run = *it;
       if (find(list_run_done.begin(), list_run_done.end(), run) == list_run_done.end()) {

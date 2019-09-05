@@ -150,7 +150,7 @@ void* OnlMonServer::FuncServer(void* arg)
     adr.Print();
   }
   UInt_t ip0 = adr.GetAddress();
-  if ((ip0 >> 16) == (192 << 8) + 168) {
+  if ((ip0 >> 16) == (192 << 8) + 168 || ip0 == (127 << 24) + 1) {
     se->HandleConnection(s0);
   } else {
     cout << "OnlMonServer::FuncServer():  Ignore a connection from WAN.\n  ";

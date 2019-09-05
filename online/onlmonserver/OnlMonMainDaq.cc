@@ -11,6 +11,7 @@
 #include <phool/getClass.h>
 #include "OnlMonServer.h"
 #include "OnlMonMainDaq.h"
+#include "UtilHist.h"
 using namespace std;
 
 OnlMonMainDaq::OnlMonMainDaq()
@@ -28,6 +29,7 @@ int OnlMonMainDaq::InitOnlMon(PHCompositeNode* topNode)
 int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
 {
   h1_trig = new TH1D("h1_trig", "Trigger Status;Trigger;N of events", 10, 0.5, 10.5);
+  h1_n_taiwan = new TH1D("h1_n_taiwan", "Taiwan TDC Status;N of boards/event;N of events", 200, -0.5, 199.5);
   h1_evt_qual = new TH1D("h1_evt_qual", "Event Status;Event-quality bit;N of events", 33, -0.5, 32.5);
   h1_flag_v1495 = new TH1D("h1_flag_v1495", "V1495 Status;v1495 status bit; N of v1495 events", 5, -0.5, 4.5);
   h1_cnt = new TH1D("h1_cnt", ";Type;Count", 15, 0.5, 15.5);
@@ -57,6 +59,7 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   h1_flag_v1495->GetXaxis()->SetBinLabel(5, "Other");
 
   RegisterHist(h1_trig);
+  RegisterHist(h1_n_taiwan);
   RegisterHist(h1_evt_qual);
   RegisterHist(h1_flag_v1495);
   RegisterHist(h1_cnt);
@@ -97,6 +100,8 @@ int OnlMonMainDaq::ProcessEventOnlMon(PHCompositeNode* topNode)
   h1_cnt->SetBinContent(14, run->get_n_v1495_d2ad   ());
   h1_cnt->SetBinContent(15, run->get_n_v1495_d3ad   ());
 
+  h1_n_taiwan->Fill(event->get_n_board_taiwan());
+
   int dq = event->get_data_quality();
   if (dq == 0) h1_evt_qual->Fill(0);
   for (int bit = 0; bit < 32; bit++) {
@@ -120,6 +125,7 @@ int OnlMonMainDaq::EndOnlMon(PHCompositeNode* topNode)
 int OnlMonMainDaq::FindAllMonHist()
 {
   h1_trig       = (TH1*)FindMonObj("h1_trig");
+  h1_n_taiwan   = (TH1*)FindMonObj("h1_n_taiwan");
   h1_evt_qual   = (TH1*)FindMonObj("h1_evt_qual");
   h1_flag_v1495 = (TH1*)FindMonObj("h1_flag_v1495");
   h1_cnt        = (TH1*)FindMonObj("h1_cnt");
@@ -128,6 +134,8 @@ int OnlMonMainDaq::FindAllMonHist()
 
 int OnlMonMainDaq::DrawMonitor()
 {
+  UtilHist::AutoSetRange(h1_n_taiwan);
+
   OnlMonCanvas* can = GetCanvas();
   can->SetStatus(OnlMonCanvas::OK);
 
@@ -144,7 +152,12 @@ int OnlMonMainDaq::DrawMonitor()
   pad12->cd();  h1_flag_v1495->Draw();
 
   pad->cd(2);
-  h1_evt_qual->Draw();
+  TPad* pad21 = new TPad("pad21", "", 0.0, 0.0, 0.7, 1.0);
+  TPad* pad22 = new TPad("pad22", "", 0.7, 0.0, 1.0, 1.0);
+  pad21->Draw();
+  pad22->Draw();
+  pad21->cd();  h1_evt_qual->Draw();
+  pad22->cd();  h1_n_taiwan->Draw();
 
   pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
