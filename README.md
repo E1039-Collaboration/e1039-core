@@ -1,50 +1,71 @@
 # Fun4All based E1039 core software
 
-A doxygen page of the e1039-core is [here](https://e1039-collaboration.github.io/e1039-doc/index.html) hosted by GitHub Pages.
+When you are looking for the information on the classes of this package, you could refer to the doxygen page [here](https://e1039-collaboration.github.io/e1039-doc/index.html) hosted by GitHub Pages.
 
-## Install
+## Necessity of this package
 
-### Prerequisite
-* To install on seaquestgpvm machines, simply source this macro to get all dependencies in place.
+This package contains the _core_ functions of the E1039 software.
+A pre-compiled library of this package is available on main E1039 servers and ready to use.
+Thus you often need not download nor build it for analysis, and instead download and execute the "e1039-analysis" package.
+
+## Prerequisite
+
+This package depends on the E1039 resource and share packages as well as some system-wide packages.
+You are recommended to use the following E1039 servers, which have been already set up properly;
+* spinquestgpvm01 ... for offline analysis
+* spinquestana1   ... for online analysis
+
+If you want to use another computer (like your laptop), 
+you could refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-core-software-from-scratch), although it is not quite up-to-date.
+
+## Download
+
+You move to a working directory and check out the repository;
 ```
-/e906/app/users/yuhw/setup.sh
-```
-* To install from scratch without any dependent software installed, refer to [this wiki page](https://github.com/E1039-Collaboration/e1039-wiki/wiki/Install-the-core-software-from-scratch).
-
-### Build
-Each package included a 'CMakeLists.txt'.
-A shell script "build.sh" is provided to build all packages. 
-
-Check out the repository
-```
+cd /path/to/your_working_directory
 git clone https://github.com/E1039-Collaboration/e1039-core.git
 ```
-
-
-Make a build and install folder
+If you are a member of the GitHub E1039 group, you better use the following command to obtain the write access;
 ```
-mkdir <build-dir>
-mkdir <install-dir>
-cd <build-dir>
+git clone git@github.com:E1039-Collaboration/e1039-core.git
 ```
 
-Using the MY_INSTALL variable is suggested, for this variable is used in 'CMakeLists.txt' files.
-You may also put this line in your login macro.
-```
-export MY_INSTALL=<install-dir>
-```
+## Build and Install
 
-Then change the 'src' line of 'build.sh' to use your source path.
-
-To build and install all packages
+The following commands should succeed on the supported servers.
+You should first try them to learn the overall procedure.
 ```
-./build.sh
-```
-
-To build one specific package
-```
-./build.sh <package-name>
+cd /path/to/directory_where_you_download_e1039-core
+source e1039-core/script/setup-install.sh auto
+source $DIR_INST/this-e1039.sh
+mkdir e1039-core-build
+cd    e1039-core-build
+../e1039-core/build.sh
 ```
 
+It takes 5-10 minutes.
+Lots of installed files appear in "e1039-core-inst".
 
+### Details
 
+When you open a new shell environment (i.e. text terminal), you have to source "this-e1039.sh", where DIR_INST is no longer available and thus you type a real path (in either relative or absolute).
+
+The script "setup-install.sh" sets up the environment to install, build and run this package.
+It warns you if your computer is not supported for the automated setup.
+
+The argument "auto" of "setup-install.sh" means that the installation directory is selected automatically ("e1039-core-inst").
+If you like to select it, you can type it instead of "auto".
+
+A directory that includes 'CMakeLists.txt' under "e1039-core" forms a sub-package.
+The script "build.sh" builds all the sub-packages in the right order.
+You can build one specific package (when it is modified) by
+```
+./build.sh <sub-package-name>
+```
+
+## Execute
+
+Following the Fun4All framework, we use a ROOT macro to execute a function(s) defined in this package.
+The e1039-analysis package contains various user-level macros.
+
+This package itself contains some ROOT macros, but most of them should not be run by multiple users.
