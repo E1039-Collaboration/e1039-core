@@ -1,6 +1,6 @@
 # Fun4All based E1039 core software
 
-A doxygen page of the e1039-core is [here](https://e1039-collaboration.github.io/e1039-doc/index.html) hosted by GitHub Pages.
+When you are looking for the information on the classes of this package, you could refer to the doxygen page [here](https://e1039-collaboration.github.io/e1039-doc/index.html) hosted by GitHub Pages.
 
 ## Necessity of this package
 
@@ -43,9 +43,12 @@ cd    e1039-core-build
 ../e1039-core/build.sh
 ```
 
+It takes 5-10 minutes.
 Lots of installed files appear in "e1039-core-inst".
 
 ### Details
+
+When you open a new shell environment (i.e. text terminal), you have to source "this-e1039.sh", where DIR_INST is no longer available and thus you type a real path (in either relative or absolute).
 
 The script "setup-install.sh" sets up the environment to install, build and run this package.
 It warns you if your computer is not supported for the automated setup.
