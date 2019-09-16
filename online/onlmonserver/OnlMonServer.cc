@@ -144,12 +144,19 @@ void* OnlMonServer::FuncServer(void* arg)
   // mutex protected since writing of histo
   // to outgoing buffer and updating by other thread do not
   // go well together
+  TInetAddress adr = s0->GetInetAddress();
   if (se->Verbosity() > 2) {
-    TInetAddress adr = s0->GetInetAddress();
-    cout << "got connection from " << endl;
+    cout << "got connection from\n  ";
     adr.Print();
   }
-  se->HandleConnection(s0);
+  UInt_t ip0 = adr.GetAddress();
+  if ((ip0 >> 16) == (192 << 8) + 168 || ip0 == (127 << 24) + 1) {
+    se->HandleConnection(s0);
+  } else {
+    cout << "OnlMonServer::FuncServer():  Ignore a connection from WAN.\n  ";
+    adr.Print();
+  }
+  
   delete s0;
   //s0->Close();
   if (se->GetGoEnd()) {

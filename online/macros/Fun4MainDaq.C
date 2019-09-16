@@ -74,3 +74,11 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   cout << "Fun4MainDaq Done!" << endl;
   return 0;
 }
+
+void TestOnlMonServer()
+{
+  gSystem->Load("libonlmonserver.so");
+  OnlMonServer* se = OnlMonServer::instance();
+  //se->Verbosity(1);
+  se->StartServer();
+}

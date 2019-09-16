@@ -5,6 +5,7 @@
 
 class OnlMonMainDaq: public OnlMonClient {
   TH1* h1_trig;
+  TH1* h1_n_taiwan;
   TH1* h1_evt_qual;
   TH1* h1_flag_v1495;
   TH1* h1_cnt;
