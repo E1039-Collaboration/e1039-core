@@ -16,7 +16,7 @@ class CodaInputManager {
   std::string m_fname;
   long int m_file_size;
   int m_event_count;
-  int event_words[buflen];
+  int m_event_words[buflen];
 
  public:
   CodaInputManager();
@@ -28,8 +28,9 @@ class CodaInputManager {
   void ForceEnd () { m_go_end = true; }
   bool IsEnded  () { return m_go_end; }
 
-  int OpenFile(const std::string fname, const int file_size_min=0, const int sec_wait=10, const int n_wait=0, const int n_evt_pre_read=0);
+  int OpenFile(const std::string fname, const int file_size_min=0, const int sec_wait=10, const int n_wait=0);
   int CloseFile();
+  bool JumpCodaEvent(unsigned int& coda_id, int*& event_words, const int n_evt);
   bool NextCodaEvent(unsigned int& coda_id, int*& event_words);
 
  private:

@@ -74,4 +74,14 @@ do
 	fi
 done
 
+
+( ## Install all macro files.
+    cd $src
+    find . -type d -regex '.*/macros*' | while read DIR_SRC ; do
+	DIR_DEST=$install/macros/$(dirname $DIR_SRC)
+	mkdir -p $DIR_DEST
+	cp -p $DIR_SRC/* $DIR_DEST
+    done
+)
+
 cd $build

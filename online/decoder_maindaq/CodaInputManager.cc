@@ -15,7 +15,7 @@ CodaInputManager::CodaInputManager() :
   ;
 }
 
-int CodaInputManager::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait, const int n_evt_pre_read)
+int CodaInputManager::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
 {
   if (! file_exists(fname)) {
     cerr << "!!ERROR!!  Coda file does not exist: " << fname << "." << endl;
@@ -56,11 +56,14 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
     return 3;
   }
   m_event_count = 0;
-  for (int ii = 0; ii < n_evt_pre_read; ii++) { // todo: this loop number is exactly correct??
-    unsigned int coda_id; // dummy
-    int* words = 0; // dummy
-    NextCodaEvent(coda_id, words); // todo: check if it fails
-  }
+  //for (int ii = 0; ii <= event_count_next; ii++) { // todo: this loop number is exactly correct??
+  //  unsigned int coda_id; // dummy
+  //  int* words = 0; // dummy
+  //  if (! NextCodaEvent(coda_id, words)) {
+  //    cout << "Failed at moving to the next event (" << event_count_next << ") at ii = " << ii << "." << endl;
+  //    return 4;
+  //  }
+  //}
   return 0;
 }
 
@@ -72,11 +75,28 @@ int CodaInputManager::CloseFile()
   return ret;
 }
 
+bool CodaInputManager::JumpCodaEvent(unsigned int& coda_id, int*& words, const int n_evt)
+{
+  for (int i_evt = 0; i_evt < n_evt; i_evt++) {
+    if (! NextCodaEvent(coda_id, words)) {
+      cout << "CodaInputManager::SkipCodaEvent():  Failed at i=" << i_evt << " (n=" << n_evt << ")." << endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
 {
   if (m_go_end) return false;
-  int ret = evRead(m_handle, event_words, buflen);
-  if (ret != 0 && m_online && m_run > 0) { // try to recover
+  int ret = evRead(m_handle, m_event_words, buflen);
+  if (ret == 0) {
+    coda_id = m_event_count++;
+    words   = m_event_words;
+    return true;
+  }
+
+  if (m_online && m_run > 0) {
     cout << "No new event seems available for now.  Try to recover." << endl;
     if (file_exists(UtilOnline::GetEndFilePath(m_run))) {
       cout << "Exiting since the END file exists." << endl;
@@ -90,15 +110,43 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
       return false;
     }
     // Re-open the file, requring a larger file size
-    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20, m_event_count);
+    int event_count = m_event_count;
+    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20); // , m_event_count+1);
+    if (ret == 0) {
+      return JumpCodaEvent(coda_id, words, event_count + 1);
+    } else {
+      cout << "OpenFile() returned " << ret << "." << endl;
+    }
   }
-  if (ret != 0) {
-    ForceEnd();
-    return false;
-  }
-  coda_id = m_event_count++;
-  words   = event_words;
-  return true;
+  cout << "CodaInputManager::NextCodaEvent():  Bad end." << endl;
+  ForceEnd();
+  return false;
+
+
+
+//  if (ret != 0 && m_online && m_run > 0) { // try to recover
+//    cout << "No new event seems available for now.  Try to recover." << endl;
+//    if (file_exists(UtilOnline::GetEndFilePath(m_run))) {
+//      cout << "Exiting since the END file exists." << endl;
+//      ForceEnd();
+//      return false;
+//    }
+//
+//    if (file_exists(UtilOnline::GetCodaFilePath(m_run+1))) {
+//      cout << "Exiting since the next run file exists." << endl;
+//      ForceEnd();
+//      return false;
+//    }
+//    // Re-open the file, requring a larger file size
+//    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20, m_event_count);
+//  }
+//  if (ret != 0) {
+//    ForceEnd();
+//    return false;
+//  }
+//  coda_id = m_event_count++;
+//  words   = event_words;
+//  return true;
 }
 
 bool CodaInputManager::file_exists(const std::string fname)

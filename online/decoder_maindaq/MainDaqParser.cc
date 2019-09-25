@@ -95,9 +95,12 @@ int MainDaqParser::ParseOneSpill()
     case FEE_PREFIX:
       ret = ProcessCodaFee(event_words);
       break;
-    case 0: // Special case which requires waiting and retrying
-      if (dec_par.verbose) cout << "Case '0' @ coda " << dec_par.codaID << "\n";
-      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait, dec_par.codaID-1);
+    case 0: // Special case which requires waiting and retrying.  Purpose??  Still needed??
+      cout << "Case '0' @ coda " << dec_par.codaID << "." << endl;
+      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait);
+      if (ret == 0) {
+        ret = coda->JumpCodaEvent(dec_par.codaID, event_words, dec_par.codaID - 1) ? 0 : 2;
+      }
       break;
     default: // If no match to any given case, print it and exit.
       cerr << "!!ERROR!!  Uncovered Coda event type: " << evt_type_id << ".  Exit\n";
@@ -477,6 +480,14 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
     if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
       cout << "Error submitting data.  Exiting...\n";
       return 1;
+    }
+
+    /// Temporary adjustment (added on 2019-09-25).
+    /// Since spill ID is not available in the cosmic-ray commissioning,
+    /// a temporary ID is given here.
+    if (dec_par.spillID_slow == 0 && dec_par.spillID_cntr == 0) {
+      static int spillID_local = 0;
+      dec_par.spillID_slow = dec_par.spillID_cntr = ++spillID_local;
     }
 
     /// Regard the Slow Control info as primary (rather than Spill Counter)

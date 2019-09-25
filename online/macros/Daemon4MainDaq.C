@@ -33,9 +33,21 @@ void StartDecoder(const int run, const int n_evt=0, const bool is_online=true)
   gSystem->mkdir(oss.str().c_str(), true);
   oss << "/log_" << setfill('0') << setw(6) << run << ".txt";
   string fn_log = oss.str();
+  if (! gSystem->AccessPathName(fn_log.c_str())) { // if exists
+    for (int ii = 1; true; ii++) {
+      oss.str("");
+      oss << fn_log << "." << ii;
+      if (gSystem->AccessPathName(oss.str().c_str())) {
+        cout << "Rename the existing log file with suffix=" << ii << "." << endl;
+        gSystem->Rename(fn_log.c_str(), oss.str().c_str());
+        break;
+      }
+    }
+  }
+
   oss.str("");
   oss << "root.exe -b -q '" << gSystem->Getenv("E1039_CORE")
-      << "/macros/Fun4MainDaq.C(" << run << ", " << n_evt << ", " << is_online << ")' &>" << fn_log << " &";
+      << "/macros/online/Fun4MainDaq.C(" << run << ", " << n_evt << ", " << is_online << ")' &>" << fn_log << " &";
 
   cout << "Start the decoder for run " << run << ":\n"
        << "  Log file = " << fn_log << "\n"
