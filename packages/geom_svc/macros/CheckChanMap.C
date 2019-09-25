@@ -1,9 +1,9 @@
 /// CheckChanMap.C:  Macro to check one of the channel mappings on MySQL DB.
-R__LOAD_LIBRARY(libchan_map)
+R__LOAD_LIBRARY(libgeom_svc)
 
 int CheckChanMap()
 {
-  gSystem->Load("libchan_map.so");
+  gSystem->Load("libgeom_svc.so");
 
   /// Select one of the classes.
   //ChanMapTaiwan map;
