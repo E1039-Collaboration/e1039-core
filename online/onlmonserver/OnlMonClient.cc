@@ -114,8 +114,10 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   ostringstream oss;
   oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << run_id;
   gSystem->mkdir(oss.str().c_str(), true);
+  gSystem->Chmod(oss.str().c_str(), 0775);
   oss << "/" << Name() << ".root";
   m_hm->dumpHistos(oss.str());
+  gSystem->Chmod(oss.str().c_str(), 0664);
 
   return EndOnlMon(topNode);
 }

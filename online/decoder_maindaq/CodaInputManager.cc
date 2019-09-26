@@ -47,7 +47,7 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
   }
   
   if (m_verb) {
-    cout << "Loading " << fname << "...\n";
+    cout << "Loading " << fname << "..." << endl;
   }
   CloseFile();
   int ret = evOpen((char*)fname.c_str(), (char*)"r", &m_handle);

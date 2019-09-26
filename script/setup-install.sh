@@ -11,13 +11,18 @@
 ## One need not use this script but can set up everything by oneself.  But 
 ## this script should be helpful in preparing for an easily-reproducible 
 ## environment.  Any questions/requests can be sent to Kenichi.
-DIR_SCRIPT=$(dirname $(readlink -f $BASH_SOURCE))
+if [ $0 != $BASH_SOURCE ] ; then
+    echo "!!ERROR!!  The usage of this script has changed recently."
+    echo "Now you have execute (not source) it.  Sorry for the inconvenience."
+    return
+fi
+DIR_SCRIPT=$(dirname $(readlink -f $0))
 
 if [ -z "$1" ] ; then
     echo "The 1st argument must be an installation directory,"
     echo "or 'auto' to auto-select it."
     echo "Abort."
-    return
+    exit 1
 elif [ "X$1" = 'Xauto' ] ; then
     DIR_INST=$(readlink -f $DIR_SCRIPT/../../e1039-core-inst)
 else
@@ -49,7 +54,7 @@ if [ -z "$E1039_ROOT" ] ; then
     echo "Your host is not supported by this script."
     echo "You can ask the manager (Kenichi) how to proceed, or"
     echo "try to set E1039_RESOURCE and E1039_SHARE properly by yourself."
-    return
+    exit 1
 fi
 {
     echo "source $E1039_ROOT/resource/this-resource.sh"
@@ -63,6 +68,9 @@ fi
 echo
 echo "A setup script was created;"
 echo "  $DIR_INST/this-e1039.sh"
-echo "You should source it when you start building or executing this e1039-core "
-echo "package.  Next you likely source the script, move to a build directory "
+echo "Next you likely source this script, move to a build directory "
 echo "and execute 'build.sh'."
+echo
+echo "Note that You should source the setup script when you use a new "
+echo "shell environment (i.e. text terminal) to build or execute this "
+echo "e1039-core package."
