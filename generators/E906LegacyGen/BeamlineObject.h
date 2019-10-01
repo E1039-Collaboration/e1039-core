@@ -11,7 +11,7 @@ class BeamlineObject
 public:
     BeamlineObject();
     BeamlineObject(const TGeoMaterial* pMaterial);
-
+    //BeamlineObject(const TGeoMixture* pMaterial);
     //! get the expotential z distribution
     double getZ();
 
@@ -41,6 +41,8 @@ public:
     double attenuation;      //! beam attenuation factor by this object
     double prob;             //! probability of having collision
     double accumulatedProb;  //! sum of all the previous/upstream probs
+
+  
 };
 
 
