@@ -77,16 +77,17 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (!event) return Fun4AllReturnCodes::ABORTEVENT;
 
-  pthread_mutex_t mutex;
-  OnlMonServer::instance()->GetMutex(mutex);
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_t* mutex = OnlMonServer::instance()->GetMutex();
+  int ret_mutex = pthread_mutex_lock(mutex); // got stuck here, n = 1
+  if (ret_mutex != 0) cout << "WARNING:  mutex_lock returned " << ret_mutex << "." << endl;
 
   m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
   m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
   m_h1_basic_info->AddBinContent(BIN_N_EVT, 1);
 
   int ret = ProcessEventOnlMon(topNode);
-  pthread_mutex_unlock(&mutex);
+  ret_mutex = pthread_mutex_unlock(mutex);
+  if (ret_mutex != 0) cout << "WARNING:  mutex_unlock returned " << ret_mutex << "." << endl;
   return ret;
 }
 
