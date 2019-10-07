@@ -218,91 +218,109 @@ void GeomSvc::init()
     //Initialize the detectorID --- detectorName convention
     typedef std::map<std::string, int>::value_type nameToID;
 
-    map_detectorID.insert(nameToID("D0U", 1));
-    map_detectorID.insert(nameToID("D0Up", 2));
-    map_detectorID.insert(nameToID("D0X", 3));
-    map_detectorID.insert(nameToID("D0Xp", 4));
-    map_detectorID.insert(nameToID("D0V", 5));
-    map_detectorID.insert(nameToID("D0Vp", 6));
-    map_detectorID.insert(nameToID("D1V", 7));
-    map_detectorID.insert(nameToID("D1Vp", 8));
-    map_detectorID.insert(nameToID("D1X", 9));
-    map_detectorID.insert(nameToID("D1Xp", 10));
-    map_detectorID.insert(nameToID("D1U", 11));
-    map_detectorID.insert(nameToID("D1Up", 12));
-    map_detectorID.insert(nameToID("D2V", 13));
-    map_detectorID.insert(nameToID("D2Vp", 14));
-    map_detectorID.insert(nameToID("D2Xp", 15));
-    map_detectorID.insert(nameToID("D2X", 16));
-    map_detectorID.insert(nameToID("D2U", 17));
-    map_detectorID.insert(nameToID("D2Up", 18));
-    map_detectorID.insert(nameToID("D3pVp", 19));
-    map_detectorID.insert(nameToID("D3pV", 20));
-    map_detectorID.insert(nameToID("D3pXp", 21));
-    map_detectorID.insert(nameToID("D3pX", 22));
-    map_detectorID.insert(nameToID("D3pUp", 23));
-    map_detectorID.insert(nameToID("D3pU", 24));
-    map_detectorID.insert(nameToID("D3mVp", 25));
-    map_detectorID.insert(nameToID("D3mV", 26));
-    map_detectorID.insert(nameToID("D3mXp", 27));
-    map_detectorID.insert(nameToID("D3mX", 28));
-    map_detectorID.insert(nameToID("D3mUp", 29));
-    map_detectorID.insert(nameToID("D3mU", 30));
+    int idx = 0;
+    map_detectorID.insert(nameToID("D0U"  , ++idx));
+    map_detectorID.insert(nameToID("D0Up" , ++idx));
+    map_detectorID.insert(nameToID("D0X"  , ++idx));
+    map_detectorID.insert(nameToID("D0Xp" , ++idx));
+    map_detectorID.insert(nameToID("D0V"  , ++idx));
+    map_detectorID.insert(nameToID("D0Vp" , ++idx));
+    map_detectorID.insert(nameToID("D1V"  , ++idx));
+    map_detectorID.insert(nameToID("D1Vp" , ++idx));
+    map_detectorID.insert(nameToID("D1X"  , ++idx));
+    map_detectorID.insert(nameToID("D1Xp" , ++idx));
+    map_detectorID.insert(nameToID("D1U"  , ++idx));
+    map_detectorID.insert(nameToID("D1Up" , ++idx));
+    map_detectorID.insert(nameToID("D2V"  , ++idx));
+    map_detectorID.insert(nameToID("D2Vp" , ++idx));
+    map_detectorID.insert(nameToID("D2Xp" , ++idx));
+    map_detectorID.insert(nameToID("D2X"  , ++idx));
+    map_detectorID.insert(nameToID("D2U"  , ++idx));
+    map_detectorID.insert(nameToID("D2Up" , ++idx));
+    map_detectorID.insert(nameToID("D3pVp", ++idx));
+    map_detectorID.insert(nameToID("D3pV" , ++idx));
+    map_detectorID.insert(nameToID("D3pXp", ++idx));
+    map_detectorID.insert(nameToID("D3pX" , ++idx));
+    map_detectorID.insert(nameToID("D3pUp", ++idx));
+    map_detectorID.insert(nameToID("D3pU" , ++idx));
+    map_detectorID.insert(nameToID("D3mVp", ++idx));
+    map_detectorID.insert(nameToID("D3mV" , ++idx));
+    map_detectorID.insert(nameToID("D3mXp", ++idx));
+    map_detectorID.insert(nameToID("D3mX" , ++idx));
+    map_detectorID.insert(nameToID("D3mUp", ++idx));
+    map_detectorID.insert(nameToID("D3mU" , ++idx));
+    // Please make sure of "idx = nChamberPlanes" here
 
-    map_detectorID.insert(nameToID("H1B", nChamberPlanes+1));
-    map_detectorID.insert(nameToID("H1T", nChamberPlanes+2));
-    map_detectorID.insert(nameToID("H1L", nChamberPlanes+3));
-    map_detectorID.insert(nameToID("H1R", nChamberPlanes+4));
-    map_detectorID.insert(nameToID("H2L", nChamberPlanes+5));
-    map_detectorID.insert(nameToID("H2R", nChamberPlanes+6));
-    map_detectorID.insert(nameToID("H2B", nChamberPlanes+7));
-    map_detectorID.insert(nameToID("H2T", nChamberPlanes+8));
-    map_detectorID.insert(nameToID("H3B", nChamberPlanes+9));
-    map_detectorID.insert(nameToID("H3T", nChamberPlanes+10));
-    map_detectorID.insert(nameToID("H4Y1L", nChamberPlanes+11));
-    map_detectorID.insert(nameToID("H4Y1R", nChamberPlanes+12));
-    map_detectorID.insert(nameToID("H4Y2L", nChamberPlanes+13));
-    map_detectorID.insert(nameToID("H4Y2R", nChamberPlanes+14));
-    map_detectorID.insert(nameToID("H4B", nChamberPlanes+15));
-    map_detectorID.insert(nameToID("H4T", nChamberPlanes+16));
+    map_detectorID.insert(nameToID("H1B"  , ++idx));
+    map_detectorID.insert(nameToID("H1T"  , ++idx));
+    map_detectorID.insert(nameToID("H1L"  , ++idx));
+    map_detectorID.insert(nameToID("H1R"  , ++idx));
+    map_detectorID.insert(nameToID("H2L"  , ++idx));
+    map_detectorID.insert(nameToID("H2R"  , ++idx));
+    map_detectorID.insert(nameToID("H2B"  , ++idx));
+    map_detectorID.insert(nameToID("H2T"  , ++idx));
+    map_detectorID.insert(nameToID("H3B"  , ++idx));
+    map_detectorID.insert(nameToID("H3T"  , ++idx));
+    map_detectorID.insert(nameToID("H4Y1L", ++idx));
+    map_detectorID.insert(nameToID("H4Y1R", ++idx));
+    map_detectorID.insert(nameToID("H4Y2L", ++idx));
+    map_detectorID.insert(nameToID("H4Y2R", ++idx));
+    map_detectorID.insert(nameToID("H4B"  , ++idx));
+    map_detectorID.insert(nameToID("H4T"  , ++idx));
+    // Please make sure of "idx = nChamberPlanes + nHodoPlanes" here
 
-    map_detectorID.insert(nameToID("P1Y1", nChamberPlanes+nHodoPlanes+1));
-    map_detectorID.insert(nameToID("P1Y2", nChamberPlanes+nHodoPlanes+2));
-    map_detectorID.insert(nameToID("P1X1", nChamberPlanes+nHodoPlanes+3));
-    map_detectorID.insert(nameToID("P1X2", nChamberPlanes+nHodoPlanes+4));
-    map_detectorID.insert(nameToID("P2X1", nChamberPlanes+nHodoPlanes+5));
-    map_detectorID.insert(nameToID("P2X2", nChamberPlanes+nHodoPlanes+6));
-    map_detectorID.insert(nameToID("P2Y1", nChamberPlanes+nHodoPlanes+7));
-    map_detectorID.insert(nameToID("P2Y2", nChamberPlanes+nHodoPlanes+8));
+    map_detectorID.insert(nameToID("P1Y1", ++idx));
+    map_detectorID.insert(nameToID("P1Y2", ++idx));
+    map_detectorID.insert(nameToID("P1X1", ++idx));
+    map_detectorID.insert(nameToID("P1X2", ++idx));
+    map_detectorID.insert(nameToID("P2X1", ++idx));
+    map_detectorID.insert(nameToID("P2X2", ++idx));
+    map_detectorID.insert(nameToID("P2Y1", ++idx));
+    map_detectorID.insert(nameToID("P2Y2", ++idx));
+    // Please make sure of "idx = nChamberPlanes + nHodoPlanes + nPropPlanes" here
 
-    map_detectorID.insert(nameToID("DP1TL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 1));
-    map_detectorID.insert(nameToID("DP1TR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 2));
-    map_detectorID.insert(nameToID("DP1BL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 3));
-    map_detectorID.insert(nameToID("DP1BR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 4));
-    map_detectorID.insert(nameToID("DP2TL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 5));
-    map_detectorID.insert(nameToID("DP2TR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 6));
-    map_detectorID.insert(nameToID("DP2BL", nChamberPlanes+nHodoPlanes+nPropPlanes+ 7));
-    map_detectorID.insert(nameToID("DP2BR", nChamberPlanes+nHodoPlanes+nPropPlanes+ 8));
+    map_detectorID.insert(nameToID("DP1TL", ++idx));
+    map_detectorID.insert(nameToID("DP1TR", ++idx));
+    map_detectorID.insert(nameToID("DP1BL", ++idx));
+    map_detectorID.insert(nameToID("DP1BR", ++idx));
+    map_detectorID.insert(nameToID("DP2TL", ++idx));
+    map_detectorID.insert(nameToID("DP2TR", ++idx));
+    map_detectorID.insert(nameToID("DP2BL", ++idx));
+    map_detectorID.insert(nameToID("DP2BR", ++idx));
+    // Please make sure of "idx = nChamberPlanes + nHodoPlanes + nPropPlanes + nDarkPhotonPlanes" here
 
-    map_detectorID.insert(nameToID("BeforeInhNIM"   , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 1));
-    map_detectorID.insert(nameToID("BeforeInhMatrix", nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 2));
-    map_detectorID.insert(nameToID("AfterInhNIM"    , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 3));
-    map_detectorID.insert(nameToID("AfterInhMatrix" , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 4));
-    map_detectorID.insert(nameToID("BOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 5));
-    map_detectorID.insert(nameToID("EOS"            , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 6));
-    map_detectorID.insert(nameToID("L1"             , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 7));
-    map_detectorID.insert(nameToID("RF"             , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 8));
-    map_detectorID.insert(nameToID("STOP"           , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+ 9));
-    map_detectorID.insert(nameToID("L1PXtp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+10));
-    map_detectorID.insert(nameToID("L1PXtn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+11));
-    map_detectorID.insert(nameToID("L1PXbp"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+12));
-    map_detectorID.insert(nameToID("L1PXbn"         , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+13));
-    map_detectorID.insert(nameToID("L1NIMxt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+14));
-    map_detectorID.insert(nameToID("L1NIMxb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+15));
-    map_detectorID.insert(nameToID("L1NIMyt"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+16));
-    map_detectorID.insert(nameToID("L1NIMyb"        , nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+17));
+    map_detectorID.insert(nameToID("BeforeInhNIM"   , ++idx));
+    map_detectorID.insert(nameToID("BeforeInhMatrix", ++idx));
+    map_detectorID.insert(nameToID("AfterInhNIM"    , ++idx));
+    map_detectorID.insert(nameToID("AfterInhMatrix" , ++idx));
+    map_detectorID.insert(nameToID("BOS"            , ++idx));
+    map_detectorID.insert(nameToID("EOS"            , ++idx));
+    map_detectorID.insert(nameToID("L1"             , ++idx));
+    map_detectorID.insert(nameToID("RF"             , ++idx));
+    map_detectorID.insert(nameToID("STOP"           , ++idx));
+    map_detectorID.insert(nameToID("L1PXtp"         , ++idx));
+    map_detectorID.insert(nameToID("L1PXtn"         , ++idx));
+    map_detectorID.insert(nameToID("L1PXbp"         , ++idx));
+    map_detectorID.insert(nameToID("L1PXbn"         , ++idx));
+    map_detectorID.insert(nameToID("L1NIMxt"        , ++idx));
+    map_detectorID.insert(nameToID("L1NIMxb"        , ++idx));
+    map_detectorID.insert(nameToID("L1NIMyt"        , ++idx));
+    map_detectorID.insert(nameToID("L1NIMyb"        , ++idx));
+    // No constant for this name group is defined in GlobalConsts.h.
 
-
+    map_detectorID.insert(nameToID("H4Y1Ll", ++idx));
+    map_detectorID.insert(nameToID("H4Y1Lr", ++idx));
+    map_detectorID.insert(nameToID("H4Y1Rl", ++idx));
+    map_detectorID.insert(nameToID("H4Y1Rr", ++idx));
+    map_detectorID.insert(nameToID("H4Y2Ll", ++idx));
+    map_detectorID.insert(nameToID("H4Y2Lr", ++idx));
+    map_detectorID.insert(nameToID("H4Y2Rl", ++idx));
+    map_detectorID.insert(nameToID("H4Y2Rr", ++idx));
+    map_detectorID.insert(nameToID("H4Tu"  , ++idx));
+    map_detectorID.insert(nameToID("H4Td"  , ++idx));
+    map_detectorID.insert(nameToID("H4Bu"  , ++idx));
+    map_detectorID.insert(nameToID("H4Bd"  , ++idx));
+    // No constant for this name group is defined in GlobalConsts.h.
 
     // TODO temp solution
     for(int i=1; i<=18; ++i) {
@@ -956,17 +974,17 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
             eID = (9 - moduleID)*8 + eID;
         }
     }
-    else if(detectorName.substr(0, 2) == "H4")
-    {
-        if(detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
-        {
-            detectorName.replace(3, detectorName.length(), "");
-        }
-        else
-        {
-            detectorName.replace(5, detectorName.length(), "");
-        }
-    }
+    //else if(detectorName.substr(0, 2) == "H4")
+    //{
+    //    if(detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
+    //    {
+    //        detectorName.replace(3, detectorName.length(), "");
+    //    }
+    //    else
+    //    {
+    //        detectorName.replace(5, detectorName.length(), "");
+    //    }
+    //}
 }
 
 double GeomSvc::getDriftDistance(int detectorID, double tdcTime)
