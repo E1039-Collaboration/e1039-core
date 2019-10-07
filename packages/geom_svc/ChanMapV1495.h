@@ -19,8 +19,6 @@ class ChanMapV1495 : public ChanMapBase {
   typedef std::map<RocBoardChan_t, DetEleLvl_t> Map_t;
   Map_t m_map; ///< Used in Find() for better speed.
 
-  std::map<std::string, short> m_map_name2id;
-
  public:
   ChanMapV1495();
   virtual ~ChanMapV1495() {;}
@@ -38,8 +36,6 @@ class ChanMapV1495 : public ChanMapBase {
 
   void  ReadDbTable(DbSvc& db);
   void WriteDbTable(DbSvc& db);
-
-  void InitNameMap();
 };
 
 #endif // __CHAN_MAP_V1495_H__
