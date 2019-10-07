@@ -13,6 +13,7 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
+#include <decoder_maindaq/UtilOnline.h>
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
@@ -112,7 +113,7 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   }
 
   ostringstream oss;
-  oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << run_id;
+  oss << UtilOnline::GetOnlMonDir() << "/" << setfill('0') << setw(6) << run_id;
   gSystem->mkdir(oss.str().c_str(), true);
   oss << "/" << Name() << ".root";
   m_hm->dumpHistos(oss.str());

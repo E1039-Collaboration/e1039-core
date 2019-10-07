@@ -9,6 +9,7 @@
 #include <phool/getClass.h>
 #include <TSQLServer.h>
 #include <db_svc/DbSvc.h>
+#include "UtilOnline.h"
 #include "DbUpRun.h"
 using namespace std;
 
@@ -59,7 +60,7 @@ void DbUpRun::UploadToDB(SQRun* sq)
   static DbSvc* db = 0;
   if (db == 0) {
     db = new DbSvc(DbSvc::DB1);
-    db->UseSchema("user_e1039_maindaq", true);
+    db->UseSchema(UtilOnline::GetSchemaMainDaq(), true);
     //db->DropTable(table_name); // Use this when you want to refresh
     if (! db->HasTable(table_name)) {
       DbSvc::VarList list;

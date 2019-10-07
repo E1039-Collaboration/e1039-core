@@ -1,8 +1,8 @@
 /// Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 R__LOAD_LIBRARY(libinterface_main)
-R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
+R__LOAD_LIBRARY(libonlmonserver)
 #endif
 
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
@@ -14,6 +14,8 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   DecoStatusDb deco_stat;
   deco_stat.RunStarted(run);
+
+  UtilOnline::UseOutputLocationForDevel();
 
   ostringstream oss;
   oss << UtilOnline::GetCodaFileDir() << "/" << UtilOnline::RunNum2CodaFile(run);
@@ -38,8 +40,9 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   se->registerSubsystem(new DbUpRun());
   se->registerSubsystem(new DbUpSpill());
-  se->registerSubsystem(new CalibInTime());
-  se->registerSubsystem(new CalibXT());
+  //se->registerSubsystem(new CalibInTime());
+  se->registerSubsystem((new CalibMergeH4())->SetRemoveMode());
+  //se->registerSubsystem(new CalibXT());
 
   if (use_onlmon) { // Register the online-monitoring clients
     if (is_online) se->StartServer();

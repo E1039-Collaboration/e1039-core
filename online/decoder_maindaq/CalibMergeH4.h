@@ -12,14 +12,17 @@ class CalibMergeH4: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
-  void SetAndMode   (const bool mode=true) { m_and_mode    = mode; }
-  void SetRemoveMode(const bool mode=true) { m_remove_mode = mode; }
+  CalibMergeH4* SetAndMode   (const bool mode=true) { m_and_mode    = mode; return this; }
+  CalibMergeH4* SetRemoveMode(const bool mode=true) { m_remove_mode = mode; return this; }
 
  private:
   bool m_and_mode;
   bool m_remove_mode;
 
-  int MergeHits(SQHitVector* vec_in);
+  short FindMergedId(const short id);
+  int MergeHits   (SQHitVector* vec_in);
+  int MergeHitsOr (SQHitVector* vec_in);
+  int MergeHitsAnd(SQHitVector* vec_in);
 };
 
 #endif /* __CALIB_MERGE_H4_H__ */
