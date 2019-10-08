@@ -41,7 +41,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   se->registerSubsystem(new DbUpRun());
   se->registerSubsystem(new DbUpSpill());
   //se->registerSubsystem(new CalibInTime());
-  se->registerSubsystem((new CalibMergeH4())->SetRemoveMode());
+  se->registerSubsystem(new CalibMergeH4());
   //se->registerSubsystem(new CalibXT());
 
   if (use_onlmon) { // Register the online-monitoring clients

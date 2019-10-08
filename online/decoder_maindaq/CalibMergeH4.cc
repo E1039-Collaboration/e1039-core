@@ -76,10 +76,14 @@ int CalibMergeH4::MergeHitsOr(SQHitVector* vec_in)
 int CalibMergeH4::MergeHitsAnd(SQHitVector* vec_in)
 {
   GeomSvc* geom = GeomSvc::instance();
-  typedef tuple<short, short, short> Key_t; // <merged det, element, level>
+  typedef tuple<short, short, short> MergedGroup_t; // <merged det, element, level>
   typedef map<short, SQHitVector*> MapVec_t; // <det, vector*>
-  typedef map<Key_t, MapVec_t> MapMapVec_t; // better name??
+  typedef map<MergedGroup_t, MapVec_t> MapMapVec_t;
   MapMapVec_t map_map_vec;
+  // MergedGroup_t represents a group of hits that are merged into one hit.
+  // Per merged group we expect two unmerged det IDs (ex. H4Tu & H4Td per H4T),
+  // which are used as the key of MapVec_t.
+  // Thus MapVec_t usually holds two hit vectors.
 
   /// Extract H4 hits (and remove them in vec_in)
   for (int ih = vec_in->size() - 1; ih >= 0; ih--) {
@@ -87,9 +91,9 @@ int CalibMergeH4::MergeHitsAnd(SQHitVector* vec_in)
     short det_org = hit->get_detector_id();
     short det_new = FindMergedId(det_org);
     if (det_new == 0) continue;
-    MapVec_t* map_vec = &map_map_vec[Key_t(det_new, hit->get_element_id(), hit->get_level())];
+    MapVec_t* map_vec = &map_map_vec[MergedGroup_t(det_new, hit->get_element_id(), hit->get_level())];
     if (map_vec->find(det_org) == map_vec->end()) {
-      map_vec->at(det_org) = vec_in->Clone();
+      (*map_vec)[det_org] = vec_in->Clone();
       map_vec->at(det_org)->clear();
     }
     map_vec->at(det_org)->push_back(hit);
@@ -111,7 +115,7 @@ int CalibMergeH4::MergeHitsAnd(SQHitVector* vec_in)
           SQHit* hit = *it3;
           time += hit->get_tdc_time();
           nhit++;
-          if (hit_push) hit_push = hit;
+          if (! hit_push) hit_push = hit;
         }
       }
       hit_push->set_tdc_time(time/nhit); // average
