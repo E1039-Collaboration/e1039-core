@@ -30,6 +30,12 @@ int OnlMon4MainDaq()
   list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H2Y ));
   list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H4Y1));
   list_omc.push_back(new OnlMonHodo (OnlMonHodo ::H4Y2));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4T  ));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4B  ));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y1L));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y1R));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y2L));
+  list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y2R));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D0 ));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D1 ));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D2 ));

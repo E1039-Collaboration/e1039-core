@@ -12,10 +12,15 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libonlmonserver.so");
   const bool use_onlmon = true;
 
+  if (gSystem->Getenv("E1039_DECODER_MODE")) { // just defined or not for now
+    cout << "Output mode = standard." << endl;
+  } else {
+    cout << "output mode = devel." << endl;
+    UtilOnline::UseOutputLocationForDevel();
+  }
+
   DecoStatusDb deco_stat;
   deco_stat.RunStarted(run);
-
-  UtilOnline::UseOutputLocationForDevel();
 
   ostringstream oss;
   oss << UtilOnline::GetCodaFileDir() << "/" << UtilOnline::RunNum2CodaFile(run);
@@ -60,6 +65,12 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H2Y));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y1));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y2));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4T));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4B));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y1L));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y1R));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2L));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2R));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D0));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D1));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D2));
