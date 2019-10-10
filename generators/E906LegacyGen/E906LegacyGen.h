@@ -34,15 +34,13 @@ public:
     void enableDump()   { _dumpVtx = true;   }
     void enableOthers() { _otherVtx = true;  }
 
-    /* void set_out_name(const std::string& outName) { */
-    /* 		_out_name = outName; */
-    /* } */
-
-    /* const std::string& get_out_name() const { */
-    /* 		return _out_name; */
-    /* 	} */
+ 
     void ResetVars();
     void InitTree();
+    
+ 
+    //void setvtxx(double vx);
+    //double  getvtxx();
   
 
 
@@ -60,8 +58,9 @@ private:
     TFile *file;
     TH1F * histo;
     TTree *truth_tree;
-    float truth_vtxx,truth_vtxy,truth_vtxz ;  
-    //float truth_vtxz ;
+    float truth_vtxx,truth_vtxy,truth_vtxz ;
+    //float truth_vtxx1,truth_vtxy1,truth_vtxz1 ;  
+   
 
 };
 
