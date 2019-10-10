@@ -6,37 +6,26 @@
 BeamlineObject::BeamlineObject() {}
 
 BeamlineObject::BeamlineObject(const TGeoMaterial* pMaterial)
-//BeamlineObject::BeamlineObject(const TGeoMixture* pMaterial)
 {
   //std::cout << " beamline material: "<< pMaterial->GetName() << std::endl;
   nucIntLen = pMaterial->GetIntLen();
   density = pMaterial->GetDensity();
- 
+
 
   TGeoMixture* pMaterialmix;
   pMaterialmix = (TGeoMixture*)pMaterial;
-  // unsigned int nElements = pMaterialmix->GetNelements(); 
-  // const double* Z_array = pMaterialmix->GetZmixt();//array of Z of the elements
-  // //const double* A_array = pMaterialmix->GetAmixt();//array of A of the elements
-  // const double* W_array = pMaterialmix->GetWmixt();//array of relative proportions by mass
-  // //const double* N_array = pMaterialmix->GetNmixt();//array of numbers atoms
-  //std::cout<< "beamline: "<< pMaterialmix->GetName() << " no. of elements: "<< pMaterialmix->GetNelements()<<std::endl;
- 
 
   Z = 0.; A = 0.; N = 0.;
   
-  // double Avogardo = 6.02214199e+23;
-  
-  // pMaterialmix->Print(" ");  
-  // std::cout<<" From direct TMaterial  A:"<<pMaterial->GetA()<<" Total Z: "<<pMaterial->GetZ()<<std::endl;
+  //pMaterial->Print("");
+  //pMaterialmix->Print(" ");  
  
   Z=pMaterial->GetZ();
   A=pMaterial->GetA();
   N=A-Z;
   
-  // protonPerc = Z/N;  //N here for now stands for total nucleons
-  // Z = A*protonPerc;
-  // N = A - Z;
+  //protonPerc = Z/N;  //N here for now stands for total nucleons
+ 
 }
 
 bool BeamlineObject::operator < (const BeamlineObject& obj) const
@@ -59,13 +48,12 @@ std::ostream& operator << (std::ostream& os, const BeamlineObject& obj)
 
 double BeamlineObject::getZ()
 {
-  time_t time0 = time(NULL);
-  // time_t time1 = time(NULL);
-  Int_t seed = (Int_t)(time0);
 
-  TRandom3* random = new TRandom3(seed);
-  return z_up - nucIntLen*TMath::Log(1. - attenuationSelf*random->Uniform(0,1)); //Todo Fix this place holders
-  std::cout<<" random: "<<random->Uniform(0,1)<<std::endl;
+  double returnZ = 0.;
+
+  returnZ =  z_up - nucIntLen*TMath::Log(1. - attenuationSelf*gRandom->Uniform(0,1)); //Todo Fix this place holders
+   
+  return returnZ;
 }
 
 bool BeamlineObject::inAcceptance(double x, double y)
