@@ -44,6 +44,7 @@ else
     packages/PHGenFitPkg/PHGenFit
     packages/ktracker
     packages/embedding
+    packages/UtilAna
     online/onlmonserver
     packages/Display/display
     packages/Display/modules
