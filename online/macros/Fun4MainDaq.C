@@ -45,6 +45,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     if (is_online) se->StartServer();
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
+    se->registerSubsystem(new OnlMonTrigNim());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H3X, 1));

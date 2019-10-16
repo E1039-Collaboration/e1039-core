@@ -106,6 +106,9 @@ void OnlMonCanvas::PreDraw(const bool at_end)
 
 void OnlMonCanvas::PostDraw(const bool at_end)
 {
+  if (m_mon_status == OK && m_pate_msg.GetListOfLines()->GetSize() == 0) {
+    m_pate_msg.AddText("OK"); // Set the default message.
+  }
   int color;
   switch (m_mon_status) {
   case OK   :  color = kGreen ;  break;
