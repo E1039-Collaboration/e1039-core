@@ -20,6 +20,12 @@
 #include <cmath>
 #include <cassert>
 
+//Abi
+#include <TGeoMaterial.h>
+#include <phgeom/PHGeomUtility.h>
+#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include <TGeoManager.h>
+
 using namespace std;
 
 PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name): 
@@ -55,8 +61,11 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
 	_px_min(NAN), _px_max(NAN),
 	_py_min(NAN), _py_max(NAN),
 	_pz_min(NAN), _pz_max(NAN),
-  _ineve(NULL) 
+  _ineve(NULL) ,
+  _legacy_vertexgenerator(nullptr)
 {
+
+  _vertexGen = new E906VertexGen();
   return;
 }
 
@@ -141,6 +150,7 @@ void PHG4SimpleEventGenerator::set_vertex_distribution_mean(const double x, cons
   _vertex_x = x;
   _vertex_y = y;
   _vertex_z = z;
+  cout<<" setting vertex mean in simpleeventgenerator"<<endl;
   return;
 }
 
@@ -245,7 +255,6 @@ int PHG4SimpleEventGenerator::InitRun(PHCompositeNode *topNode) {
 }
 
 int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
-
   if (verbosity > 0) {
     cout << "====================== PHG4SimpleEventGenerator::process_event() =====================" << endl;
     cout <<"PHG4SimpleEventGenerator::process_event - reuse_existing_vertex = "<<reuse_existing_vertex<<endl;
@@ -262,15 +271,32 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
       vtx_z = smearvtx(_vertex_z,_vertex_width_z,_vertex_func_z);
     } 
 
+  // For using the legacy vertex generator ; Abi
+  if (_legacy_vertexgenerator){
+  _vertexGen->InitRun(topNode);
+  TGeoManager* geoManager = PHGeomUtility::GetTGeoManager(topNode);
+  double x_vtx,y_vtx,z_vtx;
+    x_vtx=0.;
+    y_vtx=0.;
+    z_vtx=0.;
+
+    _vertexGen->traverse(geoManager->GetTopNode(),x_vtx,y_vtx, z_vtx);
+
+    vtx_x = x_vtx;
+    vtx_y = y_vtx;
+    vtx_z = z_vtx;
+      }
+
+
   vtx_x += _vertex_offset_x;
   vtx_y += _vertex_offset_y;
   vtx_z += _vertex_offset_z;
 
-  if (verbosity > 0) {
+   if (verbosity > 0) {
   cout <<"PHG4SimpleEventGenerator::process_event - vertex center"<<reuse_existing_vertex
       << vtx_x<<", "<< vtx_y<<", "<< vtx_z<<" cm"
       <<endl;
-  }
+   }
 
   int vtxindex = -1;
   int trackid = -1;
