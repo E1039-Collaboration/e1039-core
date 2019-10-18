@@ -30,6 +30,16 @@ int DbUpSpill::Init(PHCompositeNode* topNode)
 
 int DbUpSpill::InitRun(PHCompositeNode* topNode)
 {
+  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  int run_id = run_header->get_run_id();
+  ClearTable("spill"                , run_id);
+  ClearTable("scaler_bos"           , run_id);
+  ClearTable("scaler_eos"           , run_id);
+  ClearTable("slow_cont_DAQ"        , run_id);
+  ClearTable("slow_cont_beam"       , run_id);
+  ClearTable("slow_cont_environment", run_id);
+  ClearTable("slow_cont_target     ", run_id);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -56,6 +66,19 @@ int DbUpSpill::process_event(PHCompositeNode* topNode)
 int DbUpSpill::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void DbUpSpill::ClearTable(const char* table_name, const int run_id)
+{
+  DbSvc db(DbSvc::DB1);
+  db.UseSchema("user_e1039_maindaq", true);
+  if (! db.HasTable(table_name)) return;
+  ostringstream oss;
+  oss << "delete from " << table_name << " where run_id = " << run_id;
+  if (! db.Con()->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DbUpSpill::ClearTables():  table = " << table_name << ", run_id = " << run_id << "." << endl;
+    return;
+  }
 }
 
 void DbUpSpill::UploadToSpillTable(SQSpill* spi)

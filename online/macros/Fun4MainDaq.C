@@ -7,6 +7,7 @@ R__LOAD_LIBRARY(libdecoder_maindaq)
 
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
+  gSystem->Umask(0002);
   gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");

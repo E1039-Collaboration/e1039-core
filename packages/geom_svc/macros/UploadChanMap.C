@@ -1,9 +1,9 @@
 /// UploadChanMap.C:  Macro to upload the channel mapping from tsv file to MySQL DB.
-R__LOAD_LIBRARY(libchan_map)
+R__LOAD_LIBRARY(libgeom_svc)
 
 int UploadChanMap()
 {
-  gSystem->Load("libchan_map.so");
+  gSystem->Load("libgeom_svc.so");
 
   /// Select one of the classes.
   ChanMapTaiwan map;
@@ -15,7 +15,8 @@ int UploadChanMap()
   //GeomParamPlane map;
 
   /// Set a map ID.
-  const std::string map_id="e906run28740";
+  const std::string map_id="2019091301";
+//  const std::string map_id="e906run28740";
 //  const std::string map_id="G9_run5_2";
 
   map.SetMapIDbyFile(map_id);

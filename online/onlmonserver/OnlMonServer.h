@@ -38,6 +38,7 @@ class OnlMonServer : public Fun4AllServer
   bool GetGoEnd()        { return m_go_end; }
 
 #ifndef __CINT__
+  pthread_mutex_t* GetMutex() { return &mutex; }
   void GetMutex(pthread_mutex_t &lock) {lock = mutex;}
   void SetThreadId(pthread_t &id) {serverthreadid = id;}
 #endif

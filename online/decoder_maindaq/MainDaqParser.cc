@@ -88,19 +88,22 @@ int MainDaqParser::ParseOneSpill()
         coda->ForceEnd(); //if (dec_par.verbose) printf ("End Event Processed\n");
         break;
       default:
-        cerr << "!!ERROR!! Uncovered Coda event type: " << evt_type_id << ".  Exit.\n";
+        cerr << "!!ERROR!! Uncovered Coda event type: " << evt_type_id << ".  Exit." << endl;
         return false;
       }
       break;
     case FEE_PREFIX:
       ret = ProcessCodaFee(event_words);
       break;
-    case 0: // Special case which requires waiting and retrying
-      if (dec_par.verbose) cout << "Case '0' @ coda " << dec_par.codaID << "\n";
-      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait, dec_par.codaID-1);
+    case 0: // Special case which requires waiting and retrying.  Purpose??  Still needed??
+      cout << "Case '0' @ coda " << dec_par.codaID << "." << endl;
+      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait);
+      if (ret == 0) {
+        ret = coda->JumpCodaEvent(dec_par.codaID, event_words, dec_par.codaID - 1) ? 0 : 2;
+      }
       break;
     default: // If no match to any given case, print it and exit.
-      cerr << "!!ERROR!!  Uncovered Coda event type: " << evt_type_id << ".  Exit\n";
+      cerr << "!!ERROR!!  Uncovered Coda event type: " << evt_type_id << ".  Exit." << endl;
       return false;
     }
     if (ret != 0) {
@@ -127,7 +130,7 @@ int MainDaqParser::End()
          << "  Real  events:  all = " << run_data.n_evt_all << ", decoded = " << run_data.n_evt_dec << "\n"
          << "  TDC   hits: total = " << run_data.n_hit   << ", bad = " << run_data.n_hit_bad << "\n"
          << "  v1495 hits: total = " << run_data.n_t_hit << ", bad = " << run_data.n_t_hit_bad << "\n"
-         << "  Real decoding time: " << (dec_par.timeEnd - dec_par.timeStart) << "\n";
+         << "  Real decoding time: " << (dec_par.timeEnd - dec_par.timeStart) << endl;
   }
   return 0;
 }
@@ -145,7 +148,7 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
     dec_par.runID = run_data.run_id = words[3];
     // int runType = words[4];
 
-    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << run_data.utime_b << " " << dec_par.sampling << "\n";
+    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << run_data.utime_b << " " << dec_par.sampling << endl;
 
     dec_par.InitMapper();
     coda->SetRunNumber(dec_par.runID);
@@ -156,7 +159,7 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
 int MainDaqParser::ProcessCodaFee(int* words)
 {
   if (words[1] != FEE_EVENT) {
-    cerr << "!!ERROR!!  Not FEE_EVENT in case of FEE_PREFIX: " << words[1] << ".  Exit.\n";
+    cerr << "!!ERROR!!  Not FEE_EVENT in case of FEE_PREFIX: " << words[1] << ".  Exit." << endl;
     return 1;
   }
   if (words[0] > 8) { // Process only if there is content
@@ -216,7 +219,7 @@ int MainDaqParser::ProcessCodaFeeBoard(int* words)
 	       << " " << data.falling_enabled << " " << data.segmentation
 	       << " " << data.multihit_elim_enabled << " " << data.updating_enabled
 	       << " " << data.elim_window << " " << data.selectWindow << " "
-	       << data.lowLimit << " " << data.highLimit << "\n";
+	       << data.lowLimit << " " << data.highLimit << endl;
 	}
     }
 
@@ -248,7 +251,7 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
     for (int ii = 0; ii < 10; ii++) cout << " " << run_data.trig_bit[ii];
     cout << "\n  feeP ";
     for (int ii = 0; ii <  8; ii++) cout << " " << run_data.prescale[ii];
-    cout << "\n";
+    cout << endl;
   }
   return 0;
 }
@@ -306,7 +309,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     break;
   default: // Awaiting further event types
     ret = -1;
-    cout << "Unknown event code: " << eventCode << ".  Ignore.\n";
+    cout << "Unknown event code: " << eventCode << ".  Ignore." << endl;
     break;
   }
   if (ret != 0 || dec_par.coda_phys_evt_status != 0) run_data.n_phys_evt_bad++;
@@ -329,7 +332,7 @@ int MainDaqParser::ProcessPhysRunDesc(int* words)
   }
   run_data.run_desc = desc;
   run_data.n_run_desc++;
-  cout << "  run desc: " << desc.length() << " chars.\n";
+  cout << "  run desc: " << desc.length() << " chars." << endl;
   return 0;
 }
 
@@ -354,7 +357,7 @@ int MainDaqParser::ProcessPhysPrestart(int* words)
       }
     }
     if (line.length() > 0) list_line.push_back(line);
-    else cerr << "Unexpectedly line.length() == 0.\n";
+    else cerr << "Unexpectedly line.length() == 0." << endl;
     for (unsigned int ii = 0; ii < list_line.size(); ii++) {
       cout << "  pre " << list_line[ii] << endl;
     }
@@ -397,7 +400,7 @@ int MainDaqParser::ProcessPhysSlow(int* words)
     }
   }
   if (line.length() > 0) list_line.push_back(line);
-  else cout << "WARNING: Unexpectedly line.length() == 0.\n";
+  else cout << "WARNING: Unexpectedly line.length() == 0." << endl;
   
   std::vector<SlowControlData> list_data; //< temporary list
   for (unsigned int ii = 0; ii < list_line.size(); ii++) {
@@ -431,7 +434,7 @@ int MainDaqParser::ProcessPhysSlow(int* words)
     spill_data->list_slow_cont.push_back(*data); // put into the global list
     spill_data->n_slow++;
   }
-  if (dec_par.verbose) cout << "  spill " << dec_par.spillID_slow << ", target " << (short)dec_par.targPos_slow << "\n";
+  if (dec_par.verbose) cout << "  spill " << dec_par.spillID_slow << ", target " << (short)dec_par.targPos_slow << endl;
   // In the past decoder, almost all variables obtained here are inserted into
   // the Beam, HV, Environment and Target tables according to "type".
   return 0;
@@ -462,7 +465,7 @@ int MainDaqParser::ProcessPhysSpillCounter(int* words)
   /// Replace spillID with spillID_cntr at BOS.
   dec_par.spillID_cntr = atoi(spillNum) + 1;
   if (dec_par.verbose) {
-    cout << "Spill Counter @ coda = " << dec_par.codaID << ":  spill = " << dec_par.spillID_cntr << "\n";
+    cout << "Spill Counter @ coda = " << dec_par.codaID << ":  spill = " << dec_par.spillID_cntr << endl;
   }
   run_data.n_spill++;
   return 0;
@@ -475,8 +478,16 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
     dec_par.has_1st_bos = true;
     dec_par.at_bos      = true;
     if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
-      cout << "Error submitting data.  Exiting...\n";
+      cout << "Error submitting data.  Exiting..." << endl;
       return 1;
+    }
+
+    /// Temporary adjustment (added on 2019-09-25).
+    /// Since spill ID is not available in the cosmic-ray commissioning,
+    /// a temporary ID is given here.
+    if (dec_par.spillID_slow == 0 && dec_par.spillID_cntr == 0) {
+      static int spillID_local = 0;
+      dec_par.spillID_slow = dec_par.spillID_cntr = ++spillID_local;
     }
 
     /// Regard the Slow Control info as primary (rather than Spill Counter)
@@ -494,7 +505,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
   }
 
   if (dec_par.verbose) {
-    cout << type_str << " @ coda " << dec_par.codaID << ": spill " << dec_par.spillID << ".\n";
+    cout << type_str << " @ coda " << dec_par.codaID << ": spill " << dec_par.spillID << "." << endl;
   }
   dec_par.spillType = type;
 
@@ -504,7 +515,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
     int rocEvLength = words[idx];
     int idx_roc_end = idx + rocEvLength; // inclusive endpoint
     if ( (rocEvLength + idx) > evLength) {
-      cout << "Word limit error: " << rocEvLength << " + " << idx << " > " << evLength <<"\n";
+      cout << "Word limit error: " << rocEvLength << " + " << idx << " > " << evLength << endl;
       return 1;
     }
     idx++;
@@ -524,7 +535,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 	data->eos_vme_time = codaEvVmeTime;
 	data->n_eos_spill++;
       }
-      if (dec_par.verbose > 2) cout << "  " << type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << "\n";
+      if (dec_par.verbose > 2) cout << "  " << type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << endl;
     }
     /// Skip ROC 25 in END_SPILL since unknown words are placed for debug by Xinkun(?).
     if (type != TYPE_BOS && rocID == 25) idx = idx_roc_end + 1;

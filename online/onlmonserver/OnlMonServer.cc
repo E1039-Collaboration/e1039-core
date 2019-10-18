@@ -42,7 +42,14 @@ OnlMonServer *OnlMonServer::instance()
 OnlMonServer::OnlMonServer(const std::string &name)
   : Fun4AllServer(name), m_go_end(false)
 {
-  pthread_mutex_unlock(&mutex);
+  pthread_mutexattr_t mutex_attr;
+  pthread_mutexattr_init(&mutex_attr);
+  pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+
+  int ret = pthread_mutex_init(&mutex, &mutex_attr);
+  if (ret != 0) {
+    cout << "WARNING:  pthread_mutex_init() returned " << ret << "." << endl;
+  }
   return;
 }
 

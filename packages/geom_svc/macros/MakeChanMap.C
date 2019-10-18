@@ -1,9 +1,9 @@
 /// MakeChanMap.C:  Macro to create a channel mapping.
-R__LOAD_LIBRARY(libchan_map)
+R__LOAD_LIBRARY(libgeom_svc)
 
 int MakeChanMap()
 {
-  gSystem->Load("libchan_map.so");
+  gSystem->Load("libgeom_svc.so");
   ChanMapTaiwan map;
 
   /// roc, board chan, det, ele

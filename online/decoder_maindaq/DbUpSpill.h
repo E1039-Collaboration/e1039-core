@@ -13,6 +13,7 @@ class DbUpSpill: public SubsysReco {
   int End(PHCompositeNode *topNode);
 
  private:
+  void ClearTable(const char* table_name, const int run_id);
   void UploadToSpillTable(SQSpill* spi);
   void UploadToScalerTable(SQSpill* spi, const std::string boseos);
   void UploadToSlowContTable(SQSpill* spi);
