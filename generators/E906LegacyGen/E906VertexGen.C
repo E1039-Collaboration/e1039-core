@@ -31,7 +31,7 @@ void E906VertexGen::InitRun(PHCompositeNode* topNode)
   beamProfile->SetParameter(2, 0.0);
   beamProfile->SetParameter(3, 0.76);
 
-  //beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.68/0.68)*exp(-0.5*(y-0.)*(y-0.)/0.76/0.76)", -10., 10., -10., 10.);
+  // beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.414/0.414)*exp(-0.5*(y-0.)*(y-0.)/0.343/0.343)", -10., 10., -10., 10.);
   
   nPieces=0;
  
@@ -82,7 +82,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	    newObj.z_down = newObj.z0 + 0.5*newObj.length;
 	    newObj.z_up = newObj.z0 - 0.5*newObj.length;
 
-	    if (x*x+y*y<10.*10.){//Manually get a hole of 10 cm for all shieldings 
+	    if (x*x+y*y<5.*5.){//Manually get a hole of 10 cm for all shieldings 
 	      	newObj.nucIntLen = 65932.038;
 	    	newObj.density = 0.001;
 	    	newObj.A = 14.364;
@@ -160,7 +160,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 		 newObj1.z_down = newObj1.z0 + 0.5*newObj1.length;
 		 newObj1.z_up = newObj1.z0 - 0.5*newObj1.length;
 		
-		 if (fabs(x)<7.8232 && fabs(y)<3.4798){//Manually get a rectangular hole
+		 if (fabs(x)<3.9 && fabs(y)<1.7){//Manually get a rectangular hole
 		   newObj1.nucIntLen = 65932.038;
 		   newObj1.density = 0.001;
 		   newObj1.A = 14.364;
@@ -280,8 +280,8 @@ void E906VertexGen::generateVtxPerp(double& x, double& y)
     }
     else
     {
-      x=gRandom->Gaus(0.,1.5);
-      y=gRandom->Gaus(0.,1.5);
+      x=gRandom->Gaus(0.,0.414);
+      y=gRandom->Gaus(0.,0.343);
     }
 }
 
