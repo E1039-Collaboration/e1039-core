@@ -6,6 +6,11 @@
 #include <map>
 #include <vector>
 
+
+#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include <TGeoManager.h>
+#include <phgeom/PHGeomUtility.h>
+
 class PHG4InEvent;
 class PHCompositeNode;
 
@@ -69,6 +74,13 @@ public:
 			const double y_min, const double y_max,
 			const double z_min, const double z_max
 			);
+
+
+  //Abi
+  E906VertexGen* _vertexGen;
+  void enableVertexGen(){_legacy_vertexgenerator = true;}
+  bool _legacy_vertexgenerator;
+
 
 private:
 
