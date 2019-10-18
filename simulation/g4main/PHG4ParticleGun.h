@@ -4,7 +4,9 @@
 #include "PHG4ParticleGeneratorBase.h"
 
 #include <TF2.h>
-
+#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include <TGeoManager.h>
+#include <phgeom/PHGeomUtility.h>
 class PHG4Particle;
 
 class PHG4ParticleGun: public PHG4ParticleGeneratorBase
@@ -17,6 +19,8 @@ class PHG4ParticleGun: public PHG4ParticleGeneratorBase
 
   int process_event(PHCompositeNode *topNode);
 
+      
+
 	TF2* get_beam_profile() const {
 		return _beam_profile;
 	}
@@ -24,10 +28,18 @@ class PHG4ParticleGun: public PHG4ParticleGeneratorBase
 	void set_beam_profile(TF2* beamProfile) {
 		_beam_profile = beamProfile;
 	}
+	
+
+	//Abi
+	E906VertexGen* _vertexGen;
+	void enableVertexGen(){_legacy_vertexgenerator = true;}
 
  protected:
 
   TF2* _beam_profile;
+  // Abi
+  bool _legacy_vertexgenerator;
+  
 };
 
 #endif
