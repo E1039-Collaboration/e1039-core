@@ -378,25 +378,27 @@ void PHEventDisplay::draw_default(PHCompositeNode *topNode)
   }
 
   if (verbosity>1) std::cout<<"draw_default() FullRedraw3D." <<std::endl;
-  gEve->FullRedraw3D(kTRUE);
+  gEve->FullRedraw3D(); // (kTRUE);
 
   if (verbosity>1) std::cout<<"draw_default() TGLViewer." <<std::endl;
   TGLViewer*  v = gEve->GetDefaultGLViewer();
-  v->UpdateScene();
+  //v->UpdateScene();
 
   //v->ColorSet().Background().SetColor(kMagenta+4);
   //v->SetGuideState(TGLUtil::kAxesOrigin, kTRUE, kFALSE, 0);
   //v->RefreshPadEditor(v);
 
-  // top view
-//  v->CurrentCamera().RotateRad(-3.14/2,0);
-//  v->CurrentCamera().Zoom(400, 0, 0);
-//  v->CurrentCamera().Truck(3000,0);
-
-  // 3D view
-  v->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
-  v->CurrentCamera().Zoom(350, 0, 0);
-  v->CurrentCamera().Truck(2000,-1500);
+  if(nevent==1) {
+    v->UpdateScene();
+    // top view
+    //  v->CurrentCamera().RotateRad(-3.14/2,0);
+    //  v->CurrentCamera().Zoom(400, 0, 0);
+    //  v->CurrentCamera().Truck(3000,0);
+    // 3D view
+    v->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
+    v->CurrentCamera().Zoom(350, 0, 0);
+    v->CurrentCamera().Truck(2000,-1500);
+  }
   v->DoDraw();
 
   // Annotation
