@@ -15,6 +15,7 @@
 #include <phool/getClass.h>
 #include <TSQLServer.h>
 #include <db_svc/DbSvc.h>
+#include "UtilOnline.h"
 #include "DbUpSpill.h"
 using namespace std;
 
@@ -85,7 +86,7 @@ void DbUpSpill::UploadToSpillTable(SQSpill* spi)
 {
   const char* table_name = "spill";
   DbSvc db(DbSvc::DB1);
-  db.UseSchema("user_e1039_maindaq", true);
+  db.UseSchema(UtilOnline::GetSchemaMainDaq(), true);
   //db.DropTable(table_name); // Use this when you want to refresh
   if (! db.HasTable(table_name)) {
     DbSvc::VarList list;
@@ -138,7 +139,7 @@ void DbUpSpill::UploadToScalerTable(SQSpill* spi, const std::string boseos)
   string table_name = oss.str();
 
   DbSvc db(DbSvc::DB1);
-  db.UseSchema("user_e1039_maindaq", true);
+  db.UseSchema(UtilOnline::GetSchemaMainDaq(), true);
   //db.DropTable(table_name); // Use this when you want to refresh
   if (! db.HasTable(table_name)) {
     DbSvc::VarList list;
@@ -188,7 +189,7 @@ void DbUpSpill::UploadToSlowContTable(SQSpill* spi)
   }
 
   DbSvc db(DbSvc::DB1);
-  db.UseSchema("user_e1039_maindaq", true);
+  db.UseSchema(UtilOnline::GetSchemaMainDaq(), true);
 
   ostringstream oss;
   for (OssMap_t::iterator it = map_oss.begin(); it != map_oss.end(); it++) {

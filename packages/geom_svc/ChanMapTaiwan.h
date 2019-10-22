@@ -18,8 +18,6 @@ class ChanMapTaiwan : public ChanMapBase {
   typedef std::map<RocBoardChan_t, DetEle_t> Map_t;
   Map_t m_map; ///< Used in Find() for better speed.
 
-  std::map<std::string, short> m_map_name2id;
-
  public:
   ChanMapTaiwan();
   virtual ~ChanMapTaiwan() {;}
@@ -37,8 +35,6 @@ class ChanMapTaiwan : public ChanMapBase {
 
   void  ReadDbTable(DbSvc& db);
   void WriteDbTable(DbSvc& db);
-
-  void InitNameMap();
 };
 
 #endif // __CHAN_MAP_TAIWAN_H__

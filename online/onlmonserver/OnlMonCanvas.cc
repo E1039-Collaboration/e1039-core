@@ -8,6 +8,7 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <decoder_maindaq/UtilOnline.h>
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 using namespace std;
@@ -119,7 +120,7 @@ void OnlMonCanvas::PostDraw(const bool at_end)
 
   if (at_end) {
     ostringstream oss;
-    oss << OnlMonServer::GetOutDir() << "/" << setfill('0') << setw(6) << m_run;
+    oss << UtilOnline::GetOnlMonDir() << "/" << setfill('0') << setw(6) << m_run;
     gSystem->mkdir(oss.str().c_str(), true);
 
     oss << "/" << m_name << "_can" << m_num;

@@ -6,15 +6,23 @@ class UtilOnline {
   static std::string m_dir_end;
   static std::string m_dir_coda;
   static std::string m_dir_dst;
+  static std::string m_dir_onlmon;
+  static std::string m_sch_maindaq;
 
  public:
-  static void SetEndFileDir (const std::string dir) { m_dir_end  = dir; }
-  static void SetCodaFileDir(const std::string dir) { m_dir_coda = dir; }
-  static void SetDstFileDir (const std::string dir) { m_dir_dst  = dir; }
+  static void UseOutputLocationForDevel();
 
-  static std::string GetEndFileDir () { return m_dir_end ; }
-  static std::string GetCodaFileDir() { return m_dir_coda; }
-  static std::string GetDstFileDir () { return m_dir_dst ; }
+  static void SetEndFileDir   (const std::string dir) { m_dir_end     = dir; }
+  static void SetCodaFileDir  (const std::string dir) { m_dir_coda    = dir; }
+  static void SetDstFileDir   (const std::string dir) { m_dir_dst     = dir; }
+  static void SetOnlMonDir    (const std::string dir) { m_dir_onlmon  = dir; }
+  static void SetSchemaMainDaq(const std::string sch) { m_sch_maindaq = sch; }
+
+  static std::string GetEndFileDir   () { return m_dir_end    ; }
+  static std::string GetCodaFileDir  () { return m_dir_coda   ; }
+  static std::string GetDstFileDir   () { return m_dir_dst    ; }
+  static std::string GetOnlMonDir    () { return m_dir_onlmon ; }
+  static std::string GetSchemaMainDaq() { return m_sch_maindaq; }
 
   static int CodaFile2RunNum(const std::string name);
   static std::string RunNum2CodaFile(const int run);

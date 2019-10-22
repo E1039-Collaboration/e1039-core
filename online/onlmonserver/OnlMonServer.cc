@@ -23,7 +23,7 @@ int ServerThread = 0;
 static TThread *ServerThread = NULL;
 #endif
 
-std::string OnlMonServer::m_out_dir    = "/data2/e1039/onlmon/plots";
+//std::string OnlMonServer::m_out_dir    = "/data2/e1039/onlmon/plots";
 std::string OnlMonServer::m_mon_host   = "localhost";
 int         OnlMonServer::m_mon_port   = 9081;
 int         OnlMonServer::m_mon_port_0 = 9081;

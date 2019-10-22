@@ -4,11 +4,18 @@
 #include "UtilOnline.h"
 using namespace std;
 
-std::string UtilOnline::m_dir_end  = "/seaquest/e906daq/coda/data/END";
-std::string UtilOnline::m_dir_coda = "/localdata/codadata";
-std::string UtilOnline::m_dir_dst  = "/data2/e1039/dst";
+std::string UtilOnline::m_dir_end     = "/seaquest/e906daq/coda/data/END";
+std::string UtilOnline::m_dir_coda    = "/localdata/codadata"; // could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
+std::string UtilOnline::m_dir_dst     = "/data2/e1039/dst";
+std::string UtilOnline::m_dir_onlmon  = "/data2/e1039/onlmon/plots";
+std::string UtilOnline::m_sch_maindaq = "user_e1039_maindaq";
 
-// m_dir_coda could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
+void UtilOnline::UseOutputLocationForDevel()
+{
+  m_dir_dst     = "/data2/e1039/dst-devel";
+  m_dir_onlmon  = "/data2/e1039/onlmon/plots-devel";
+  m_sch_maindaq = "user_e1039_maindaq_devel";
+}
 
 /// Convert the name of a Coda file to its run number.
 /**

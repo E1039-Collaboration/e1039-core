@@ -1,8 +1,8 @@
 /// Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 R__LOAD_LIBRARY(libinterface_main)
-R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libdecoder_maindaq)
+R__LOAD_LIBRARY(libonlmonserver)
 #endif
 
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
@@ -12,6 +12,13 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
   const bool use_onlmon = true;
+
+  if (gSystem->Getenv("E1039_DECODER_MODE")) { // just defined or not for now
+    cout << "Output mode = standard." << endl;
+  } else {
+    cout << "output mode = devel." << endl;
+    UtilOnline::UseOutputLocationForDevel();
+  }
 
   DecoStatusDb deco_stat;
   deco_stat.RunStarted(run);
@@ -39,8 +46,9 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   se->registerSubsystem(new DbUpRun());
   se->registerSubsystem(new DbUpSpill());
-  se->registerSubsystem(new CalibInTime());
-  se->registerSubsystem(new CalibXT());
+  //se->registerSubsystem(new CalibInTime());
+  se->registerSubsystem(new CalibMergeH4());
+  //se->registerSubsystem(new CalibXT());
 
   if (use_onlmon) { // Register the online-monitoring clients
     if (is_online) se->StartServer();
@@ -58,6 +66,12 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H2Y));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y1));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y2));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4T));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4B));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y1L));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y1R));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2L));
+    se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2R));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D0));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D1));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D2));
