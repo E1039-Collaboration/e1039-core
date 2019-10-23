@@ -4,8 +4,6 @@
 #include <vector>
 #include <TGraph.h>
 #include <TVector3.h>
-class TH1;
-class TH2;
 class SQHit;
 
 namespace UtilHodo {
@@ -39,40 +37,14 @@ namespace UtilHodo {
     ~Track2D() {;}
     void AddHit(SQHit* hit);
     int DoTracking();
-    int      GetNDF  ();
-    double   GetChi2 ();
-    TVector3 GetPos0 ();
-    TVector3 GetSlope();
-    TVector3 GetPos  (const double z);
+    TGraph*  GetGraphX();
+    TGraph*  GetGraphY();
+    int      GetNDF   ();
+    double   GetChi2  ();
+    TVector3 GetPos0  ();
+    TVector3 GetSlope ();
+    TVector3 GetPos   (const double z);
   };
-
-  class HodoTrack {
-    typedef std::vector<SQHit*> HitList_t;
-    HitList_t m_list_hit_x;
-    HitList_t m_list_hit_y;
-    TGraph    m_gr_x;
-    TGraph    m_gr_y;
-    int      m_ndf;
-    double   m_chi2;
-    TVector3 m_pos0; //< Track position at z = 0.
-    TVector3 m_slope; //< Track slope.  It is normalized so that z = +1.
-    
-  public:
-    HodoTrack() {;}
-    ~HodoTrack() {;}
-    void AddHit(SQHit* hit);
-    int DoTracking();
-
-    int    GetNDF () { return m_ndf ; }
-    double GetChi2() { return m_chi2; }
-    TVector3* GetPos  () { return &m_pos0 ; }
-    TVector3* GetSlope() { return &m_slope; }
-    TVector3  GetPos(const double z);
-
-  protected:
-    int DoTracking1D(const bool is_x, HitList_t* list_hit, TGraph* gr);
-  };
-
-};
+}; // namespace UtilHodo
 
 #endif /* _UTIL_HODO__H_ */

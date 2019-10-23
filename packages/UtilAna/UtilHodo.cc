@@ -1,5 +1,4 @@
 #include <iomanip>
-//#include <TH1D.h>
 #include <TF1.h>
 #include <interface_main/SQHit.h>
 #include <geom_svc/GeomSvc.h>
@@ -93,6 +92,16 @@ int Track2D::DoTracking()
   return 0;
 }
 
+TGraph* Track2D::GetGraphX()
+{
+  return &trk_x.graph;
+}
+
+TGraph* Track2D::GetGraphY()
+{
+  return &trk_y.graph;
+}
+
 int Track2D::GetNDF()
 {
   return trk_x.ndf + trk_y.ndf;
@@ -120,52 +129,4 @@ TVector3 Track2D::GetPos(const double z)
   return vec;
 }
 
-////////////////////////////////////////////////////////////////
-void HodoTrack::AddHit(SQHit* hit)
-{
-  if (IsHodoX(hit->get_detector_id())) m_list_hit_x.push_back(hit);
-  else                                 m_list_hit_y.push_back(hit);
-}
-
-int HodoTrack::DoTracking()
-{
-  m_chi2 = m_ndf = 0;
-  m_pos0 .SetXYZ(0, 0, 0);
-  m_slope.SetXYZ(0, 0, 0);
-  if (m_list_hit_x.size() < 2) return 1;
-  if (m_list_hit_y.size() < 2) return 2;
-
-  DoTracking1D(true , &m_list_hit_x, &m_gr_x);
-  DoTracking1D(false, &m_list_hit_y, &m_gr_y);
-  TF1* f1_x = m_gr_x.GetFunction("pol1");
-  TF1* f1_y = m_gr_y.GetFunction("pol1");
-  m_chi2 = f1_x->GetChisquare() + f1_y->GetChisquare();
-  m_ndf  = f1_x->GetNDF()       + f1_y->GetNDF();
-  m_pos0 .SetXYZ( f1_x->GetParameter(0), f1_y->GetParameter(0), 0.0 );
-  m_slope.SetXYZ( f1_x->GetParameter(1), f1_y->GetParameter(1), 1.0 );
-
-  return 0;
-}
-
-int HodoTrack::DoTracking1D(const bool is_x, HitList_t* list_hit, TGraph* gr)
-{
-  for (unsigned int ih = 0; ih < list_hit->size(); ih++) {
-    short det = list_hit->at(ih)->get_detector_id();
-    short ele = list_hit->at(ih)->get_element_id();
-    double x_ele, y_ele, z_ele;
-    GetElementPos(det, ele, x_ele, y_ele, z_ele);
-    if (is_x) gr->SetPoint(ih, x_ele, z_ele);
-    else      gr->SetPoint(ih, y_ele, z_ele);
-  }
-  gr->Fit("pol1", "Q0");
-  return 0;
-}
-
-TVector3 HodoTrack::GetPos(const double z)
-{
-  TVector3 vec(m_pos0);
-  vec += z*m_slope;
-  return vec;
-}
-
-};
+}; // End of "namespace UtilHodo"
