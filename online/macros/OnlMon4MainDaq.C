@@ -18,6 +18,7 @@ int OnlMon4MainDaq()
   OnlMonClientList_t list_omc;
   list_omc.push_back(new OnlMonMainDaq());
   list_omc.push_back(new OnlMonTrigSig());
+  list_omc.push_back(new OnlMonTrigNim());
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H1X, 1));
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H2X, 1));
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H3X, 1));
