@@ -13,7 +13,7 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <decoder_maindaq/UtilOnline.h>
+#include <UtilAna/UtilOnline.h>
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 #include "OnlMonClient.h"

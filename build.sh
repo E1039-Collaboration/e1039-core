@@ -22,6 +22,7 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    packages/UtilAna
     packages/evt_filter
     online/decoder_maindaq
     packages/Half
@@ -44,7 +45,6 @@ else
     packages/PHGenFitPkg/PHGenFit
     packages/ktracker
     packages/embedding
-    packages/UtilAna
     online/onlmonserver
     packages/Display/display
     packages/Display/modules

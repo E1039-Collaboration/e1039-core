@@ -1,5 +1,6 @@
 /// OnlMonTrigNim.C
 #include <iomanip>
+#include <TStyle.h>
 #include <TH2D.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
@@ -8,9 +9,9 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonTrigNim.h"
-#include "UtilHist.h"
 using namespace std;
 
 OnlMonTrigNim::OnlMonTrigNim()
@@ -146,6 +147,9 @@ int OnlMonTrigNim::DrawMonitor()
   h2_count->Draw("colz");
   pad0->cd(2);
   h2_rate->Draw("colz");
+  h2_rate->SetMarkerSize(2.0); // = text size (1.0 by default)
+  gStyle->SetPaintTextFormat("3.0f");
+  h2_rate->Draw("TEXTsame");
 
   if (h2_count->Integral() == 0) {
     can0->AddMessage("No event.");

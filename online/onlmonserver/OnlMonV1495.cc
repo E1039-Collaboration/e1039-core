@@ -10,9 +10,9 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 //#include <geom_svc/CalibParamInTimeV1495.h>
+#include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonV1495.h"
-#include "UtilHist.h"
 using namespace std;
 
 OnlMonV1495::OnlMonV1495(const HodoType_t type, const int lvl) : m_type(type), m_lvl(lvl)
@@ -159,7 +159,6 @@ int OnlMonV1495::DrawMonitor()
     h1_ele_in[pl]->SetFillColor(kBlue-7);
     h1_ele_in[pl]->Draw("same");
   }
-  can0->AddMessage("OK");
   can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
@@ -175,7 +174,6 @@ int OnlMonV1495::DrawMonitor()
     h1_time_in[pl]->SetFillColor(kBlue-7);
     h1_time_in[pl]->Draw("same");
   }
-  can1->AddMessage("OK");
   can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;
