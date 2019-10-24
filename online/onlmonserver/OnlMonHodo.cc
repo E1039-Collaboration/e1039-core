@@ -168,7 +168,7 @@ int OnlMonHodo::DrawMonitor()
   }
 
   OnlMonCanvas* can1 = GetCanvas(1);
-  can1->SetStatus(OnlMonCanvas::OK);
+  //can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();
   pad1->SetGrid();
   pad1->Divide(1, 2);

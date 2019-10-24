@@ -159,7 +159,7 @@ int OnlMonV1495::DrawMonitor()
     h1_ele_in[pl]->SetFillColor(kBlue-7);
     h1_ele_in[pl]->Draw("same");
   }
-  can0->SetStatus(OnlMonCanvas::OK);
+  //can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
@@ -174,7 +174,7 @@ int OnlMonV1495::DrawMonitor()
     h1_time_in[pl]->SetFillColor(kBlue-7);
     h1_time_in[pl]->Draw("same");
   }
-  can1->SetStatus(OnlMonCanvas::OK);
+  //can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;
 }

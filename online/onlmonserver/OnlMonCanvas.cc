@@ -107,8 +107,13 @@ void OnlMonCanvas::PreDraw(const bool at_end)
 
 void OnlMonCanvas::PostDraw(const bool at_end)
 {
-  if (m_mon_status == OK && m_pate_msg.GetListOfLines()->GetSize() == 0) {
-    m_pate_msg.AddText("OK"); // Set the default message.
+  if (m_pate_msg.GetListOfLines()->GetSize() == 0) { // Set minimum message.
+    switch (m_mon_status) {
+    case OK   :  m_pate_msg.AddText("OK"       );  break;
+    case WARN :  m_pate_msg.AddText("Warning"  );  break;
+    case ERROR:  m_pate_msg.AddText("Error"    );  break;
+    default   :  m_pate_msg.AddText("Undefined");  break;
+    }
   }
   int color;
   switch (m_mon_status) {

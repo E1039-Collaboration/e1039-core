@@ -120,7 +120,7 @@ int OnlMonProp::DrawMonitor()
     pad0->cd(pl+1);
     h1_ele[pl]->Draw();
   }
-  can0->SetStatus(OnlMonCanvas::OK);
+  //can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
@@ -131,7 +131,7 @@ int OnlMonProp::DrawMonitor()
     UtilHist::AutoSetRange(h1_time[pl]);
     h1_time[pl]->Draw();
   }
-  can1->SetStatus(OnlMonCanvas::OK);
+  //can1->SetStatus(OnlMonCanvas::OK);
 
   return 0;
 }

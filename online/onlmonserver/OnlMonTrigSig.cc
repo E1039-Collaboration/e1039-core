@@ -148,7 +148,7 @@ int OnlMonTrigSig::DrawMonitor()
   pad0->Divide(1, 2);
   pad0->cd(1);  DrawTH2WithPeakPos(h2_bi_fpga);
   pad0->cd(2);  DrawTH2WithPeakPos(h2_ai_fpga);
-  can0->SetStatus(OnlMonCanvas::OK);
+  //can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
@@ -156,7 +156,7 @@ int OnlMonTrigSig::DrawMonitor()
   pad1->Divide(1, 2);
   pad1->cd(1);  DrawTH2WithPeakPos(h2_bi_nim);
   pad1->cd(2);  DrawTH2WithPeakPos(h2_ai_nim);
-  can1->SetStatus(OnlMonCanvas::OK);
+  //can1->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can2 = GetCanvas(2);
   TPad* pad2 = can2->GetMainPad();
@@ -164,7 +164,7 @@ int OnlMonTrigSig::DrawMonitor()
   pad2->Divide(1, 2);
   pad2->cd(1);  DrawTH2WithPeakPos(h2_rf  );
   pad2->cd(2);  DrawTH2WithPeakPos(h2_stop);
-  can2->SetStatus(OnlMonCanvas::OK);
+  //can2->SetStatus(OnlMonCanvas::OK);
 
   return 0;
 }
