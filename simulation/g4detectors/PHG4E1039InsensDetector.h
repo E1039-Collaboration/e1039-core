@@ -23,62 +23,48 @@ class G4Material;
 class G4Element;
 class G4VSolid;
 
-
 class PHG4E1039InsensDetector: public PHG4Detector
 {
+public:
+    //! constructor
+    PHG4E1039InsensDetector(PHCompositeNode* node, PHParameters* parameters, const std::string& dnam = "BLOCK", const int lyr = 0);
 
-  public:
+    //! destructor
+    virtual ~PHG4E1039InsensDetector(void);
 
-  //! constructor
-  PHG4E1039InsensDetector( PHCompositeNode *Node, PHParameters *parameters, const std::string &dnam="BLOCK", const int lyr = 0 );
+    //! construct
+    virtual void Construct(G4LogicalVolume* world);
 
-  //! destructor
-  virtual ~PHG4E1039InsensDetector( void )
-  {}
+    //!@name volume accessors
+    //@{
+    bool IsInBlock(G4VPhysicalVolume*) const;
+    //@}
 
-  //! construct
-  virtual void Construct( G4LogicalVolume* world );
+    void SuperDetector(const std::string& name) { superdetector = name; }
+    const std::string SuperDetector() const { return superdetector; }
+    int get_Layer() const { return layer; }
 
-  //!@name volume accessors
-  //@{
-  bool IsInBlock(G4VPhysicalVolume*) const;
-  //@}
+private:
+    PHParameters* params;
+    G4VPhysicalVolume* block_physi;
 
-  void SuperDetector(const std::string &name) {superdetector = name;}
-  const std::string SuperDetector() const {return superdetector;}
-  int get_Layer() const {return layer;}
-
-  private:
-
-  PHParameters *params;
- 
-  G4VPhysicalVolume* block_physi;
-
-
-  int layer;
-  std::string superdetector;
+    int layer;
+    std::string superdetector;
   
-  public:
-
-    double fmagCenter;
-    double fmagLength;
+public:
     double z1v, z2v, z1h, z2h;
 
     std::vector<G4Element*> elementVec;
     std::vector<G4Material*> materialVec;
-    std::vector<G4VSolid*> solidVec;
-    std::vector<G4LogicalVolume*> logicalVolumeVec;
+    std::vector<G4VSolid*>  solidVec;
+    std::vector<G4LogicalVolume*>  logicalVolumeVec;
     std::vector<G4RotationMatrix*> rotationMatrixVec;
-
-    const double GetFmagCenter() {return fmagCenter;};
-    const double GetFmagLength() {return fmagLength;};
 
     void SetTargetMaterial(std::string);
     void IronToggle(bool);
     void ReloadMagField();
 
-  private:
-
+private:
     G4VPhysicalVolume* physiWorld;
     int AssignAttributes(G4VPhysicalVolume*);
     MYSQL* con;
