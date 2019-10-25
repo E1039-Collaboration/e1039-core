@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <cmath>
+#include <interface_main/SQParamDeco.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -29,16 +30,19 @@ int CalibInTime::Init(PHCompositeNode* topNode)
 
 int CalibInTime::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
+  SQRun*       run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
+  if (!param_deco || !run_header) return Fun4AllReturnCodes::ABORTEVENT;
 
   if (! m_cal_taiwan) m_cal_taiwan = new CalibParamInTimeTaiwan();
   m_cal_taiwan->SetMapIDbyDB(run_header->get_run_id());
   m_cal_taiwan->ReadFromDB();
+  param_deco->set_variable(m_cal_taiwan->GetParamID(), m_cal_taiwan->GetMapID());
 
   if (! m_cal_v1495) m_cal_v1495 = new CalibParamInTimeV1495();
   m_cal_v1495->SetMapIDbyDB(run_header->get_run_id());
   m_cal_v1495->ReadFromDB();
+  param_deco->set_variable(m_cal_v1495->GetParamID(), m_cal_v1495->GetMapID());
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

@@ -5,6 +5,7 @@
 #include "DecoData.h"
 
 //#include <event/EVIO_Event.h>
+#include <interface_main/SQParamDeco_v1.h>
 #include <interface_main/SQHit_v1.h>
 #include <interface_main/SQHitVector_v1.h>
 #include <interface_main/SQEvent_v1.h>
@@ -52,6 +53,7 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
   topNode = se->topNode(topNodeName.c_str());
   PHNodeIterator iter(topNode);
 
+  ////////////////////////////////////////////////////////////////
   PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
   if (!runNode) {
     runNode = new PHCompositeNode("RUN");
@@ -63,7 +65,11 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
   
   PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(new SQSpillMap_v1(), "SQSpillMap", "PHObject");
   runNode->addNode(spillNode);
-  
+
+  PHIODataNode<PHObject>* paramDecoNode = new PHIODataNode<PHObject>(new SQParamDeco_v1(), "SQParamDeco", "PHObject");
+  runNode->addNode(paramDecoNode);
+
+  ////////////////////////////////////////////////////////////////  
   PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
   if (!eventNode) {
     eventNode = new PHCompositeNode("DST");
@@ -218,6 +224,16 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     {
       cout << ThisName << ":  run " << rd->run_id << ", spill " << sd->spill_id << ", event " << ed->event.eventID << endl;
     }
+
+  if (events_total == 0) {
+    SQParamDeco* sqpd = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
+    if (!sqpd) return Fun4AllReturnCodes::ABORTEVENT;
+    DecoParam* dp = &parser->dec_par;
+    sqpd->set_variable(dp->chan_map_taiwan.GetParamID(), dp->chan_map_taiwan.GetMapID());
+    sqpd->set_variable(dp->chan_map_v1495 .GetParamID(), dp->chan_map_v1495 .GetMapID());
+    sqpd->set_variable(dp->chan_map_scaler.GetParamID(), dp->chan_map_scaler.GetMapID());
+  }
+
   events_total++;
   events_thisfile++;
 

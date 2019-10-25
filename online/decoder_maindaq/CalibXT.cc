@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <TGraphErrors.h>
+#include <interface_main/SQParamDeco.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQHitVector.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -29,16 +30,19 @@ int CalibXT::Init(PHCompositeNode* topNode)
 
 int CalibXT::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
+  SQRun*       run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
+  if (!param_deco || !run_header) return Fun4AllReturnCodes::ABORTEVENT;
 
   if (! m_cal_xt) m_cal_xt = new CalibParamXT();
   m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
   m_cal_xt->ReadFromDB();
+  param_deco->set_variable(m_cal_xt->GetParamID(), m_cal_xt->GetMapID());
 
   if (! m_cal_int) m_cal_int = new CalibParamInTimeTaiwan();
   m_cal_int->SetMapIDbyDB(run_header->get_run_id());
   m_cal_int->ReadFromDB();
+  param_deco->set_variable(m_cal_int->GetParamID(), m_cal_int->GetMapID());
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
