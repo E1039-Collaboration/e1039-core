@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <TClass.h>
 #include <interface_main/SQRun.h>
+#include <interface_main/SQParamDeco.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/Fun4AllHistoManager.h>
 #include <phool/PHNodeIterator.h>
@@ -27,7 +28,7 @@ int DbUpRun::InitRun(PHCompositeNode* topNode)
 {
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  UploadToDB(run_header);
+  UploadRun(run_header);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -37,16 +38,18 @@ int DbUpRun::process_event(PHCompositeNode* topNode)
   if (++n_evt % 100 == 0) { // Suppress the number of updates
     SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
     if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-    UploadToDB(run_header);
+    UploadRun(run_header);
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int DbUpRun::End(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  UploadToDB(run_header);
+  SQRun*       run      = findNode::getClass<SQRun      >(topNode, "SQRun");
+  SQParamDeco* par_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
+  if (!run || !par_deco) return Fun4AllReturnCodes::ABORTEVENT;
+  UploadRun(run);
+  UploadParam(run->get_run_id(), par_deco);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -54,7 +57,7 @@ int DbUpRun::End(PHCompositeNode* topNode)
  * Since this function is called quite frequently, the DbSvc object is created only once.
  * Otherwise the number of network connections becomes too many.
  */
-void DbUpRun::UploadToDB(SQRun* sq)
+void DbUpRun::UploadRun(SQRun* sq)
 {
   const char* table_name = "run";
   static DbSvc* db = 0;
@@ -95,7 +98,7 @@ void DbUpRun::UploadToDB(SQRun* sq)
   ostringstream oss;
   oss << "delete from " << table_name << " where run_id = " << sq->get_run_id();
   if (! db->Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  DbUpRun::UploadToDB()." << endl;
+    cerr << "!!ERROR!!  DbUpRun::UploadRun()." << endl;
     return;
   }
   oss.str("");
@@ -112,7 +115,41 @@ void DbUpRun::UploadToDB(SQRun* sq)
       << ", " << sq->get_n_evt_dec()
       << ")";
   if (! db->Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  DbUpRun::UploadToDB()." << endl;
+    cerr << "!!ERROR!!  DbUpRun::UploadRun()." << endl;
+    return;
+  }
+}
+
+/// Function to upload the decoder parameters into DB.
+void DbUpRun::UploadParam(const int run, const SQParamDeco* sq)
+{
+  const char* table_name = "param_deco";
+  DbSvc db(DbSvc::DB1);
+  db.UseSchema(UtilOnline::GetSchemaMainDaq(), true);
+  //db.DropTable(table_name); // Use this when you want to refresh
+  if (! db.HasTable(table_name)) {
+    DbSvc::VarList list;
+    list.Add("run_id", "INT", true);
+    list.Add("name"  , "VARCHAR(64)", true); 
+    list.Add("value" , "VARCHAR(64)"); 
+    db.CreateTable(table_name, list);
+  }
+
+  ostringstream oss;
+  oss << "delete from " << table_name << " where run_id = " << run;
+  if (! db.Con()->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DbUpRun::UploadParam()." << endl;
+    return;
+  }
+  oss.str("");
+  oss << "insert into " << table_name << " values";
+  for (SQParamDeco::ParamConstIter it = sq->begin(); it != sq->end(); it++) {
+    oss << " (" << run << ", '" << it->first << "', '" << it->second << "'),";
+  }
+  string query = oss.str();
+  query.erase(query.length()-1, 1); // Remove the last ',' char.
+  if (! db.Con()->Exec(query.c_str())) {
+    cerr << "!!ERROR!!  DbUpSpill::UploadToSpillTable()." << endl;
     return;
   }
 }

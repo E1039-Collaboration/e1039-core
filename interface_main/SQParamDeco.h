@@ -13,7 +13,7 @@ class SQParamDeco : public PHObject {
 public:
   typedef std::map<std::string, std::string> ParamMap;
   typedef ParamMap::const_iterator ParamConstIter;
-  typedef ParamMap::iterator                 Iter;
+  typedef ParamMap::iterator            ParamIter;
 
   virtual ~SQParamDeco() {}
 

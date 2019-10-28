@@ -9,7 +9,6 @@ class DecoStatusDb {
     FINISHED = 2
   } Status_t;
 
-  std::string m_name_schema;
   std::string m_name_table;
   DbSvc* m_db;
 

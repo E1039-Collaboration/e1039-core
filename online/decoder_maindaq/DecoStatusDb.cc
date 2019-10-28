@@ -1,15 +1,15 @@
 #include <iostream>
 #include <TSQLServer.h>
 #include <db_svc/DbSvc.h>
+#include <UtilAna/UtilOnline.h>
 #include "DecoStatusDb.h"
 using namespace std;
 
 DecoStatusDb::DecoStatusDb() :
-  m_name_schema("user_e1039_maindaq"),
   m_name_table ("deco_status")
 {
   m_db = new DbSvc(DbSvc::DB1);
-  m_db->UseSchema(m_name_schema, true);
+  m_db->UseSchema(UtilOnline::GetSchemaMainDaq(), true);
 
   //m_stat_map["Unknown"    ] = 0;
   //m_stat_map["Started"    ] = 1;
