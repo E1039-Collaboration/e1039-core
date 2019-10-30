@@ -43,6 +43,7 @@ Below is the recommended procedure for updating the OnlMon code.
 ## Test Procedure
 
 When a client class is updated, it has to be tested before merged into the master branch.
+First of all you set up the shell environment by sourcing `this-e1039.sh` in your install directory.
 The test procedure varies with the location of update.
 
 ### When only the Drawing Style of Histograms is Updated
@@ -55,9 +56,12 @@ root /path/to/e1039-core/online/macros/OnlMon4MainDaq.C
 
 ### When the Number or Filling Condition of Histograms is Updated
 
-It is complicated because you have to run both the OnlMon server and the OnlMon viewer using your updated code.
-It must not interfere with the official OnlMon process.
-
-For now our system is not capable of doing it.
-Thus please confirm that the updated code is compiled fine, skip the test for now, and make a pull request.
-The online-software coordinator will run the test.
+In this case you have to run the OnlMon server, which is a part of the decoding process,
+because it creates and fills histograms.
+If you use run 1000 for test, you execute the following command:
+```
+/path/to/e1039-core/script/exec-decoder.sh 1000
+```
+It runs in a special (development) mode so as not to overwrite the outputs made by the official decoding process.
+The OnlMon plots saved as PNG file will appear in `/data2/e1039/onlmon/plots-devel`.
+You need not execute the OnlMon viewer.
