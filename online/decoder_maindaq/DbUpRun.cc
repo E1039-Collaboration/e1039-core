@@ -11,6 +11,7 @@
 #include <TSQLServer.h>
 #include <db_svc/DbSvc.h>
 #include <UtilAna/UtilOnline.h>
+#include "DecoStatusDb.h"
 #include "DbUpRun.h"
 using namespace std;
 
@@ -26,19 +27,25 @@ int DbUpRun::Init(PHCompositeNode* topNode)
 
 int DbUpRun::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  UploadRun(run_header);
+  SQRun*       run      = findNode::getClass<SQRun      >(topNode, "SQRun");
+  SQParamDeco* par_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
+  if (!run || !par_deco) return Fun4AllReturnCodes::ABORTEVENT;
+  UploadRun(run);
+  UploadParam(run->get_run_id(), par_deco);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int DbUpRun::process_event(PHCompositeNode* topNode)
 {
-  static int n_evt = 0;
-  if (++n_evt % 100 == 0) { // Suppress the number of updates
+  static int utime_pre = 0;
+  int utime_now = time(0);
+  if (utime_now - utime_pre >= 10) { // Suppress the number of updates
+    utime_pre = utime_now;
     SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
     if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
     UploadRun(run_header);
+    DecoStatusDb deco_stat;
+    deco_stat.RunUpdated(run_header->get_run_id());
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }
