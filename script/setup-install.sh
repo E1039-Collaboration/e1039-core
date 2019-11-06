@@ -59,7 +59,7 @@ fi
 {
     echo "source $E1039_ROOT/resource/this-resource.sh"
     echo "source $E1039_ROOT/share/this-share.sh"
-    echo "source $DIR_INST/this-core.sh"
+    echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
 } >$DIR_INST/this-e1039.sh
 
 ##

@@ -28,16 +28,22 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
   bool size_ok = false;
   for (int i_wait = 0; i_wait < n_wait + 1; i_wait++) {
     FILE* fp = fopen (fname.c_str(), "r");
-    fseek(fp, 0L, SEEK_END);
-    m_file_size = ftell(fp);
-    fclose(fp);
-    if (m_file_size >= file_size_min) {
-      size_ok = true;
-      break;
-    } 
-    if (m_verb) {
-      cout << "File size: " << m_file_size << " < " << file_size_min 
-	   << ".  Wait for " << sec_wait << " s (" << i_wait << ")." << endl;
+    if (fp == NULL) {
+      cout << "Failed at fopen() with errno=" << errno << "." << endl;
+    } else {
+      if (fseek(fp, 0L, SEEK_END) != 0) {
+        cout << "Failed at fseek() with errno=" << errno << "." << endl;
+      }
+      m_file_size = ftell(fp);
+      fclose(fp);
+      if (m_file_size >= file_size_min) {
+        size_ok = true;
+        break;
+      } 
+      if (m_verb) {
+        cout << "File size: " << m_file_size << " < " << file_size_min 
+             << ".  Wait for " << sec_wait << " s (" << i_wait << ")." << endl;
+      }
     }
     sleep (sec_wait);
   }
