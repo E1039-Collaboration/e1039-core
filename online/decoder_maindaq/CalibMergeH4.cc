@@ -58,8 +58,7 @@ short CalibMergeH4::FindMergedId(const short id)
 
 int CalibMergeH4::MergeHitsOr(SQHitVector* vec_in)
 {
-  GeomSvc* geom = GeomSvc::instance();
-  for (int ih = 0; ih < vec_in->size(); ih++) {
+  for (unsigned int ih = 0; ih < vec_in->size(); ih++) {
     SQHit* hit = vec_in->at(ih);
     short det_new = FindMergedId(hit->get_detector_id());
     if (det_new == 0) continue;
@@ -71,11 +70,11 @@ int CalibMergeH4::MergeHitsOr(SQHitVector* vec_in)
       vec_in->push_back(hit_new);
     }
   }
+  return 0;
 }
 
 int CalibMergeH4::MergeHitsAnd(SQHitVector* vec_in)
 {
-  GeomSvc* geom = GeomSvc::instance();
   typedef tuple<short, short, short> MergedGroup_t; // <merged det, element, level>
   typedef map<short, SQHitVector*> MapVec_t; // <det, vector*>
   typedef map<MergedGroup_t, MapVec_t> MapMapVec_t;
@@ -131,6 +130,7 @@ int CalibMergeH4::MergeHitsAnd(SQHitVector* vec_in)
       delete vec;
     }
   }
+  return 0;
 }
 
 int CalibMergeH4::End(PHCompositeNode* topNode)

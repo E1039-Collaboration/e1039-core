@@ -30,7 +30,7 @@ int CalibEvtQual::process_event(PHCompositeNode* topNode)
   int run_id = event->get_run_id();
   int qual   = event->get_data_quality();
 
-  unsigned int n_tdc; // expected number of tdc info
+  int n_tdc; // expected number of tdc info
   if (run_id >= 28664) n_tdc = 101; // seen in run 28700
   else                 n_tdc = 108; // seen in run 28000
   // This run range was confirmed by checking n_tdc in the following runs;

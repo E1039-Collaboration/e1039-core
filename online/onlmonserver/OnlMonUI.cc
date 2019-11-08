@@ -74,6 +74,7 @@ void* OnlMonUI::FuncAutoCycle(void* arg)
 {
   OnlMonUI* ui = (OnlMonUI*)arg;
   ui->RunAutoCycle();
+  return 0;
 }
 
 /// This function does NOT work at present.
@@ -84,7 +85,7 @@ void* OnlMonUI::FuncAutoCycle(void* arg)
  */
 void OnlMonUI::RunAutoCycle()
 {
-  int idx = 0;
+  unsigned int idx = 0;
   while (true) {
     if (m_auto_cycle) {
       //button[idx]->Clicked();
