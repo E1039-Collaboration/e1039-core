@@ -2,6 +2,7 @@
 #define _DB_UP_RUN__H_
 #include <fun4all/SubsysReco.h>
 class SQRun;
+class SQParamDeco;
 
 class DbUpRun: public SubsysReco {
  public:
@@ -13,7 +14,8 @@ class DbUpRun: public SubsysReco {
   int End(PHCompositeNode *topNode);
 
  private:
-  void UploadToDB(SQRun* sq);
+  void UploadRun(SQRun* sq);
+  void UploadParam(const int run, const SQParamDeco* sq);
 };
 
 #endif /* _DB_UP_RUN__H_ */

@@ -10,9 +10,9 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 //#include <geom_svc/CalibParamInTimeTaiwan.h>
+#include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonHodo.h"
-#include "UtilHist.h"
 using namespace std;
 
 OnlMonHodo::OnlMonHodo(const HodoType_t type) : m_type(type)
@@ -165,12 +165,10 @@ int OnlMonHodo::DrawMonitor()
   if (empty_ele) {
     can0->SetStatus(OnlMonCanvas::WARN);
     can0->AddMessage("No-hit element.");
-  } else {
-    can0->AddMessage("OK");
   }
 
   OnlMonCanvas* can1 = GetCanvas(1);
-  can1->SetStatus(OnlMonCanvas::OK);
+  //can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();
   pad1->SetGrid();
   pad1->Divide(1, 2);
@@ -183,7 +181,6 @@ int OnlMonHodo::DrawMonitor()
     h1_time_in[pl]->SetFillColor(kBlue-7);
     h1_time_in[pl]->Draw("same");
   }
-  if (can1->GetStatus() == OnlMonCanvas::OK) can1->AddMessage("OK");
 
   return 0;
 }

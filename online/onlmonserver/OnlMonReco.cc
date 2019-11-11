@@ -9,11 +9,10 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <geom_svc/GeomSvc.h>
 //#include <geom_svc/CalibParamInTimeTaiwan.h>
+#include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonReco.h"
-#include "UtilHist.h"
 
 #define MUON_MASS 0.105658
 
@@ -32,8 +31,6 @@ int OnlMonReco::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonReco::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  GeomSvc* geom = GeomSvc::instance();
-
   h1_rec_stats = new TH1D("h1_rec_stats", ";Rec. Stats; ", 7, -6.5, 0.5);
   RegisterHist(h1_rec_stats);
 

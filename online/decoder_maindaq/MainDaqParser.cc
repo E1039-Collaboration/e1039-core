@@ -1146,7 +1146,7 @@ int MainDaqParser::ProcessBoardStdFeeQIE (int* words, int idx)
   ed->n_qie++;
   EventInfo* evt = &ed->event;
 
-  unsigned int sums_vals[4]; // QIE records four intensity sums (called "presum")
+  // QIE records four intensity sums (called "presum")
   for (int i_sum = 0; i_sum < 4 ; i_sum++) {
     evt->sums[i_sum] = get_hex_bits(words[idx],7,4)*65536 + get_hex_bits(words[idx+1],7,4);
     idx += 2;
@@ -1165,7 +1165,6 @@ int MainDaqParser::ProcessBoardStdFeeQIE (int* words, int idx)
   evt->rfOnset = get_hex_bits(words[idx],7,4);
   idx++;
   
-  unsigned int rf_vals[25];
   for (int i_rf = 0; i_rf < 25; i_rf++) { // RF-12...RF+12
     if (words[idx] == (int)0xe906e906) Abort("Unexpected 0xe906e906 in QIE.");
     evt->rf[i_rf+4] = get_hex_bits(words[idx],7,4);
@@ -1314,8 +1313,8 @@ int MainDaqParser::PackOneSpillData()
     EventData* ed       = &it->second;
     EventInfo* event    = &ed->event;
     if (evt_id == 0 || // 1st event?  bad anyway
-        dec_par.sampling > 0 && evt_id % dec_par.sampling != 0 || // sampled out
-        dec_par.turn_id_max > 360000 && event->turnOnset == 0 && event->NIM[2]) { // NIM3 after spill end
+        (dec_par.sampling > 0 && evt_id % dec_par.sampling != 0) || // sampled out
+        (dec_par.turn_id_max > 360000 && event->turnOnset == 0 && event->NIM[2])) { // NIM3 after spill end
       it = list_ed->erase(it);
       continue;
     }

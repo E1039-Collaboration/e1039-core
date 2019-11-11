@@ -10,7 +10,7 @@ class TPaveText;
 
 class OnlMonCanvas {
  public:
-  typedef enum { OK, WARN, ERROR, UNDEF } MonStatus_t;
+  typedef enum { OK = 0, WARN = 1, ERROR = 2, UNDEF = 3 } MonStatus_t;
 
  protected:
   std::string m_name;

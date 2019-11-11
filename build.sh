@@ -22,6 +22,7 @@ else
     framework/ffaobjects
     framework/fun4all
     interface_main
+    packages/UtilAna
     packages/evt_filter
     online/decoder_maindaq
     packages/Half

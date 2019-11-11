@@ -6,10 +6,10 @@ class DecoStatusDb {
   typedef enum {
     UNKNOWN  = 0,
     STARTED  = 1,
-    FINISHED = 2
+    FINISHED = 2,
+    UPDATED  = 3
   } Status_t;
 
-  std::string m_name_schema;
   std::string m_name_table;
   DbSvc* m_db;
 
@@ -18,10 +18,11 @@ class DecoStatusDb {
 
  public:
   DecoStatusDb();
-  virtual ~DecoStatusDb() {}
+  virtual ~DecoStatusDb();
 
   void InitTable(const bool refresh=false);
   void RunStarted (const int run, int utime=0);
+  void RunUpdated (const int run, int utime=0);
   void RunFinished(const int run, const int result, int utime=0);
 };
 

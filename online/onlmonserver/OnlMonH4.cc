@@ -10,10 +10,10 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilHist.h>
+#include <UtilAna/UtilSQHit.h>
 #include "OnlMonServer.h"
 #include "OnlMonH4.h"
-#include "UtilSQHit.h"
-#include "UtilHist.h"
 using namespace std;
 
 OnlMonH4::OnlMonH4(const HodoType_t type) : m_type(type)
@@ -187,8 +187,6 @@ int OnlMonH4::DrawMonitor()
   if (h1_ele[0]->Integral() + h1_ele[1]->Integral() == 0) {
     can0->SetStatus(OnlMonCanvas::WARN);
     can0->AddMessage("Empty.");
-  } else {
-    can0->AddMessage("OK");
   }
 
   UtilHist::AutoSetRange (h1_time[0]);
@@ -209,8 +207,6 @@ int OnlMonH4::DrawMonitor()
   if (h1_time[0]->Integral() + h1_time[1]->Integral() == 0) {
     can1->SetStatus(OnlMonCanvas::WARN);
     can1->AddMessage("Empty.");
-  } else {
-    can1->AddMessage("OK");
   }
 
   return 0;

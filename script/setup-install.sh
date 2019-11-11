@@ -1,6 +1,6 @@
-## A script to set up the environment to install, build and run the e1039-core
+## A script to set up the environment to build and install the e1039-core
 ## package.  Usage:
-##   source /path/to/setup-install.sh /path/to/your_inst_directory
+##   /path/to/setup-install.sh /path/to/your_inst_directory
 ##
 ## This script first creates an installation directory together with a 
 ## script "this-core.sh".  It then tries to find proper E1039_RESOURCE and 
@@ -13,7 +13,7 @@
 ## environment.  Any questions/requests can be sent to Kenichi.
 if [ $0 != $BASH_SOURCE ] ; then
     echo "!!ERROR!!  The usage of this script has changed recently."
-    echo "Now you have execute (not source) it.  Sorry for the inconvenience."
+    echo "Now you have to execute (not source) it.  Sorry for the inconvenience."
     return
 fi
 DIR_SCRIPT=$(dirname $(readlink -f $0))
@@ -43,11 +43,11 @@ mkdir -p $DIR_INST
 E1039_ROOT=
 if   [ ${HOSTNAME:0:11} = 'seaquestdaq' -o \
        ${HOSTNAME:0:12} = 'spinquestana' ] ; then
-    echo "Use the environment for seaquestdaq/spinquestana."
+    echo "Use the environment predefined for seaquestdaq/spinquestana."
     E1039_ROOT=/data2/e1039
 elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o \
        ${HOSTNAME:0:13} = 'spinquestgpvm' ] ; then
-    echo "Use the environment for seaquestgpvm/spinquestgpvm."
+    echo "Use the environment predefined for seaquestgpvm/spinquestgpvm."
     E1039_ROOT=/e906/app/software/osg/software/e1039
 fi
 if [ -z "$E1039_ROOT" ] ; then
@@ -59,7 +59,7 @@ fi
 {
     echo "source $E1039_ROOT/resource/this-resource.sh"
     echo "source $E1039_ROOT/share/this-share.sh"
-    echo "source $DIR_INST/this-core.sh"
+    echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
 } >$DIR_INST/this-e1039.sh
 
 ##

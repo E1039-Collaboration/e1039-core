@@ -8,7 +8,7 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
-#include <decoder_maindaq/UtilOnline.h>
+#include <UtilAna/UtilOnline.h>
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 using namespace std;
@@ -107,6 +107,14 @@ void OnlMonCanvas::PreDraw(const bool at_end)
 
 void OnlMonCanvas::PostDraw(const bool at_end)
 {
+  if (m_pate_msg.GetListOfLines()->GetSize() == 0) { // Set minimum message.
+    switch (m_mon_status) {
+    case OK   :  m_pate_msg.AddText("OK"       );  break;
+    case WARN :  m_pate_msg.AddText("Warning"  );  break;
+    case ERROR:  m_pate_msg.AddText("Error"    );  break;
+    default   :  m_pate_msg.AddText("Undefined");  break;
+    }
+  }
   int color;
   switch (m_mon_status) {
   case OK   :  color = kGreen ;  break;

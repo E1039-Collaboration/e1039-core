@@ -52,7 +52,7 @@ add_library(phgeom_io SHARED
 
 target_link_libraries(phgeom_io -lphool -L${ROOT_PREFIX}/lib -lGeom)
 
-target_link_libraries(phgeom -lphgeom_io -lSubsysReco)
+target_link_libraries(phgeom phgeom_io -lSubsysReco)
 
 install(TARGETS phgeom_io	DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phgeom	  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

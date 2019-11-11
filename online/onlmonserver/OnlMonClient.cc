@@ -13,7 +13,7 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include <decoder_maindaq/UtilOnline.h>
+#include <UtilAna/UtilOnline.h>
 #include "OnlMonServer.h"
 #include "OnlMonCanvas.h"
 #include "OnlMonClient.h"
@@ -201,13 +201,24 @@ int OnlMonClient::StartMonitor()
   } else { // Clear only its own canvases
     ClearCanvasList();
   }
-  if (ReceiveHist() != 0) {
-    cout << "WARNING: Probably the online-monitor server is NOT running.\n";
+  int ret = ReceiveHist();
+  if (ret == 1) {
+    cout << "WARNING: The OnlMon server is NOT running." << endl;
+    return 1;
+  } else if (ret == 2) {
+    cout << "WARNING: The OnlMon server is NOT ready." << endl;
+    return 1;
+  } else if (ret != 0) {
+    cout << "WARNING: Unknown error in connecting to the OnlMon server." << endl;
     return 1;
   }
 
   m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
-  FindAllMonHist();
+  ret = FindAllMonHist();
+  if (m_h1_basic_info == 0 || ret != 0) {
+    cout << "WARNING: Cannot find OnlMon histogram(s)." << endl;
+    return 2;
+  }
 
   int run_id, spill_id, event_id, n_evt;
   GetBasicInfo(&run_id, &spill_id, &event_id, &n_evt);
@@ -217,7 +228,7 @@ int OnlMonClient::StartMonitor()
     m_list_can[ii]->PreDraw();
   }
 
-  int ret = DrawMonitor();
+  ret = DrawMonitor();
 
   for (int ii = 0; ii < m_n_can; ii++) {
     m_list_can[ii]->PostDraw();
@@ -277,6 +288,7 @@ int OnlMonClient::ReceiveHist()
 
   ClearHistList();
 
+  int ret = 0;
   TMessage *mess = NULL;
   while (true) { // incoming hist
     sock->Recv(mess);
@@ -287,7 +299,11 @@ int OnlMonClient::ReceiveHist()
       mess->ReadString(str, 200);
       delete mess;
       mess = 0;
-      if (!strcmp(str, "Finished")) break;
+      if      (strcmp(str, "Finished") == 0) break;
+      else if (strcmp(str, "NotReady") == 0) {
+        ret = 2;
+        break;
+      }
     } else if (mess->What() == kMESS_OBJECT) {
       TClass*  cla = mess->GetClass();
       TObject* obj = mess->ReadObject(cla);
@@ -304,7 +320,7 @@ int OnlMonClient::ReceiveHist()
   }
   sock->Close();
   delete sock;
-  return 0;
+  return ret;
 }
 
 void OnlMonClient::ClearHistList()

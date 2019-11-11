@@ -113,7 +113,7 @@ bool OnlMonServer::CloseExistingServer(const int port)
 void* OnlMonServer::FuncServer(void* arg)
 {
   OnlMonServer* se = (OnlMonServer*)arg;
-  if (se->Verbosity() > 1) cout << "OnlMonServer::FuncServer(): start." << endl;
+  if (se->Verbosity() >= 0) cout << "OnlMonServer::FuncServer(): start." << endl;
 
   sleep(5);
   TServerSocket* ss = 0;
@@ -136,13 +136,13 @@ void* OnlMonServer::FuncServer(void* arg)
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
-  if (se->Verbosity() > 1) cout << "OnlMonServer::RemoveSockets():" << endl;
+  if (se->Verbosity() >= 0) cout << "OnlMonServer::RemoveSockets():" << endl;
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
   sleep(5);
 
  again:
-  if (se->Verbosity() > 1) cout << "OnlMonServer::WaitForConnection():" << endl;
+  if (se->Verbosity() >= 0) cout << "OnlMonServer::WaitForConnection():" << endl;
   TSocket *s0 = ss->Accept();
   if (!s0) {
     cout << "Server socket " << port << " in use, either go to a different node or change the port and recompile server and client.  Abort." << endl;
@@ -152,8 +152,8 @@ void* OnlMonServer::FuncServer(void* arg)
   // to outgoing buffer and updating by other thread do not
   // go well together
   TInetAddress adr = s0->GetInetAddress();
-  if (se->Verbosity() > 2) {
-    cout << "got connection from\n  ";
+  if (se->Verbosity() >= 0) {
+    cout << "Got connection from\n  ";
     adr.Print();
   }
   UInt_t ip0 = adr.GetAddress();
@@ -213,23 +213,26 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
         string name_subsys = msg_str.substr(7);
         Fun4AllHistoManager* hm = getHistoManager(name_subsys);
-        if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
-
-        pthread_mutex_lock(&mutex);
-        for (unsigned int i = 0; i < hm->nHistos(); i++) {
-          TH1 *histo = (TH1 *) hm->getHisto(i);
-          if (! histo) continue;
-          outgoing.Reset();
-          outgoing.WriteObject(histo);
-          sock->Send(outgoing);
-          outgoing.Reset();
-          sock->Recv(mess); // Just check a response.
-          delete mess;
-          mess = 0;
+        if (! hm) {
+          if (Verbosity() > 2) cout << "  HM not ready." << endl;
+          sock->Send("NotReady");
+        } else {
+          if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
+          pthread_mutex_lock(&mutex);
+          for (unsigned int i = 0; i < hm->nHistos(); i++) {
+            TH1 *histo = (TH1 *) hm->getHisto(i);
+            if (! histo) continue;
+            outgoing.Reset();
+            outgoing.WriteObject(histo);
+            sock->Send(outgoing);
+            outgoing.Reset();
+            sock->Recv(mess); // Just check a response.
+            delete mess;
+            mess = 0;
+          }
+          pthread_mutex_unlock(&mutex);
+          sock->Send("Finished");
         }
-        pthread_mutex_unlock(&mutex);
-
-        sock->Send("Finished");
       } else {
         //if (Verbosity() > 2) 
         cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;

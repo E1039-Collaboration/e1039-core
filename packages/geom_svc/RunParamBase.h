@@ -22,6 +22,7 @@ class RunParamBase {
 
   void SetBaseDir(const std::string dir_base) { m_dir_base = dir_base; }
   std::string GetBaseDir() { return m_dir_base; }
+  std::string GetParamID() { return m_type+"_"+m_label; }
 
   std::string GetMapID() { return m_map_id; }
   void        SetMapID(const std::string map_id) { m_map_id = map_id; }

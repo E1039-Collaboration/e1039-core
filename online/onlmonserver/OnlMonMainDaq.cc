@@ -9,9 +9,9 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
+#include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonMainDaq.h"
-#include "UtilHist.h"
 using namespace std;
 
 OnlMonMainDaq::OnlMonMainDaq()
@@ -228,8 +228,6 @@ int OnlMonMainDaq::DrawMonitor()
     can->SetWorseStatus(OnlMonCanvas::WARN);
     can->AddMessage("Errors in >1% of v1495 events.");
   }
-
-  if (can->GetStatus() == OnlMonCanvas::OK) can->AddMessage("OK");
 
   return 0;
 }

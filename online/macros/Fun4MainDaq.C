@@ -13,7 +13,8 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libonlmonserver.so");
   const bool use_onlmon = true;
 
-  if (gSystem->Getenv("E1039_DECODER_MODE")) { // just defined or not for now
+  const char* deco_mode = gSystem->Getenv("E1039_DECODER_MODE");
+  if (deco_mode && strcmp(deco_mode, "std") == 0) {
     cout << "Output mode = standard." << endl;
   } else {
     cout << "output mode = devel." << endl;
@@ -54,6 +55,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     if (is_online) se->StartServer();
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
+    se->registerSubsystem(new OnlMonTrigNim());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H3X, 1));
