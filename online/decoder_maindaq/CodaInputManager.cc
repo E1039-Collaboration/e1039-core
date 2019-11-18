@@ -127,32 +127,6 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
   cout << "CodaInputManager::NextCodaEvent():  Bad end." << endl;
   ForceEnd();
   return false;
-
-
-
-//  if (ret != 0 && m_online && m_run > 0) { // try to recover
-//    cout << "No new event seems available for now.  Try to recover." << endl;
-//    if (file_exists(UtilOnline::GetEndFilePath(m_run))) {
-//      cout << "Exiting since the END file exists." << endl;
-//      ForceEnd();
-//      return false;
-//    }
-//
-//    if (file_exists(UtilOnline::GetCodaFilePath(m_run+1))) {
-//      cout << "Exiting since the next run file exists." << endl;
-//      ForceEnd();
-//      return false;
-//    }
-//    // Re-open the file, requring a larger file size
-//    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20, m_event_count);
-//  }
-//  if (ret != 0) {
-//    ForceEnd();
-//    return false;
-//  }
-//  coda_id = m_event_count++;
-//  words   = event_words;
-//  return true;
 }
 
 bool CodaInputManager::file_exists(const std::string fname)

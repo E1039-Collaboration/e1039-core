@@ -94,6 +94,7 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 
 int OnlMonClient::End(PHCompositeNode* topNode)
 {
+  if (! m_hm) return Fun4AllReturnCodes::EVENT_OK;
   int run_id;
   GetBasicInfo(&run_id);
 

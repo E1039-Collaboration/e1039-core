@@ -5,10 +5,9 @@
 class CodaInputManager;
 
 class MainDaqParser {
-  static const int file_size_min = 32768;
-  static const int sec_wait      = 15;
-  static const int n_wait        = 40;
-
+  int m_file_size_min;
+  int m_sec_wait;
+  int m_n_wait;
   CodaInputManager* coda;
 
   /// Variables for data storage

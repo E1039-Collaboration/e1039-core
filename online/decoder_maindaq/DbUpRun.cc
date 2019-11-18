@@ -142,6 +142,8 @@ void DbUpRun::UploadParam(const int run, const SQParamDeco* sq)
     db.CreateTable(table_name, list);
   }
 
+  if (sq->size() == 0) return;
+
   ostringstream oss;
   oss << "delete from " << table_name << " where run_id = " << run;
   if (! db.Con()->Exec(oss.str().c_str())) {
@@ -156,7 +158,7 @@ void DbUpRun::UploadParam(const int run, const SQParamDeco* sq)
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
   if (! db.Con()->Exec(query.c_str())) {
-    cerr << "!!ERROR!!  DbUpSpill::UploadToSpillTable()." << endl;
+    cerr << "!!ERROR!!  DbUpRun::UploadParam()." << endl;
     return;
   }
 }

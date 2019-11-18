@@ -7,6 +7,7 @@ using namespace std;
 // In the current design, all event-word handlers (i.e. functions) should print out all error messages needed, so that their caller should print nothing but just check the returned value.
 
 MainDaqParser::MainDaqParser()
+  : m_file_size_min(32768), m_sec_wait(15), m_n_wait(40)
 {
   coda = new CodaInputManager();
   list_sd = new SpillDataMap();
@@ -25,6 +26,9 @@ MainDaqParser::~MainDaqParser()
 
 int MainDaqParser::OpenCodaFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
 {
+  m_file_size_min = file_size_min;
+  m_sec_wait      = sec_wait;
+  m_n_wait        = n_wait;
   dec_par.timeStart = time(NULL);
   dec_par.fn_in = fname;
   return coda->OpenFile(fname, file_size_min, sec_wait, n_wait);
@@ -97,7 +101,7 @@ int MainDaqParser::ParseOneSpill()
       break;
     case 0: // Special case which requires waiting and retrying.  Purpose??  Still needed??
       cout << "Case '0' @ coda " << dec_par.codaID << "." << endl;
-      ret = coda->OpenFile(dec_par.fn_in, file_size_min, sec_wait, n_wait);
+      ret = coda->OpenFile(dec_par.fn_in, m_file_size_min, m_sec_wait, m_n_wait);
       if (ret == 0) {
         ret = coda->JumpCodaEvent(dec_par.codaID, event_words, dec_par.codaID - 1) ? 0 : 2;
       }

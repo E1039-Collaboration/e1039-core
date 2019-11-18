@@ -28,6 +28,7 @@ public:
 
   virtual ParamConstIter begin() const = 0;
   virtual ParamConstIter   end() const = 0;
+  virtual unsigned int    size() const = 0;
   
 protected:
   SQParamDeco() {}
