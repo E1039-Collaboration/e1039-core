@@ -1,6 +1,6 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(E906LegacyGen CXX C)
+project(e906legacygen CXX C)
 
 # source code
 include_directories("${PROJECT_SOURCE_DIR}/")
@@ -8,27 +8,16 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/*.C)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 add_custom_command (
-  OUTPUT E1039PhysicsGen_Dict.C
+  OUTPUT E906LegacyGen_Dict.C
   COMMAND rootcint
-  ARGS -f E1039PhysicsGen_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  ARGS -f E906LegacyGen_Dict.C -noIncludePaths -inlineInputHeader -c -p
   -I${PROJECT_SOURCE_DIR}/
-  ${PROJECT_SOURCE_DIR}/E1039PhysicsGen.h
+  ${PROJECT_SOURCE_DIR}/E906LegacyGen.h
   ${PROJECT_SOURCE_DIR}/E906VertexGen.h
+  ${PROJECT_SOURCE_DIR}/E1039PhysicsGen.h
   ${PROJECT_SOURCE_DIR}/BeamlineObject.h
-#  ${PROJECT_SOURCE_DIR}/MCDimuon.h 
-#  ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
-  ${PROJECT_SOURCE_DIR}/E1039PhysicsGenLinkDef.h
+  ${PROJECT_SOURCE_DIR}/E906LegacyGenLinkDef.h
 	)
-
-add_custom_command (
-  OUTPUT MCDimuon_Dict.C   
-  COMMAND rootcint
-  ARGS -f MCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
-  -I${PROJECT_SOURCE_DIR}/
-  ${PROJECT_SOURCE_DIR}/MCDimuon.h 
-  ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
-  ${PROJECT_SOURCE_DIR}/MCDimuonLinkDef.h
-  )
 
 
 # ROOT
@@ -59,18 +48,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
 
-add_library(E1039PhysicsGen SHARED
-  E1039PhysicsGen.C
+add_library(E906LegacyGen SHARED
+  E906LegacyGen.C
   E906VertexGen.C
+  E1039PhysicsGen.C
   BeamlineObject.C
-  MCDimuon.C
-  SQDimuonTruthInfoContainer.C
-  MCDimuon_Dict.C	
-  E1039PhysicsGen_Dict.C
- 
+  E906LegacyGen_Dict.C
 )
 
-target_link_libraries(E1039PhysicsGen -L./
+target_link_libraries(E906LegacyGen -L./
   -lgsl
   -lgslcblas
   -lphool
@@ -81,16 +67,15 @@ target_link_libraries(E1039PhysicsGen -L./
   -lHepMC
 )
 
-install(TARGETS E1039PhysicsGen     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS E906LegacyGen     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
-  E1039PhysicsGen.h
+  E906LegacyGen.h
   E906VertexGen.h
+  E1039PhysicsGen.h
   BeamlineObject.h
-  MCDimuon.h
-#  SQDimuonTruthInfoContainer.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
@@ -100,5 +85,5 @@ execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
 string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
 if (ROOT_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
-   add_dependencies(install_pcm E1039PhysicsGen)
+   add_dependencies(install_pcm E906LegacyGen)
 endif()
