@@ -6,10 +6,10 @@
 #include <TGeoManager.h>
 #include <TGeoMedium.h>
 #include <TGeoNode.h>
+#include <TGeoPhysicalNode.h>
 #include <TF2.h>
 #include <TVector3.h>
 #include <TH1F.h>
-#include "BeamlineObject.h"
 
 class PHCompositeNode;
 class BeamlineObject;
@@ -41,15 +41,8 @@ public:
     //do the actual sampling
     void findInteractingPiece();
 
-    //get the proton/neutron ratio of the piece, must be called after generateVertex
-    double getPARatio() { return interactables[index].protonPerc; }
-    
-    //get the relative luminosity on this target
-    //double getLuminosity() { return p_config->biasVertexGen ? interactables[index].prob : probSum; }
-    double getLuminosity() { return  probSum; }
-
    //get the reference to the chosen objects
-   //const BeamlineObject& getInteractable() { return interactables[index]; } 
+   // const BeamlineObject& getInteractable() { return interactables[index]; } 
 
 private:
     //Array of beamline objects
