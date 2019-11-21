@@ -2,7 +2,7 @@
 #include "TGeoPhysicalConstants.h"
 #include <TMath.h>
 #include <TRandom3.h>
-
+#include <TStopwatch.h>
 BeamlineObject::BeamlineObject() {}
 
 BeamlineObject::BeamlineObject(const TGeoMaterial* pMaterial)
@@ -24,7 +24,7 @@ BeamlineObject::BeamlineObject(const TGeoMaterial* pMaterial)
   A=pMaterial->GetA();
   N=A-Z;
   
-  protonPerc = Z/A;  //N here for now stands for total nucleons
+  //protonPerc = Z/N;  //N here for now stands for total nucleons
  
 }
 

@@ -63,10 +63,10 @@ int E906LegacyGen::process_event(PHCompositeNode* topNode)
     truth_vtxz = z_vtx;
     TVector3 vtx;
     vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
-    // truth_tree->Fill();
-    //  _physicsGen->InitPhysGen(topNode);
+    truth_tree->Fill();
+    _physicsGen->InitPhysGen(topNode);
     //To do: fix the precision of the PARatio when passed via the function
-    // _physicsGen->generatePythiaDimuon(topNode,vtx, pARatio);
+    _physicsGen->generatePythiaDimuon(topNode,vtx, pARatio);
     return Fun4AllReturnCodes::EVENT_OK;
 }
 

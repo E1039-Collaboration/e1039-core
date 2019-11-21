@@ -1,6 +1,7 @@
 #include "E906LegacyGen.h"
+
+
 #include "E906VertexGen.h"
-#include "E1039PhysicsGen.h"
 #include "BeamlineObject.h"
 #include <TGeoMaterial.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -20,7 +21,6 @@ E906LegacyGen::E906LegacyGen(const std::string& name)
   : SubsysReco("E906LegacyGen")
 {
     _vertexGen = new E906VertexGen();
-    _physicsGen = new E1039PhysicsGen();
     _out_name = name;
     const TGeoMaterial* pMaterial;
 
@@ -56,17 +56,13 @@ int E906LegacyGen::process_event(PHCompositeNode* topNode)
     y_vtx=0.;
     z_vtx=0.;
     _vertexGen->traverse(geoManager->GetTopNode(),x_vtx,y_vtx, z_vtx);
-    std::cout<<"p/n ratio: "<<_vertexGen->getPARatio()<<" and vtx_z: "<<z_vtx<<std::endl;
-    Double_t pARatio = _vertexGen->getPARatio();
+    
     truth_vtxx = x_vtx;
     truth_vtxy = y_vtx;
     truth_vtxz = z_vtx;
-    TVector3 vtx;
-    vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
-    // truth_tree->Fill();
-    //  _physicsGen->InitPhysGen(topNode);
-    //To do: fix the precision of the PARatio when passed via the function
-    // _physicsGen->generatePythiaDimuon(topNode,vtx, pARatio);
+
+    truth_tree->Fill();
+ 
     return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -97,3 +93,10 @@ void E906LegacyGen::InitTree()
   
 }
 
+double E906LegacyGen::getvtxx(){
+  return truth_vtxx;
+}
+
+void E906LegacyGen::setvtxx(double vtxx){
+  truth_vtxx = vtxx;
+}

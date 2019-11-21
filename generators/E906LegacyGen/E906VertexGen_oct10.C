@@ -7,8 +7,10 @@
 #include <TGeoBBox.h>
 #include <TRandom3.h>
 #include <TMath.h>
+#include <ctime>
 #include <TFile.h>
-
+#include <TH1F.h>
+#include <TCanvas.h>
 
 E906VertexGen::E906VertexGen() 
 {
@@ -25,13 +27,13 @@ void E906VertexGen::InitRun(PHCompositeNode* topNode)
 {
   beam_profile= false;
   beamProfile = NULL;
-  beamProfile = new TF2("beamProfile", "exp(-0.5*(x-[0])*(x-[0])/[1]/[1])*exp(-0.5*(y-[2])*(y-[2])/[3]/[3])", -10., 10., -10., 10.);
-  beamProfile->SetParameter(0, 0.0);
-  beamProfile->SetParameter(1, 0.68);
-  beamProfile->SetParameter(2, 0.0);
-  beamProfile->SetParameter(3, 0.76);
+  // beamProfile = new TF2("beamProfile", "exp(-0.5*(x-[0])*(x-[0])/[1]/[1])*exp(-0.5*(y-[2])*(y-[2])/[3]/[3])", -10., 10., -10., 10.);
+  // beamProfile->SetParameter(0, 0.0);
+  // beamProfile->SetParameter(1, 0.68);
+  // beamProfile->SetParameter(2, 0.0);
+  // beamProfile->SetParameter(3, 0.76);
 
-  // beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.414/0.414)*exp(-0.5*(y-0.)*(y-0.)/0.343/0.343)", -10., 10., -10., 10.);
+  beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.68/0.68)*exp(-0.5*(y-0.)*(y-0.)/0.76/0.76)", -10., 10., -10., 10.);
   
   nPieces=0;
  
@@ -57,7 +59,8 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	const Double_t* pos= mat->GetTranslation();
 	
    	TGeoVolumeMulti* pv_multi;
-	pv_multi = (TGeoVolumeMulti*)pv;	
+	pv_multi = (TGeoVolumeMulti*)pv;
+	
 
 	TGeoShape *shape = pv->GetShape();
 	TGeoTube* tube;
@@ -65,8 +68,10 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	tube= (TGeoTube*)shape;
 	box=(TGeoBBox*)shape;
     
+
 	// Select those volumes in beamline; not beyond FMAG and not ahead of collimator
 	if(fabs(pos[0]) > 1. || fabs(pos[1]) > 7.|| pos[2]>500. || pos[2]<-800.) continue;
+
 
 	if (node->GetDaughter(i)->GetNdaughters()==0){ // Condition for the volumes with zero subvolumes starts
 
@@ -82,7 +87,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	    newObj.z_down = newObj.z0 + 0.5*newObj.length;
 	    newObj.z_up = newObj.z0 - 0.5*newObj.length;
 
-	    if (x*x+y*y<5.*5.){//Manually get a hole of 10 cm for all shieldings 
+	    if (x*x+y*y<10.*10.){//Manually get a hole of 10 cm for all shieldings 
 	      	newObj.nucIntLen = 65932.038;
 	    	newObj.density = 0.001;
 	    	newObj.A = 14.364;
@@ -90,7 +95,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	    	newObj.N =  newObj.A-newObj.Z;
 	    }
 	  }
-	else // only gets target
+	else // only gets for target
 	  {	  
 	    newObj.length = 2.*tube->GetDZ();
 	    newObj.z_down = newObj.z0 + 0.5*newObj.length;
@@ -147,11 +152,11 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 		newObj1.radiusY = 500.;
 
 		//Manually hard coded by Abi for Iron
-		// newObj1.nucIntLen = 16.77;
-		// newObj1.density = 7.87;
-		// newObj1.A = 55.845;
-		// newObj1.Z = 26;
-		// newObj1.N =  newObj1.A-newObj1.Z;
+		newObj1.nucIntLen = 16.77;
+		newObj1.density = 7.87;
+		newObj1.A = 55.845;
+		newObj1.Z = 26;
+		newObj1.N =  newObj1.A-newObj1.Z;
 	      }
 	    
 	    else{//gets the  collimeter (depending upon the upstream cut)
@@ -159,8 +164,8 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 	      	 newObj1.length = 2.*box1->GetDZ();
 		 newObj1.z_down = newObj1.z0 + 0.5*newObj1.length;
 		 newObj1.z_up = newObj1.z0 - 0.5*newObj1.length;
-		
-		 if (fabs(x)<3.9 && fabs(y)<1.7){//Manually get a rectangular hole
+		 
+		 if (fabs(x)<3. && fabs(y)<3.){//Manually get a square hole of 1.5 cm
 		   newObj1.nucIntLen = 65932.038;
 		   newObj1.density = 0.001;
 		   newObj1.A = 14.364;
@@ -183,7 +188,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
   std::sort(interactables.begin(), interactables.end());
 
  
-  //===Fill the gaps betwen the volumes with air
+  //========Fill the gaps betwen the volumes with air (strats)==
   TGeoMaterial* air = new TGeoMaterial("Air");
   BeamlineObject airgap(air);
   int nGaps = 0;
@@ -207,8 +212,9 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
      }
    std::sort(interactables.begin(), interactables.end());
 
+   // ==============Fill the gaps betwen the volumes with air (Ends)==
 
-   //===set the quanties that rely on its neighbours
+   //set the quanties that rely on its neighbours
    double attenuationSum = 0.;
    for(unsigned int i = 0; i < interactables.size(); ++i)
      {
@@ -220,7 +226,7 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
        
     }
 
-  //===set the accumulatedProbs
+  //set the accumulatedProbs
   nPieces = interactables.size();
 
   interactables[0].accumulatedProb = 0.;
@@ -235,24 +241,30 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
   probSum = accumulatedProbs[nPieces];
     
 
-  //===Normalize the accumulated probability
+  //Normalize the accumulated probability
   for(int i = 0; i < nPieces+1; ++i)
     {
     accumulatedProbs[i] = accumulatedProbs[i]/accumulatedProbs[nPieces];
   
     }
+
+
  
-  // for(int i = 0; i < nPieces; ++i)
-  //   {
-  //     std::cout << i << " " << interactables[i] << std::endl;
-  //     std::cout<<"=====Accumulated Probs=="<<accumulatedProbs[i]<<std::endl;
-  //   }
+  for(int i = 0; i < nPieces; ++i)
+    {
+      // std::cout << i << " " << interactables[i] << std::endl;
+      //    std::cout<<"=====Accumulated Probs=="<<accumulatedProbs[i]<<std::endl;
+    }
  
-  //===Generate vertices and store them 
- double  vtx = generateVertex();
+  // TVector3 vtx = generateVertex();
+  // xvertex= vtx.X();
+  // yvertex= vtx.Y();
+  // zvertex= vtx.Z();
+  double  vtx = generateVertex();
   xvertex= x;
   yvertex= y;
   zvertex= vtx;
+
  
   interactables.clear();  //clear the vector in order to run the multiple events ; Abi
   
@@ -260,16 +272,57 @@ void E906VertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,doub
 
 
 //==============
- double E906VertexGen::generateVertex()
-{ 
+// TVector3 E906VertexGen::generateVertex()
+// {
+  //Generate perpendicular vtx by sampling beam profile
+  // double x=0.; 
+  // double y=0.;
+
+  // generateVtxPerp(x, y);
+
+  //   //Find the interacting piece
+  // do
+  //   {
+// findInteractingPiece();
+  //  }
+  // while(!interactables[index].inAcceptance(x, y));
+  // if ((x*x/1.9*1.9+y*y/2.1*2.1)<1.5 && interactables[index].name.Contains("Shielding")){
+  //   findInteractingPiece_test();
+  // }
   
+    //Generate z-vtx
+// double zOffset =0.;
+//  double z = interactables[index].getZ() + zOffset;
+    // return TVector3(x, y, z);
+   
+//}
+
+
+
+//==============
+ double E906VertexGen::generateVertex()
+{
+  //Generate perpendicular vtx by sampling beam profile
+  // double x=0.; 
+  // double y=0.;
+
+  // generateVtxPerp(x, y);
+
+  //   //Find the interacting piece
+  // do
+  //   {
   findInteractingPiece();
-
-  //Generate z-vtx
-  double zOffset =0.;
-  double z = interactables[index].getZ() + zOffset;
-
-  return z;
+  //  }
+  // while(!interactables[index].inAcceptance(x, y));
+  // if ((x*x/1.9*1.9+y*y/2.1*2.1)<1.5 && interactables[index].name.Contains("Shielding")){
+  //   findInteractingPiece_test();
+  // }
+  
+    //Generate z-vtx
+    double zOffset =0.;
+    double z = interactables[index].getZ() + zOffset;
+    // return TVector3(x, y, z);
+    return z;
 }
 
 void E906VertexGen::generateVtxPerp(double& x, double& y)
@@ -280,14 +333,14 @@ void E906VertexGen::generateVtxPerp(double& x, double& y)
     }
     else
     {
-      x=gRandom->Gaus(0.,0.414);
-      y=gRandom->Gaus(0.,0.343);
+      x=gRandom->Gaus(0.,1.5);
+      y=gRandom->Gaus(0.,1.5);
     }
 }
 
 void E906VertexGen::findInteractingPiece()
 {
-  //randomly find the index based on their accum probs
+  
   index = TMath::BinarySearch(nPieces+1, accumulatedProbs,gRandom->Uniform(0,1));
  
 }
