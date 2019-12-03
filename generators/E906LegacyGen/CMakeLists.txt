@@ -8,26 +8,26 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/*.C)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 add_custom_command (
-  OUTPUT E1039PhysicsGen_Dict.C
+  OUTPUT SQPrimaryGen_Dict.C
   COMMAND rootcint
-  ARGS -f E1039PhysicsGen_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  ARGS -f SQPrimaryGen_Dict.C -noIncludePaths -inlineInputHeader -c -p 
+  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF
   -I${PROJECT_SOURCE_DIR}/
-  ${PROJECT_SOURCE_DIR}/E1039PhysicsGen.h
-  ${PROJECT_SOURCE_DIR}/E906VertexGen.h
-  ${PROJECT_SOURCE_DIR}/BeamlineObject.h
-#  ${PROJECT_SOURCE_DIR}/MCDimuon.h 
-#  ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
-  ${PROJECT_SOURCE_DIR}/E1039PhysicsGenLinkDef.h
+  ${PROJECT_SOURCE_DIR}/SQPrimaryParticleGen.h
+  ${PROJECT_SOURCE_DIR}/SQPrimaryVertexGen.h
+  ${PROJECT_SOURCE_DIR}/SQBeamlineObject.h
+  ${PROJECT_SOURCE_DIR}/SQPrimaryGenLinkDef.h
 	)
 
 add_custom_command (
-  OUTPUT MCDimuon_Dict.C   
+  OUTPUT SQMCDimuon_Dict.C   
   COMMAND rootcint
-  ARGS -f MCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  ARGS -f SQMCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
+  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF
   -I${PROJECT_SOURCE_DIR}/
-  ${PROJECT_SOURCE_DIR}/MCDimuon.h 
+  ${PROJECT_SOURCE_DIR}/SQMCDimuon.h 
   ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
-  ${PROJECT_SOURCE_DIR}/MCDimuonLinkDef.h
+  ${PROJECT_SOURCE_DIR}/SQMCDimuonLinkDef.h
   )
 
 
@@ -58,19 +58,31 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
 
+ # LHAPDF
+  find_program(LHAPDFCONF "lhapdf-config")
+  if(LHAPDFCONF)
+    message("-- Detecting LHAPDF:  found at ${LHAPDFCONF}")
+  elseif(NOT(LIBONLY))
+    message(FATAL_ERROR "-- Detecting LHAPDF:  not found")
+  endif()
+  execute_process(COMMAND lhapdf-config --prefix OUTPUT_VARIABLE LHAPDF_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND lhapdf-config --cflags OUTPUT_VARIABLE LHAPDF_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND lhapdf-config --libs   OUTPUT_VARIABLE LHAPDF_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-add_library(E1039PhysicsGen SHARED
-  E1039PhysicsGen.C
-  E906VertexGen.C
-  BeamlineObject.C
-  MCDimuon.C
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/ ")
+
+add_library(SQPrimaryGen SHARED
+  SQPrimaryParticleGen.C
+  SQPrimaryVertexGen.C
+  SQBeamlineObject.C
+  SQMCDimuon.C
   SQDimuonTruthInfoContainer.C
-  MCDimuon_Dict.C	
-  E1039PhysicsGen_Dict.C
+  SQMCDimuon_Dict.C	
+  SQPrimaryGen_Dict.C
  
 )
 
-target_link_libraries(E1039PhysicsGen -L./
+target_link_libraries(SQPrimaryGen -L./
   -lgsl
   -lgslcblas
   -lphool
@@ -79,18 +91,22 @@ target_link_libraries(E1039PhysicsGen -L./
   -lboost_iostreams
   -lphhepmc
   -lHepMC
+  -lphg4hit
+  -lg4testbench
+  -lpythia8
+  ${LHAPDF_LINK}
 )
 
-install(TARGETS E1039PhysicsGen     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS SQPrimaryGen     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
-  E1039PhysicsGen.h
-  E906VertexGen.h
-  BeamlineObject.h
-  MCDimuon.h
-#  SQDimuonTruthInfoContainer.h
+  SQPrimaryParticleGen.h
+  SQPrimaryVertexGen.h
+  SQBeamlineObject.h
+  SQMCDimuon.h
+  SQDimuonTruthInfoContainer.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
@@ -100,5 +116,5 @@ execute_process(COMMAND root-config --version OUTPUT_VARIABLE ROOT_VER)
 string(SUBSTRING ${ROOT_VER} 0 1 ROOT_VER)
 if (ROOT_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
-   add_dependencies(install_pcm E1039PhysicsGen)
+   add_dependencies(install_pcm SQPrimaryGen)
 endif()
