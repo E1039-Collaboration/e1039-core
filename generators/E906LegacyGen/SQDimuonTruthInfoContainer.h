@@ -6,7 +6,7 @@
 #include <map>
 #include <set>
 
-class MCDimuon;
+class SQMCDimuon;
 
 class SQDimuonTruthInfoContainer: public PHObject 
 {
@@ -17,14 +17,22 @@ class SQDimuonTruthInfoContainer: public PHObject
   //SQDimuonTruthInfoContainer(const std::string &nodename);
   virtual ~ SQDimuonTruthInfoContainer();
   void Reset();
-  int AddDimuon(MCDimuon* dimuon_info);
-  // ConstIterator AddDimuon(MCDimuon *newdimuon);
-  //double get_Dimuon_xs() const {return Dimuon_xs;}
 
-  //void set_Dimuon_xs(const double xs){Dimuon_xs = xs;}
+  double get_Dimuon_xs() const {return Dimuon_xs;}
+  double get_Dimuon_m() const {return Dimuon_m;}
+  double get_Dimuon_cosThetaCS() const {return Dimuon_cosThetaCS;}
+  double get_Dimuon_phiCS() const {return Dimuon_phiCS;}
 
+  void set_Dimuon_xs(const double xs){Dimuon_xs = xs;}
+  void set_Dimuon_m(const double m){Dimuon_m = m;}
+  void set_Dimuon_cosThetaCS(const double costheta) {Dimuon_cosThetaCS = costheta;}
+  void set_Dimuon_phiCS(const double phi) {Dimuon_phiCS = phi;}
+  
  private:
-  //double Dimuon_xs;
+  double Dimuon_xs;
+  double Dimuon_m;
+  double Dimuon_cosThetaCS;
+  double Dimuon_phiCS;
 
   ClassDef(SQDimuonTruthInfoContainer,1)
 
