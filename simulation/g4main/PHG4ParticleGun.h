@@ -4,7 +4,7 @@
 #include "PHG4ParticleGeneratorBase.h"
 
 #include <TF2.h>
-#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 #include <phgeom/PHGeomUtility.h>
 class PHG4Particle;
