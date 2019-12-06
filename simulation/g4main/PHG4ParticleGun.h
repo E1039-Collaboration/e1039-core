@@ -31,7 +31,7 @@ class PHG4ParticleGun: public PHG4ParticleGeneratorBase
 	
 
 	//Abi
-	E906VertexGen* _vertexGen;
+	SQPrimaryVertexGen* _vertexGen;
 	void enableVertexGen(){_legacy_vertexgenerator = true;}
 
  protected:
