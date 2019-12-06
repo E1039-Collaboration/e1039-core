@@ -16,13 +16,13 @@ E906 legacy generators for comparison and fast DY simulation
   -SQMCDimuon.C
   -SQMCDimuon.h
 ```
-## Stores truth dimuon information in a node
+## Stores dimuon truth information in a node
   ```
   -SQDimuonTruthInfoContainer.C
   -SQDimuonTruthInfoContainer.h
 ```
-Passes the primary particles' truth info to Geant4 simlation via Fun4All interface  <br />
-You need read SQDimuonTruthInfoContainer node to your analysis moudle to catch the truth information of dimuon including the cross-section (weight) for each event.
+The individual primary particle's truth info to Geant4 simlation via Fun4All interface  and can be read as how it is being read now (i.e. via PHG4TruthInfoContainer)  <br />
+You need read SQDimuonTruthInfoContainer node to your analysis module to catch the truth information of dimuon including the cross-section (weight) for each event.
 
 
 
