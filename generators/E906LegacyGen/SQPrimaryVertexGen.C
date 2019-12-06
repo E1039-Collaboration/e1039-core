@@ -15,7 +15,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <TFile.h>
 
 #include "SQPrimaryVertexGen.h"
-#include "SQBeamlineObject.h"
+//#include "SQBeamlineObject.h"
 
 SQPrimaryVertexGen::SQPrimaryVertexGen() 
 {

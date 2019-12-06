@@ -11,7 +11,7 @@ add_custom_command (
   OUTPUT SQPrimaryGen_Dict.C
   COMMAND rootcint
   ARGS -f SQPrimaryGen_Dict.C -noIncludePaths -inlineInputHeader -c -p 
-  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF
+  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF 
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQPrimaryParticleGen.h
   ${PROJECT_SOURCE_DIR}/SQPrimaryVertexGen.h
@@ -40,7 +40,7 @@ else()
 endif()
 execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND root-config --evelibs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
@@ -71,14 +71,20 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PRE
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/ ")
 
+#set(ROOT_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}:$ENV{ROOT_INCLUDE_PATH} ")
+
+#message(" ===root include path === " ${ROOT_INCLUDE_PATH})
+
+
 add_library(SQPrimaryGen SHARED
   SQPrimaryParticleGen.C
   SQPrimaryVertexGen.C
   SQBeamlineObject.C
+  SQPrimaryGen_Dict.C	
   SQMCDimuon.C
   SQDimuonTruthInfoContainer.C
   SQMCDimuon_Dict.C	
-  SQPrimaryGen_Dict.C
+
  
 )
 
@@ -95,9 +101,11 @@ target_link_libraries(SQPrimaryGen -L./
   -lg4testbench
   -lpythia8
   ${LHAPDF_LINK}
+  #-L${ROOT_PREFIX}/lib
+  #-L$ENV{XERCESCROOT}/lib
 )
 
-install(TARGETS SQPrimaryGen     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS SQPrimaryGen DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
@@ -108,6 +116,7 @@ file(GLOB dist_headers
   SQMCDimuon.h
   SQDimuonTruthInfoContainer.h
 )
+file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
 
