@@ -1,5 +1,5 @@
 /*==========================================================================
-Author: Abinash Pun, Kun
+Author: Abinash Pun, Kun Liu
 Sep, 2019
 Goal: Import the primary vertex generator of E906 experiment(DPVertexGenerator)
 from Kun to E1039 experiment in Fun4All framework
