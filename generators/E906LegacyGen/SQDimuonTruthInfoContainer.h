@@ -22,9 +22,13 @@ class SQDimuonTruthInfoContainer: public PHObject
   double get_Dimuon_m() const {return Dimuon_m;}
   double get_Dimuon_cosThetaCS() const {return Dimuon_cosThetaCS;}
   double get_Dimuon_phiCS() const {return Dimuon_phiCS;}
+  double get_Dimuon_xF() const {return Dimuon_xF;}
+  double get_Dimuon_pt() const {return Dimuon_pt;}
 
   void set_Dimuon_xs(const double xs){Dimuon_xs = xs;}
   void set_Dimuon_m(const double m){Dimuon_m = m;}
+  void set_Dimuon_xF(const double xF){Dimuon_xF = xF;}
+  void set_Dimuon_pt(const double pt){Dimuon_m = pt;}
   void set_Dimuon_cosThetaCS(const double costheta) {Dimuon_cosThetaCS = costheta;}
   void set_Dimuon_phiCS(const double phi) {Dimuon_phiCS = phi;}
   
@@ -33,7 +37,8 @@ class SQDimuonTruthInfoContainer: public PHObject
   double Dimuon_m;
   double Dimuon_cosThetaCS;
   double Dimuon_phiCS;
-
+  double Dimuon_pt;
+  double Dimuon_xF;
   ClassDef(SQDimuonTruthInfoContainer,1)
 
 };
