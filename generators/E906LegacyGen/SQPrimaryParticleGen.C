@@ -1,5 +1,5 @@
 /*====================================================================
-Author: Abinash Pun, Kun
+Author: Abinash Pun, Kun Liu
 Nov, 2019
 Goal: Import the physics generator of E906 experiment (DPPrimaryGeneratorAction)
 from Kun to E1039 experiment in Fun4All framework
@@ -32,7 +32,6 @@ from Kun to E1039 experiment in Fun4All framework
 #include "SQPrimaryParticleGen.h"
 #include "SQMCDimuon.h"
 #include "SQPrimaryVertexGen.h"
-#include "SQBeamlineObject.h"
 #include "SQDimuonTruthInfoContainer.h"
 #include <iostream>
 
@@ -76,7 +75,7 @@ from Kun to E1039 experiment in Fun4All framework
 
 SQPrimaryParticleGen::SQPrimaryParticleGen():
   PHG4ParticleGeneratorBase(),
-  _PythiaDimuon(false),
+  _Pythia(false),
   _CustomDimuon(false),
   _DrellYanGen(false),
   drellyanMode(false),
@@ -105,6 +104,7 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
   // ppGen.readFile("pythia8_DY.cfg");
   // pnGen.readFile("pythia8_DY.cfg");
   //can't read the configuration file..hard coded for now ..change it back to reading from configuration file
+  if(_Pythia){
   ppGen.readString("PDF:pSet = 7 ");//  CTEQ6L
   ppGen.readString("ParticleDecays:limitTau = on"); //Only decays the unstable particles
   ppGen.readString("WeakSingleBoson:ffbar2ffbar(s:gm) = on");// ffbar -> gamma* -> ffbar
@@ -128,7 +128,7 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 
   ppGen.readString("Beams:idB = 2212");
   pnGen.readString("Beams:idB = 2112");
-
+  
 
   unsigned int seed = PHRandomSeed();
   if (seed > 900000000)
@@ -148,8 +148,9 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 
   ppGen.init();
   pnGen.init();
-
-
+ 
+  }
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -179,6 +180,7 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
 
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
+
   _vertexGen->InitRun(topNode);
   TGeoManager* geoManager = PHGeomUtility::GetTGeoManager(topNode);
   double x_vtx,y_vtx,z_vtx;
@@ -192,7 +194,7 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
 
   if (_DrellYanGen) generateDrellYan(topNode,vtx, pARatio, luminosity);
-  if (_PythiaDimuon) generatePythia(topNode,vtx, pARatio);
+  if (_Pythia) generatePythia(topNode,vtx, pARatio);
   if (_JPsiGen) generateJPsi(topNode,vtx, pARatio, luminosity);
   if (_PsipGen) generatePsip(topNode,vtx, pARatio, luminosity);
   
@@ -212,6 +214,7 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
 
   if(!generateDimuon(mass, xF, dimuon, true)) return Fun4AllReturnCodes::ABORTEVENT; // return
+ 
   vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
  
   PHG4Particle *particle_muNeg = new PHG4Particlev2();
@@ -302,6 +305,8 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   dimuon_info->set_Dimuon_m(dimuon.fMass);
   dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
   dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
+  dimuon_info->set_Dimuon_pt(dimuon.fpT);
+  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
 
 }
 
@@ -361,7 +366,8 @@ int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, co
   dimuon_info->set_Dimuon_m(dimuon.fMass);
   dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
   dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-
+  dimuon_info->set_Dimuon_pt(dimuon.fpT);
+  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
 }
 //======================Psi-prime====================
 int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
@@ -420,7 +426,8 @@ int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, co
   dimuon_info->set_Dimuon_m(dimuon.fMass);
   dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
   dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-
+  dimuon_info->set_Dimuon_pt(dimuon.fpT);
+  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
 }
 
 
@@ -445,9 +452,9 @@ int SQPrimaryParticleGen::generatePythia(PHCompositeNode *topNode,TVector3 vtx, 
 
       if(par.mother1() == 0 && par.mother2()==0) continue; // don't store mother particle i.e. colliding protons
       if(par.pz()<5.0) continue; // momentum cut
-      if(!(fabs(par.id())==13)) continue;
-      pParID++;
-      if (pParID>2) continue;
+      // if(!(fabs(par.id())==13)) continue;
+      // pParID++;
+      //if (pParID>2) continue;
       vtxindex = ineve->AddVtx(vtx.X()+(par.xProd()*CLHEP::mm),vtx.Y()+(par.yProd()*CLHEP::mm),vtx.Z()+(par.zProd()*CLHEP::mm),0.);
 
       PHG4Particle *particle = new PHG4Particlev2();
@@ -475,9 +482,9 @@ int SQPrimaryParticleGen::generatePythia(PHCompositeNode *topNode,TVector3 vtx, 
 bool SQPrimaryParticleGen::generateDimuon(double mass, double xF, SQMCDimuon& dimuon, bool angular)
 {
     double pz = xF*(DPGEN::sqrts - mass*mass/DPGEN::sqrts)/2.;
-
+    
     double pTmaxSq = (DPGEN::s*DPGEN::s*(1. - xF*xF) - 2.*DPGEN::s*mass*mass + mass*mass*mass*mass)/DPGEN::s/4.;
-   
+  
     if(pTmaxSq < 0.) return false;
     
     double pTmax = sqrt(pTmaxSq);
