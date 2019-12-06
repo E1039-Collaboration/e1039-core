@@ -1,5 +1,5 @@
 /*====================================================================
-Author: Abinash Pun, Kun
+Author: Abinash Pun, Kun Liu
 Nov, 2019
 Goal: Import the physics generator of E906 experiment (DPSimPrimaryGeneratorAction)
 from Kun to E1039 experiment in Fun4All framework
@@ -25,7 +25,6 @@ class PHG4Particle;
 
 class SQMCDimuon;
 class SQPrimaryVertexGen;
-class SQBeamlineObject;
 class SQDimuonTruthInfoContainer;
 
 //==========
@@ -49,12 +48,7 @@ public:
     // void generateDarkPhotonFromEta();
     int generatePythia(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
     int generateCustomDimuon(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
-    // void generatePythiaSingle();
-    //void generateGeant4Single();
-    //void generateTestSingle();
-    //void generatePhaseSpace();
-    //void generateExternal();
-    //void generateDebug();
+  
     //@}
 
     //!Dimuon phase space generator
@@ -69,8 +63,8 @@ public:
     
     //swith for the generators; Abi
     //@
-    void enablePythiaDimuon(){_PythiaDimuon = true;}
-    bool _PythiaDimuon;
+    void enablePythia(){_Pythia = true;}
+    bool _Pythia;
     void enableCustomDimuon(){_CustomDimuon = true;}
     bool _CustomDimuon;
     void enableDrellYanGen(){_DrellYanGen = true;}
