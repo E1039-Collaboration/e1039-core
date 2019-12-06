@@ -18,7 +18,7 @@
 //Abi
 #include <TGeoMaterial.h>
 #include <phgeom/PHGeomUtility.h>
-#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 
 using namespace std;
