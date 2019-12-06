@@ -28,7 +28,7 @@ PHG4ParticleGun::PHG4ParticleGun(const string &name):
   _beam_profile(nullptr),
   _legacy_vertexgenerator(nullptr)
 { 
-  _vertexGen = new E906VertexGen();
+  _vertexGen = new SQPrimaryVertexGen();
   
   return;
 }
