@@ -2,10 +2,12 @@ E906 legacy generators for comparison and fast DY simulation
 Author: Abinash Pun, Kun Liu
 
 ## Create the Realistic primary vertex distribution
+```
   -SQBeamlineObject.C
   -SQBeamlineObject.h
   -SQPrimaryVertexGen.C
   -SQPrimaryVertexGen.h
+  ```
 
 ## Creates primary particles following desired physics
   -SQPrimaryParticleGen.C
