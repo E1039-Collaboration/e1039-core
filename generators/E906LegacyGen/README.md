@@ -21,5 +21,5 @@ E906 legacy generators for comparison and fast DY simulation
   -SQDimuonTruthInfoContainer.C
   -SQDimuonTruthInfoContainer.h
 ```
-## Passes the primary truth info to Geant4 simlation
+Passes the primary particles' truth info to Geant4 simlation via Fun4All interface
 
