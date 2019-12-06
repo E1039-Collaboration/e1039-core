@@ -150,7 +150,6 @@ void PHG4SimpleEventGenerator::set_vertex_distribution_mean(const double x, cons
   _vertex_x = x;
   _vertex_y = y;
   _vertex_z = z;
-  cout<<" setting vertex mean in simpleeventgenerator"<<endl;
   return;
 }
 
