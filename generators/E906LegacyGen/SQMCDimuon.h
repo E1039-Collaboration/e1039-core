@@ -1,3 +1,5 @@
+// Authors: Abinash Pun, Kun Liu
+
 #ifndef SQMCDimuon_H
 #define SQMCDimuon_H
 #include <iostream>
