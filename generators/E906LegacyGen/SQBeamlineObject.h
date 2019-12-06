@@ -1,9 +1,9 @@
-/*====================================================================
+/*=====================================================================================================
 Author: Abinash Pun, Kun Liu
 Sep, 2019
 Goal: Beamline volumes work to import the primary vertex generator of E906 experiment(DPVertexGenerator)
 from Kun to E1039 experiment in Fun4All framework
-=========================================================================*/
+========================================================================================================*/
 
 #ifndef __SQBEAMLINEOBJECT_H__
 #define __SQBEAMLINEOBJECT_H__
