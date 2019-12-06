@@ -7,7 +7,7 @@
 #include <vector>
 
 
-#include "/seaquest/users/apun/abi_project/e1039-core/generators/E906LegacyGen/E906VertexGen.h"
+#include  <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 #include <phgeom/PHGeomUtility.h>
 
@@ -77,7 +77,7 @@ public:
 
 
   //Abi
-  E906VertexGen* _vertexGen;
+  SQPrimaryVertexGen* _vertexGen;
   void enableVertexGen(){_legacy_vertexgenerator = true;}
   bool _legacy_vertexgenerator;
 
