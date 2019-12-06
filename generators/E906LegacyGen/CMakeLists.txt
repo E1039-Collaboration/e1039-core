@@ -71,9 +71,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PRE
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/ ")
 
-#set(ROOT_INCLUDE_PATH "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}:$ENV{ROOT_INCLUDE_PATH} ")
-
-#message(" ===root include path === " ${ROOT_INCLUDE_PATH})
 
 
 add_library(SQPrimaryGen SHARED
@@ -101,8 +98,6 @@ target_link_libraries(SQPrimaryGen -L./
   -lg4testbench
   -lpythia8
   ${LHAPDF_LINK}
-  #-L${ROOT_PREFIX}/lib
-  #-L$ENV{XERCESCROOT}/lib
 )
 
 install(TARGETS SQPrimaryGen DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
