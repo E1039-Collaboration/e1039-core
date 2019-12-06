@@ -1,7 +1,8 @@
 /*====================================================================
 Author: Abinash Pun, Kun Liu
 Nov, 2019
-Goal: Calcualation of dimuon variables as a part of importing the physics generator of E906 experiment (DPSimPrimaryGeneratorAction)
+Goal: Calcualation of dimuon variables as a part of importing the physics 
+generator of E906 experiment (DPSimPrimaryGeneratorAction)
 from Kun to E1039 experiment in Fun4All framework
 =========================================================================*/
 #include "SQMCDimuon.h"
