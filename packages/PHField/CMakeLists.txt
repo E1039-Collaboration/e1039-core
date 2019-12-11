@@ -74,7 +74,7 @@ add_library(phfield SHARED
 add_dependencies(phfield phfield_io)
 
 target_link_libraries(phfield_io -lphool)
-target_link_libraries(phfield    -lfun4all -lphfield_io )
+target_link_libraries(phfield    phfield_io -lfun4all)
 
 install(TARGETS phfield_io 				DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phfield 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

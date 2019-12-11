@@ -1,9 +1,16 @@
 
 if [ $E1039_CORE ] ; then # Clean up the old components
-    PATH=${PATH//"$E1039_CORE/bin:"}
-    CPATH=${CPATH//"$E1039_CORE/include:"}
-    LIBRARY_PATH=${LIBRARY_PATH//"$E1039_CORE/lib:"}
-    LD_LIBRARY_PATH=${LD_LIBRARY_PATH//"$E1039_CORE/lib:"}
+    function DropEleFromPath {
+	local -r NAME=$1
+	local -r  ELE=$2
+	local -r CONT=$(eval "echo :\$$NAME:" | sed -e 's/:/::/g' -e "s%:$ELE:%%g" -e 's/:\+/:/g' -e 's/^://' -e 's/:$//')
+	eval "$NAME=$CONT"
+    }
+    DropEleFromPath PATH            $E1039_CORE/bin
+    DropEleFromPath CPATH           $E1039_CORE/include
+    DropEleFromPath LIBRARY_PATH    $E1039_CORE/lib
+    DropEleFromPath LD_LIBRARY_PATH $E1039_CORE/lib
+    unset -f DropEleFromPath
 fi
 
 export E1039_CORE=$(dirname $(readlink -f $BASH_SOURCE))

@@ -175,6 +175,7 @@ int OnlMonHodo::DrawMonitor()
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad1->cd(pl+1);
     UtilHist::AutoSetRange(h1_time[pl]);
+    //h1_time[pl]->GetXaxis()->SetRangeUser(400, 1050);
     h1_time[pl]->SetLineColor(kBlack);
     h1_time[pl]->Draw();
     h1_time_in[pl]->SetLineColor(kBlue);
