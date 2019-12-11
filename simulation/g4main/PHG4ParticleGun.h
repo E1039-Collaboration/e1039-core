@@ -4,7 +4,6 @@
 #include "PHG4ParticleGeneratorBase.h"
 
 #include <TF2.h>
-#include <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 #include <phgeom/PHGeomUtility.h>
 class PHG4Particle;
