@@ -6,8 +6,6 @@
 #include <map>
 #include <vector>
 
-
-#include  <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 #include <phgeom/PHGeomUtility.h>
 
@@ -74,12 +72,6 @@ public:
 			const double y_min, const double y_max,
 			const double z_min, const double z_max
 			);
-
-
-  //Abi
-  SQPrimaryVertexGen* _vertexGen;
-  void enableVertexGen(){_legacy_vertexgenerator = true;}
-  bool _legacy_vertexgenerator;
 
 
 private:
