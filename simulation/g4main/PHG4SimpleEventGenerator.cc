@@ -23,7 +23,6 @@
 //Abi
 #include <TGeoMaterial.h>
 #include <phgeom/PHGeomUtility.h>
-#include <E906LegacyGen/SQPrimaryVertexGen.h>
 #include <TGeoManager.h>
 
 using namespace std;
@@ -62,10 +61,10 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
 	_py_min(NAN), _py_max(NAN),
 	_pz_min(NAN), _pz_max(NAN),
   _ineve(NULL) ,
-  _legacy_vertexgenerator(nullptr)
+  //_legacy_vertexgenerator(nullptr)
 {
 
-  _vertexGen = new SQPrimaryVertexGen();
+  //_vertexGen = new SQPrimaryVertexGen();
   return;
 }
 
@@ -269,22 +268,6 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
       vtx_y = smearvtx(_vertex_y,_vertex_width_y,_vertex_func_y);
       vtx_z = smearvtx(_vertex_z,_vertex_width_z,_vertex_func_z);
     } 
-
-  // For using the legacy vertex generator ; Abi
-  if (_legacy_vertexgenerator){
-  _vertexGen->InitRun(topNode);
-  TGeoManager* geoManager = PHGeomUtility::GetTGeoManager(topNode);
-  double x_vtx,y_vtx,z_vtx;
-    x_vtx=0.;
-    y_vtx=0.;
-    z_vtx=0.;
-
-    _vertexGen->traverse(geoManager->GetTopNode(),x_vtx,y_vtx, z_vtx);
-
-    vtx_x = x_vtx;
-    vtx_y = y_vtx;
-    vtx_z = z_vtx;
-      }
 
 
   vtx_x += _vertex_offset_x;
