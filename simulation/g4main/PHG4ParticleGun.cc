@@ -35,7 +35,7 @@ PHG4ParticleGun::PHG4ParticleGun(const string &name):
 PHG4ParticleGun::~PHG4ParticleGun()
 {
 	delete _beam_profile;
-	delete _vertexGen;
+	//delete _vertexGen;
   return;
 }
 
