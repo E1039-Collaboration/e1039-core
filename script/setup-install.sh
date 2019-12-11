@@ -24,7 +24,7 @@ if [ -z "$1" ] ; then
     echo "Abort."
     exit 1
 elif [ "X$1" = 'Xauto' ] ; then
-    DIR_INST=$(readlink -f $DIR_SCRIPT/../../e1039-core-inst)
+    DIR_INST=$(readlink -f $DIR_SCRIPT/../../core-inst)
 else
     DIR_INST=$(readlink -m "$1")
 fi
@@ -68,8 +68,9 @@ fi
 echo
 echo "A setup script was created;"
 echo "  $DIR_INST/this-e1039.sh"
-echo "Next you likely source this script, move to a build directory "
-echo "and execute 'build.sh'."
+echo "Next you likely source this script and execute 'build.sh';"
+echo "  source $DIR_INST/this-e1039.sh"
+echo "  ./build.sh"
 echo
 echo "Note that You should source the setup script when you use a new "
 echo "shell environment (i.e. text terminal) to build or execute this "
