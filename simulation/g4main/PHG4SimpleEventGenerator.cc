@@ -60,7 +60,7 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
 	_px_min(NAN), _px_max(NAN),
 	_py_min(NAN), _py_max(NAN),
 	_pz_min(NAN), _pz_max(NAN),
-  _ineve(NULL) ,
+  _ineve(NULL) 
   //_legacy_vertexgenerator(nullptr)
 {
 
