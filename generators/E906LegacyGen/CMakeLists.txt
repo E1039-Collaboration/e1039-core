@@ -11,7 +11,6 @@ add_custom_command (
   OUTPUT SQPrimaryGen_Dict.C
   COMMAND rootcint
   ARGS -f SQPrimaryGen_Dict.C -noIncludePaths -inlineInputHeader -c -p 
-  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF 
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQPrimaryParticleGen.h
   ${PROJECT_SOURCE_DIR}/SQPrimaryVertexGen.h
@@ -23,7 +22,6 @@ add_custom_command (
   OUTPUT SQMCDimuon_Dict.C   
   COMMAND rootcint
   ARGS -f SQMCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
-  -I$ENV{XERCESCROOT}/include/ -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ -I${GEANT4_PREFIX}/include/Geant4 -I${LHAPDF_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/LHAPDF
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQMCDimuon.h 
   ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
@@ -56,7 +54,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
   execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GEANT4_PREFIX}/include/ ")
 
  # LHAPDF
   find_program(LHAPDFCONF "lhapdf-config")
@@ -69,7 +67,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${GEANT4_PRE
   execute_process(COMMAND lhapdf-config --cflags OUTPUT_VARIABLE LHAPDF_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(COMMAND lhapdf-config --libs   OUTPUT_VARIABLE LHAPDF_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${ROOT_PREFIX}/include/ -I${LHAPDF_PREFIX}/include/ ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${LHAPDF_PREFIX}/include/ ")
+set(LINK_FLAGS "${LINK_FLAGS} ${LHAPDF_LINK}")
 
 
 
@@ -81,8 +80,6 @@ add_library(SQPrimaryGen SHARED
   SQMCDimuon.C
   SQDimuonTruthInfoContainer.C
   SQMCDimuon_Dict.C	
-
- 
 )
 
 target_link_libraries(SQPrimaryGen -L./
@@ -97,7 +94,6 @@ target_link_libraries(SQPrimaryGen -L./
   -lphg4hit
   -lg4testbench
   -lpythia8
-  ${LHAPDF_LINK}
 )
 
 install(TARGETS SQPrimaryGen DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

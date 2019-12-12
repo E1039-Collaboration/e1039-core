@@ -38,6 +38,7 @@ else
     simulation/g4detectors
     simulation/g4dst
     simulation/g4eval
+    generators/E906LegacyGen
     packages/dptrigger
     #packages/db2g4
     packages/PHGenFitPkg/GenFitExp
