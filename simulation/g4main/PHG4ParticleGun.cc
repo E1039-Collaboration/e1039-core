@@ -15,19 +15,27 @@
 #include <TRandom.h>
 
 #include <iostream>
+//Abi
+#include <TGeoMaterial.h>
+#include <phgeom/PHGeomUtility.h>
+#include <TGeoManager.h>
 
 using namespace std;
 
 PHG4ParticleGun::PHG4ParticleGun(const string &name): 
   PHG4ParticleGeneratorBase(name),
-	_beam_profile(nullptr)
-{
+  _beam_profile(nullptr)
+ // _legacy_vertexgenerator(nullptr)
+{ 
+//  _vertexGen = new SQPrimaryVertexGen();
+  
   return;
 }
 
 PHG4ParticleGun::~PHG4ParticleGun()
 {
 	delete _beam_profile;
+	//delete _vertexGen;
   return;
 }
 
@@ -44,10 +52,16 @@ PHG4ParticleGun::process_event(PHCompositeNode *topNode)
 	if(_beam_profile) {
 		_beam_profile->GetRandom2(vx, vy);
 	}
-	cout << "PHG4ParticleGun: {" << vx << ", " << vy << "}" << endl;
+	
+	
+
 
   PHG4InEvent *ineve = findNode::getClass<PHG4InEvent>(topNode,"PHG4INEVENT");
   ReuseExistingVertex(topNode); // checks if we should reuse existing vertex
+
+
+  // cout<<" Here I am in particle gun...."<<endl;
+  //cout << "PHG4ParticleGun: {" << vx << ", " << vy << ", "<<vtx_z<< "}" << endl;
   int vtxindex = ineve->AddVtx(vx,vy,vtx_z,t0);
   vector<PHG4Particle *>::const_iterator iter;
   for (iter = particlelist.begin(); iter != particlelist.end(); ++iter)

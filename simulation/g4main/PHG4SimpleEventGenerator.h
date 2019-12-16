@@ -6,6 +6,9 @@
 #include <map>
 #include <vector>
 
+#include <TGeoManager.h>
+#include <phgeom/PHGeomUtility.h>
+
 class PHG4InEvent;
 class PHCompositeNode;
 
@@ -69,6 +72,7 @@ public:
 			const double y_min, const double y_max,
 			const double z_min, const double z_max
 			);
+
 
 private:
 
