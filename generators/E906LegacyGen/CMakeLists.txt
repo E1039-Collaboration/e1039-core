@@ -94,6 +94,7 @@ target_link_libraries(SQPrimaryGen -L./
   -lphg4hit
   -lg4testbench
   -lpythia8
+  ${LHAPDF_LINK}
 )
 
 install(TARGETS SQPrimaryGen DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
