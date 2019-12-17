@@ -32,29 +32,27 @@ git clone git@github.com:E1039-Collaboration/e1039-core.git
 
 ## Build and Install
 
-The following commands should succeed on the supported servers.
-You should first try them to learn the overall procedure.
+You can first try the following commands to learn the overall procedure.
+They should succeed on the supported servers.
 ```
 cd /path/to/directory_where_you_download_e1039-core
-source e1039-core/script/setup-install.sh auto
-source $DIR_INST/this-e1039.sh
-mkdir e1039-core-build
-cd    e1039-core-build
-../e1039-core/build.sh
+./script/setup-install.sh auto
+source ../core-inst/this-e1039.sh
+./build.sh
 ```
 
 It takes 5-10 minutes.
-Lots of installed files appear in "e1039-core-inst".
+Lots of installed files appear in "../core-inst".
 
 ### Details
 
-When you open a new shell environment (i.e. text terminal), you have to source "this-e1039.sh", where DIR_INST is no longer available and thus you type a real path (in either relative or absolute).
+When you open a new shell environment (i.e. text terminal), you have to source "this-e1039.sh".
 
 The script "setup-install.sh" sets up the environment to install, build and run this package.
 It warns you if your computer is not supported for the automated setup.
 
-The argument "auto" of "setup-install.sh" means that the installation directory is selected automatically ("e1039-core-inst").
-If you like to select it, you can type it instead of "auto".
+The argument "auto" of "setup-install.sh" means that the installation directory is selected automatically, which is "../core-inst".
+If you like to manually select it (such as `~/e1039/inst/core`), you can type it instead of "auto".
 
 A directory that includes 'CMakeLists.txt' under "e1039-core" forms a sub-package.
 The script "build.sh" builds all the sub-packages in the right order.
