@@ -9,7 +9,7 @@
 class CodaInputManager {
   static const int buflen = 500000;
   int  m_verb;
-  bool m_online; //< Always 'true' for now
+  bool m_online; //< True if the decoder runs in the online mode.
   bool m_go_end;
   int  m_handle; //< Handler for evio
   int  m_run;

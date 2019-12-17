@@ -76,17 +76,18 @@ do
   fi
 done
 
-
-(
+if [ ${#packages[@]} -gt 1 ] ; then
     echo "================================================================"
     echo "Install all macros to $install/macros/."
-    cd $src
-    find . -type d -regex '.*/macros*' | while read DIR_SRC ; do
-	echo "  $DIR_SRC"
-	DIR_DEST=$install/macros/$(dirname $DIR_SRC)
-	mkdir -p $DIR_DEST
-	cp -p $DIR_SRC/* $DIR_DEST
-    done
-)
+    ( 
+	cd $src
+	find . -type d -regex '.*/macros*' | while read DIR_SRC ; do
+	    echo "  $DIR_SRC"
+	    DIR_DEST=$install/macros/$(dirname $DIR_SRC)
+	    mkdir -p $DIR_DEST
+	    cp -p $DIR_SRC/* $DIR_DEST
+	done
+    )
+fi
 
 cd $build

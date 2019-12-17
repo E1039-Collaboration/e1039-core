@@ -19,6 +19,7 @@ public:
 
   ParamConstIter begin() const { return m_map.begin(); }
   ParamConstIter   end() const { return m_map.end(); }
+  unsigned int    size() const { return m_map.size(); }
   
 private:
   ParamMap m_map;

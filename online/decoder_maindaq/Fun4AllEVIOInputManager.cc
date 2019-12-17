@@ -124,14 +124,10 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
     }
 
   events_thisfile = 0;
-  //parser = new MainDaqParser();
   parser->dec_par.verbose = Verbosity();
   int status = parser->OpenCodaFile(fname);
   if (status!=0) {
-    cerr << "!!ERROR!! Failed at file open (" << status << ").  Exit.\n";
-    //delete parser;
-    //parser = NULL;
-    cout << PHWHERE << ThisName << ": could not open file " << fname << endl;
+    cout << PHWHERE << ThisName << ": could not open file " << fname << " with status = " << status << "." << endl;
     return -1;
   }
   //pair<int, int> runseg = Fun4AllUtils::GetRunSegment(fname);
