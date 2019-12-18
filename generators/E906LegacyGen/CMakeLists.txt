@@ -68,9 +68,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GEANT4_PREFIX}/include/ ")
   execute_process(COMMAND lhapdf-config --libs   OUTPUT_VARIABLE LHAPDF_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${LHAPDF_PREFIX}/include/ ")
-set(LINK_FLAGS "${LINK_FLAGS} ${LHAPDF_LINK}")
-
-
 
 add_library(SQPrimaryGen SHARED
   SQPrimaryParticleGen.C
