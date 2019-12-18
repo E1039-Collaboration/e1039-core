@@ -16,23 +16,21 @@ from Kun to E1039 experiment in Fun4All framework
 #include <TF2.h>
 #include <TVector3.h>
 #include <TH1F.h>
+#include <fun4all/SubsysReco.h>
 #include "SQBeamlineObject.h"
 
 class PHCompositeNode;
 class SQBeamlineObject;
 
-class SQPrimaryVertexGen
+class SQPrimaryVertexGen: public SubsysReco
 {
 public:
     SQPrimaryVertexGen();
-    ~SQPrimaryVertexGen();;
+    virtual ~SQPrimaryVertexGen();
 
-
-    //Initialize files
-    void Initfile();
 
     //Initialize at the begining of Run
-    void InitRun(PHCompositeNode* topNode);
+    int InitRun(PHCompositeNode* topNode);
 
     //Tree traversal
     void traverse(TGeoNode* node, double&xvertex,double&yvertex,double&zvertex);
@@ -58,6 +56,15 @@ public:
    //get the reference to the chosen objects
    //const BeamlineObject& getInteractable() { return interactables[index]; } 
 
+    TF2* get_beam_profile() const {
+      return _beam_profile;
+    }
+
+    void set_beam_profile(TF2* BeamProfile) {
+      _beam_profile = BeamProfile;
+    }
+  
+
 private:
     //Array of beamline objects
     unsigned int nPieces;
@@ -77,9 +84,8 @@ private:
     //flag to test if the generator has been initialized
     bool inited;
 
-    // flag to use beamProfile function
-    bool beam_profile;
 
+    TF2* _beam_profile;
   
 };
 
