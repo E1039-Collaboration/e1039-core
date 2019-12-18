@@ -16,33 +16,38 @@ from Kun to E1039 experiment in Fun4All framework
 
 #include "SQPrimaryVertexGen.h"
 //#include "SQBeamlineObject.h"
-
-SQPrimaryVertexGen::SQPrimaryVertexGen() 
+double beam_vtx_x; 
+double beam_vtx_y;
+ TF2* beam_global;
+SQPrimaryVertexGen::SQPrimaryVertexGen():
+ _beam_profile(nullptr)
 {
 inited = false;
-
-}
-SQPrimaryVertexGen::~SQPrimaryVertexGen(){}
-
-void SQPrimaryVertexGen::Initfile(){
+ // beam_vtx_x = 0;
+ // beam_vtx_y = 0;
  
 }
 
-void SQPrimaryVertexGen::InitRun(PHCompositeNode* topNode)
+SQPrimaryVertexGen::~SQPrimaryVertexGen()
 {
-  beam_profile= false;
-  beamProfile = NULL;
-  beamProfile = new TF2("beamProfile", "exp(-0.5*(x-[0])*(x-[0])/[1]/[1])*exp(-0.5*(y-[2])*(y-[2])/[3]/[3])", -10., 10., -10., 10.);
-  beamProfile->SetParameter(0, 0.0);
-  beamProfile->SetParameter(1, 0.68);
-  beamProfile->SetParameter(2, 0.0);
-  beamProfile->SetParameter(3, 0.76);
-
-  // beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.414/0.414)*exp(-0.5*(y-0.)*(y-0.)/0.343/0.343)", -10., 10., -10., 10.);
-  
-  nPieces=0;
- 
+	delete _beam_profile;
+	
+  return;
 }
+
+
+int SQPrimaryVertexGen::InitRun(PHCompositeNode* topNode){ 
+
+  if(_beam_profile){
+     double x, y;
+     beam_global = get_beam_profile();
+     beam_global->GetRandom2(x, y);
+  
+   }
+  return 0;
+
+}
+
 
 void SQPrimaryVertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex,double&zvertex) 
 {
@@ -55,7 +60,6 @@ void SQPrimaryVertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex
   generateVtxPerp(x, y);
 
 
- 
   for(int i = 0; i < node->GetNdaughters(); ++i) // Loop over daughter volumes
     {
      
@@ -281,15 +285,18 @@ void SQPrimaryVertexGen::traverse(TGeoNode* node,  double&xvertex,double&yvertex
 
 void SQPrimaryVertexGen::generateVtxPerp(double& x, double& y)
 {
-  if(beam_profile)
+  
+  beamProfile = ::beam_global;
+  if(beamProfile)
+  { 
+  beamProfile->GetRandom2(x, y);
+  }
+  else
   {
-       beamProfile->GetRandom2(x, y);
-    }
-    else
-    {
-      x=gRandom->Gaus(0.,0.414);
-      y=gRandom->Gaus(0.,0.343);
-    }
+    x=gRandom->Gaus(0.,0.414);
+    y=gRandom->Gaus(0.,0.343);
+  }
+
 }
 
 void SQPrimaryVertexGen::findInteractingPiece()
@@ -298,4 +305,5 @@ void SQPrimaryVertexGen::findInteractingPiece()
   index = TMath::BinarySearch(nPieces+1, accumulatedProbs,gRandom->Uniform(0,1));
  
 }
+
 
