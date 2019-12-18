@@ -23,7 +23,6 @@ else
     framework/fun4all
     interface_main
     packages/UtilAna
-    packages/evt_filter
     online/decoder_maindaq
     packages/Half
     packages/vararray
@@ -40,6 +39,7 @@ else
     simulation/g4dst
     simulation/g4eval
     generators/E906LegacyGen
+    packages/evt_filter
     packages/dptrigger
     #packages/db2g4
     packages/PHGenFitPkg/GenFitExp
