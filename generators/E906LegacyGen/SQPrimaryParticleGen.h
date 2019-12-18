@@ -74,7 +74,15 @@ public:
     bool _JPsiGen;
     void enablePsipGen(){_PsipGen = true;}
     bool _PsipGen;
-    
+
+    void set_xfRange(const double xmin, const double xmax){
+      xfMin = xmin;
+      xfMax = xmax;
+    }
+    void set_massRange(const double mmin, const double mmax){
+      massMin = mmin;
+      massMax = mmax;
+    }
     //@
 
  private:
