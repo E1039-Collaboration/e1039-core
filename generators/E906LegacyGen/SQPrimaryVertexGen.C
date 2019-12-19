@@ -15,22 +15,18 @@ from Kun to E1039 experiment in Fun4All framework
 #include <TFile.h>
 
 #include "SQPrimaryVertexGen.h"
-//#include "SQBeamlineObject.h"
-double beam_vtx_x; 
-double beam_vtx_y;
+
  TF2* beam_global;
+
 SQPrimaryVertexGen::SQPrimaryVertexGen():
  _beam_profile(nullptr)
 {
-inited = false;
- // beam_vtx_x = 0;
- // beam_vtx_y = 0;
- 
+inited = false; 
 }
 
 SQPrimaryVertexGen::~SQPrimaryVertexGen()
 {
-	delete _beam_profile;
+  if (_beam_profile) delete _beam_profile;
 	
   return;
 }
@@ -39,10 +35,7 @@ SQPrimaryVertexGen::~SQPrimaryVertexGen()
 int SQPrimaryVertexGen::InitRun(PHCompositeNode* topNode){ 
 
   if(_beam_profile){
-     double x, y;
-     beam_global = get_beam_profile();
-     beam_global->GetRandom2(x, y);
-  
+     beam_global = get_beam_profile();  
    }
   return 0;
 
