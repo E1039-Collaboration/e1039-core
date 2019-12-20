@@ -229,8 +229,8 @@ int TruthNodeMaker::MakeNodes(PHCompositeNode* topNode)
   m_vec_dim = new SQDimuonVector_v1();
 
   node_dst->addNode(new PHIODataNode<PHObject>(m_evt    , "SQMCEvent"         , "PHObject"));
-  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_trk, "SQTrueTrackVector" , "PHObject"));
-  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTrueDimuonVector", "PHObject"));
+  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_trk, "SQTruthTrackVector" , "PHObject"));
+  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTruthDimuonVector", "PHObject"));
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
