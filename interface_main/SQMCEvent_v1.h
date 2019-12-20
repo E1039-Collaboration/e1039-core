@@ -18,6 +18,10 @@ class SQMCEvent_v1 : public SQMCEvent {
   double get_cross_section() const  { return _xsec; }
   void   set_cross_section(const double a) { _xsec = a; }
 
+  double get_weight() const  { return _weight; }
+  void   set_weight(const double a) { _weight = a; }
+
+
   int  get_particle_id(const int i) const;
   void set_particle_id(const int i, const int a);
 
@@ -28,6 +32,7 @@ class SQMCEvent_v1 : public SQMCEvent {
   static const int _N_PAR = 4; // 2 -> 2
   int _proc_id;
   double _xsec;
+  double _weight;
   int _par_id[_N_PAR];
   TLorentzVector _par_mom[_N_PAR];
 

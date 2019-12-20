@@ -19,6 +19,9 @@ class SQMCEvent: public PHObject {
   virtual double get_cross_section() const = 0;
   virtual void   set_cross_section(const double a) = 0;
 
+  virtual double get_weight() const = 0;
+  virtual void   set_weight(const double a) = 0;
+
   virtual int  get_particle_id(const int i) const = 0;
   virtual void set_particle_id(const int i, const int a) = 0;
 
