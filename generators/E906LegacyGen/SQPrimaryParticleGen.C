@@ -205,7 +205,7 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 
 int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
 {
- 
+  
   SQMCDimuon dimuon ;
   drellyanMode = true;
   int vtxindex = -1;

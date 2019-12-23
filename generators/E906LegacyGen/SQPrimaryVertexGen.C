@@ -298,4 +298,3 @@ void SQPrimaryVertexGen::findInteractingPiece()
   index = TMath::BinarySearch(nPieces+1, accumulatedProbs,gRandom->Uniform(0,1));
  
 }
-
