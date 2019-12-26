@@ -39,6 +39,7 @@ class OnlMonClient: public SubsysReco {
   int End(PHCompositeNode *topNode);
 
   void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0, int* n_evt=0);
+  void InitCanvas();
   int StartMonitor();
   TH1* FindMonHist(const std::string name, const bool non_null=true);
   TObject* FindMonObj(const std::string name, const bool non_null=true);

@@ -193,8 +193,19 @@ int OnlMonClient::DrawMonitor()
   exit(1);
 }
 
+void OnlMonClient::InitCanvas()
+{
+  for (int ii = 0; ii < m_n_can; ii++) {
+    if (! m_list_can[ii]) {
+      m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+      m_list_can[ii]->InitDraw();
+    }
+  }
+}
+
 int OnlMonClient::StartMonitor()
 {
+  cout << "AA" << endl;
   if (GetClearUsFlag()) {
     for (SelfList_t::iterator it = m_list_us.begin(); it != m_list_us.end(); it++) {
       (*it)->ClearCanvasList();
@@ -220,11 +231,17 @@ int OnlMonClient::StartMonitor()
     cout << "WARNING: Cannot find OnlMon histogram(s)." << endl;
     return 2;
   }
+  cout << "AB" << endl;
 
   int run_id, spill_id, event_id, n_evt;
   GetBasicInfo(&run_id, &spill_id, &event_id, &n_evt);
   for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+    cout << "AC " << ii << endl;
+    //m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+    if (! m_list_can[ii]) {
+      m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+      m_list_can[ii]->InitDraw();
+    }
     m_list_can[ii]->SetBasicInfo(run_id, spill_id, event_id, n_evt);
     m_list_can[ii]->PreDraw();
   }
@@ -350,8 +367,9 @@ void OnlMonClient::ClearCanvasList()
 {
   for (int ii = 0; ii < m_n_can; ii++) {
     if (m_list_can[ii]) {
-      delete m_list_can[ii];
-      m_list_can[ii] = 0;
+      m_list_can[ii]->Clear();
+      //delete m_list_can[ii];
+      //m_list_can[ii] = 0;
     }
   }
 }

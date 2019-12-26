@@ -7,6 +7,7 @@
 #include <TSystem.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TRootCanvas.h>
 #include <TPaveText.h>
 #include <UtilAna/UtilOnline.h>
 #include "OnlMonServer.h"
@@ -24,6 +25,11 @@ OnlMonCanvas::OnlMonCanvas(const std::string name, const std::string title, cons
   m_run(0), m_spill(0), m_event(0), m_n_evt(0)
 {
   //m_can.SetWindowPosition(5+600*num, 5);
+  //TRootCanvas *rc = dynamic_cast<TRootCanvas*>(m_can.GetCanvasImp());
+  ////rc->Connect("CloseWindow()", 0, 0, "OnlMonCanvas::close(void)");
+  //rc->DontCallClose();
+  //rc->UnmapWindow();
+  //m_can.Update();
 }
 
 OnlMonCanvas::~OnlMonCanvas()
@@ -69,8 +75,13 @@ TPad* OnlMonCanvas::GetMainPad()
   return &m_pad_main; 
 }
 
-void OnlMonCanvas::PreDraw(const bool at_end)
+void OnlMonCanvas::InitDraw()
 {
+  TRootCanvas *rc = dynamic_cast<TRootCanvas*>(m_can.GetCanvasImp());
+  //rc->Connect("CloseWindow()", 0, 0, "OnlMonCanvas::close(void)");
+  rc->DontCallClose();
+  rc->UnmapWindow();
+
   ostringstream oss;
   oss << m_name << " Canvas #" << m_num;
   m_can.SetTitle(oss.str().c_str());
@@ -78,6 +89,22 @@ void OnlMonCanvas::PreDraw(const bool at_end)
   m_can.cd();  m_pad_title.Draw();
   m_can.cd();  m_pad_main .Draw();
   m_can.cd();  m_pad_msg  .Draw();
+
+  //Clear();
+  //m_can.Update();
+
+  m_can.Update();
+}
+
+void OnlMonCanvas::PreDraw(const bool at_end)
+{
+  ostringstream oss;
+  //oss << m_name << " Canvas #" << m_num;
+  //m_can.SetTitle(oss.str().c_str());
+  //
+  //m_can.cd();  m_pad_title.Draw();
+  //m_can.cd();  m_pad_main .Draw();
+  //m_can.cd();  m_pad_msg  .Draw();
 
   m_pad_title.cd();
   TPaveText* pate = new TPaveText(.02, .52, .98, .98);
@@ -126,6 +153,9 @@ void OnlMonCanvas::PostDraw(const bool at_end)
   m_pad_msg .cd();
   m_pate_msg.Draw();
 
+  dynamic_cast<TRootCanvas*>(m_can.GetCanvasImp())->MapWindow();
+  m_can.Update();
+
   if (at_end) {
     ostringstream oss;
     oss << UtilOnline::GetOnlMonDir() << "/" << setfill('0') << setw(6) << m_run;
@@ -147,4 +177,15 @@ void OnlMonCanvas::PostDraw(const bool at_end)
     ofs << m_mon_status << endl;
     ofs.close();
   }
+}
+
+void OnlMonCanvas::Clear()
+{
+  m_pad_title.Clear();
+  m_pad_main .Clear();
+  m_pad_msg  .Clear();
+  m_pate_msg .Clear();
+
+  dynamic_cast<TRootCanvas*>(m_can.GetCanvasImp())->UnmapWindow();
+  m_can.Update();
 }

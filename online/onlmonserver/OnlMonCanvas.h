@@ -39,8 +39,10 @@ class OnlMonCanvas {
   void SetWorseStatus(const MonStatus_t stat);
   TPad* GetMainPad();
 
+  void InitDraw();
   void  PreDraw(const bool at_end=false);
   void PostDraw(const bool at_end=false);
+  void Clear();
 };
 
 #endif /* _ONL_MON_CANVAS__H_ */

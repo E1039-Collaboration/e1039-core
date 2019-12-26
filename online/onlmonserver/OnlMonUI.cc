@@ -6,18 +6,22 @@
 #include <TGButton.h>
 #include "OnlMonClient.h"
 #include "OnlMonUI.h"
+
 using namespace std;
 
 OnlMonUI::OnlMonUI(OnlMonClientList_t* list) :
   m_auto_cycle(false), m_interval(10), m_thread_id(0), m_list_omc(list)
 {
-  ;
+  m_list_omc = new OnlMonClientList_t;
 }
 
 void OnlMonUI::Run()
 {
   BuildInterface();
-  //StartAutoCycle();
+  for (unsigned int ii = 0; ii < m_list_omc->size(); ii++) {
+    m_list_omc->at(ii)->InitCanvas();
+  }
+  StartAutoCycle();
 }
 
 void OnlMonUI::BuildInterface()
@@ -50,11 +54,11 @@ void OnlMonUI::BuildInterface()
   check->Connect("Toggled(Bool_t)", "OnlMonClient", m_list_omc->at(0), "SetClearUsFlag(Bool_t)");
   frame->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
 
-  //TGCheckButton* cycle = new TGCheckButton(frame, new TGHotString("Auto-cycle all subsystems"), 99);
-  //cycle->SetToolTipText("When checked, all subsystems are automatically drawn.");
-  //cycle->SetState(GetAutoCycleFlag() ? kButtonDown : kButtonUp);
-  //cycle->Connect("Toggled(Bool_t)", "OnlMonUI", this, "SetAutoCycleFlag(Bool_t)");
-  //frame->AddFrame(cycle, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
+  TGCheckButton* cycle = new TGCheckButton(frame, new TGHotString("Auto-cycle all subsystems"), 99);
+  cycle->SetToolTipText("When checked, all subsystems are automatically drawn.");
+  cycle->SetState(GetAutoCycleFlag() ? kButtonDown : kButtonUp);
+  cycle->Connect("Toggled(Bool_t)", "OnlMonUI", this, "SetAutoCycleFlag(Bool_t)");
+  frame->AddFrame(cycle, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
  
   TGTextButton* fExit = new TGTextButton(frame, "Exit","gApplication->Terminate(0)");
   frame->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,5,5));
@@ -88,9 +92,7 @@ void OnlMonUI::RunAutoCycle()
   unsigned int idx = 0;
   while (true) {
     if (m_auto_cycle) {
-      //button[idx]->Clicked();
       m_list_omc->at(idx)->StartMonitor();
-      //++idx;
       if (++idx >= m_list_omc->size()) idx = 0;
     }
     sleep(m_interval);
