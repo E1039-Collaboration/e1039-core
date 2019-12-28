@@ -6,6 +6,8 @@
 #include <TSocket.h>
 #include <TROOT.h>
 #include <TH1.h>
+#include "OnlMonComm.h"
+#include "OnlMonClient.h"
 #include "OnlMonServer.h"
 
 using namespace std;
@@ -57,6 +59,11 @@ OnlMonServer::~OnlMonServer()
 {
   return;
 }
+
+//void OnlMonServer::AddClient(OnlMonClient* cli)
+//{
+//  m_map_cli[cli->Name()] = cli;
+//}
 
 void OnlMonServer::StartServer()
 {
@@ -183,7 +190,7 @@ void OnlMonServer::HandleConnection(TSocket* sock)
     printf("recvbuffer size: %d\n", val);
   */
   TMessage *mess = NULL;
-  TMessage outgoing(kMESS_OBJECT);
+  //TMessage outgoing(kMESS_OBJECT);
   while (1) {
     if (Verbosity() > 2) cout << "OnlMonServer::HandleConnection(): while loop." << endl;
     sock->Recv(mess);
@@ -210,28 +217,26 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else if (msg_str == "Ping") {
         if (Verbosity() > 2) cout << "  Ping." << endl;
         sock->Send("Pong");
+      } else if (msg_str == "Spill") {
+        if (Verbosity() > 2) cout << "  Spill." << endl;
+        int id_min, id_max;
+        OnlMonComm::instance()->GetFullSpillRange(id_min, id_max);
+        ostringstream oss;
+        oss << id_min << " " << id_max;
+        sock->Send(oss.str().c_str());
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
-        string name_subsys = msg_str.substr(7);
-        Fun4AllHistoManager* hm = getHistoManager(name_subsys);
-        if (! hm) {
-          if (Verbosity() > 2) cout << "  HM not ready." << endl;
+        istringstream iss(msg_str.substr(7));
+        string name_subsys;
+        int sp_min, sp_max;
+        iss >> name_subsys >> sp_min >> sp_max;
+        cout << "  Subsystem " << name_subsys << endl;
+        SubsysReco* sub = getSubsysReco(name_subsys);
+        if (! sub) {
+          cout << " ... Not available." << endl;
           sock->Send("NotReady");
         } else {
-          if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
-          pthread_mutex_lock(&mutex);
-          for (unsigned int i = 0; i < hm->nHistos(); i++) {
-            TH1 *histo = (TH1 *) hm->getHisto(i);
-            if (! histo) continue;
-            outgoing.Reset();
-            outgoing.WriteObject(histo);
-            sock->Send(outgoing);
-            outgoing.Reset();
-            sock->Recv(mess); // Just check a response.
-            delete mess;
-            mess = 0;
-          }
-          pthread_mutex_unlock(&mutex);
-          sock->Send("Finished");
+          OnlMonClient* cli = dynamic_cast<OnlMonClient*>(sub);
+          cli->SendHist(sock, sp_min, sp_max);
         }
       } else {
         //if (Verbosity() > 2) 

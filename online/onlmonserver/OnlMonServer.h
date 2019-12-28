@@ -1,12 +1,20 @@
 #ifndef __H_OnlMonServer__H__
 #define __H_OnlMonServer__H__
+#include <map>
 #include <string>
 #include <fun4all/Fun4AllServer.h>
 #include <pthread.h>
 class TSocket;
+class OnlMonClient;
 
 class OnlMonServer : public Fun4AllServer
 {
+  //typedef std::vector<int> SpillList_t;
+  //SpillList_t m_list_sp;
+
+  //typedef std::map<std::string, OnlMonClient*> ClientMap_t;
+  //ClientMap_t m_map_cli;
+
   //static std::string m_out_dir;
   static std::string m_mon_host;
   static int         m_mon_port; //< The port being used
@@ -18,6 +26,8 @@ class OnlMonServer : public Fun4AllServer
  public:
   static OnlMonServer *instance();
   virtual ~OnlMonServer();
+
+  //void AddClient(OnlMonClient* cli);
 
   //static void SetOutDir  (const std::string dir)  { m_out_dir    = dir ; }
   static void SetHost    (const std::string host) { m_mon_host   = host; }

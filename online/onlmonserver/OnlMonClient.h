@@ -3,6 +3,7 @@
 #include <fun4all/SubsysReco.h>
 #include "OnlMonCanvas.h"
 class Fun4AllHistoManager;
+class TSocket;
 class TH1;
 class TH2;
 class TH3;
@@ -13,12 +14,20 @@ class OnlMonClient: public SubsysReco {
   int m_n_can;
   OnlMonCanvas* m_list_can[9];
 
-  typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_N_EVT = 4 } BasicInfoBin_t;
-  TH1* m_h1_basic_info;
-  typedef std::vector<TH1*> HistList_t;
-  HistList_t m_list_h1;
+  //typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_N_EVT = 4 } BasicInfoBin_t;
+  typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_SPILL_MIN = 4, BIN_SPILL_MAX = 5 } BasicIdBin_t;
+  typedef enum { BIN_N_EVT = 1, BIN_N_SP = 2 } BasicInfoBin_t;
+  //TH1* m_h1_basic_info;
+  TH1* m_h1_basic_id;
+  TH1* m_h1_basic_cnt;
+
   typedef std::vector<TObject*> ObjList_t;
-  ObjList_t m_list_obj; ///< Need this or m_list_h1 at end...
+  ObjList_t m_list_obj;
+
+  typedef std::map<int, TH1*> SpillHistMap_t; // [spill] -> TH1*
+  typedef std::map<std::string, SpillHistMap_t> Name2SpillHistMap_t; // [hist name] 
+  Name2SpillHistMap_t m_map_hist_sp;
+  int m_spill_id_pre;
 
   /// List of OnlMonClient objects created.  Used to clear all canvases opened by all objects.
   typedef std::vector<OnlMonClient*> SelfList_t;
@@ -38,9 +47,10 @@ class OnlMonClient: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
-  void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0, int* n_evt=0);
+  //void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0, int* n_evt=0);
+  void GetBasicID(int* run_id=0, int* spill_id=0, int* event_id=0, int* spill_id_min=0, int* spill_id_max=0);
+  void GetBasicCount(int* n_evt=0, int* n_sp=0);
   int StartMonitor();
-  TH1* FindMonHist(const std::string name, const bool non_null=true);
   TObject* FindMonObj(const std::string name, const bool non_null=true);
 
   virtual int InitOnlMon(PHCompositeNode *topNode);
@@ -52,6 +62,8 @@ class OnlMonClient: public SubsysReco {
 
   static void SetClearUsFlag(const bool val) { m_bl_clear_us = val; }
   static bool GetClearUsFlag() { return m_bl_clear_us; }
+
+  int SendHist(TSocket* sock, int sp_min, int sp_max);
 
  protected:  
   void RegisterHist(TH1* h1);
