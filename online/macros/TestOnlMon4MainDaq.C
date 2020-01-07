@@ -26,7 +26,6 @@ int OnlMon4MainDaq()
   gSystem->Load("libonlmonserver.so");
 
   ConfigServer();
-  //OnlMonServer::SetHost("192.168.24.211");
 
   OnlMonClientList_t list_omc;
   list_omc.push_back(new OnlMonMainDaq());
@@ -49,9 +48,6 @@ int Fun4MainDaq(const int run=1330, const int nevent=0)
   ConfigServer();
   UtilOnline::UseOutputLocationForDevel();
 
-  //DecoStatusDb deco_stat;
-  //deco_stat.RunStarted(run);
-
   string fn_in = "/data2/e1039/dst/" + UtilOnline::RunNum2DstFile(run);
 
   OnlMonServer* se = OnlMonServer::instance();
@@ -67,7 +63,6 @@ int Fun4MainDaq(const int run=1330, const int nevent=0)
 
   se->run(nevent);
   se->End();
-  //deco_stat.RunFinished(run, 0); // always "result = 0" for now.
   
   delete se;
   cout << "Fun4MainDaq Done!" << endl;

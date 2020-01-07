@@ -124,12 +124,12 @@ int OnlMonTrigSig::EndOnlMon(PHCompositeNode* topNode)
 
 int OnlMonTrigSig::FindAllMonHist()
 {
-  h2_bi_fpga = (TH2*)FindMonObj("h2_bi_fpga");
-  h2_ai_fpga = (TH2*)FindMonObj("h2_ai_fpga");
-  h2_bi_nim  = (TH2*)FindMonObj("h2_bi_nim" );
-  h2_ai_nim  = (TH2*)FindMonObj("h2_ai_nim" );
-  h2_rf      = (TH2*)FindMonObj("h2_rf"     );
-  h2_stop    = (TH2*)FindMonObj("h2_stop"   );
+  h2_bi_fpga = (TH2*)FindMonHist("h2_bi_fpga");
+  h2_ai_fpga = (TH2*)FindMonHist("h2_ai_fpga");
+  h2_bi_nim  = (TH2*)FindMonHist("h2_bi_nim" );
+  h2_ai_nim  = (TH2*)FindMonHist("h2_ai_nim" );
+  h2_rf      = (TH2*)FindMonHist("h2_rf"     );
+  h2_stop    = (TH2*)FindMonHist("h2_stop"   );
   return (h2_bi_fpga && h2_ai_fpga && h2_bi_nim && h2_ai_nim && h2_rf && h2_stop  ?  0  :  1);
 }
 

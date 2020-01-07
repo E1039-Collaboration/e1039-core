@@ -24,6 +24,8 @@ OnlMonComm::OnlMonComm()
   , m_sp_num(1)
   , m_sp_lo(0)
   , m_sp_hi(0)
+  , m_sp_min(0)
+  , m_sp_max(0)
 {
   ;
 }
@@ -60,7 +62,7 @@ void OnlMonComm::AddSpill(const int id)
   if (find(m_list_sp.begin(), m_list_sp.end(), id) == m_list_sp.end()) m_list_sp.push_back(id);
 }
 
-void OnlMonComm::GetFullSpillRange(int& id_min, int& id_max)
+void OnlMonComm::FindFullSpillRange(int& id_min, int& id_max)
 {
   if (m_list_sp.size() == 0) {
     id_min = id_max = 0;
@@ -76,7 +78,7 @@ void OnlMonComm::GetFullSpillRange(int& id_min, int& id_max)
 //  m_map_cli[cli->Name()] = cli;
 //}
 
-int OnlMonComm::ReceiveSpillRange(int& sp_min, int& sp_max)
+int OnlMonComm::ReceiveFullSpillRange()
 {
   TSocket* sock = ConnectServer();
   if (! sock) return 1;
@@ -89,7 +91,7 @@ int OnlMonComm::ReceiveSpillRange(int& sp_min, int& sp_max)
     char str[200];
     mess->ReadString(str, 200);
     istringstream iss(str);
-    if (! (iss >> sp_min >> sp_max)) sp_min = sp_max = 0;
+    if (! (iss >> m_sp_min >> m_sp_max)) m_sp_min = m_sp_max = 0;
     delete mess;
   } else {
     ret = 1;
@@ -98,6 +100,12 @@ int OnlMonComm::ReceiveSpillRange(int& sp_min, int& sp_max)
   sock->Close();
   delete sock;
   return ret;
+}
+
+void OnlMonComm::GetFullSpillRange(int& id_min, int& id_max)
+{
+  id_min = m_sp_min;
+  id_max = m_sp_max;
 }
 
 TSocket* OnlMonComm::ConnectServer()

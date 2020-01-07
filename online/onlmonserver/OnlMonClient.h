@@ -9,20 +9,26 @@ class TH2;
 class TH3;
 
 class OnlMonClient: public SubsysReco {
+ protected:
+  typedef enum { MODE_ADD, MODE_UPDATE } HistMode_t;
+
+ private:
   std::string m_title;
   Fun4AllHistoManager* m_hm;
   int m_n_can;
   OnlMonCanvas* m_list_can[9];
 
-  //typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_N_EVT = 4 } BasicInfoBin_t;
+  typedef std::map<std::string, HistMode_t> HistModeMap_t;
+  HistModeMap_t m_hist_mode;
+
   typedef enum { BIN_RUN = 1, BIN_SPILL = 2, BIN_EVENT = 3, BIN_SPILL_MIN = 4, BIN_SPILL_MAX = 5 } BasicIdBin_t;
   typedef enum { BIN_N_EVT = 1, BIN_N_SP = 2 } BasicInfoBin_t;
-  //TH1* m_h1_basic_info;
   TH1* m_h1_basic_id;
   TH1* m_h1_basic_cnt;
 
+  typedef std::vector<TH1*> HistList_t;
   typedef std::vector<TObject*> ObjList_t;
-  ObjList_t m_list_obj;
+  HistList_t m_list_h1;
 
   typedef std::map<int, TH1*> SpillHistMap_t; // [spill] -> TH1*
   typedef std::map<std::string, SpillHistMap_t> Name2SpillHistMap_t; // [hist name] 
@@ -47,11 +53,10 @@ class OnlMonClient: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
-  //void GetBasicInfo(int* run_id=0, int* spill_id=0, int* event_id=0, int* n_evt=0);
   void GetBasicID(int* run_id=0, int* spill_id=0, int* event_id=0, int* spill_id_min=0, int* spill_id_max=0);
   void GetBasicCount(int* n_evt=0, int* n_sp=0);
   int StartMonitor();
-  TObject* FindMonObj(const std::string name, const bool non_null=true);
+  TH1* FindMonHist(const std::string name, const bool non_null=true);
 
   virtual int InitOnlMon(PHCompositeNode *topNode);
   virtual int InitRunOnlMon(PHCompositeNode *topNode);
@@ -66,15 +71,18 @@ class OnlMonClient: public SubsysReco {
   int SendHist(TSocket* sock, int sp_min, int sp_max);
 
  protected:  
-  void RegisterHist(TH1* h1);
-
-  int ReceiveHist();
-  void ClearHistList();
+  void RegisterHist(TH1* h1, const HistMode_t mode=MODE_ADD);
 
   void NumCanvases(const int num) { m_n_can = num; }
   int  NumCanvases() { return m_n_can; }
   OnlMonCanvas* GetCanvas(const int num=0);
+
+ private:
+  void MakeMergedHist(HistList_t& list_h1, const int sp_min=0, const int sp_max=0);
+  int  ReceiveHist();
+  void ClearHistList();
   void ClearCanvasList();
+  int  DrawCanvas(const bool at_end=false);
 };
 
 #endif /* _ONL_MON_CLIENT__H_ */

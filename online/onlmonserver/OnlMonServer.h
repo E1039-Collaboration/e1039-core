@@ -9,12 +9,6 @@ class OnlMonClient;
 
 class OnlMonServer : public Fun4AllServer
 {
-  //typedef std::vector<int> SpillList_t;
-  //SpillList_t m_list_sp;
-
-  //typedef std::map<std::string, OnlMonClient*> ClientMap_t;
-  //ClientMap_t m_map_cli;
-
   //static std::string m_out_dir;
   static std::string m_mon_host;
   static int         m_mon_port; //< The port being used
@@ -22,12 +16,13 @@ class OnlMonServer : public Fun4AllServer
   static int         m_mon_n_port; //< The number of available ports
 
   bool m_go_end;
+  bool m_svr_ready;
 
  public:
   static OnlMonServer *instance();
   virtual ~OnlMonServer();
 
-  //void AddClient(OnlMonClient* cli);
+  int End();
 
   //static void SetOutDir  (const std::string dir)  { m_out_dir    = dir ; }
   static void SetHost    (const std::string host) { m_mon_host   = host; }
@@ -46,6 +41,8 @@ class OnlMonServer : public Fun4AllServer
   void HandleConnection(TSocket* sock);
   void SetGoEnd(const bool val) { m_go_end = val; }
   bool GetGoEnd()        { return m_go_end; }
+  void SetServerReady(const bool val) { m_svr_ready = val; }
+  bool GetServerReady()        { return m_svr_ready; }
 
 #ifndef __CINT__
   pthread_mutex_t* GetMutex() { return &mutex; }

@@ -20,9 +20,6 @@ class OnlMonUI {
   pthread_t m_tid2;
   OnlMonClientList_t* m_list_omc;
 
-  int m_sp_min; //< Min of full (not selected) range
-  int m_sp_max; //< Max of full scale
-
   TGMainFrame* m_fr_main;
   TGCompositeFrame* m_fr_sp_range;
 

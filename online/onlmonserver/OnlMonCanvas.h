@@ -35,7 +35,6 @@ class OnlMonCanvas {
   OnlMonCanvas(const std::string name, const std::string title, const int num);
   virtual ~OnlMonCanvas();
 
-  //void SetBasicInfo(const int run_id, const int spill_id=0, const int event_id=0, const int n_evt=0);
   void SetBasicID(const int run_id, const int spill_id=0, const int event_id=0, const int spill_id_min=0, const int spill_id_max=0);
   void SetBasicCount(const int n_evt=0, const int n_sp=0);
   void AddMessage(const char* msg);

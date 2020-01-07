@@ -14,13 +14,11 @@
 using namespace std;
 
 OnlMonUI::OnlMonUI(OnlMonClientList_t* list)
- : m_auto_cycle(false)
- , m_interval(10)
- , m_tid1(0)
- , m_tid2(0)
- , m_list_omc(list)
- , m_sp_min(0)
- , m_sp_max(0)
+  : m_auto_cycle(false)
+  , m_interval(10)
+  , m_tid1(0)
+  , m_tid2(0)
+  , m_list_omc(list)
 {
   ;
 }
@@ -187,14 +185,17 @@ void* OnlMonUI::ExecSpillRangeCheck(void* arg)
 
 void OnlMonUI::UpdateFullSpillRange()
 {
-  OnlMonComm::instance()->ReceiveSpillRange(m_sp_min, m_sp_max);
+  OnlMonComm* comm = OnlMonComm::instance();
+  int sp_min, sp_max;
+  comm->ReceiveFullSpillRange();
+  comm->GetFullSpillRange(sp_min, sp_max);
 
-  m_num_sp0->SetLimits(TGNumberFormat::kNELLimitMinMax, m_sp_min, m_sp_max);
-  m_num_sp1->SetLimits(TGNumberFormat::kNELLimitMinMax, m_sp_min, m_sp_max);
-  m_slider->SetRange(m_sp_min, m_sp_max);
+  m_num_sp0->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
+  m_num_sp1->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
+  m_slider->SetRange(sp_min, sp_max);
 
   ostringstream oss;
-  oss << m_sp_min << "-" << m_sp_max;
+  oss << sp_min << "-" << sp_max;
   m_lbl_sp->SetText(oss.str().c_str());
 }
 
@@ -222,7 +223,11 @@ void OnlMonUI::HandleSpRadLast()
 
 void OnlMonUI::HandleSpRadRange()
 {
-  OnlMonComm::instance()->SetSpillRange((m_sp_min+m_sp_max)/2, m_sp_max);
+  UpdateFullSpillRange();
+
+  int sp_min, sp_max;
+  OnlMonComm::instance()->GetFullSpillRange(sp_min, sp_max);
+  OnlMonComm::instance()->SetSpillRange((sp_min+sp_max)/2, sp_max);
   SyncSpillRange();
 
   OnlMonComm::instance()->SetSpillMode(OnlMonComm::SP_RANGE);

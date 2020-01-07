@@ -62,7 +62,7 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   RegisterHist(h1_n_taiwan);
   RegisterHist(h1_evt_qual);
   RegisterHist(h1_flag_v1495);
-  RegisterHist(h1_cnt);
+  RegisterHist(h1_cnt, OnlMonClient::MODE_UPDATE);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -124,11 +124,11 @@ int OnlMonMainDaq::EndOnlMon(PHCompositeNode* topNode)
 
 int OnlMonMainDaq::FindAllMonHist()
 {
-  h1_trig       = (TH1*)FindMonObj("h1_trig");
-  h1_n_taiwan   = (TH1*)FindMonObj("h1_n_taiwan");
-  h1_evt_qual   = (TH1*)FindMonObj("h1_evt_qual");
-  h1_flag_v1495 = (TH1*)FindMonObj("h1_flag_v1495");
-  h1_cnt        = (TH1*)FindMonObj("h1_cnt");
+  h1_trig       = FindMonHist("h1_trig");
+  h1_n_taiwan   = FindMonHist("h1_n_taiwan");
+  h1_evt_qual   = FindMonHist("h1_evt_qual");
+  h1_flag_v1495 = FindMonHist("h1_flag_v1495");
+  h1_cnt        = FindMonHist("h1_cnt");
   return (h1_trig && h1_evt_qual && h1_flag_v1495 && h1_cnt  ?  0  :  1);
 }
 

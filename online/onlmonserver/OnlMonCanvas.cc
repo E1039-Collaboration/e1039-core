@@ -32,14 +32,6 @@ OnlMonCanvas::~OnlMonCanvas()
   ;
 }
 
-//void OnlMonCanvas::SetBasicInfo(const int run_id, const int spill_id, const int event_id, const int n_evt)
-//{
-//  m_run   = run_id;
-//  m_spill = spill_id;
-//  m_event = event_id;
-//  m_n_evt = n_evt;
-//}
-
 void OnlMonCanvas::SetBasicID(const int run_id, const int spill_id, const int event_id, const int spill_id_min, const int spill_id_max)
 {
   m_run       = run_id;
@@ -107,7 +99,7 @@ void OnlMonCanvas::PreDraw(const bool at_end)
 
   oss.str("");
   oss << "Run " << m_run << ", Spill " << m_spill_min << "-" << m_spill_max
-      << "(N=" << m_n_sp << "), Event " << m_event
+      << " (N=" << m_n_sp << "), Event " << m_event
       << " (N=" << m_n_evt << ")";
   //if (! at_end) oss << ", " << m_spill;
   pate2->AddText(oss.str().c_str());

@@ -119,7 +119,7 @@ int OnlMonTrigNim::EndOnlMon(PHCompositeNode* topNode)
 
 int OnlMonTrigNim::FindAllMonHist()
 {
-  h2_count = (TH2*)FindMonObj("h2_count");
+  h2_count = (TH2*)FindMonHist("h2_count");
   return (h2_count  ?  0  :  1);
 }
 

@@ -1,10 +1,7 @@
 #ifndef _ONL_MON_COMM__H__
 #define _ONL_MON_COMM__H__
-#include <map>
-#include <string>
-//#include <pthread.h>
+#include <vector>
 class TSocket;
-class OnlMonClient;
 
 class OnlMonComm {
  public:
@@ -15,8 +12,10 @@ class OnlMonComm {
 
   SpillMode_t m_sp_mode;
   int m_sp_num; 
-  int m_sp_lo;
-  int m_sp_hi;
+  int m_sp_lo; //< Low  of selected range
+  int m_sp_hi; //< High of selected range
+  int m_sp_min; //< Min of full (not selected) range
+  int m_sp_max; //< Max of full scale
 
   typedef std::vector<int> SpillList_t;
   SpillList_t m_list_sp;
@@ -36,10 +35,12 @@ class OnlMonComm {
   void SetSpillRange(const int sp_lo, const int sp_hi);
   void GetSpillRange(int& sp_lo, int& sp_hi);
 
-  void AddSpill(const int id);
-  void GetFullSpillRange(int& id_min, int& id_max);
+  void AddSpill(const int id); //< Used in the server process
+  void FindFullSpillRange(int& id_min, int& id_max); //< Used in the server process
 
-  int ReceiveSpillRange(int& sp_min, int& sp_max);
+  int ReceiveFullSpillRange(); //< Used in the viewer process
+  void GetFullSpillRange(int& id_min, int& id_max); //< Used in the viewer process
+
   TSocket* ConnectServer();
 
  protected:

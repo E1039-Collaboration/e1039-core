@@ -42,7 +42,7 @@ OnlMonServer *OnlMonServer::instance()
 }
 
 OnlMonServer::OnlMonServer(const std::string &name)
-  : Fun4AllServer(name), m_go_end(false)
+  : Fun4AllServer(name), m_go_end(false), m_svr_ready(false)
 {
   pthread_mutexattr_t mutex_attr;
   pthread_mutexattr_init(&mutex_attr);
@@ -59,11 +59,6 @@ OnlMonServer::~OnlMonServer()
 {
   return;
 }
-
-//void OnlMonServer::AddClient(OnlMonClient* cli)
-//{
-//  m_map_cli[cli->Name()] = cli;
-//}
 
 void OnlMonServer::StartServer()
 {
@@ -93,6 +88,30 @@ void OnlMonServer::StartServer()
   //if (Verbosity() > 1) cout << "OnlMonServer::StartServer(): finish." << endl;
   cout << "  Started." << endl;
   return;
+}
+
+int OnlMonServer::End()
+{
+  int ret = Fun4AllServer::End();
+  for (int ii = 0; ii < 30; ii++) { // Wait for one minute at max
+    if (m_svr_ready) break;
+    sleep(2);
+  }
+  return ret;
+
+//#if defined(SERVER) || defined(ROOTTHREAD)
+//  if (! serverthreadid) return;
+//  SetGoEnd(true);
+//
+//#ifdef SERVER
+//  pthread_join(serverthreadid, 0);
+//  cout << "  Joined!" << endl;
+//#endif
+//#ifdef ROOTTHREAD
+//  ServerThread->Join(server); // not supported
+//#endif
+//
+//#endif
 }
 
 /// Close an existing server process if such exists.
@@ -143,10 +162,12 @@ void* OnlMonServer::FuncServer(void* arg)
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
+
   if (se->Verbosity() >= 0) cout << "OnlMonServer::RemoveSockets():" << endl;
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
   sleep(5);
+  se->SetServerReady(true);
 
  again:
   if (se->Verbosity() >= 0) cout << "OnlMonServer::WaitForConnection():" << endl;
@@ -220,9 +241,8 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else if (msg_str == "Spill") {
         if (Verbosity() > 2) cout << "  Spill." << endl;
         int id_min, id_max;
-        OnlMonComm::instance()->GetFullSpillRange(id_min, id_max);
+        OnlMonComm::instance()->FindFullSpillRange(id_min, id_max);
         ostringstream oss;
-        oss << id_min << " " << id_max;
         sock->Send(oss.str().c_str());
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
         istringstream iss(msg_str.substr(7));

@@ -158,15 +158,15 @@ int OnlMonH4::FindAllMonHist()
   for (int pl = 0; pl < N_PL; pl++) {
     oss.str("");
     oss << "h1_ele_" << pl;
-    h1_ele[pl] = (TH1*)FindMonObj(oss.str().c_str());
+    h1_ele[pl] = FindMonHist(oss.str().c_str());
     if (! h1_ele[pl]) return 1;
     oss.str("");
     oss << "h1_time_" << pl;
-    h1_time[pl] = (TH1*)FindMonObj(oss.str().c_str());
+    h1_time[pl] = FindMonHist(oss.str().c_str());
     if (! h1_time[pl]) return 1;
   }
-  h2_ele  = (TH2*)FindMonObj("h2_ele" );
-  h2_time = (TH2*)FindMonObj("h2_time");
+  h2_ele  = FindMonHist("h2_ele" );
+  h2_time = FindMonHist("h2_time");
   if (! h2_ele || ! h2_time) return 1;
   return 0;
 }
@@ -191,8 +191,8 @@ int OnlMonH4::DrawMonitor()
 
   UtilHist::AutoSetRange (h1_time[0]);
   UtilHist::AutoSetRange (h1_time[1]);
-  UtilHist::AutoSetRangeX(h2_time);
-  UtilHist::AutoSetRangeY(h2_time);
+  UtilHist::AutoSetRangeX((TH2*)h2_time);
+  UtilHist::AutoSetRangeY((TH2*)h2_time);
   OnlMonCanvas* can1 = GetCanvas(1);
   can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();

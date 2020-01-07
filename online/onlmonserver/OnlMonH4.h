@@ -15,8 +15,8 @@ class OnlMonH4: public OnlMonClient {
 
   TH1* h1_ele [N_PL];
   TH1* h1_time[N_PL];
-  TH2* h2_ele ;
-  TH2* h2_time;
+  TH1* h2_ele ;
+  TH1* h2_time;
 
  public:
   OnlMonH4(const HodoType_t type);

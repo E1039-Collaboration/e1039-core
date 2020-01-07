@@ -28,7 +28,6 @@ OnlMonClient::OnlMonClient()
   , m_title("Client Title")
   , m_hm(0)
   , m_n_can(1)
-//, m_h1_basic_info(0)
   , m_h1_basic_id(0)
   , m_h1_basic_cnt(0)
   , m_spill_id_pre(-1)
@@ -71,16 +70,13 @@ int OnlMonClient::InitRun(PHCompositeNode* topNode)
 
   m_hm = new Fun4AllHistoManager(Name());
   OnlMonServer::instance()->registerHistoManager(m_hm);
-  //m_h1_basic_info = new TH1D("h1_basic_info", "", 10, 0.5, 10.5);
   m_h1_basic_id  = new TH1D("h1_basic_id" , "", 10, 0.5, 10.5);
   m_h1_basic_cnt = new TH1D("h1_basic_cnt", "", 10, 0.5, 10.5);
-  //m_hm->registerHisto(m_h1_basic_info);
   m_hm->registerHisto(m_h1_basic_id);
   m_hm->registerHisto(m_h1_basic_cnt);
 
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-  //m_h1_basic_info->SetBinContent(BIN_RUN, run_header->get_run_id());
   m_h1_basic_id->SetBinContent(BIN_RUN, run_header->get_run_id());
 
   return InitRunOnlMon(topNode);
@@ -98,7 +94,7 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   int sp_id = event->get_spill_id();
   if (m_spill_id_pre < 0) { // First call
     m_spill_id_pre = sp_id;
-  } else if (sp_id != m_spill_id_pre) {
+  } else if (sp_id != m_spill_id_pre) { // New spill
     m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
     for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
       TH1* h1 = (TH1*)m_hm->getHisto(ih);
@@ -110,14 +106,12 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
     }
     OnlMonComm::instance()->AddSpill(m_spill_id_pre);
     m_spill_id_pre = sp_id;
+
+    m_h1_basic_id ->SetBinContent(BIN_RUN  , event->get_run_id());
+    m_h1_basic_id ->SetBinContent(BIN_SPILL, sp_id);
+    m_h1_basic_id ->SetBinContent(BIN_EVENT, event->get_event_id());
   }
 
-  //m_h1_basic_info->SetBinContent(BIN_SPILL, event->get_spill_id());
-  //m_h1_basic_info->SetBinContent(BIN_EVENT, event->get_event_id());
-  //m_h1_basic_info->AddBinContent(BIN_N_EVT, 1);
-  m_h1_basic_id ->SetBinContent(BIN_RUN  , event->get_run_id());
-  m_h1_basic_id ->SetBinContent(BIN_SPILL, sp_id);
-  m_h1_basic_id ->SetBinContent(BIN_EVENT, event->get_event_id());
   m_h1_basic_cnt->AddBinContent(BIN_N_EVT, 1);
 
   int ret = ProcessEventOnlMon(topNode);
@@ -129,26 +123,19 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 int OnlMonClient::End(PHCompositeNode* topNode)
 {
   if (! m_hm) return Fun4AllReturnCodes::EVENT_OK;
-  int run_id, spill_id, event_id;
-  //GetBasicInfo(&run_id);
-  GetBasicID(&run_id, &spill_id, &event_id);
 
   ClearCanvasList();
-  for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
-    //m_list_can[ii]->SetBasicInfo(run_id);
-    m_list_can[ii]->SetBasicID(run_id, spill_id, event_id);
-    m_list_can[ii]->PreDraw(true);
-  }
 
-  int ret = DrawMonitor();
+  ClearHistList();
+  MakeMergedHist(m_list_h1);
+
+  int ret = DrawCanvas(true);
   if (ret != 0) {
-    cerr << "WARNING: OnlMonClient::End().\n" << endl;
+    cerr << "WARNING: OnlMonClient::End(): ret = " << ret << endl;
   }
 
-  for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii]->PostDraw(true);
-  }
+  int run_id;
+  GetBasicID(&run_id);
 
   ostringstream oss;
   oss << UtilOnline::GetOnlMonDir() << "/" << setfill('0') << setw(6) << run_id;
@@ -160,14 +147,6 @@ int OnlMonClient::End(PHCompositeNode* topNode)
 
   return EndOnlMon(topNode);
 }
-
-//void OnlMonClient::GetBasicInfo(int* run_id, int* spill_id, int* event_id, int* n_evt)
-//{
-//  if (run_id  ) *run_id   = (int)m_h1_basic_info->GetBinContent(BIN_RUN);
-//  if (spill_id) *spill_id = (int)m_h1_basic_info->GetBinContent(BIN_SPILL);
-//  if (event_id) *event_id = (int)m_h1_basic_info->GetBinContent(BIN_EVENT);
-//  if (n_evt   ) *n_evt    = (int)m_h1_basic_info->GetBinContent(BIN_N_EVT);
-//}
 
 void OnlMonClient::GetBasicID(int* run_id, int* spill_id, int* event_id, int* spill_id_min, int* spill_id_max)
 {
@@ -184,13 +163,13 @@ void OnlMonClient::GetBasicCount(int* n_evt, int* n_sp)
   if (n_sp ) *n_sp  = (int)m_h1_basic_cnt->GetBinContent(BIN_N_SP );
 }
 
-TObject* OnlMonClient::FindMonObj(const std::string name, const bool non_null)
+TH1* OnlMonClient::FindMonHist(const std::string name, const bool non_null)
 {
-  for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
+  for (HistList_t::iterator it = m_list_h1.begin(); it != m_list_h1.end(); it++) {
     if (name == (*it)->GetName()) return *it;
   }
   if (non_null) {
-    cerr << "!!ERROR!!  OnlMonClient::FindMonObj() cannot find '" << name << "'.  Abort." << endl;
+    cerr << "!!ERROR!!  OnlMonClient::FindMonHist() cannot find '" << name << "'.  Abort." << endl;
     exit(1);
   }
   return 0;
@@ -253,42 +232,15 @@ int OnlMonClient::StartMonitor()
     return 1;
   }
 
-  //m_h1_basic_info = (TH1*)FindMonObj("h1_basic_info");
-  m_h1_basic_id  = (TH1*)FindMonObj("h1_basic_id");
-  m_h1_basic_cnt = (TH1*)FindMonObj("h1_basic_cnt");
-  ret = FindAllMonHist();
-  //if (m_h1_basic_info == 0 || ret != 0) {
-  if (m_h1_basic_id == 0 || m_h1_basic_cnt == 0 || ret != 0) {
-    cout << "WARNING: Cannot find OnlMon histogram(s)." << endl;
-    return 2;
-  }
-
-  int run_id, spill_id, event_id, spill_id_min, spill_id_max;
-  //GetBasicInfo(&run_id, &spill_id, &event_id, &n_evt);
-  GetBasicID(&run_id, &spill_id, &event_id, &spill_id_min, &spill_id_max);
-  int n_evt, n_sp;
-  GetBasicCount(&n_evt, &n_sp);
-  for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
-    //m_list_can[ii]->SetBasicInfo(run_id, spill_id, event_id, n_evt);
-    m_list_can[ii]->SetBasicID(run_id, spill_id, event_id, spill_id_min, spill_id_max);
-    m_list_can[ii]->SetBasicCount(n_evt, n_sp);
-    m_list_can[ii]->PreDraw();
-  }
-
-  ret = DrawMonitor();
-
-  for (int ii = 0; ii < m_n_can; ii++) {
-    m_list_can[ii]->PostDraw();
-  }
-
-  return ret;
+  return DrawCanvas();
 }
 
-void OnlMonClient::RegisterHist(TH1* h1)
+void OnlMonClient::RegisterHist(TH1* h1, const HistMode_t mode)
 {
-  if (m_hm) m_hm->registerHisto(h1);
-  else {
+  if (m_hm) {
+    m_hm->registerHisto(h1);
+    m_hist_mode[h1->GetName()] = mode;
+  } else {
     cerr << "WARNING:  OnlMonClient::RegisterHist():  Cannot register hist (" << h1->GetName()
          << ").  You must call this function in InitRunOnlMon(), not InitOnlMon().  Do nothing." << endl;
   }
@@ -304,13 +256,35 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
   cout << "  spill: " << sp_min << "-" << sp_max << endl;
   if (sp_min > 0 && sp_max == 0) { // "sp_min" means N of spills
     int min0, max0;
-    OnlMonComm::instance()->GetFullSpillRange(min0, max0);
+    OnlMonComm::instance()->FindFullSpillRange(min0, max0);
     sp_max = max0;
     sp_min = max0 - sp_min + 1;
   }
 
+  HistList_t list_h1;
+  MakeMergedHist(list_h1, sp_min, sp_max);
+
   TMessage outgoing(kMESS_OBJECT);
   //if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
+  for (HistList_t::iterator it = list_h1.begin(); it != list_h1.end(); it++) {
+    TH1* h1 = *it;
+    outgoing.Reset();
+    outgoing.WriteObject(h1);
+    sock->Send(outgoing);
+    outgoing.Reset();
+    TMessage* mess = 0;
+    sock->Recv(mess); // Just check a response.
+    delete mess;
+    delete h1;
+  }
+
+  sock->Send("Finished");
+  return 0;
+}
+
+void OnlMonClient::MakeMergedHist(HistList_t& list_h1, const int sp_min, const int sp_max)
+{
+  list_h1.clear();
   pthread_mutex_t* mutex = OnlMonServer::instance()->GetMutex();
   pthread_mutex_lock(mutex);
   for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
@@ -331,34 +305,15 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
         if (sp_curr <= 0 || sp_curr > sp_id) h1->SetBinContent(BIN_SPILL_MIN, sp_id);
         sp_curr = h1->GetBinContent(BIN_SPILL_MAX);
         if (sp_curr < sp_id) h1->SetBinContent(BIN_SPILL_MAX, sp_id);
-      } else {
+      } else if (m_hist_mode[name] == MODE_UPDATE) {
+        if (it == --map_hist->end()) h1->Add(it->second); // Take the last one
+      } else { // MODE_ADD
         h1->Add(it->second);
       }
     }
-    outgoing.Reset();
-    outgoing.WriteObject(h1);
-    sock->Send(outgoing);
-    outgoing.Reset();
-    TMessage* mess = 0;
-    sock->Recv(mess); // Just check a response.
-    delete mess;
-    if (h1 != h1_org) delete h1;
+    list_h1.push_back(h1);
   }
-
-  //for (unsigned int i = 0; i < m_hm->nHistos(); i++) {
-  //  TH1 *histo = (TH1 *) m_hm->getHisto(i);
-  //  if (! histo) continue;
-  //  outgoing.Reset();
-  //  outgoing.WriteObject(histo);
-  //  sock->Send(outgoing);
-  //  outgoing.Reset();
-  //  sock->Recv(mess); // Just check a response.
-  //  delete mess;
-  //  mess = 0;
-  //}
   pthread_mutex_unlock(mutex);
-  sock->Send("Finished");
-  return 0;
 }
 
 int OnlMonClient::ReceiveHist()
@@ -406,7 +361,7 @@ int OnlMonClient::ReceiveHist()
       TClass*  cla = mess->GetClass();
       TObject* obj = mess->ReadObject(cla);
       cout << "  Receive: " << cla->GetName() << " " << obj->GetName() << endl;
-      m_list_obj.push_back( obj->Clone() ); // copy
+      m_list_h1.push_back( (TH1*)obj->Clone() ); // copy
       delete mess;
       mess = 0;
       sock->Send("NEXT"); // Any text is ok for now
@@ -419,10 +374,10 @@ int OnlMonClient::ReceiveHist()
 
 void OnlMonClient::ClearHistList()
 {
-  for (ObjList_t::iterator it = m_list_obj.begin(); it != m_list_obj.end(); it++) {
+  for (HistList_t::iterator it = m_list_h1.begin(); it != m_list_h1.end(); it++) {
     delete *it;
   }
-  m_list_obj.clear();
+  m_list_h1.clear();
 }
 
 OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
@@ -444,3 +399,32 @@ void OnlMonClient::ClearCanvasList()
   }
 }
 
+int OnlMonClient::DrawCanvas(const bool at_end)
+{
+  m_h1_basic_id  = FindMonHist("h1_basic_id");
+  m_h1_basic_cnt = FindMonHist("h1_basic_cnt");
+  int ret = FindAllMonHist();
+  if (m_h1_basic_id == 0 || m_h1_basic_cnt == 0 || ret != 0) {
+    cout << "WARNING: Cannot find OnlMon histogram(s)." << endl;
+    return 2;
+  }
+
+  int run_id, spill_id, event_id, spill_id_min, spill_id_max;
+  GetBasicID(&run_id, &spill_id, &event_id, &spill_id_min, &spill_id_max);
+  int n_evt, n_sp;
+  GetBasicCount(&n_evt, &n_sp);
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii] = new OnlMonCanvas(Name(), Title(), ii);
+    m_list_can[ii]->SetBasicID(run_id, spill_id, event_id, spill_id_min, spill_id_max);
+    m_list_can[ii]->SetBasicCount(n_evt, n_sp);
+    m_list_can[ii]->PreDraw(at_end);
+  }
+
+  ret = DrawMonitor();
+
+  for (int ii = 0; ii < m_n_can; ii++) {
+    m_list_can[ii]->PostDraw(at_end);
+  }
+
+  return ret;
+}
