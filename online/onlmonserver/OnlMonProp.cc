@@ -50,10 +50,10 @@ int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
-    const int NT = 500;
-    const double T0 = 0.5*DT;
-    const double T1 = (NT+0.5)*DT;
+    const double DT = 80/9.0; // 4/9 ns per single count of Taiwan TDC
+    const int NT    = 100;
+    const double T0 =   0.5*DT;
+    const double T1 = 100.5*DT;
 
     //double center, width;
     //calib.Find(m_pl0 + pl, 1, center, width);

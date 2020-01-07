@@ -64,10 +64,10 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;In-time hit count";
     h1_ele_in[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 1.0; // 1 ns per single count of v1495 TDC
-    const int NT = 2000;
-    const double T0 = 0.5*DT;
-    const double T1 = (NT+0.5)*DT;
+    const double DT = 5.0; // 1 ns per single count of v1495 TDC
+    const int NT    = 100;
+    const double T0 = 100.5*DT;
+    const double T1 = 200.5*DT;
 
     //double center, width;
     //calib.Find(m_pl0 + pl, 1, m_lvl, center, width);

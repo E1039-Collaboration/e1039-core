@@ -64,10 +64,10 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;In-time hit count";
     h1_ele_in[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 4/9.0; // 4/9 ns per single count of Taiwan TDC
-    const int NT = 4000;
-    const double T0 = 0.5*DT;
-    const double T1 = (NT+0.5)*DT;
+    const double DT = 20/9.0; // 4/9 ns per single count of Taiwan TDC
+    const int    NT = 200;
+    const double T0 = 200.5*DT;
+    const double T1 = 400.5*DT;
 
     //double center, width;
     //calib.Find(m_pl0 + pl, 1, center, width);

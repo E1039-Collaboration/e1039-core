@@ -1,11 +1,9 @@
 #ifndef __H_OnlMonServer__H__
 #define __H_OnlMonServer__H__
-#include <map>
 #include <string>
 #include <fun4all/Fun4AllServer.h>
 #include <pthread.h>
 class TSocket;
-class OnlMonClient;
 
 class OnlMonServer : public Fun4AllServer
 {

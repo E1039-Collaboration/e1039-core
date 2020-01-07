@@ -95,18 +95,8 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   if (m_spill_id_pre < 0) { // First call
     m_spill_id_pre = sp_id;
   } else if (sp_id != m_spill_id_pre) { // New spill
-    m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
-    for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
-      TH1* h1 = (TH1*)m_hm->getHisto(ih);
-      string name = h1->GetName();
-      ostringstream oss;
-      oss << name << "_sp" << m_spill_id_pre;
-      m_map_hist_sp[name][m_spill_id_pre] = (TH1*)h1->Clone(oss.str().c_str());
-      h1->Reset("M");
-    }
-    OnlMonComm::instance()->AddSpill(m_spill_id_pre);
+    MakeSpillHist();
     m_spill_id_pre = sp_id;
-
     m_h1_basic_id ->SetBinContent(BIN_RUN  , event->get_run_id());
     m_h1_basic_id ->SetBinContent(BIN_SPILL, sp_id);
     m_h1_basic_id ->SetBinContent(BIN_EVENT, event->get_event_id());
@@ -123,6 +113,8 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
 int OnlMonClient::End(PHCompositeNode* topNode)
 {
   if (! m_hm) return Fun4AllReturnCodes::EVENT_OK;
+
+  if (m_spill_id_pre >= 0) MakeSpillHist();
 
   ClearCanvasList();
 
@@ -280,6 +272,20 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
 
   sock->Send("Finished");
   return 0;
+}
+
+void OnlMonClient::MakeSpillHist()
+{
+  m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
+  for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
+    TH1* h1 = (TH1*)m_hm->getHisto(ih);
+    string name = h1->GetName();
+    ostringstream oss;
+    oss << name << "_sp" << m_spill_id_pre;
+    m_map_hist_sp[name][m_spill_id_pre] = (TH1*)h1->Clone(oss.str().c_str());
+    h1->Reset("M");
+  }
+  OnlMonComm::instance()->AddSpill(m_spill_id_pre);
 }
 
 void OnlMonClient::MakeMergedHist(HistList_t& list_h1, const int sp_min, const int sp_max)

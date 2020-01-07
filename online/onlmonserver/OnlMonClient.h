@@ -78,6 +78,7 @@ class OnlMonClient: public SubsysReco {
   OnlMonCanvas* GetCanvas(const int num=0);
 
  private:
+  void MakeSpillHist();
   void MakeMergedHist(HistList_t& list_h1, const int sp_min=0, const int sp_max=0);
   int  ReceiveHist();
   void ClearHistList();

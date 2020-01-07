@@ -42,7 +42,9 @@ OnlMonServer *OnlMonServer::instance()
 }
 
 OnlMonServer::OnlMonServer(const std::string &name)
-  : Fun4AllServer(name), m_go_end(false), m_svr_ready(false)
+  : Fun4AllServer(name)
+  , m_go_end(false)
+  , m_svr_ready(false)
 {
   pthread_mutexattr_t mutex_attr;
   pthread_mutexattr_init(&mutex_attr);
@@ -211,7 +213,6 @@ void OnlMonServer::HandleConnection(TSocket* sock)
     printf("recvbuffer size: %d\n", val);
   */
   TMessage *mess = NULL;
-  //TMessage outgoing(kMESS_OBJECT);
   while (1) {
     if (Verbosity() > 2) cout << "OnlMonServer::HandleConnection(): while loop." << endl;
     sock->Recv(mess);
@@ -243,6 +244,7 @@ void OnlMonServer::HandleConnection(TSocket* sock)
         int id_min, id_max;
         OnlMonComm::instance()->FindFullSpillRange(id_min, id_max);
         ostringstream oss;
+        oss << id_min << " " << id_max;
         sock->Send(oss.str().c_str());
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
         istringstream iss(msg_str.substr(7));

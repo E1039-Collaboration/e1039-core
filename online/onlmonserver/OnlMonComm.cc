@@ -73,11 +73,6 @@ void OnlMonComm::FindFullSpillRange(int& id_min, int& id_max)
   }
 }
 
-//void OnlMonComm::AddClient(OnlMonClient* cli)
-//{
-//  m_map_cli[cli->Name()] = cli;
-//}
-
 int OnlMonComm::ReceiveFullSpillRange()
 {
   TSocket* sock = ConnectServer();

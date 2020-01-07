@@ -101,7 +101,6 @@ void OnlMonCanvas::PreDraw(const bool at_end)
   oss << "Run " << m_run << ", Spill " << m_spill_min << "-" << m_spill_max
       << " (N=" << m_n_sp << "), Event " << m_event
       << " (N=" << m_n_evt << ")";
-  //if (! at_end) oss << ", " << m_spill;
   pate2->AddText(oss.str().c_str());
 
   time_t utime = time(0);

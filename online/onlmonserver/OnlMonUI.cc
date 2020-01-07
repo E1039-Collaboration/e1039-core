@@ -31,7 +31,6 @@ void OnlMonUI::Run()
 
 void OnlMonUI::BuildInterface()
 {
-  //TGMainFrame* frame = new TGMainFrame(gClient->GetRoot(), 200, 900);
   m_fr_main = new TGMainFrame(gClient->GetRoot(), 200, 900);
   m_fr_main->SetWMPosition(0, 0); // Often ignored by the window manager
 
@@ -51,21 +50,21 @@ void OnlMonUI::BuildInterface()
   for (unsigned int ii = 0; ii < m_list_omc->size(); ii++) {
     button[ii] = new TGTextButton(m_fr_main, m_list_omc->at(ii)->Title().c_str());
     button[ii]->Connect("Clicked()", "OnlMonClient", m_list_omc->at(ii), "StartMonitor()");
-    m_fr_main->AddFrame(button[ii], new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 2,2,5,5)); // (l, r, t, b) 
+    m_fr_main->AddFrame(button[ii], new TGLayoutHints(kLHintsNormal | kLHintsExpandX, 2,2,2,2)); // (l, r, t, b) 
   }
 
   TGLabel* lbl_sp_sel = new TGLabel(m_fr_main, "- - - Spill Selection - - -");
-  m_fr_main->AddFrame(lbl_sp_sel, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,5,5));
+  m_fr_main->AddFrame(lbl_sp_sel, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,5,2));
 
   { // Spill selector by none
     TGHorizontalFrame* fr_sp_all = new TGHorizontalFrame(m_fr_main);
 
     m_rad_sp_all = new TGRadioButton(fr_sp_all, "All    ");
     m_rad_sp_all->Connect("Pressed()", "OnlMonUI", this, "HandleSpRadAll()");
-    fr_sp_all->AddFrame(m_rad_sp_all, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,5,5));
+    fr_sp_all->AddFrame(m_rad_sp_all, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
 
     m_lbl_sp = new TGLabel(fr_sp_all, "?-?");
-    fr_sp_all->AddFrame(m_lbl_sp, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsRight, 2,2,5,5));
+    fr_sp_all->AddFrame(m_lbl_sp, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsRight, 2,2,2,2));
 
     m_fr_main->AddFrame(fr_sp_all);
   }
@@ -75,14 +74,14 @@ void OnlMonUI::BuildInterface()
     
     m_rad_sp_last = new TGRadioButton(fr_sp_last, "Last   ");
     m_rad_sp_last->Connect("Pressed()", "OnlMonUI", this, "HandleSpRadLast()");
-    fr_sp_last->AddFrame(m_rad_sp_last, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,5,5));
+    fr_sp_last->AddFrame(m_rad_sp_last, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
 
     m_num_sp = new TGNumberEntry(fr_sp_last, OnlMonComm::instance()->GetSpillNum(), 2);
     m_num_sp->Connect("ValueSet(Long_t)", "OnlMonUI", this, "HandleSpLastNum()");
-    fr_sp_last->AddFrame(m_num_sp, new TGLayoutHints(kLHintsCenterY | kLHintsCenterX, 2,2,5,5));
+    fr_sp_last->AddFrame(m_num_sp, new TGLayoutHints(kLHintsCenterY | kLHintsCenterX, 2,2,2,2));
  
     TGLabel* lbl_sp_last = new TGLabel(fr_sp_last, "spills");
-    fr_sp_last->AddFrame(lbl_sp_last, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 2,2,5,5));
+    fr_sp_last->AddFrame(lbl_sp_last, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 2,2,2,2));
     
     m_fr_main->AddFrame(fr_sp_last);
   }
@@ -90,7 +89,7 @@ void OnlMonUI::BuildInterface()
   { // Spill selector by spill range
     m_rad_sp_range = new TGRadioButton(m_fr_main, "Range");
     m_rad_sp_range->Connect("Pressed()", "OnlMonUI", this, "HandleSpRadRange()");
-    m_fr_main->AddFrame(m_rad_sp_range, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,5,5));  
+    m_fr_main->AddFrame(m_rad_sp_range, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));  
     
     m_fr_sp_range = new TGVerticalFrame(m_fr_main);
     
@@ -122,7 +121,7 @@ void OnlMonUI::BuildInterface()
   check->SetToolTipText("When checked, all existing canvases are closed by clicking any button above.");
   check->SetState(OnlMonClient::GetClearUsFlag() ? kButtonDown : kButtonUp);
   check->Connect("Toggled(Bool_t)", "OnlMonClient", m_list_omc->at(0), "SetClearUsFlag(Bool_t)");
-  m_fr_main->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,5,5));
+  m_fr_main->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,2,2));
 
   //TGCheckButton* cycle = new TGCheckButton(m_fr_main, new TGHotString("Auto-cycle all subsystems"), 99);
   //cycle->SetToolTipText("When checked, all subsystems are automatically drawn.");

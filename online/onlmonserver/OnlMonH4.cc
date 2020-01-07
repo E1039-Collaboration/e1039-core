@@ -73,10 +73,10 @@ int OnlMonH4::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonH4::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  const double DT = 4/9.0; // 4/9 ns per single count of Taiwan TDC
-  const int NT = 4000;
-  const double T0 = 0.5*DT;
-  const double T1 = (NT+0.5)*DT;
+  const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
+  const int NT    = 100;
+  const double T0 = 100.5*DT;
+  const double T1 = 200.5*DT;
 
   GeomSvc* geom = GeomSvc::instance();
   int n_ele = geom->getPlaneNElements( geom->getDetectorID(m_det_name) );
