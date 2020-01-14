@@ -40,27 +40,35 @@ mkdir -p $DIR_INST
 ##
 ## Check and set up the parent environments.
 ##
-E1039_ROOT=
 if   [ ${HOSTNAME:0:11} = 'seaquestdaq' -o \
        ${HOSTNAME:0:12} = 'spinquestana' ] ; then
-    echo "Use the environment predefined for seaquestdaq/spinquestana."
-    E1039_ROOT=/data2/e1039
+    echo "Use the environment for seaquestdaq/spinquestana."
+    {
+	echo 'export  E1039_ROOT=/data2/e1039'
+	echo 'source $E1039_ROOT/resource/this-resource.sh'
+	echo 'source $E1039_ROOT/share/this-share.sh'
+	echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
+    } >$DIR_INST/this-e1039.sh
+    
 elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o \
        ${HOSTNAME:0:13} = 'spinquestgpvm' ] ; then
-    echo "Use the environment predefined for seaquestgpvm/spinquestgpvm."
-    E1039_ROOT=/e906/app/software/osg/software/e1039
-fi
-if [ -z "$E1039_ROOT" ] ; then
+    echo "Use the environment for seaquestgpvm/spinquestgpvm."
+    {
+	echo 'export E1039_ROOT=/e906/app/software/osg/software/e1039'
+	echo 'if [ ! -d $E1039_ROOT ] ; then '
+	echo '    E1039_ROOT=/cvmfs/seaquest.opensciencegrid.org/seaquest/software/e1039'
+	echo 'fi'
+	echo 'source $E1039_ROOT/resource/this-resource.sh'
+	echo 'source $E1039_ROOT/share/this-share.sh'
+	echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
+    } >$DIR_INST/this-e1039.sh
+    
+else
     echo "Your host is not supported by this script."
     echo "You can ask the manager (Kenichi) how to proceed, or"
     echo "try to set E1039_RESOURCE and E1039_SHARE properly by yourself."
     exit 1
 fi
-{
-    echo "source $E1039_ROOT/resource/this-resource.sh"
-    echo "source $E1039_ROOT/share/this-share.sh"
-    echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
-} >$DIR_INST/this-e1039.sh
 
 ##
 ## Message
