@@ -263,12 +263,14 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else {
         //if (Verbosity() > 2) 
         cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;
+        break;
       }
     } else {
       cerr << "OnlMonServer::HandleConnection():  Unexpected message ("
            << mess->What() << ").  Ignore it." << endl;
       delete mess;
       mess = 0;
+      break;
     }
   }
   

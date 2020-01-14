@@ -1,6 +1,8 @@
 /// OnlMonHodo.C
 #include <iomanip>
 #include <TH1D.h>
+#include <TH2D.h>
+#include <TProfile.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
@@ -74,8 +76,6 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
     oss.str("");
     oss << "h1_time_" << pl;
     h1_time[pl] = new TH1D(oss.str().c_str(), "", NT, T0, T1);
-    //h1_time[pl] = new TH1D(oss.str().c_str(), "", 100, center-2.5*width, center+2.5*width);
-
     oss.str("");
     oss << name << ";tdcTime;Hit count";
     h1_time[pl]->SetTitle(oss.str().c_str());
@@ -87,10 +87,18 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";tdcTime;In-time hit count";
     h1_time_in[pl]->SetTitle(oss.str().c_str());
 
+    oss.str("");
+    oss << "h2_time_ele_" << pl;
+    h2_time_ele[pl] = new TH2D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5, NT, T0, T1);
+    oss.str("");
+    oss << name << ";Element ID;tdcTime;Hit count";
+    h2_time_ele[pl]->SetTitle(oss.str().c_str());
+
     RegisterHist(h1_ele    [pl]);
     RegisterHist(h1_ele_in [pl]);
     RegisterHist(h1_time   [pl]);
     RegisterHist(h1_time_in[pl]);
+    RegisterHist(h2_time_ele[pl]);
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -105,11 +113,14 @@ int OnlMonHodo::ProcessEventOnlMon(PHCompositeNode* topNode)
   for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
     int pl = (*it)->get_detector_id() - m_pl0;
     if (pl < 0 || pl >= m_n_pl) continue;
-    h1_ele [pl]->Fill((*it)->get_element_id());
-    h1_time[pl]->Fill((*it)->get_tdc_time  ());
+    int    ele  = (*it)->get_element_id();
+    double time = (*it)->get_tdc_time  ();
+    h1_ele [pl]->Fill(ele );
+    h1_time[pl]->Fill(time);
+    h2_time_ele[pl]->Fill(ele, time);
     if ((*it)->is_in_time()) {
-      h1_ele_in [pl]->Fill((*it)->get_element_id());
-      h1_time_in[pl]->Fill((*it)->get_tdc_time());
+      h1_ele_in [pl]->Fill(ele );
+      h1_time_in[pl]->Fill(time);
     }
   }
   
@@ -141,6 +152,10 @@ int OnlMonHodo::FindAllMonHist()
     oss << "h1_time_in_" << pl;
     h1_time_in[pl] = FindMonHist(oss.str().c_str());
     if (! h1_time_in[pl]) return 1;
+    oss.str("");
+    oss << "h2_time_ele_" << pl;
+    h2_time_ele[pl] = (TH2*)FindMonHist(oss.str().c_str());
+    if (! h2_time_ele[pl]) return 1;
   }
   return 0;
 }
@@ -151,16 +166,24 @@ int OnlMonHodo::DrawMonitor()
   can0->SetStatus(OnlMonCanvas::OK);
   TPad* pad0 = can0->GetMainPad();
   pad0->SetGrid();
-  pad0->Divide(1, 2);
+  pad0->Divide(2, 2);
   bool empty_ele = false;
   for (int pl = 0; pl < m_n_pl; pl++) {
-    pad0->cd(pl+1);
+    pad0->cd(2*pl+1);
     h1_ele[pl]->SetLineColor(kBlack);
     h1_ele[pl]->Draw();
     h1_ele_in[pl]->SetLineColor(kBlue);
     h1_ele_in[pl]->SetFillColor(kBlue-7);
     h1_ele_in[pl]->Draw("same");
     if (h1_ele[pl]->GetMinimum() == 0) empty_ele = true;
+
+    pad0->cd(2*pl+2);
+    h2_time_ele[pl]->Draw("colz");
+    ostringstream oss;
+    oss << "pr_" << h2_time_ele[pl]->GetName();
+    TProfile* pr = h2_time_ele[pl]->ProfileX(oss.str().c_str(), 1, -1, "s");
+    pr->SetLineColor(kBlack);
+    pr->Draw("E1same");
   }
   if (empty_ele) {
     can0->SetStatus(OnlMonCanvas::WARN);
@@ -174,7 +197,7 @@ int OnlMonHodo::DrawMonitor()
   pad1->Divide(1, 2);
   for (int pl = 0; pl < m_n_pl; pl++) {
     pad1->cd(pl+1);
-    UtilHist::AutoSetRange(h1_time[pl]);
+    //UtilHist::AutoSetRange(h1_time[pl]);
     //h1_time[pl]->GetXaxis()->SetRangeUser(400, 1050);
     h1_time[pl]->SetLineColor(kBlack);
     h1_time[pl]->Draw();
