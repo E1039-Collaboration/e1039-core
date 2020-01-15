@@ -39,6 +39,12 @@ OnlMonClient::OnlMonClient()
 OnlMonClient::~OnlMonClient()
 {
   if (! m_hm) delete m_hm;
+  for (Name2SpillHistMap_t::iterator it1 = m_map_hist_sp.begin(); it1 != m_map_hist_sp.end(); it1++) {
+    SpillHistMap_t* map_hist = &it1->second;
+    for (SpillHistMap_t::iterator it2 = map_hist->begin(); it2 != map_hist->end(); it2++) {
+      delete it2->second;
+    }
+  }
   ClearHistList();
   ClearCanvasList();
   m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
@@ -245,7 +251,6 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
     sock->Send("NotReady");
     return 1; // Not ready
   }
-  cout << "  spill: " << sp_min << "-" << sp_max << endl;
   if (sp_min > 0 && sp_max == 0) { // "sp_min" means N of spills
     int min0, max0;
     OnlMonComm::instance()->FindFullSpillRange(min0, max0);
@@ -276,6 +281,8 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
 
 void OnlMonClient::MakeSpillHist()
 {
+  bool add_dir = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(false); // Significantly speeds up deleting hists in dtor.
   m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
   for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
     TH1* h1 = (TH1*)m_hm->getHisto(ih);
@@ -286,6 +293,7 @@ void OnlMonClient::MakeSpillHist()
     h1->Reset("M");
   }
   OnlMonComm::instance()->AddSpill(m_spill_id_pre);
+  TH1::AddDirectory(add_dir);
 }
 
 void OnlMonClient::MakeMergedHist(HistList_t& list_h1, const int sp_min, const int sp_max)

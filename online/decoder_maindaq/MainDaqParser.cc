@@ -486,20 +486,18 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
       return 1;
     }
 
-    /// Temporary adjustment (added on 2019-09-25).
-    /// Since spill ID is not available in the cosmic-ray commissioning,
+    /// Temporary adjustment (modified on 2020-01-15).
+    /// Since spill ID is not always available in the cosmic-ray commissioning,
     /// a temporary ID is given here.
-    if (dec_par.spillID_slow == 0 && dec_par.spillID_cntr == 0) {
-      static int spillID_local = 0;
-      dec_par.spillID_slow = dec_par.spillID_cntr = ++spillID_local;
-    }
+    static int spillID_local = 0;
+    dec_par.spillID_cntr = ++spillID_local;
 
     /// Regard the Slow Control info as primary (rather than Spill Counter)
-    dec_par.spillID     = dec_par.spillID_slow;
+    dec_par.spillID     = dec_par.spillID_cntr;
     dec_par.targPos     = dec_par.targPos_slow;
     SpillData* data     = &(*list_sd)[dec_par.spillID];
     data->spill_id      = dec_par.spillID;
-    data->spill_id_cntr = dec_par.spillID_cntr;
+    data->spill_id_slow = dec_par.spillID_slow;
     data->run_id        = dec_par.runID;
     data->targ_pos      = dec_par.targPos;
 

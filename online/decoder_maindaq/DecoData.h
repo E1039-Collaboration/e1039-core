@@ -138,8 +138,8 @@ struct ScalerData {
 typedef std::vector<ScalerData> ScalerDataList;
 
 struct SpillData {
-  unsigned int spill_id;
-  unsigned int spill_id_cntr; //< spill ID in Spill Counter
+  unsigned int spill_id; //< spill ID in Spill Counter
+  unsigned int spill_id_slow; //< spill ID in slow control
   unsigned int run_id;
   unsigned int targ_pos;
   unsigned int bos_coda_id;

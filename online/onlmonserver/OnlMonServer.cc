@@ -183,8 +183,7 @@ void* OnlMonServer::FuncServer(void* arg)
   // go well together
   TInetAddress adr = s0->GetInetAddress();
   if (se->Verbosity() >= 0) {
-    cout << "Got connection from\n  ";
-    adr.Print();
+    cout << "Connection from " << adr.GetHostName() << "/" << adr.GetHostAddress() << ":" << adr.GetPort() << endl;
   }
   UInt_t ip0 = adr.GetAddress();
   if ((ip0 >> 16) == (192 << 8) + 168 || ip0 == (127 << 24) + 1) {
