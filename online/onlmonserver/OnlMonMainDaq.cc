@@ -162,7 +162,7 @@ int OnlMonMainDaq::DrawMonitor()
   pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
   ostringstream oss;
-  oss << "N of spills = " << h1_cnt->GetBinContent(1);
+  oss << "N of spill-counter events = " << h1_cnt->GetBinContent(1);
   pate->AddText(oss.str().c_str());
   oss.str("");
   oss << "N of triggered events = " << h1_cnt->GetBinContent(2) << " (all), " << h1_cnt->GetBinContent(3) << " (decoded)";
