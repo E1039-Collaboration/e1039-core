@@ -598,8 +598,8 @@ int MainDaqParser::ProcessPhysFlush(int* words)
     
     idx++; // go to next position to get ROCID
     int rocID = get_hex_bits (words[idx], 5, 2);
-    if (rocID > 30) {
-      cerr << "ERROR: rocID > 30." << endl;
+    if (rocID > 64) { // "64" is a rough number, not strict limit.
+      cerr << "ERROR: rocID > 64." << endl;
       return -1;
     }
     dec_par.rocID = rocID;
