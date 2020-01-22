@@ -21,7 +21,8 @@ OnlMonCanvas::OnlMonCanvas(const std::string name, const std::string title, cons
   m_pad_msg  ("msg"  , "", 0.0, 0.0, 1.0, 0.1),
   m_pate_msg(.02, .02, .98, .98),
   m_mon_status(UNDEF),
-  m_run(0), m_spill(0), m_event(0), m_n_evt(0)
+  m_run(0), m_spill(0), m_event(0), m_spill_min(0), m_spill_max(0), 
+  m_n_evt(0), m_n_sp(0)
 {
   //m_can.SetWindowPosition(5+600*num, 5);
 }
@@ -31,12 +32,19 @@ OnlMonCanvas::~OnlMonCanvas()
   ;
 }
 
-void OnlMonCanvas::SetBasicInfo(const int run_id, const int spill_id, const int event_id, const int n_evt)
+void OnlMonCanvas::SetBasicID(const int run_id, const int spill_id, const int event_id, const int spill_id_min, const int spill_id_max)
 {
-  m_run   = run_id;
-  m_spill = spill_id;
-  m_event = event_id;
+  m_run       = run_id;
+  m_spill     = spill_id;
+  m_event     = event_id;
+  m_spill_min = spill_id_min;
+  m_spill_max = spill_id_max;
+}
+
+void OnlMonCanvas::SetBasicCount(const int n_evt, const int n_sp)
+{
   m_n_evt = n_evt;
+  m_n_sp  = n_sp ;
 }
 
 void OnlMonCanvas::AddMessage(const char* msg)
@@ -90,8 +98,9 @@ void OnlMonCanvas::PreDraw(const bool at_end)
   pate2->SetFillColor(kWhite);
 
   oss.str("");
-  oss << "Run #" << m_run;
-  if (! at_end) oss << ", Spill #" << m_spill << ", Event #" << m_event << ", " << m_n_evt << " events";
+  oss << "Run " << m_run << ", Spill " << m_spill_min << "-" << m_spill_max
+      << " (N=" << m_n_sp << "), Event " << m_event
+      << " (N=" << m_n_evt << ")";
   pate2->AddText(oss.str().c_str());
 
   time_t utime = time(0);

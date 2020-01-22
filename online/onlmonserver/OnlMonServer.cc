@@ -6,6 +6,8 @@
 #include <TSocket.h>
 #include <TROOT.h>
 #include <TH1.h>
+#include "OnlMonComm.h"
+#include "OnlMonClient.h"
 #include "OnlMonServer.h"
 
 using namespace std;
@@ -40,7 +42,9 @@ OnlMonServer *OnlMonServer::instance()
 }
 
 OnlMonServer::OnlMonServer(const std::string &name)
-  : Fun4AllServer(name), m_go_end(false)
+  : Fun4AllServer(name)
+  , m_go_end(false)
+  , m_svr_ready(false)
 {
   pthread_mutexattr_t mutex_attr;
   pthread_mutexattr_init(&mutex_attr);
@@ -86,6 +90,31 @@ void OnlMonServer::StartServer()
   //if (Verbosity() > 1) cout << "OnlMonServer::StartServer(): finish." << endl;
   cout << "  Started." << endl;
   return;
+}
+
+int OnlMonServer::End()
+{
+  m_go_end = true;
+  int ret = Fun4AllServer::End();
+  for (int ii = 0; ii < 30; ii++) { // Wait for one minute at max
+    if (m_svr_ready) break;
+    sleep(2);
+  }
+  return ret;
+
+//#if defined(SERVER) || defined(ROOTTHREAD)
+//  if (! serverthreadid) return;
+//  SetGoEnd(true);
+//
+//#ifdef SERVER
+//  pthread_join(serverthreadid, 0);
+//  cout << "  Joined!" << endl;
+//#endif
+//#ifdef ROOTTHREAD
+//  ServerThread->Join(server); // not supported
+//#endif
+//
+//#endif
 }
 
 /// Close an existing server process if such exists.
@@ -136,10 +165,12 @@ void* OnlMonServer::FuncServer(void* arg)
   // this interferes with my own threading and makes valgrind crash
   // The solution is to remove the TServerSocket *ss from roots list of
   // sockets. Then it will leave this socket alone.
+
   if (se->Verbosity() >= 0) cout << "OnlMonServer::RemoveSockets():" << endl;
   int isock = gROOT->GetListOfSockets()->IndexOf(ss);
   gROOT->GetListOfSockets()->RemoveAt(isock);
   sleep(5);
+  se->SetServerReady(true);
 
  again:
   if (se->Verbosity() >= 0) cout << "OnlMonServer::WaitForConnection():" << endl;
@@ -153,8 +184,7 @@ void* OnlMonServer::FuncServer(void* arg)
   // go well together
   TInetAddress adr = s0->GetInetAddress();
   if (se->Verbosity() >= 0) {
-    cout << "Got connection from\n  ";
-    adr.Print();
+    cout << "Connection from " << adr.GetHostName() << "/" << adr.GetHostAddress() << ":" << adr.GetPort() << endl;
   }
   UInt_t ip0 = adr.GetAddress();
   if ((ip0 >> 16) == (192 << 8) + 168 || ip0 == (127 << 24) + 1) {
@@ -183,12 +213,15 @@ void OnlMonServer::HandleConnection(TSocket* sock)
     printf("recvbuffer size: %d\n", val);
   */
   TMessage *mess = NULL;
-  TMessage outgoing(kMESS_OBJECT);
   while (1) {
     if (Verbosity() > 2) cout << "OnlMonServer::HandleConnection(): while loop." << endl;
     sock->Recv(mess);
     if (! mess) {
       if (Verbosity() > 2) cout << "  Broken Connection, closing socket." << endl;
+      break;
+    }
+    if (m_go_end) {
+      if (Verbosity() > 2) cout << "  Already going to end, closing socket." << endl;
       break;
     }
     
@@ -210,38 +243,38 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else if (msg_str == "Ping") {
         if (Verbosity() > 2) cout << "  Ping." << endl;
         sock->Send("Pong");
+      } else if (msg_str == "Spill") {
+        if (Verbosity() > 2) cout << "  Spill." << endl;
+        int id_min, id_max;
+        OnlMonComm::instance()->FindFullSpillRange(id_min, id_max);
+        ostringstream oss;
+        oss << id_min << " " << id_max;
+        sock->Send(oss.str().c_str());
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
-        string name_subsys = msg_str.substr(7);
-        Fun4AllHistoManager* hm = getHistoManager(name_subsys);
-        if (! hm) {
-          if (Verbosity() > 2) cout << "  HM not ready." << endl;
+        istringstream iss(msg_str.substr(7));
+        string name_subsys;
+        int sp_min, sp_max;
+        iss >> name_subsys >> sp_min >> sp_max;
+        cout << "  Subsystem " << name_subsys << endl;
+        SubsysReco* sub = getSubsysReco(name_subsys);
+        if (! sub) {
+          cout << " ... Not available." << endl;
           sock->Send("NotReady");
         } else {
-          if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
-          pthread_mutex_lock(&mutex);
-          for (unsigned int i = 0; i < hm->nHistos(); i++) {
-            TH1 *histo = (TH1 *) hm->getHisto(i);
-            if (! histo) continue;
-            outgoing.Reset();
-            outgoing.WriteObject(histo);
-            sock->Send(outgoing);
-            outgoing.Reset();
-            sock->Recv(mess); // Just check a response.
-            delete mess;
-            mess = 0;
-          }
-          pthread_mutex_unlock(&mutex);
-          sock->Send("Finished");
+          OnlMonClient* cli = dynamic_cast<OnlMonClient*>(sub);
+          cli->SendHist(sock, sp_min, sp_max);
         }
       } else {
         //if (Verbosity() > 2) 
         cout << "  Unexpected string message (" << msg_str << ").  Ignore it." << endl;
+        break;
       }
     } else {
       cerr << "OnlMonServer::HandleConnection():  Unexpected message ("
            << mess->What() << ").  Ignore it." << endl;
       delete mess;
       mess = 0;
+      break;
     }
   }
   

@@ -50,10 +50,10 @@ int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
-    const int NT = 500;
-    const double T0 = 0.5*DT;
-    const double T1 = (NT+0.5)*DT;
+    const double DT = 80/9.0; // 4/9 ns per single count of Taiwan TDC
+    const int NT    = 100;
+    const double T0 =   0.5*DT;
+    const double T1 = 100.5*DT;
 
     //double center, width;
     //calib.Find(m_pl0 + pl, 1, center, width);
@@ -100,11 +100,11 @@ int OnlMonProp::FindAllMonHist()
   for (int pl = 0; pl < N_PL; pl++) {
     oss.str("");
     oss << "h1_ele_" << pl;
-    h1_ele[pl] = (TH1*)FindMonObj(oss.str().c_str());
+    h1_ele[pl] = FindMonHist(oss.str().c_str());
     if (! h1_ele[pl]) return 1;
     oss.str("");
     oss << "h1_time_" << pl;
-    h1_time[pl] = (TH1*)FindMonObj(oss.str().c_str());
+    h1_time[pl] = FindMonHist(oss.str().c_str());
     if (! h1_time[pl]) return 1;
   }
   return 0;

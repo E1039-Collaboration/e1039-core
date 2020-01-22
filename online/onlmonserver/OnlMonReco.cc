@@ -83,13 +83,13 @@ int OnlMonReco::EndOnlMon(PHCompositeNode* topNode)
 
 int OnlMonReco::FindAllMonHist()
 {
-  h1_rec_stats = (TH1*)FindMonObj("h1_rec_stats");
+  h1_rec_stats = FindMonHist("h1_rec_stats");
   if (!h1_rec_stats) return 1;
 
-  h1_sgmu_pt = (TH1*)FindMonObj("h1_sgmu_pt");
+  h1_sgmu_pt = FindMonHist("h1_sgmu_pt");
   if (!h1_sgmu_pt) return 1;
 
-  h1_dimu_mass = (TH1*)FindMonObj("h1_dimu_mass");
+  h1_dimu_mass = FindMonHist("h1_dimu_mass");
   if (!h1_dimu_mass) return 1;
 
   return 0;

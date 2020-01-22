@@ -8,6 +8,8 @@
 #pragma link C++ class OnlMonUI-!;
 #pragma link C++ typedef OnlMonClientList_t;
 
+#pragma link C++ class AnaWait-!;
+
 #pragma link C++ class OnlMonMainDaq-!;
 #pragma link C++ class OnlMonTrigSig-!;
 #pragma link C++ class OnlMonTrigNim-!;

@@ -9,6 +9,7 @@ add_custom_command (
   ARGS -f onlmonserver_Dict.cc -noIncludePaths -inlineInputHeader -c -p
     -I${PROJECT_SOURCE_DIR}/
     -I${ROOT_PREFIX}/include/
+    ${PROJECT_SOURCE_DIR}/AnaWait.h
     ${PROJECT_SOURCE_DIR}/OnlMon*.h
     ${PROJECT_SOURCE_DIR}/LinkDef.h
 )

@@ -62,7 +62,7 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   RegisterHist(h1_n_taiwan);
   RegisterHist(h1_evt_qual);
   RegisterHist(h1_flag_v1495);
-  RegisterHist(h1_cnt);
+  RegisterHist(h1_cnt, OnlMonClient::MODE_UPDATE);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -124,11 +124,11 @@ int OnlMonMainDaq::EndOnlMon(PHCompositeNode* topNode)
 
 int OnlMonMainDaq::FindAllMonHist()
 {
-  h1_trig       = (TH1*)FindMonObj("h1_trig");
-  h1_n_taiwan   = (TH1*)FindMonObj("h1_n_taiwan");
-  h1_evt_qual   = (TH1*)FindMonObj("h1_evt_qual");
-  h1_flag_v1495 = (TH1*)FindMonObj("h1_flag_v1495");
-  h1_cnt        = (TH1*)FindMonObj("h1_cnt");
+  h1_trig       = FindMonHist("h1_trig");
+  h1_n_taiwan   = FindMonHist("h1_n_taiwan");
+  h1_evt_qual   = FindMonHist("h1_evt_qual");
+  h1_flag_v1495 = FindMonHist("h1_flag_v1495");
+  h1_cnt        = FindMonHist("h1_cnt");
   return (h1_trig && h1_evt_qual && h1_flag_v1495 && h1_cnt  ?  0  :  1);
 }
 
@@ -162,7 +162,7 @@ int OnlMonMainDaq::DrawMonitor()
   pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);
   ostringstream oss;
-  oss << "N of spills = " << h1_cnt->GetBinContent(1);
+  oss << "N of spill-counter events = " << h1_cnt->GetBinContent(1);
   pate->AddText(oss.str().c_str());
   oss.str("");
   oss << "N of triggered events = " << h1_cnt->GetBinContent(2) << " (all), " << h1_cnt->GetBinContent(3) << " (decoded)";
