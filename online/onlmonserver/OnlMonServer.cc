@@ -94,6 +94,7 @@ void OnlMonServer::StartServer()
 
 int OnlMonServer::End()
 {
+  m_go_end = true;
   int ret = Fun4AllServer::End();
   for (int ii = 0; ii < 30; ii++) { // Wait for one minute at max
     if (m_svr_ready) break;
@@ -217,6 +218,10 @@ void OnlMonServer::HandleConnection(TSocket* sock)
     sock->Recv(mess);
     if (! mess) {
       if (Verbosity() > 2) cout << "  Broken Connection, closing socket." << endl;
+      break;
+    }
+    if (m_go_end) {
+      if (Verbosity() > 2) cout << "  Already going to end, closing socket." << endl;
       break;
     }
     
