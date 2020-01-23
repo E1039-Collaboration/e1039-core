@@ -11,6 +11,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
+  GeomSvc::UseDbSvc(true);
   const bool use_onlmon = true;
 
   const char* deco_mode = gSystem->Getenv("E1039_DECODER_MODE");
@@ -68,6 +69,10 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H2Y));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y1));
     se->registerSubsystem(new OnlMonHodo (OnlMonHodo::H4Y2));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::DP1T));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::DP1B));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::DP2T));
+    se->registerSubsystem(new OnlMonHodo (OnlMonHodo::DP2B));
     se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4T));
     se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4B));
     se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y1L));

@@ -30,6 +30,10 @@ OnlMonHodo::OnlMonHodo(const HodoType_t type) : m_type(type)
   case H2Y:  m_pl0 = 35;  Name("OnlMonHodoH2Y" );  Title("Hodo: H2Y" );  break;
   case H4Y1: m_pl0 = 41;  Name("OnlMonHodoH4Y1");  Title("Hodo: H4Y1");  break;
   case H4Y2: m_pl0 = 43;  Name("OnlMonHodoH4Y2");  Title("Hodo: H4Y2");  break;
+  case DP1T: m_pl0 = 55;  Name("OnlMonHodoDP1T");  Title("Hodo: DP1T");  break;
+  case DP1B: m_pl0 = 57;  Name("OnlMonHodoDP1B");  Title("Hodo: DP1B");  break;
+  case DP2T: m_pl0 = 59;  Name("OnlMonHodoDP2T");  Title("Hodo: DP2T");  break;
+  case DP2B: m_pl0 = 61;  Name("OnlMonHodoDP2B");  Title("Hodo: DP2B");  break;
   }
 }
 

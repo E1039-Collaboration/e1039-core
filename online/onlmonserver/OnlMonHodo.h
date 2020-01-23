@@ -4,7 +4,7 @@
 
 class OnlMonHodo: public OnlMonClient {
  public:
-  typedef enum { H1X, H2X, H3X, H4X, H1Y, H2Y, H4Y1, H4Y2 } HodoType_t;
+  typedef enum { H1X, H2X, H3X, H4X, H1Y, H2Y, H4Y1, H4Y2, DP1T, DP1B, DP2T, DP2B } HodoType_t;
 
  private:
   HodoType_t m_type;
