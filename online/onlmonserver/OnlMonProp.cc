@@ -9,7 +9,6 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
-//#include <geom_svc/CalibParamInTimeTaiwan.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonProp.h"
@@ -19,8 +18,8 @@ OnlMonProp::OnlMonProp(const PropType_t type) : m_type(type)
 {
   NumCanvases(2);
   switch (m_type) {
-  case P1 :  m_pl0 = 47;  Name("OnlMonPropP1" );  Title( "Prop Tube: P1");  break;
-  case P2 :  m_pl0 = 51;  Name("OnlMonPropP2" );  Title( "Prop Tube: P2");  break;
+  case P1:  Name("OnlMonPropP1" );  Title( "Prop Tube: P1");  break;
+  case P2:  Name("OnlMonPropP2" );  Title( "Prop Tube: P2");  break;
   }
 }
 
@@ -31,18 +30,23 @@ int OnlMonProp::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
-
   GeomSvc* geom = GeomSvc::instance();
-  //CalibParamInTimeTaiwan calib;
-  //calib.SetMapIDbyDB(run_header->get_run_id());
-  //calib.ReadFromDB();
+  string name_regex = "";
+  switch (m_type) {
+  case P1:  name_regex = "^P1";  break;
+  case P2:  name_regex = "^P2";  break;
+  }
+  vector<int> list_det_id = geom->getDetectorIDs(name_regex);
+  if (list_det_id.size() == 0) {
+    cout << "OnlMonProp::InitRunOnlMon():  Found no ID for '" << name_regex << "'." << endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  m_pl0 = list_det_id[0];
 
   ostringstream oss;
   for (int pl = 0; pl < N_PL; pl++) {
-    string name = geom->getDetectorName(m_pl0 + pl);
-    int n_ele = geom->getPlaneNElements(m_pl0 + pl); 
+    string name = geom->getDetectorName  (m_pl0 + pl);
+    int   n_ele = geom->getPlaneNElements(m_pl0 + pl); 
     oss.str("");
     oss << "h1_ele_" << pl;
     h1_ele[pl] = new TH1D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5);
@@ -55,12 +59,9 @@ int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
     const double T0 =   0.5*DT;
     const double T1 = 100.5*DT;
 
-    //double center, width;
-    //calib.Find(m_pl0 + pl, 1, center, width);
     oss.str("");
     oss << "h1_time_" << pl;
     h1_time[pl] = new TH1D(oss.str().c_str(), "", NT, T0, T1);
-    //h1_time[pl] = new TH1D(oss.str().c_str(), "", 100, center-width/2, center+width/2);
 
     oss.str("");
     oss << name << ";tdcTime;Hit count";

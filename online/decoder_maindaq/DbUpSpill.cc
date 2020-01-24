@@ -72,7 +72,7 @@ int DbUpSpill::End(PHCompositeNode* topNode)
 void DbUpSpill::ClearTable(const char* table_name, const int run_id)
 {
   DbSvc db(DbSvc::DB1);
-  db.UseSchema("user_e1039_maindaq", true);
+  db.UseSchema(UtilOnline::GetSchemaMainDaq(), true);
   if (! db.HasTable(table_name)) return;
   ostringstream oss;
   oss << "delete from " << table_name << " where run_id = " << run_id;
