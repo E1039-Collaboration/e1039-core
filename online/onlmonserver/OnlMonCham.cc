@@ -9,7 +9,6 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
-//#include <geom_svc/CalibParamInTimeTaiwan.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonServer.h"
 #include "OnlMonCham.h"
@@ -19,11 +18,11 @@ OnlMonCham::OnlMonCham(const ChamType_t type) : m_type(type)
 {
   NumCanvases(2);
   switch (m_type) {
-  case D0 :  m_pl0 =  1;  Name("OnlMonChamD0" );  Title("Chamber: D0" );  break;
-  case D1 :  m_pl0 =  7;  Name("OnlMonChamD1" );  Title("Chamber: D1" );  break;
-  case D2 :  m_pl0 = 13;  Name("OnlMonChamD2" );  Title("Chamber: D2" );  break;
-  case D3p:  m_pl0 = 19;  Name("OnlMonChamD3p");  Title("Chamber: D3p");  break;
-  case D3m:  m_pl0 = 25;  Name("OnlMonChamD3m");  Title("Chamber: D3m");  break;
+  case D0 :  Name("OnlMonChamD0" );  Title("Chamber: D0" );  break;
+  case D1 :  Name("OnlMonChamD1" );  Title("Chamber: D1" );  break;
+  case D2 :  Name("OnlMonChamD2" );  Title("Chamber: D2" );  break;
+  case D3p:  Name("OnlMonChamD3p");  Title("Chamber: D3p");  break;
+  case D3m:  Name("OnlMonChamD3m");  Title("Chamber: D3m");  break;
   }
 }
 
@@ -34,18 +33,31 @@ int OnlMonCham::InitOnlMon(PHCompositeNode* topNode)
 
 int OnlMonCham::InitRunOnlMon(PHCompositeNode* topNode)
 {
-  //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
-  //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
+  int    NT = 150;
+  double T0 = 110.5*DT;
+  double T1 = 260.5*DT;
 
   GeomSvc* geom = GeomSvc::instance();
-  //CalibParamInTimeTaiwan calib;
-  //calib.SetMapIDbyDB(run_header->get_run_id());
-  //calib.ReadFromDB();
+  string name_regex = "";
+  switch (m_type) {
+  case D0 :  name_regex = "^D0" ;  break;
+  case D1 :  name_regex = "^D1" ;  break;
+  case D2 :  name_regex = "^D2" ;  NT=150; T0=100.5*DT; T1=250.5*DT;  break;
+  case D3p:  name_regex = "^D3p";  NT=150; T0=100.5*DT; T1=250.5*DT;  break;
+  case D3m:  name_regex = "^D3m";  NT=150; T0=100.5*DT; T1=250.5*DT;  break;
+  }
+  vector<int> list_det_id = geom->getDetectorIDs(name_regex);
+  if (list_det_id.size() == 0) {
+    cout << "OnlMonCham::InitRunOnlMon():  Found no ID for '" << name_regex << "'." << endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  m_pl0 = list_det_id[0];
 
   ostringstream oss;
   for (int pl = 0; pl < N_PL; pl++) {
-    string name = geom->getDetectorName(m_pl0 + pl);
-    int n_ele = geom->getPlaneNElements(m_pl0 + pl); 
+    string name = geom->getDetectorName  (m_pl0 + pl);
+    int   n_ele = geom->getPlaneNElements(m_pl0 + pl); 
     oss.str("");
     oss << "h1_ele_" << pl;
     h1_ele[pl] = new TH1D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5);
@@ -53,17 +65,9 @@ int OnlMonCham::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[pl]->SetTitle(oss.str().c_str());
 
-    const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
-    const int    NT = 150;
-    const double T0 = 100.5*DT;
-    const double T1 = 250.5*DT;
-
-    //double center, width;
-    //calib.Find(m_pl0 + pl, 1, center, width);
     oss.str("");
     oss << "h1_time_" << pl;
     h1_time[pl] = new TH1D(oss.str().c_str(), "", NT, T0, T1);
-    //h1_time[pl] = new TH1D(oss.str().c_str(), "", 100, center-width/2, center+width/2);
 
     oss.str("");
     oss << name << ";tdcTime;Hit count";
