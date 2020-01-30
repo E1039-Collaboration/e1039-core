@@ -92,7 +92,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   se->registerOutputManager(out);
 
   if (use_evt_disp) {
-    se->registerSubsystem(new EvtDispFilter(1000, 3)); // (step, max per spill)
+    se->registerSubsystem(new EvtDispFilter(1000, 1)); // (step, max per spill)
 
     oss.str("");
     oss << "/data2/e1039/onlmon/evt_disp";
