@@ -56,11 +56,8 @@ int EvtDispFilter::process_event(PHCompositeNode* topNode)
 
   if (m_sq_evt->get_trigger(SQEvent::NIM1   ) ||
       m_sq_evt->get_trigger(SQEvent::NIM2   ) ||
-      m_sq_evt->get_trigger(SQEvent::MATRIX1) ||
-      m_sq_evt->get_trigger(SQEvent::MATRIX2) ||
-      m_sq_evt->get_trigger(SQEvent::MATRIX3) ||
-      m_sq_evt->get_trigger(SQEvent::MATRIX4) ||
-      m_sq_evt->get_trigger(SQEvent::MATRIX5)   ) {
+//      m_sq_evt->get_trigger(SQEvent::MATRIX1) ||
+      m_sq_evt->get_trigger(SQEvent::NIM4   )   ) {
     event_id_pre = event_id;
     n_evt_sp++;
     return Fun4AllReturnCodes::EVENT_OK;

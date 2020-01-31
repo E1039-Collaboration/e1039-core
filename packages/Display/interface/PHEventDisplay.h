@@ -65,6 +65,9 @@ public:
   void set_truth_on(bool truth_on) {is_truth_on = truth_on;}
   void set_verbosity(int verb) {verbosity = verb;}
 
+  void set_view_top();
+  void set_view_side();
+  void set_view_3d();
 
 private:
   void reco_thread();

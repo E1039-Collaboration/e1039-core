@@ -4,7 +4,6 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TGLViewer.h>
 #include <TEveManager.h>
 #include <TEveBrowser.h>
 #include <TGFrame.h>
@@ -14,11 +13,22 @@
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllInputManager.h>
 #include <evt_filter/EvtFilter.h>
+#include "PHEventDisplay.h"
 #include "EventDispUI.h"
 using namespace std;
 
 EventDispUI::EventDispUI(const bool auto_mode)
-  : m_auto_mode(auto_mode)
+  : m_run(0)
+  , m_n_evt(0)
+  , m_i_evt(0)
+  , m_fr_main(0)
+  , m_fr_menu(0)
+  , m_fr_evt_nav(0)
+  , m_lbl_run(0)
+  , m_lbl_n_evt(0)
+  , m_ne_evt_id(0)
+  , m_ne_trig(0)
+  , m_auto_mode(auto_mode)
   , m_tid1(0)
 {
   ;
@@ -142,30 +152,22 @@ void EventDispUI::ReqTrig()
 void EventDispUI::ViewTop()
 {
   cout << "Top View" << endl;
-  m_glv->ResetCurrentCamera();
-  m_glv->CurrentCamera().RotateRad(-3.14/2.0, 0);
-  m_glv->CurrentCamera().Zoom(200, 0, 0); // (400, 0, 0);
-  m_glv->CurrentCamera().Truck(500, 0); // (2800,0);
-  m_glv->DoDraw();
+  PHEventDisplay* disp = (PHEventDisplay*)Fun4AllServer::instance()->getSubsysReco("PHEventDisplay");
+  disp->set_view_top();
 }
 
 void EventDispUI::ViewSide()
 {
   cout << "Side View" << endl;
-  m_glv->ResetCurrentCamera();
-  m_glv->CurrentCamera().Zoom(200, 0, 0); // (400, 0, 0);
-  m_glv->CurrentCamera().Truck(500, 0); // (2800,0);
-  m_glv->DoDraw();
+  PHEventDisplay* disp = (PHEventDisplay*)Fun4AllServer::instance()->getSubsysReco("PHEventDisplay");
+  disp->set_view_side();
 }
 
 void EventDispUI::View3D()
 {
   cout << "3D View" << endl;
-  m_glv->ResetCurrentCamera();
-  m_glv->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
-  m_glv->CurrentCamera().Zoom(180, 0, 0); // (350, 0, 0);
-  m_glv->CurrentCamera().Truck(1000, -500); // (2000,-1500);
-  m_glv->DoDraw();
+  PHEventDisplay* disp = (PHEventDisplay*)Fun4AllServer::instance()->getSubsysReco("PHEventDisplay");
+  disp->set_view_3d();
 }
 
 void EventDispUI::UpdateLabels()
@@ -178,6 +180,15 @@ void EventDispUI::UpdateLabels()
   m_lbl_n_evt->SetText(oss.str().c_str());
 }
 
+void EventDispUI::SetAutoMode(bool value)
+{
+  m_auto_mode = value;
+  if (value) m_fr_menu->HideFrame(m_fr_evt_nav);
+  else       m_fr_menu->ShowFrame(m_fr_evt_nav);
+  m_fr_menu->Resize(); // (m_fr_menu->GetDefaultSize());
+  m_fr_menu->MapWindow();
+}
+
 void EventDispUI::Run()
 {
   BuildInterface();
@@ -186,7 +197,6 @@ void EventDispUI::Run()
     int run = m_list_run.back();
     OpenRunFile(run);
     MoveEvent(1); // Need process one event here, before calling "FuncNewEventCheck"
-    //View3D(); // Often abort...
   } else {
     cout << "EventDispUI::Run(): Found no run.  Probably fail." << endl;
   }
@@ -204,80 +214,86 @@ void EventDispUI::BuildInterface()
   m_fr_main->SetWindowName("Event Display");
   m_fr_main->SetCleanup(kDeepCleanup);
 
-  TGVerticalFrame* frmVert = new TGVerticalFrame(m_fr_main);
+  m_fr_menu = new TGVerticalFrame(m_fr_main);
 
   TGLabel* lab = 0;
-  lab = new TGLabel(frmVert, "- - - Event Info - - -");
-  frmVert->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
+  lab = new TGLabel(m_fr_menu, "- - - Event Info - - -");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
 
-  m_lbl_run = new TGLabel(frmVert, "Run ??????");
-  frmVert->AddFrame(m_lbl_run, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsLeft, 2,2,2,2));
+  m_lbl_run = new TGLabel(m_fr_menu, "Run ??????");
+  m_fr_menu->AddFrame(m_lbl_run, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsLeft, 2,2,2,2));
 
-  m_lbl_n_evt = new TGLabel(frmVert, "Event ?? / ??");
-  frmVert->AddFrame(m_lbl_n_evt, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsLeft, 2,2,2,2));
+  m_lbl_n_evt = new TGLabel(m_fr_menu, "Event ?? / ??");
+  m_fr_menu->AddFrame(m_lbl_n_evt, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsLeft, 2,2,2,2));
 
-  lab = new TGLabel(frmVert, "- - - Event Navigation - - -");
-  frmVert->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,10,2));
+  lab = new TGLabel(m_fr_menu, "- - - Event Navigation - - -");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,10,2));
 
-  { // frm1
-    TGHorizontalFrame* frm1 = 0;
-    frm1 = new TGHorizontalFrame(frmVert);
-    lab = new TGLabel(frm1, "Event ID");
-    frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
-    m_ne_evt_id = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
-        TGNumberFormat::kNEAAnyNumber,
-        TGNumberFormat::kNELLimitMinMax,
-        -999999, 999999);
-    m_ne_evt_id->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqEvtID()");
-    frm1->AddFrame(m_ne_evt_id, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
-    frmVert->AddFrame(frm1);
-
-    frm1 = new TGHorizontalFrame(frmVert);
-    lab = new TGLabel(frm1, "Trigger");
-    frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
-    m_ne_trig = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
-        TGNumberFormat::kNEAAnyNumber,
-        TGNumberFormat::kNELLimitMinMax,
-        -999, 999);
-    m_ne_trig->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqTrig()");
-    frm1->AddFrame(m_ne_trig, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
-    frmVert->AddFrame(frm1);
-  }
-
-  TGTextButton* butt = 0;
-  butt = new TGTextButton(frmVert, "Next Event");
-  frmVert->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
-  butt->Connect("Clicked()", "EventDispUI", this, "NextEvent()");
-  
-  butt = new TGTextButton(frmVert, "Previous Event");
-  frmVert->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
-  butt->Connect("Clicked()", "EventDispUI", this, "PrevEvent()");
-  
-  TGCheckButton* check = new TGCheckButton(frmVert, new TGHotString("Auto-draw mode"), 99);
+  TGCheckButton* check = new TGCheckButton(m_fr_menu, new TGHotString("Auto mode"), 99);
   check->SetToolTipText("When checked, the last sampled event is automatically shown.");
   check->SetState(m_auto_mode ? kButtonDown : kButtonUp);
   check->Connect("Toggled(Bool_t)", "EventDispUI", this, "SetAutoMode(Bool_t)");
-  frmVert->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,2,2));
+  m_fr_menu->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,2,2));
   
-  lab = new TGLabel(frmVert, "- - - View Navigation - - -");
-  frmVert->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,10,2));
+  TGTextButton* butt;
+  { // m_fr_evt_nav
+    m_fr_evt_nav = new TGCompositeFrame(m_fr_menu);
+
+    { // frm1
+      TGHorizontalFrame* frm1 = 0;
+      frm1 = new TGHorizontalFrame(m_fr_evt_nav);
+      lab = new TGLabel(frm1, "Event ID");
+      frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
+      m_ne_evt_id = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
+                                      TGNumberFormat::kNEAAnyNumber,
+                                      TGNumberFormat::kNELLimitMinMax,
+                                      -999999, 999999);
+      m_ne_evt_id->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqEvtID()");
+      frm1->AddFrame(m_ne_evt_id, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
+      m_fr_evt_nav->AddFrame(frm1);
+      
+      frm1 = new TGHorizontalFrame(m_fr_evt_nav);
+      lab = new TGLabel(frm1, "Trigger");
+      frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
+      m_ne_trig = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
+                                    TGNumberFormat::kNEAAnyNumber,
+                                    TGNumberFormat::kNELLimitMinMax,
+                                    -999, 999);
+      m_ne_trig->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqTrig()");
+      frm1->AddFrame(m_ne_trig, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
+      m_fr_evt_nav->AddFrame(frm1);
+    }
+    
+    butt = new TGTextButton(m_fr_evt_nav, "Next Event");
+    m_fr_evt_nav->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+    butt->Connect("Clicked()", "EventDispUI", this, "NextEvent()");
+    
+    butt = new TGTextButton(m_fr_evt_nav, "Previous Event");
+    m_fr_evt_nav->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+    butt->Connect("Clicked()", "EventDispUI", this, "PrevEvent()");
+
+    m_fr_menu->AddFrame(m_fr_evt_nav);
+  }
+
+  lab = new TGLabel(m_fr_menu, "- - - View Navigation - - -");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,10,2));
   
-  butt = new TGTextButton(frmVert, "  Top View  ");
-  frmVert->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+  butt = new TGTextButton(m_fr_menu, "  Top View  ");
+  m_fr_menu->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
   butt->Connect("Clicked()", "EventDispUI", this, "ViewTop()");
   
-  butt = new TGTextButton(frmVert, " Side View ");
-  frmVert->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+  butt = new TGTextButton(m_fr_menu, " Side View ");
+  m_fr_menu->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
   butt->Connect("Clicked()", "EventDispUI", this, "ViewSide()");
 
-  butt = new TGTextButton(frmVert, "   3D View   ");
-  frmVert->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+  butt = new TGTextButton(m_fr_menu, "   3D View   ");
+  m_fr_menu->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
   butt->Connect("Clicked()", "EventDispUI", this, "View3D()");
 
-  TGTextButton* fExit = new TGTextButton(frmVert, "Exit","gApplication->Terminate(0)");
-  frmVert->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,10,2));
+  TGTextButton* fExit = new TGTextButton(m_fr_menu, "Exit","gApplication->Terminate(0)");
+  m_fr_menu->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,10,2));
 
-  m_fr_main->AddFrame(frmVert);
+  m_fr_main->AddFrame(m_fr_menu);
 
   m_fr_main->MapSubwindows();
   m_fr_main->Resize();
@@ -286,7 +302,7 @@ void EventDispUI::BuildInterface()
   browser->StopEmbedding();
   browser->SetTabTitle("Event Control", 0);
 
-  m_glv = gEve->GetDefaultGLViewer();
+  SetAutoMode(m_auto_mode);
 }
 
 void* EventDispUI::FuncNewEventCheck(void* arg)

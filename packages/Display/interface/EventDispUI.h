@@ -9,8 +9,6 @@ class TGRadioButton;
 class TGLabel;
 class TGNumberEntry;
 
-class TGLViewer;
-
 class EventDispUI {
   static const int RUN_MIN = 1000; //< Min of search range
   static const int RUN_MAX = 4000; //< Max of search range
@@ -21,8 +19,10 @@ class EventDispUI {
   int m_n_evt;
   int m_i_evt;
   
-  TGLViewer*  m_glv;
   TGMainFrame* m_fr_main;
+  TGCompositeFrame* m_fr_menu;
+  TGCompositeFrame* m_fr_evt_nav;
+
   TGLabel* m_lbl_run;
   TGLabel* m_lbl_n_evt;
   TGNumberEntry *m_ne_evt_id;
@@ -45,15 +45,11 @@ class EventDispUI {
   void MoveEvent(const int i_evt);
   void ReqEvtID();
   void ReqTrig();
-
   void ViewTop ();
   void ViewSide();
   void View3D  ();
-
   void UpdateLabels();
-
-  void SetAutoMode(bool value) { m_auto_mode = value; }
-  bool GetAutoMode()    { return m_auto_mode; }
+  void SetAutoMode(bool value);
   void Run();
 
  protected:
