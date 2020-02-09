@@ -8,17 +8,17 @@ R__LOAD_LIBRARY(libg4testbench)
 R__LOAD_LIBRARY(libg4detectors)
 R__LOAD_LIBRARY(libg4eval)
 R__LOAD_LIBRARY(libevt_filter)
-//R__LOAD_LIBRARY(libktracker)
 R__LOAD_LIBRARY(libpheve_display)
 R__LOAD_LIBRARY(libpheve_modules)
 R__LOAD_LIBRARY(libpheve_interface)
 #endif
 void InitInput();
 
-void EventDisp4MainDaqDst(const bool auto_mode=true)
+void EventDisp4MainDaqDst(const bool online=true)
 {
+  EventDispUI* ui = new EventDispUI();
+  ui->Init(online);
   InitInput();
-  EventDispUI* ui = new EventDispUI(auto_mode);
   ui->Run();
 }
 
@@ -30,7 +30,6 @@ void InitInput()
   JobOptsSvc *jobopt_svc = JobOptsSvc::instance();
   jobopt_svc->init("run6_data.opts");
 
-  // Fun4All G4 module
   PHG4Reco *g4Reco = new PHG4Reco();
   se->registerSubsystem(g4Reco);
   g4Reco->SetWorldSizeX(1000);
@@ -40,7 +39,6 @@ void InitInput()
   g4Reco->SetWorldMaterial("G4_AIR"); //G4_Galactic, G4_AIR
   g4Reco->SetPhysicsList("FTFP_BERT");
 
-  // insensitive elements of the spectrometer
   PHG4E1039InsensSubsystem* insens = new PHG4E1039InsensSubsystem("Insens");
   g4Reco->registerSubsystem(insens);
 
@@ -54,9 +52,6 @@ void InitInput()
   PHEventDisplay* disp = new PHEventDisplay(1920, 1080, false, false, "", "geom.root");
   //disp->set_verbosity(3);
   se->registerSubsystem(disp);
-
-  //PHG4Reco *g4 = (PHG4Reco *) se->getSubsysReco("PHG4RECO");
-  //PHEventDisplay *eve = (PHEventDisplay *) se->getSubsysReco("PHEventDisplay");
   
   g4Reco->InitRun(se->topNode());
   disp  ->InitRun(se->topNode());

@@ -10,6 +10,7 @@
 #include <TGButton.h>
 #include <TGLabel.h>
 #include <TGNumberEntry.h>
+#include <UtilAna/UtilOnline.h>
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllInputManager.h>
 #include <evt_filter/EvtFilter.h>
@@ -17,18 +18,22 @@
 #include "EventDispUI.h"
 using namespace std;
 
-EventDispUI::EventDispUI(const bool auto_mode)
+EventDispUI::EventDispUI()
   : m_run(0)
   , m_n_evt(0)
   , m_i_evt(0)
   , m_fr_main(0)
   , m_fr_menu(0)
-  , m_fr_evt_nav(0)
+  , m_fr_evt_sel(0)
+  , m_fr_evt_next(0)
+  , m_fr_evt_prev(0)
+  , m_lbl_mode(0)
   , m_lbl_run(0)
   , m_lbl_n_evt(0)
   , m_ne_evt_id(0)
   , m_ne_trig(0)
-  , m_auto_mode(auto_mode)
+  , m_online_mode(true)
+  , m_auto_mode(true)
   , m_tid1(0)
 {
   ;
@@ -36,9 +41,7 @@ EventDispUI::EventDispUI(const bool auto_mode)
 
 std::string EventDispUI::GetDstPath(const int run)
 {
-  ostringstream oss;
-  oss << setfill('0') << "/data2/e1039/onlmon/evt_disp/run_" << setw(6) << run << "_evt_disp.root";
-  return oss.str();
+  return m_online_mode ? UtilOnline::GetEDDstFilePath(run) : UtilOnline::GetDstFilePath(run);
 }
 
 bool EventDispUI::FindNewRuns()
@@ -79,7 +82,7 @@ int EventDispUI::OpenRunFile(const int run)
 
 void EventDispUI::NextEvent()
 {
-  if (m_auto_mode) {
+  if (m_online_mode && m_auto_mode) {
     cout << "NextEvent(): Ignored in auto mode." << endl;
     return;
   }
@@ -91,12 +94,14 @@ void EventDispUI::NextEvent()
   m_i_evt++;
   cout << "Next: " << m_i_evt << " / " << m_n_evt << endl;
   UpdateLabels();
-  se->run(1, true);
+  if (se->run(1, true) != 0) {
+    cout << "NextEvent() failed.  No event remains?" << endl;
+  }
 }
 
 void EventDispUI::PrevEvent()
 {
-  if (m_auto_mode) {
+  if (m_online_mode && m_auto_mode) {
     cout << "PrevEvent(): Ignored in auto mode." << endl;
     return;
   }
@@ -114,7 +119,9 @@ void EventDispUI::PrevEvent()
   UpdateLabels();
   Fun4AllServer* se = Fun4AllServer::instance();
   if (m_i_evt > 1) se->skip(m_i_evt - 1); // First move to the previous-to-previous event.
-  se->run(1, true); // Then read the previous event.
+  if (se->run(1, true) != 0) { // Then read the previous event.
+    cout << "PrevEvent() failed." << endl;
+  }
 }
 
 void EventDispUI::MoveEvent(const int i_evt)
@@ -130,7 +137,9 @@ void EventDispUI::MoveEvent(const int i_evt)
   UpdateLabels();
   Fun4AllServer* se = Fun4AllServer::instance();
   if (m_i_evt > 1) se->skip(m_i_evt - 1); // First move to the previous-to-previous event.
-  se->run(1, true); // Then read the previous event.
+  if (se->run(1, true) != 0) { // Then read the previous event.
+    cout << "MoveEvent() failed." << endl;
+  }
 }
 
 void EventDispUI::ReqEvtID()
@@ -173,8 +182,13 @@ void EventDispUI::View3D()
 void EventDispUI::UpdateLabels()
 {
   ostringstream oss;
+  oss << (m_online_mode ? "Online" : "Offline") << " Mode";
+  m_lbl_mode->SetText(oss.str().c_str());
+
+  oss.str("");
   oss << "Run " << m_run;
   m_lbl_run->SetText(oss.str().c_str());
+
   oss.str("");
   oss << "Event " << m_i_evt << " / " << m_n_evt;
   m_lbl_n_evt->SetText(oss.str().c_str());
@@ -183,25 +197,46 @@ void EventDispUI::UpdateLabels()
 void EventDispUI::SetAutoMode(bool value)
 {
   m_auto_mode = value;
-  if (value) m_fr_menu->HideFrame(m_fr_evt_nav);
-  else       m_fr_menu->ShowFrame(m_fr_evt_nav);
-  m_fr_menu->Resize(); // (m_fr_menu->GetDefaultSize());
-  m_fr_menu->MapWindow();
+  UpdateInterface();
+}
+
+/**
+ * Do all needed before showing GUI.
+ */
+void EventDispUI::Init(const bool online_mode)
+{
+  m_online_mode = online_mode;
+  if (! FindNewRuns()) {
+    cout << "EventDispUI::Init(): Found no run.  Abort." << endl;
+    exit(1);
+  }
+  m_run = m_list_run.back();
+  if (! online_mode) {
+    cout << "\nHit only 'Enter' to select the last run, " << m_list_run.back() << ".\n"
+         << "Or input a run number that you select.\n";
+    while (true) {
+      cout << "Run? " << flush;
+      char line[64];
+      cin.getline(line, 64);
+      if (line[0] == '\0') {
+        m_run = m_list_run.back();
+      } else if ((m_run = atoi(line)) <= 0) {
+        cout << "  Invalid input." << endl;
+        continue;
+      }
+      break;
+    }
+  }
 }
 
 void EventDispUI::Run()
 {
   BuildInterface();
-
-  if (FindNewRuns()) {
-    int run = m_list_run.back();
-    OpenRunFile(run);
-    MoveEvent(1); // Need process one event here, before calling "FuncNewEventCheck"
-  } else {
-    cout << "EventDispUI::Run(): Found no run.  Probably fail." << endl;
+  OpenRunFile(m_run);
+  MoveEvent(1); // Need process one event here, before calling "FuncNewEventCheck"
+  if (m_online_mode) {
+    pthread_create(&m_tid1, NULL, FuncNewEventCheck, this);
   }
-
-  pthread_create(&m_tid1, NULL, FuncNewEventCheck, this);
 }
 
 void EventDispUI::BuildInterface()
@@ -220,6 +255,9 @@ void EventDispUI::BuildInterface()
   lab = new TGLabel(m_fr_menu, "- - - Event Info - - -");
   m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
 
+  m_lbl_mode = new TGLabel(m_fr_menu, "Online/Offline Mode");
+  m_fr_menu->AddFrame(m_lbl_mode, new TGLayoutHints(kLHintsExpandX, 2,2,2,2));
+
   m_lbl_run = new TGLabel(m_fr_menu, "Run ??????");
   m_fr_menu->AddFrame(m_lbl_run, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsLeft, 2,2,2,2));
 
@@ -229,50 +267,64 @@ void EventDispUI::BuildInterface()
   lab = new TGLabel(m_fr_menu, "- - - Event Navigation - - -");
   m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,10,2));
 
-  TGCheckButton* check = new TGCheckButton(m_fr_menu, new TGHotString("Auto mode"), 99);
-  check->SetToolTipText("When checked, the last sampled event is automatically shown.");
-  check->SetState(m_auto_mode ? kButtonDown : kButtonUp);
-  check->Connect("Toggled(Bool_t)", "EventDispUI", this, "SetAutoMode(Bool_t)");
-  m_fr_menu->AddFrame(check, new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 2,2,2,2));
-  
-  TGTextButton* butt;
-  { // m_fr_evt_nav
-    m_fr_evt_nav = new TGCompositeFrame(m_fr_menu);
+  { // m_fr_evt_mode
+    m_fr_evt_mode = new TGCompositeFrame(m_fr_menu);
+    TGCheckButton* check = new TGCheckButton(m_fr_evt_mode, new TGHotString("Auto mode"), 99);
+    check->SetToolTipText("When checked, the last sampled event is automatically shown.");
+    check->SetState(m_auto_mode ? kButtonDown : kButtonUp);
+    check->Connect("Toggled(Bool_t)", "EventDispUI", this, "SetAutoMode(Bool_t)");
+    m_fr_evt_mode->AddFrame(check);
+    m_fr_menu->AddFrame(m_fr_evt_mode, new TGLayoutHints(kLHintsCenterX, 5, 5, 2, 2));
+  }  
 
-    { // frm1
-      TGHorizontalFrame* frm1 = 0;
-      frm1 = new TGHorizontalFrame(m_fr_evt_nav);
-      lab = new TGLabel(frm1, "Event ID");
-      frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
-      m_ne_evt_id = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
-                                      TGNumberFormat::kNEAAnyNumber,
-                                      TGNumberFormat::kNELLimitMinMax,
-                                      -999999, 999999);
-      m_ne_evt_id->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqEvtID()");
-      frm1->AddFrame(m_ne_evt_id, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
-      m_fr_evt_nav->AddFrame(frm1);
-      
-      frm1 = new TGHorizontalFrame(m_fr_evt_nav);
-      lab = new TGLabel(frm1, "Trigger");
-      frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
-      m_ne_trig = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
+  TGTextButton* butt;
+  { // m_fr_evt_sel
+    m_fr_evt_sel = new TGCompositeFrame(m_fr_menu);
+
+    TGHorizontalFrame* frm1 = 0;
+    frm1 = new TGHorizontalFrame(m_fr_evt_sel);
+    lab = new TGLabel(frm1, "Event ID");
+    frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
+    m_ne_evt_id = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
                                     TGNumberFormat::kNEAAnyNumber,
                                     TGNumberFormat::kNELLimitMinMax,
-                                    -999, 999);
-      m_ne_trig->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqTrig()");
-      frm1->AddFrame(m_ne_trig, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
-      m_fr_evt_nav->AddFrame(frm1);
-    }
+                                    -999999, 999999);
+    m_ne_evt_id->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqEvtID()");
+    frm1->AddFrame(m_ne_evt_id, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
+    m_fr_evt_sel->AddFrame(frm1);
     
-    butt = new TGTextButton(m_fr_evt_nav, "Next Event");
-    m_fr_evt_nav->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+    frm1 = new TGHorizontalFrame(m_fr_evt_sel);
+    lab = new TGLabel(frm1, "Trigger");
+    frm1->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 5, 5, 3, 4));
+    m_ne_trig = new TGNumberEntry(frm1, -1, 9, 999, TGNumberFormat::kNESInteger,
+                                  TGNumberFormat::kNEAAnyNumber,
+                                  TGNumberFormat::kNELLimitMinMax,
+                                  -999, 999);
+    m_ne_trig->Connect("ValueSet(Long_t)", "EventDispUI", this, "ReqTrig()");
+    frm1->AddFrame(m_ne_trig, new TGLayoutHints(kLHintsCenterY | kLHintsRight, 5, 5, 5, 5));
+    m_fr_evt_sel->AddFrame(frm1);
+
+    m_fr_menu->AddFrame(m_fr_evt_sel, new TGLayoutHints(kLHintsCenterX, 5, 5, 2, 2));
+  }
+
+  { // m_fr_evt_next
+    m_fr_evt_next = new TGCompositeFrame(m_fr_menu);
+    
+    butt = new TGTextButton(m_fr_evt_next, "Next Event");
+    m_fr_evt_next->AddFrame(butt);
     butt->Connect("Clicked()", "EventDispUI", this, "NextEvent()");
     
-    butt = new TGTextButton(m_fr_evt_nav, "Previous Event");
-    m_fr_evt_nav->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
+    m_fr_menu->AddFrame(m_fr_evt_next, new TGLayoutHints(kLHintsCenterX, 5, 5, 2, 2));
+  }
+
+  { // m_fr_evt_prev
+    m_fr_evt_prev = new TGCompositeFrame(m_fr_menu);
+    
+    butt = new TGTextButton(m_fr_evt_prev, "Previous Event");
+    m_fr_evt_prev->AddFrame(butt);
     butt->Connect("Clicked()", "EventDispUI", this, "PrevEvent()");
 
-    m_fr_menu->AddFrame(m_fr_evt_nav);
+    m_fr_menu->AddFrame(m_fr_evt_prev, new TGLayoutHints(kLHintsCenterX, 5, 5, 2, 2));
   }
 
   lab = new TGLabel(m_fr_menu, "- - - View Navigation - - -");
@@ -290,8 +342,17 @@ void EventDispUI::BuildInterface()
   m_fr_menu->AddFrame(butt, new TGLayoutHints(kLHintsCenterX, 5, 5, 3, 4));
   butt->Connect("Clicked()", "EventDispUI", this, "View3D()");
 
-  TGTextButton* fExit = new TGTextButton(m_fr_menu, "Exit","gApplication->Terminate(0)");
-  m_fr_menu->AddFrame(fExit, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,10,2));
+  lab = new TGLabel(m_fr_menu, "Left-button drag = Rotate");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
+
+  lab = new TGLabel(m_fr_menu, "Middle-button drag = Pan");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
+
+  lab = new TGLabel(m_fr_menu, "Middle-button scroll = Zoom");
+  m_fr_menu->AddFrame(lab, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
+
+  butt = new TGTextButton(m_fr_menu, "Exit","gApplication->Terminate(0)");
+  m_fr_menu->AddFrame(butt, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2,2,10,2));
 
   m_fr_main->AddFrame(m_fr_menu);
 
@@ -302,7 +363,29 @@ void EventDispUI::BuildInterface()
   browser->StopEmbedding();
   browser->SetTabTitle("Event Control", 0);
 
-  SetAutoMode(m_auto_mode);
+  UpdateInterface();
+}
+
+void EventDispUI::UpdateInterface()
+{
+  if (m_online_mode) {
+    m_fr_menu->ShowFrame(m_fr_evt_mode);
+    m_fr_menu->HideFrame(m_fr_evt_sel);
+    if (m_auto_mode) {
+      m_fr_menu->HideFrame(m_fr_evt_next);
+      m_fr_menu->HideFrame(m_fr_evt_prev);
+    } else {
+      m_fr_menu->ShowFrame(m_fr_evt_next);
+      m_fr_menu->ShowFrame(m_fr_evt_prev);
+    }
+  } else {
+    m_fr_menu->HideFrame(m_fr_evt_mode);
+    m_fr_menu->ShowFrame(m_fr_evt_sel);
+    m_fr_menu->ShowFrame(m_fr_evt_next);
+    m_fr_menu->HideFrame(m_fr_evt_prev);
+  }
+  m_fr_menu->Resize(); // (m_fr_menu->GetDefaultSize());
+  m_fr_menu->MapWindow();
 }
 
 void* EventDispUI::FuncNewEventCheck(void* arg)
@@ -329,3 +412,4 @@ void EventDispUI::ExecNewEventCheck()
     sleep(15);
   }
 }
+

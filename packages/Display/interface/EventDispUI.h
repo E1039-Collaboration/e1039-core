@@ -21,18 +21,23 @@ class EventDispUI {
   
   TGMainFrame* m_fr_main;
   TGCompositeFrame* m_fr_menu;
-  TGCompositeFrame* m_fr_evt_nav;
+  TGCompositeFrame* m_fr_evt_mode;
+  TGCompositeFrame* m_fr_evt_sel;
+  TGCompositeFrame* m_fr_evt_next;
+  TGCompositeFrame* m_fr_evt_prev;
 
+  TGLabel* m_lbl_mode;
   TGLabel* m_lbl_run;
   TGLabel* m_lbl_n_evt;
   TGNumberEntry *m_ne_evt_id;
   TGNumberEntry *m_ne_trig;
-  
+
+  bool m_online_mode;
   bool m_auto_mode;
   pthread_t m_tid1;
 
  public:
-  EventDispUI(const bool auto_mode=false);
+  EventDispUI();
   ~EventDispUI() {;}
 
   std::string GetDstPath(const int run);
@@ -50,10 +55,12 @@ class EventDispUI {
   void View3D  ();
   void UpdateLabels();
   void SetAutoMode(bool value);
+  void Init(const bool online_mode);
   void Run();
 
  protected:
   void BuildInterface();
+  void UpdateInterface();
 
   static void* FuncNewEventCheck(void* arg);
   void ExecNewEventCheck();

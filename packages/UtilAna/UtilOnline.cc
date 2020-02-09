@@ -7,6 +7,7 @@ using namespace std;
 std::string UtilOnline::m_dir_end     = "/seaquest/e906daq/coda/data/END";
 std::string UtilOnline::m_dir_coda    = "/localdata/codadata"; // could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
 std::string UtilOnline::m_dir_dst     = "/data2/e1039/dst";
+std::string UtilOnline::m_dir_eddst   = "/data2/e1039/onlmon/evt_disp";
 std::string UtilOnline::m_dir_onlmon  = "/data2/e1039/onlmon/plots";
 std::string UtilOnline::m_sch_maindaq = "user_e1039_maindaq";
 
@@ -52,6 +53,14 @@ std::string UtilOnline::RunNum2DstFile(const int run)
   return oss.str();
 }
 
+/// Convert a run number to the corresponding name of edDST file.
+std::string UtilOnline::RunNum2EDDstFile(const int run)
+{
+  ostringstream oss;
+  oss << setfill('0') << "run_" << setw(6) << run << "_evt_disp.root";
+  return oss.str();
+}
+
 std::string UtilOnline::GetCodaFilePath(const int run)
 {
   return GetCodaFileDir() + "/" + RunNum2CodaFile(run);
@@ -65,4 +74,9 @@ std::string UtilOnline::GetEndFilePath(const int run)
 std::string UtilOnline::GetDstFilePath(const int run)
 {
   return GetDstFileDir() + "/" + RunNum2DstFile(run);
+}
+
+std::string UtilOnline::GetEDDstFilePath(const int run)
+{
+  return GetEDDstFileDir() + "/" + RunNum2EDDstFile(run);
 }
