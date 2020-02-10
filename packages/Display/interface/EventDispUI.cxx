@@ -133,10 +133,11 @@ void EventDispUI::MoveEvent(const int i_evt)
       return;
     }
   }
+  int i_move = i_evt - m_i_evt;
   m_i_evt = i_evt;
   UpdateLabels();
   Fun4AllServer* se = Fun4AllServer::instance();
-  if (m_i_evt > 1) se->skip(m_i_evt - 1); // First move to the previous-to-previous event.
+  if (i_move > 1) se->skip(i_move - 1); // First move to the previous event.
   if (se->run(1, true) != 0) { // Then read the previous event.
     cout << "MoveEvent() failed." << endl;
   }
