@@ -15,7 +15,7 @@ CodaInputManager::CodaInputManager() :
   ;
 }
 
-int CodaInputManager::OpenFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
+int CodaInputManager::OpenFile(const std::string fname, const long file_size_min, const int sec_wait, const int n_wait)
 {
   if (! file_exists(fname)) {
     cerr << "!!ERROR!!  Coda file does not exist: " << fname << "." << endl;
@@ -62,14 +62,6 @@ int CodaInputManager::OpenFile(const std::string fname, const int file_size_min,
     return 3;
   }
   m_event_count = 0;
-  //for (int ii = 0; ii <= event_count_next; ii++) { // todo: this loop number is exactly correct??
-  //  unsigned int coda_id; // dummy
-  //  int* words = 0; // dummy
-  //  if (! NextCodaEvent(coda_id, words)) {
-  //    cout << "Failed at moving to the next event (" << event_count_next << ") at ii = " << ii << "." << endl;
-  //    return 4;
-  //  }
-  //}
   return 0;
 }
 
@@ -117,7 +109,7 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
     }
     // Re-open the file, requring a larger file size
     int event_count = m_event_count;
-    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20); // , m_event_count+1);
+    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20);
     if (ret == 0) {
       return JumpCodaEvent(coda_id, words, event_count + 1);
     } else {

@@ -5,7 +5,7 @@
 class CodaInputManager;
 
 class MainDaqParser {
-  int m_file_size_min;
+  long m_file_size_min;
   int m_sec_wait;
   int m_n_wait;
   CodaInputManager* coda;
@@ -62,7 +62,7 @@ public:
   ~MainDaqParser();
 
   CodaInputManager* GetCoda() { return coda; }
-  int OpenCodaFile(const std::string fname, const int file_size_min=32768, const int sec_wait=15, const int n_wait=40);
+  int OpenCodaFile(const std::string fname, const long file_size_min=32768, const int sec_wait=15, const int n_wait=40);
   bool NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd);
   int End();
 

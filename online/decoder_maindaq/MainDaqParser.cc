@@ -24,7 +24,7 @@ MainDaqParser::~MainDaqParser()
   if (list_ed_now) delete list_ed_now;
 }
 
-int MainDaqParser::OpenCodaFile(const std::string fname, const int file_size_min, const int sec_wait, const int n_wait)
+int MainDaqParser::OpenCodaFile(const std::string fname, const long file_size_min, const int sec_wait, const int n_wait)
 {
   m_file_size_min = file_size_min;
   m_sec_wait      = sec_wait;

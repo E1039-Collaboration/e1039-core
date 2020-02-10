@@ -26,7 +26,7 @@ if [ -z "$1" ] ; then
 elif [ "X$1" = 'Xauto' ] ; then
     DIR_INST=$(readlink -f $DIR_SCRIPT/../../core-inst)
 elif [ "X$1" = 'Xonline' ] ; then
-    DIR_INST=/data2/e1039/core-online-new
+    DIR_INST=/data2/e1039/core/new
 else
     DIR_INST=$(readlink -m "$1")
 fi
