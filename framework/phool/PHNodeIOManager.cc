@@ -41,6 +41,7 @@ PHNodeIOManager::PHNodeIOManager ():
   split(0),
   accessMode(PHReadOnly),
   CompressionLevel(3),
+  realTimeSave(false), 
   isFunctionalFlag(0)
 {}
 
@@ -49,7 +50,8 @@ PHNodeIOManager::PHNodeIOManager (const string& f,
   file(NULL),
   tree(NULL),
   TreeName("T"),
-  CompressionLevel(3)
+  CompressionLevel(3),
+  realTimeSave(false)
 {
   isFunctionalFlag = setFile(f, "titled by PHOOL", a) ? 1 : 0;
 }
@@ -59,7 +61,8 @@ PHNodeIOManager::PHNodeIOManager (const string& f, const string& title,
   file(NULL),
   tree(NULL),
   TreeName("T"),
-  CompressionLevel(3)
+  CompressionLevel(3),
+  realTimeSave(false)
 {
   isFunctionalFlag = setFile(f, title , a) ? 1 : 0;
 }
@@ -69,7 +72,8 @@ PHNodeIOManager::PHNodeIOManager (const string& f, const PHAccessType a,
   file(NULL),
   tree(NULL),
   TreeName("T"),
-  CompressionLevel(3)
+  CompressionLevel(3),
+  realTimeSave(false)
 {
   if (treeindex != PHEventTree)
     {
@@ -179,6 +183,7 @@ PHNodeIOManager::write(PHCompositeNode* topNode)
   if (file && tree)
     {
       tree->Fill();
+      if (realTimeSave) tree->AutoSave("SaveSelf");
       eventNumber++;
       return True;
     }

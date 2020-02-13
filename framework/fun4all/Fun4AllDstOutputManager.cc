@@ -197,6 +197,7 @@ Fun4AllDstOutputManager::Write(PHCompositeNode *startNode)
 
         }
     }
+
   dstOut->write(startNode);
   if (savenodes.empty())
     {
@@ -229,3 +230,8 @@ Fun4AllDstOutputManager::WriteNode(PHCompositeNode *thisNode)
   return 0;
 }
 
+void
+Fun4AllDstOutputManager::EnableRealTimeSave()
+{
+  dstOut->SetRealTimeSave(true);
+}

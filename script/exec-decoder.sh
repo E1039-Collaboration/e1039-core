@@ -9,12 +9,12 @@
 # /data2/e1039/this-e1039.sh) so that anyone (shifter) can execute this script
 # without manual setting.
 
-if [ $HOSTNAME != 'seaquestdaq01.fnal.gov' ] ; then
+if [ $(hostname -s) != 'seaquestdaq01' ] ; then
     echo "!!ERROR!!  This script must be run on seaquestdaq01.  Abort."
     exit
 fi
 
-CORE_VER=online
+CORE_VER=default
 IS_ONLINE=false
 DECO_MODE=devel
 

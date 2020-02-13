@@ -294,6 +294,36 @@ int PHEventDisplay::End(PHCompositeNode *topNode)
   return 0;
 }
 
+void PHEventDisplay::set_view_top()
+{
+  TGLViewer* v = gEve->GetDefaultGLViewer();
+  v->ResetCurrentCamera();
+  v->CurrentCamera().RotateRad(-3.14/2.0, 0);
+  v->CurrentCamera().Zoom(200, 0, 0); // (400, 0, 0);
+  v->CurrentCamera().Truck(500, 0); // (2800,0);
+  v->DoDraw();
+}
+
+void PHEventDisplay::set_view_side()
+{
+  TGLViewer* v = gEve->GetDefaultGLViewer();
+  v->ResetCurrentCamera();
+  v->CurrentCamera().Zoom(200, 0, 0); // (400, 0, 0);
+  v->CurrentCamera().Truck(500, 0); // (2800,0);
+  v->DoDraw();
+}
+
+void PHEventDisplay::set_view_3d()
+{
+  TGLViewer* v = gEve->GetDefaultGLViewer();
+  v->ResetCurrentCamera();
+  v->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
+  v->CurrentCamera().Zoom(180, 0, 0); // (350, 0, 0);
+  v->CurrentCamera().Truck(1000, -500); // (2000,-1500);
+  v->DoDraw();
+}
+
+
 void PHEventDisplay::update_scene(PHCompositeNode *topNode)
 {
   if (verbosity) std::cout << "PHEventDisplay - update_scene() nevent = " <<nevent<<std::endl;
@@ -390,16 +420,9 @@ void PHEventDisplay::draw_default(PHCompositeNode *topNode)
 
   if(nevent==1) {
     v->UpdateScene();
-    // top view
-    //  v->CurrentCamera().RotateRad(-3.14/2,0);
-    //  v->CurrentCamera().Zoom(400, 0, 0);
-    //  v->CurrentCamera().Truck(3000,0);
-    // 3D view
-    v->CurrentCamera().RotateRad(-3.14/4., -3.14/4.);
-    v->CurrentCamera().Zoom(350, 0, 0);
-    v->CurrentCamera().Truck(2000,-1500);
+    set_view_3d();
   }
-  v->DoDraw();
+  //v->DoDraw();
 
   // Annotation
 
@@ -407,7 +430,7 @@ void PHEventDisplay::draw_default(PHCompositeNode *topNode)
   if (_sqevent) {
     if(verbosity) std::cout<<"PHEventDisplay - SQEvent nodes found."<<std::endl;
     v->DeleteOverlayAnnotations();
-    TGLAnnotation* ann = new TGLAnnotation(v, Form("Run: %6d Event: %d", _sqevent->get_run_id(), _sqevent->get_event_id()), 0.55, 0.95);
+    TGLAnnotation* ann = new TGLAnnotation(v, Form("Run: %d, Spill: %d, Event: %d", _sqevent->get_run_id(), _sqevent->get_spill_id(), _sqevent->get_event_id()), 0.55, 0.95);
     ann->SetTextSize(0.04);
     ann = new TGLAnnotation(v,
         Form("NIM: {%d, %d, %d, %d, %d}  MATRIX: {%d, %d, %d, %d, %d}",

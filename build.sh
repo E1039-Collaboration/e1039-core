@@ -51,12 +51,27 @@ else
     packages/Display/modules
     packages/Display/interface
     module_example
+    _macro_
 	)
 fi
 
 for package in "${packages[@]}"
 do
   echo "================================================================"
+  if [ $package = '_macro_' ] ; then
+      echo "Install all macros to $install/macros/."
+      ( 
+	  cd $src
+	  find . -type d -regex '.*/macros*' | while read DIR_SRC ; do
+	      echo "  $DIR_SRC"
+	      DIR_DEST=$install/macros/$(dirname $DIR_SRC)
+	      mkdir -p $DIR_DEST
+	      cp -p $DIR_SRC/* $DIR_DEST
+	  done
+      )
+      continue
+  fi
+
   echo $src/$package
   if [ -d $build/$package ]; then
     echo "Previous build exists, will clean up."
@@ -75,19 +90,5 @@ do
     exit
   fi
 done
-
-if [ ${#packages[@]} -gt 1 ] ; then
-    echo "================================================================"
-    echo "Install all macros to $install/macros/."
-    ( 
-	cd $src
-	find . -type d -regex '.*/macros*' | while read DIR_SRC ; do
-	    echo "  $DIR_SRC"
-	    DIR_DEST=$install/macros/$(dirname $DIR_SRC)
-	    mkdir -p $DIR_DEST
-	    cp -p $DIR_SRC/* $DIR_DEST
-	done
-    )
-fi
 
 cd $build

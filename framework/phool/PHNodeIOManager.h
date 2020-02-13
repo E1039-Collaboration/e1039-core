@@ -38,6 +38,7 @@ public:
    PHBoolean SetCompressionLevel(const int level);
    double GetBytesWritten();
    std::map<std::string,TBranch*> *GetBranchMap();
+   void SetRealTimeSave(const bool onoff) { realTimeSave = onoff; }
 
 public:
    PHBoolean write(TObject**, const std::string&);
@@ -54,6 +55,7 @@ private:
   int   split;
   int   accessMode;
   int   CompressionLevel;
+  bool  realTimeSave;
   std::map<std::string,TBranch*> fBranches ;
   std::map<std::string,PHBoolean> objectToRead ;
 

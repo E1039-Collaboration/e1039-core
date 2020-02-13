@@ -3,6 +3,7 @@
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libdecoder_maindaq)
 R__LOAD_LIBRARY(libonlmonserver)
+R__LOAD_LIBRARY(libpheve_modules)
 #endif
 
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
@@ -11,8 +12,10 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   gSystem->Load("libinterface_main.so");
   gSystem->Load("libdecoder_maindaq.so");
   gSystem->Load("libonlmonserver.so");
+  gSystem->Load("libpheve_modules.so");
   GeomSvc::UseDbSvc(true);
   const bool use_onlmon = true;
+  const bool use_evt_disp = true;
 
   const char* deco_mode = gSystem->Getenv("E1039_DECODER_MODE");
   if (deco_mode && strcmp(deco_mode, "std") == 0) {
@@ -42,9 +45,6 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   //if (is_online) in->PretendSpillInterval(20);
   in->fileopen(fn_in);
   se->registerInputManager(in);
-
-  Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
-  se->registerOutputManager(out);
 
   se->registerSubsystem(new DbUpRun());
   se->registerSubsystem(new DbUpSpill());
@@ -86,6 +86,22 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D3m));
     se->registerSubsystem(new OnlMonProp (OnlMonProp::P1));
     se->registerSubsystem(new OnlMonProp (OnlMonProp::P2));
+  }
+
+  Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
+  se->registerOutputManager(out);
+
+  if (use_evt_disp) {
+    se->registerSubsystem(new EvtDispFilter(1000, 1)); // (step, max per spill)
+
+    oss.str("");
+    oss << "/data2/e1039/onlmon/evt_disp";
+    gSystem->mkdir(oss.str().c_str(), true);
+    oss << "/run_" << setfill('0') << setw(6) << run << "_evt_disp.root";
+    Fun4AllDstOutputManager *out2 = new Fun4AllDstOutputManager("DSTOUT2", oss.str());
+    out2->EnableRealTimeSave();
+    out2->AddEventSelector("EvtDispFilter");
+    se->registerOutputManager(out2);
   }
 
   se->run(nevent);
