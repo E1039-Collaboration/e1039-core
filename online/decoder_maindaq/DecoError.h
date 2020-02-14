@@ -47,6 +47,7 @@ class DecoError {
   void CountFlush();
   void AddTdcError(const int event, const int roc, const TdcError_t type);
   void AggregateData();
+  void PrintData(std::ostream& os=std::cout);
 
  private:
   void UpdateDbInfo(DbSvc* db);

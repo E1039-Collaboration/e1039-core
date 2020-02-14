@@ -51,6 +51,25 @@ void DecoError::AggregateData()
   UpdateDbInfo(&db);
   UpdateDbTdc (&db);
 }
+
+void DecoError::PrintData(std::ostream& os)
+{
+  os << "DecoError::PrintData(): " << m_run_id << " " << m_spill_id << "\n";
+  for (int roc = 0; roc < N_ROC; roc++) {
+    for (int err = 0; err < N_TDC_ERROR; err++) {
+      int n_evt = m_n_err_tdc[roc][err].size();
+      if (n_evt == 0) continue;
+      os << "  ROC " << setw(2) << roc << ", type " << setw(2) << err << ": n=" << n_evt;
+      if (n_evt > 100) n_evt = 100; // Print 100 event IDs at max.
+      for (int i_evt = 0; i_evt < n_evt; i_evt++) {
+        if (i_evt % 10 == 0) os << "\n    ";
+        os << " " << m_n_err_tdc[roc][err].at(i_evt);
+      }
+      os << "\n";
+    }
+  }
+  os << endl;
+}
       
 void DecoError::UpdateDbInfo(DbSvc* db)
 {

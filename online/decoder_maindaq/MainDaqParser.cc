@@ -136,6 +136,10 @@ int MainDaqParser::End()
          << "  v1495 hits: total = " << run_data.n_t_hit << ", bad = " << run_data.n_t_hit_bad << "\n"
          << "  Real decoding time: " << (dec_par.timeEnd - dec_par.timeStart) << endl;
   }
+  if (dec_par.is_online) {
+    dec_err.PrintData();
+    dec_err.InitData();
+  }
   return 0;
 }
 
@@ -1316,7 +1320,7 @@ int MainDaqParser::PackOneSpillData()
 {
   if (dec_par.verbose > 2) cout << "PackOneSpillData(): n=" << list_ed->size() << endl;
 
-  if (true) { // (dec_par.is_online) {
+  if (dec_par.is_online) {
     dec_err.SetID(dec_par.runID, dec_par.spillID);
     dec_err.AggregateData();
   }
