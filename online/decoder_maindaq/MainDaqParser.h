@@ -2,6 +2,7 @@
 #define _MAIN_DAQ_PARSER_H_
 #include "DecoData.h"
 #include "DecoParam.h"
+#include "DecoError.h"
 class CodaInputManager;
 
 class MainDaqParser {
@@ -67,6 +68,7 @@ public:
   int End();
 
   DecoParam dec_par;
+  DecoError dec_err;
 };
 
 #endif // _MAIN_DAQ_PARSER_H_
