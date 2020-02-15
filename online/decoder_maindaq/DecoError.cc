@@ -41,6 +41,7 @@ void DecoError::CountFlush()
 void DecoError::AddTdcError(const int event, const int roc, const TdcError_t type)
 {
   m_n_err_tdc[roc][type].push_back(event);
+  cout << "AddTdcError: " << event << " " << roc << " " << type << "." << endl;
   m_flush_has_error = true;
 }
 

@@ -1005,7 +1005,6 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     // "0x8*******" or "0x9*******".  This "if" condition is strict enough to 
     // catch this error.  Shifter has to reset VME crate to clear this error.
     dec_err.AddTdcError(dec_par.codaID, roc, DecoError::WORD_ONLY89);
-    cerr << "WARNING: Strange 'ID&N' word (0x" << hex << words[idx_begin] << dec << ") @ " << roc << endl;
     return idx_begin + 1;
   }
 
@@ -1018,7 +1017,6 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   }
   if (idx_events_end > idx_roc_end) {
     dec_err.AddTdcError(dec_par.codaID, roc, DecoError::WORD_OVERFLOW);
-    cerr << "WARNING: Word overflow.  Skip ROC (" << roc << ")" << endl;
     return -1;
   }
 
@@ -1031,7 +1029,6 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     if (get_hex_bits(words[idx], 7, 1) == 8) { // header = stop hit
       if (header_found) { // Not seen in run 23930, but seen in run 23751.
         dec_err.AddTdcError(dec_par.codaID, roc, DecoError::MULTIPLE_HEADER);
-	cerr << "WARNING:  Header after header." << endl;
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) Abort("Stop signal is not rising.  Not supported.");
@@ -1042,8 +1039,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     } else if (get_hex_bits(words[idx], 7, 1) == 0 &&
 	       get_hex_bits(words[idx], 6, 7) != 0   ) { // event ID
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::EVT_ID_ONLY);
-	cerr << "WARNING:  eventID without stop word." << endl; // Possible to miss a stop signal???
+        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::EVT_ID_ONLY); // eventID without stop word
 	run_data.n_hit_bad++;
 	continue;
       }
@@ -1071,15 +1067,13 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
       list_time.clear();
     } else { // start hit
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_WO_STOP);
-	cerr << "WARNING:  Start without stop word." << endl; // Possible to miss a stop signal???
+        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_WO_STOP); // Start without stop word
 	run_data.n_hit_bad++;
 	continue;
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_NOT_RISE);
-	cerr << "WARNING:  Start signal is not rising." << endl;
+        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_NOT_RISE); // Start signal is not rising
 	run_data.n_hit_bad++;
       }
       double fine  = 4.0 - get_hex_bit (word, 0) * 4.0 / 9.0;
@@ -1095,8 +1089,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     }
   }
   if (header_found) { // Not seen in run 23930, but seen in run 23751.
-    dec_err.AddTdcError(dec_par.codaID, roc, DecoError::DIRTY_FINISH);
-    cerr << "WARNING:  Not finished cleanly." << endl;
+    dec_err.AddTdcError(dec_par.codaID, roc, DecoError::DIRTY_FINISH); // Not finished cleanly
   }
   
   return idx_events_end;
