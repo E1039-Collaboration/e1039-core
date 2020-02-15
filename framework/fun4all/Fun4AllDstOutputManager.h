@@ -23,8 +23,8 @@ class Fun4AllDstOutputManager: public Fun4AllOutputManager
 
   void Print(const std::string &what = "ALL") const;
 
-  int Write(PHCompositeNode *startNode);
-  int WriteNode(PHCompositeNode *thisNode);
+  virtual int Write(PHCompositeNode *startNode);
+  virtual int WriteNode(PHCompositeNode *thisNode);
 
   void EnableRealTimeSave();
 

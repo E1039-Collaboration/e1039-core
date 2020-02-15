@@ -16,15 +16,17 @@ Fun4AllDstOutputManager::Fun4AllDstOutputManager(const string &myname, const str
  Fun4AllOutputManager( myname )
 {
   outfilename = fname;
-  dstOut = new PHNodeIOManager(fname.c_str(), PHWrite);
-  if (!dstOut->isFunctional())
-    {
+  if (fname == "") {
+    dstOut = 0;
+  } else {
+    dstOut = new PHNodeIOManager(fname.c_str(), PHWrite);
+    if (!dstOut->isFunctional()) {
       delete dstOut;
-      cout << PHWHERE << " Could not open " << fname 
-	   << " exiting now" << endl;
+      cout << PHWHERE << "Could not open " << fname << ".  Exit." << endl;
       exit(1);
     }
-  dstOut->SetCompressionLevel(3);
+    dstOut->SetCompressionLevel(3);
+  }
   return ;
 }
 
