@@ -119,12 +119,12 @@ TSocket* OnlMonComm::ConnectServer()
       if (sock->Select(TSocket::kRead, 2000) > 0) { // 2000 msec
         TMessage* mess = 0;
         sock->Recv(mess);
-        if (mess->What() == kMESS_STRING) {
+        if (mess && mess->What() == kMESS_STRING) {
           char str[200];
           mess->ReadString(str, 200);
           if (strcmp(str, "Pong") == 0) port_ok = true;
+          delete mess;
         }
-        delete mess;
       }
     }
     if (port_ok) {
