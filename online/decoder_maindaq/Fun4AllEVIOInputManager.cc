@@ -546,6 +546,7 @@ Fun4AllEVIOInputManager::SyncIt(const SyncObject *mastersync)
 
 void Fun4AllEVIOInputManager::SetOnline(const bool is_online)
 {
+  parser->dec_par.is_online = is_online;
   parser->GetCoda()->SetOnline(is_online);
 }
 
