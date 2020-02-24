@@ -9,7 +9,7 @@
 # /data2/e1039/this-e1039.sh) so that anyone (shifter) can execute this script
 # without manual setting.
 
-if [ $(hostname -s) != 'seaquestdaq01' ] ; then
+if [ $(hostname -s) != 'e1039prod1' ] ; then
     echo "!!ERROR!!  This script must be run on seaquestdaq01.  Abort."
     exit
 fi
