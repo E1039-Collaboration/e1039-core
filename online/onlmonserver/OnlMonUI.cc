@@ -59,11 +59,11 @@ void OnlMonUI::BuildInterface()
   { // Spill selector by none
     TGHorizontalFrame* fr_sp_all = new TGHorizontalFrame(m_fr_main);
 
-    m_rad_sp_all = new TGRadioButton(fr_sp_all, "All    ");
+    m_rad_sp_all = new TGRadioButton(fr_sp_all, "All ");
     m_rad_sp_all->Connect("Pressed()", "OnlMonUI", this, "HandleSpRadAll()");
-    fr_sp_all->AddFrame(m_rad_sp_all, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX, 2,2,2,2));
+    fr_sp_all->AddFrame(m_rad_sp_all, new TGLayoutHints(kLHintsCenterY, 2,2,2,2));
 
-    m_lbl_sp = new TGLabel(fr_sp_all, "?-?");
+    m_lbl_sp = new TGLabel(fr_sp_all, "? ? ? ? ? ?-? ? ? ? ? ?");
     fr_sp_all->AddFrame(m_lbl_sp, new TGLayoutHints(kLHintsCenterY | kLHintsExpandX | kLHintsRight, 2,2,2,2));
 
     m_fr_main->AddFrame(fr_sp_all);
@@ -185,17 +185,28 @@ void* OnlMonUI::ExecSpillRangeCheck(void* arg)
 void OnlMonUI::UpdateFullSpillRange()
 {
   OnlMonComm* comm = OnlMonComm::instance();
-  int sp_min, sp_max;
   comm->ReceiveFullSpillRange();
-  comm->GetFullSpillRange(sp_min, sp_max);
-
-  m_num_sp0->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
-  m_num_sp1->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
-  m_slider->SetRange(sp_min, sp_max);
-
-  ostringstream oss;
-  oss << sp_min << "-" << sp_max;
-  m_lbl_sp->SetText(oss.str().c_str());
+  if (comm->GetSpillSelectability()) {
+    int sp_min, sp_max;
+    comm->GetFullSpillRange(sp_min, sp_max);
+    
+    m_num_sp0->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
+    m_num_sp1->SetLimits(TGNumberFormat::kNELLimitMinMax, sp_min, sp_max);
+    m_slider->SetRange(sp_min, sp_max);
+    
+    ostringstream oss;
+    oss << sp_min << "-" << sp_max;
+    m_lbl_sp->SetText(oss.str().c_str());
+    m_rad_sp_last ->SetEnabled(true);
+    m_rad_sp_range->SetEnabled(true);
+  } else {
+    m_lbl_sp->SetText("(not selectable)");
+    m_rad_sp_all  ->SetOn(true );
+    m_rad_sp_last ->SetOn(false);
+    m_rad_sp_range->SetOn(false);
+    m_rad_sp_last ->SetEnabled(false);
+    m_rad_sp_range->SetEnabled(false);
+  }
 }
 
 void OnlMonUI::HandleSpRadAll()

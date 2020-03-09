@@ -58,7 +58,6 @@ class OnlMonClient: public SubsysReco {
   Name2SpillHistMap_t m_map_hist_sp;
   int m_spill_id_pre;
   bool m_make_sp_hist; //< True if spill-by-spill hists are active.
-  static unsigned int m_n_sp_max_hist; //< Max number of spills for which spill-by-spill hists are kept.
 
   /// List of OnlMonClient objects created.  Used to clear all canvases opened by all objects.
   typedef std::vector<OnlMonClient*> SelfList_t;
@@ -82,7 +81,6 @@ class OnlMonClient: public SubsysReco {
   void GetBasicCount(int* n_evt=0, int* n_sp=0);
   int StartMonitor();
   TH1* FindMonHist(const std::string name, const bool non_null=true);
-  static void SetMaxNumSpills(const unsigned int val) { m_n_sp_max_hist = val; }
 
   virtual int InitOnlMon(PHCompositeNode *topNode);
   virtual int InitRunOnlMon(PHCompositeNode *topNode);

@@ -247,9 +247,10 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       } else if (msg_str == "Spill") {
         if (Verbosity() > 2) cout << "  Spill." << endl;
         int id_min, id_max;
-        OnlMonComm::instance()->FindFullSpillRange(id_min, id_max);
+        OnlMonComm* comm = OnlMonComm::instance();
+        comm->FindFullSpillRange(id_min, id_max);
         ostringstream oss;
-        oss << id_min << " " << id_max;
+        oss << id_min << " " << id_max << " " << comm->GetSpillSelectability();
         sock->Send(oss.str().c_str());
       } else if (msg_str.substr(0, 7) == "SUBSYS:") {
         istringstream iss(msg_str.substr(7));

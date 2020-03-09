@@ -38,7 +38,7 @@ int OnlMon4MainDaq()
   return 0;
 }
 
-int Fun4MainDaq(const int run=1330, const int nevent=0)
+int Fun4MainDaq(const int run=1818, const int nevent=0)
 {
   gSystem->Umask(0002);
   gSystem->Load("libinterface_main.so");
@@ -52,6 +52,9 @@ int Fun4MainDaq(const int run=1330, const int nevent=0)
 
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
+  se->SetOnline(true);
+  OnlMonComm::instance()->SetMaxNumSelSpills(20);
+
   se->StartServer();
   se->registerSubsystem(new OnlMonMainDaq());
   se->registerSubsystem(new OnlMonTrigNim());
