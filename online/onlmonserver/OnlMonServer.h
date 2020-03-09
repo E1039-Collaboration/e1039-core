@@ -13,6 +13,7 @@ class OnlMonServer : public Fun4AllServer
   static int         m_mon_port_0; //< The 1st number of available ports
   static int         m_mon_n_port; //< The number of available ports
 
+  bool m_is_online;
   bool m_go_end;
   bool m_svr_ready;
 
@@ -37,6 +38,8 @@ class OnlMonServer : public Fun4AllServer
   bool CloseExistingServer(const int port);
   static void* FuncServer(void* arg);
   void HandleConnection(TSocket* sock);
+  void SetOnline(const bool val) { m_is_online = val; }
+  bool GetOnline()        { return m_is_online; }
   void SetGoEnd(const bool val) { m_go_end = val; }
   bool GetGoEnd()        { return m_go_end; }
   void SetServerReady(const bool val) { m_svr_ready = val; }

@@ -35,6 +35,8 @@ class OnlMonComm {
   void SetSpillRange(const int sp_lo, const int sp_hi);
   void GetSpillRange(int& sp_lo, int& sp_hi);
 
+  unsigned int GetNumSpills() { return m_list_sp.size(); } //< Used in the server process
+  void ClearSpill() { m_list_sp.clear(); } //< Used in the server process
   void AddSpill(const int id); //< Used in the server process
   void FindFullSpillRange(int& id_min, int& id_max); //< Used in the server process
 

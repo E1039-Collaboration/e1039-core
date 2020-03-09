@@ -43,6 +43,7 @@ OnlMonServer *OnlMonServer::instance()
 
 OnlMonServer::OnlMonServer(const std::string &name)
   : Fun4AllServer(name)
+  , m_is_online(true)
   , m_go_end(false)
   , m_svr_ready(false)
 {

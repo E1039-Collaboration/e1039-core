@@ -42,7 +42,6 @@ int OnlMon4MainDaq()
   list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y2L));
   list_omc.push_back(new OnlMonH4   (OnlMonH4   ::H4Y2R));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D0 ));
-  list_omc.push_back(new OnlMonCham (OnlMonCham ::D1 ));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D2 ));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D3p));
   list_omc.push_back(new OnlMonCham (OnlMonCham ::D3m));

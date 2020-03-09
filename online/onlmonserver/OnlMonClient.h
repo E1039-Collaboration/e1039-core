@@ -8,6 +8,30 @@ class TH1;
 class TH2;
 class TH3;
 
+/// Base class for the OnlMon subsystem module.
+/**
+ * All OnlMon histograms are held by "m_hm" via RegisterHist().
+ * They are used in
+ *  - Being filled in process_event() and
+ *  - Being saved into ROOT file in SendHist().
+ *
+ * Spill-by-spill histograms are by default created and held by "m_map_hist_sp".
+ * A set per spill is created when a new spill is found in process_event().
+ * The creation is disabled when
+ *  - Fun4MainDaq.C starts in the offline mode (via OnlMonServer::GetOnline()) or
+ *  - The number of spills processed exceeds "m_n_sp_max_hist".
+ * Spill-by-spill histograms are merged via MakeMergedHist() when
+ *  - The creation is disabled in process_event(),
+ *  - They are sent to the viewer in SendHist() or
+ *  - They are saved in End().
+ * 
+ * Todo:
+ *  - We had better not use "m_hm" but only a set of HistList_t to hold histograms,
+ *    so that we can reduce the number of operations to copy histograms.
+ *  - A count in spill-by-spill histogram is not correct
+ *    when it is an accumulated number over one run (i.e. MODE_UPDATE).
+ *    Should we take a difference from its number in previous spill?
+ */
 class OnlMonClient: public SubsysReco {
  protected:
   typedef enum { MODE_ADD, MODE_UPDATE } HistMode_t;
@@ -27,13 +51,14 @@ class OnlMonClient: public SubsysReco {
   TH1* m_h1_basic_cnt;
 
   typedef std::vector<TH1*> HistList_t;
-  typedef std::vector<TObject*> ObjList_t;
   HistList_t m_list_h1;
 
   typedef std::map<int, TH1*> SpillHistMap_t; // [spill] -> TH1*
   typedef std::map<std::string, SpillHistMap_t> Name2SpillHistMap_t; // [hist name] 
   Name2SpillHistMap_t m_map_hist_sp;
   int m_spill_id_pre;
+  bool m_make_sp_hist; //< True if spill-by-spill hists are active.
+  static unsigned int m_n_sp_max_hist; //< Max number of spills for which spill-by-spill hists are kept.
 
   /// List of OnlMonClient objects created.  Used to clear all canvases opened by all objects.
   typedef std::vector<OnlMonClient*> SelfList_t;
@@ -57,6 +82,7 @@ class OnlMonClient: public SubsysReco {
   void GetBasicCount(int* n_evt=0, int* n_sp=0);
   int StartMonitor();
   TH1* FindMonHist(const std::string name, const bool non_null=true);
+  static void SetMaxNumSpills(const unsigned int val) { m_n_sp_max_hist = val; }
 
   virtual int InitOnlMon(PHCompositeNode *topNode);
   virtual int InitRunOnlMon(PHCompositeNode *topNode);
@@ -78,10 +104,12 @@ class OnlMonClient: public SubsysReco {
   OnlMonCanvas* GetCanvas(const int num=0);
 
  private:
+  void ClearSpillHist();
   void MakeSpillHist();
+  void DisableSpillHist();
   void MakeMergedHist(HistList_t& list_h1, const int sp_min=0, const int sp_max=0);
   int  ReceiveHist();
-  void ClearHistList();
+  void ClearHistList(HistList_t& list_h1);
   void ClearCanvasList();
   int  DrawCanvas(const bool at_end=false);
 };

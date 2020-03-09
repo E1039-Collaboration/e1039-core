@@ -20,6 +20,7 @@
 #include "OnlMonClient.h"
 using namespace std;
 
+unsigned int OnlMonClient::m_n_sp_max_hist = 2000;
 std::vector<OnlMonClient*> OnlMonClient::m_list_us;
 bool OnlMonClient::m_bl_clear_us = true;
 
@@ -31,6 +32,7 @@ OnlMonClient::OnlMonClient()
   , m_h1_basic_id(0)
   , m_h1_basic_cnt(0)
   , m_spill_id_pre(-1)
+  , m_make_sp_hist(true)
 {
   memset(m_list_can, 0, sizeof(m_list_can));
   m_list_us.push_back(this);
@@ -39,13 +41,8 @@ OnlMonClient::OnlMonClient()
 OnlMonClient::~OnlMonClient()
 {
   if (! m_hm) delete m_hm;
-  for (Name2SpillHistMap_t::iterator it1 = m_map_hist_sp.begin(); it1 != m_map_hist_sp.end(); it1++) {
-    SpillHistMap_t* map_hist = &it1->second;
-    for (SpillHistMap_t::iterator it2 = map_hist->begin(); it2 != map_hist->end(); it2++) {
-      delete it2->second;
-    }
-  }
-  ClearHistList();
+  ClearSpillHist();
+  ClearHistList(m_list_h1);
   ClearCanvasList();
   m_list_us.erase( find(m_list_us.begin(), m_list_us.end(), this) );
 }
@@ -58,6 +55,7 @@ OnlMonClient* OnlMonClient::Clone()
 
 int OnlMonClient::Init(PHCompositeNode* topNode)
 {
+  if (! OnlMonServer::instance()->GetOnline()) DisableSpillHist();
   return InitOnlMon(topNode);
 }
 
@@ -98,16 +96,25 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   if (ret_mutex != 0) cout << "WARNING:  mutex_lock returned " << ret_mutex << "." << endl;
 
   int sp_id = event->get_spill_id();
-  if (m_spill_id_pre < 0) { // First call
+  if (sp_id != m_spill_id_pre) { // New spill
+    if (m_spill_id_pre >= 0 && m_make_sp_hist) { // Not first spill
+      MakeSpillHist();
+      if (OnlMonComm::instance()->GetNumSpills() > m_n_sp_max_hist) {
+        cout << Name() << ": Disable spill-by-spill hists." << endl;
+        DisableSpillHist();
+      }
+    }
     m_spill_id_pre = sp_id;
-  } else if (sp_id != m_spill_id_pre) { // New spill
-    MakeSpillHist();
-    m_spill_id_pre = sp_id;
+    OnlMonComm::instance()->AddSpill(sp_id);
+    m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
     m_h1_basic_id ->SetBinContent(BIN_RUN  , event->get_run_id());
     m_h1_basic_id ->SetBinContent(BIN_SPILL, sp_id);
     m_h1_basic_id ->SetBinContent(BIN_EVENT, event->get_event_id());
+    int sp_curr = m_h1_basic_id->GetBinContent(BIN_SPILL_MIN);
+    if (sp_curr <= 0 || sp_curr > sp_id) m_h1_basic_id->SetBinContent(BIN_SPILL_MIN, sp_id);
+    sp_curr = m_h1_basic_id->GetBinContent(BIN_SPILL_MAX);
+    if (sp_curr < sp_id) m_h1_basic_id->SetBinContent(BIN_SPILL_MAX, sp_id);
   }
-
   m_h1_basic_cnt->AddBinContent(BIN_N_EVT, 1);
 
   int ret = ProcessEventOnlMon(topNode);
@@ -120,13 +127,18 @@ int OnlMonClient::End(PHCompositeNode* topNode)
 {
   if (! m_hm) return Fun4AllReturnCodes::EVENT_OK;
 
-  if (m_spill_id_pre >= 0) MakeSpillHist();
+  if (m_spill_id_pre >= 0 && m_make_sp_hist) {
+    MakeSpillHist();
+    DisableSpillHist(); // Necessary here to merge all spill hists.
+  }
+  ClearHistList(m_list_h1);
+  for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
+    TH1* h1_org = (TH1*)m_hm->getHisto(ih);
+    TH1* h1 = (TH1*)h1_org->Clone(h1_org->GetName());
+    m_list_h1.push_back(h1);
+  }
 
   ClearCanvasList();
-
-  ClearHistList();
-  MakeMergedHist(m_list_h1);
-
   int ret = DrawCanvas(true);
   if (ret != 0) {
     cerr << "WARNING: OnlMonClient::End(): ret = " << ret << endl;
@@ -251,19 +263,30 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
     sock->Send("NotReady");
     return 1; // Not ready
   }
-  if (sp_min > 0 && sp_max == 0) { // "sp_min" means N of spills
-    int min0, max0;
-    OnlMonComm::instance()->FindFullSpillRange(min0, max0);
-    sp_max = max0;
-    sp_min = max0 - sp_min + 1;
-  }
 
-  HistList_t list_h1;
-  MakeMergedHist(list_h1, sp_min, sp_max);
+  HistList_t* list_h1;
+  if (m_make_sp_hist) {
+    if (sp_min > 0 && sp_max == 0) { // "sp_min" means N of spills
+      int min0, max0;
+      OnlMonComm::instance()->FindFullSpillRange(min0, max0);
+      sp_max = max0;
+      sp_min = max0 - sp_min + 1;
+    }
+    list_h1 = new HistList_t;
+
+    pthread_mutex_t* mutex = OnlMonServer::instance()->GetMutex();
+    int ret_mutex = pthread_mutex_lock(mutex); // got stuck here, n = 1
+    if (ret_mutex != 0) cout << "WARNING:  mutex_lock returned " << ret_mutex << "." << endl;
+    MakeMergedHist(*list_h1, sp_min, sp_max);
+    ret_mutex = pthread_mutex_unlock(mutex);
+    if (ret_mutex != 0) cout << "WARNING:  mutex_unlock returned " << ret_mutex << "." << endl;
+  } else {
+    list_h1 = &m_list_h1;
+  }
 
   TMessage outgoing(kMESS_OBJECT);
   //if (Verbosity() > 2) cout << "  SUBSYS: " << name_subsys << " " << hm->nHistos() << endl;
-  for (HistList_t::iterator it = list_h1.begin(); it != list_h1.end(); it++) {
+  for (HistList_t::iterator it = list_h1->begin(); it != list_h1->end(); it++) {
     TH1* h1 = *it;
     outgoing.Reset();
     outgoing.WriteObject(h1);
@@ -274,16 +297,30 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
     delete mess;
     delete h1;
   }
+  if (m_make_sp_hist) {
+    ClearHistList(*list_h1);
+    delete list_h1;
+  }
 
   sock->Send("Finished");
   return 0;
+}
+
+void OnlMonClient::ClearSpillHist()
+{
+  for (Name2SpillHistMap_t::iterator it1 = m_map_hist_sp.begin(); it1 != m_map_hist_sp.end(); it1++) {
+    SpillHistMap_t* map_hist = &it1->second;
+    for (SpillHistMap_t::iterator it2 = map_hist->begin(); it2 != map_hist->end(); it2++) {
+      delete it2->second;
+    }
+  }
+  m_map_hist_sp.clear();
 }
 
 void OnlMonClient::MakeSpillHist()
 {
   bool add_dir = TH1::AddDirectoryStatus();
   TH1::AddDirectory(false); // Significantly speeds up deleting hists in dtor.
-  m_h1_basic_cnt->AddBinContent(BIN_N_SP, 1);
   for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
     TH1* h1 = (TH1*)m_hm->getHisto(ih);
     string name = h1->GetName();
@@ -292,15 +329,31 @@ void OnlMonClient::MakeSpillHist()
     m_map_hist_sp[name][m_spill_id_pre] = (TH1*)h1->Clone(oss.str().c_str());
     h1->Reset("M");
   }
-  OnlMonComm::instance()->AddSpill(m_spill_id_pre);
   TH1::AddDirectory(add_dir);
+}
+
+/**
+ * This function overwrites the contents of "m_hist_h1".
+ * Thus "m_hist_h1" must be empty when this function is called.
+ */
+void OnlMonClient::DisableSpillHist()
+{
+  if (! m_make_sp_hist) return;
+  if (m_map_hist_sp.size() > 0) { // Merge existing spill hists
+    MakeMergedHist(m_list_h1);
+    for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
+      TH1* h1 = (TH1*)m_hm->getHisto(ih);
+      h1->Reset("M");
+      h1->Add(m_list_h1.at(ih));
+    }
+    ClearSpillHist();
+  }
+  m_make_sp_hist = false;
 }
 
 void OnlMonClient::MakeMergedHist(HistList_t& list_h1, const int sp_min, const int sp_max)
 {
-  list_h1.clear();
-  pthread_mutex_t* mutex = OnlMonServer::instance()->GetMutex();
-  pthread_mutex_lock(mutex);
+  ClearHistList(list_h1);
   for (unsigned int ih = 0; ih < m_hm->nHistos(); ih++) {
     TH1* h1_org = (TH1*)m_hm->getHisto(ih);
     string name = h1_org->GetName();
@@ -327,7 +380,6 @@ void OnlMonClient::MakeMergedHist(HistList_t& list_h1, const int sp_min, const i
     }
     list_h1.push_back(h1);
   }
-  pthread_mutex_unlock(mutex);
 }
 
 int OnlMonClient::ReceiveHist()
@@ -353,7 +405,7 @@ int OnlMonClient::ReceiveHist()
   oss << "SUBSYS:" << Name() << " " << sp_lo << " " << sp_hi;
   sock->Send(oss.str().c_str());
 
-  ClearHistList();
+  ClearHistList(m_list_h1);
 
   int ret = 0;
   TMessage *mess = NULL;
@@ -386,12 +438,12 @@ int OnlMonClient::ReceiveHist()
   return ret;
 }
 
-void OnlMonClient::ClearHistList()
+void OnlMonClient::ClearHistList(HistList_t& list_h1)
 {
-  for (HistList_t::iterator it = m_list_h1.begin(); it != m_list_h1.end(); it++) {
+  for (HistList_t::iterator it = list_h1.begin(); it != list_h1.end(); it++) {
     delete *it;
   }
-  m_list_h1.clear();
+  list_h1.clear();
 }
 
 OnlMonCanvas* OnlMonClient::GetCanvas(const int num) 
