@@ -197,8 +197,6 @@ void OnlMonUI::UpdateFullSpillRange()
     ostringstream oss;
     oss << sp_min << "-" << sp_max;
     m_lbl_sp->SetText(oss.str().c_str());
-    m_rad_sp_last ->SetEnabled(true);
-    m_rad_sp_range->SetEnabled(true);
   } else {
     m_lbl_sp->SetText("(not selectable)");
     m_rad_sp_all  ->SetOn(true );

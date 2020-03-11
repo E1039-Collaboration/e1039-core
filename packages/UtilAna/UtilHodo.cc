@@ -10,7 +10,7 @@ bool IsHodoX(const std::string det_name)
 {
   return det_name.length() >= 3 && (det_name[2] == 'T' || det_name[2] == 'B');
 }
-
+  
 bool IsHodoY(const std::string det_name)
 {
   return ! IsHodoX(det_name);
@@ -40,7 +40,7 @@ int GetElementPos(const int det, const int ele, double& x, double& y, double& z)
   GeomSvc* geom = GeomSvc::instance();
   GetPlanePos(det, x, y, z);
   int n_ele = geom->getPlaneNElements(det);
-  double pos_ele = (ele - (n_ele+1)/0.5) * geom->getPlaneSpacing(det);
+  double pos_ele = (ele - 0.5*(n_ele+1)) * geom->getPlaneSpacing(det);
   if (IsHodoX(det)) x += pos_ele;
   else              y += pos_ele;
   return 0;
@@ -61,8 +61,8 @@ int Track1D::DoTracking()
     short ele = list_hit[ih]->get_element_id();
     double x_ele, y_ele, z_ele;
     GetElementPos(det, ele, x_ele, y_ele, z_ele);
-    if (type_xy == X) graph.SetPoint(ih, x_ele, z_ele);
-    else              graph.SetPoint(ih, y_ele, z_ele);
+    if (type_xy == X) graph.SetPoint(ih, z_ele, x_ele);
+    else              graph.SetPoint(ih, z_ele, y_ele);
   }
   graph.Fit("pol1", "Q0");
   TF1* f1 = graph.GetFunction("pol1");

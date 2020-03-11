@@ -39,7 +39,6 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
   se->SetOnline(is_online);
-  OnlMonComm::instance()->SetMaxNumSelSpills(20);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(2);
