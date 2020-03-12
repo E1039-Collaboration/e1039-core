@@ -98,7 +98,7 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   if (sp_id != m_spill_id_pre) { // New spill
     OnlMonComm* comm = OnlMonComm::instance();
     if (m_spill_id_pre >= 0 && m_make_sp_hist) { // Not first spill
-      MakeSpillHist();
+      MakeSpillHist(m_spill_id_pre, sp_id);
       if (comm->GetNumSpills() > comm->GetMaxNumSelSpills()) {
         cout << Name() << ": Disable spill-by-spill hists." << endl;
         DisableSpillHist();
@@ -128,7 +128,7 @@ int OnlMonClient::End(PHCompositeNode* topNode)
   if (! m_hm) return Fun4AllReturnCodes::EVENT_OK;
 
   if (m_spill_id_pre >= 0 && m_make_sp_hist) {
-    MakeSpillHist();
+    MakeSpillHist(m_spill_id_pre);
     DisableSpillHist(); // Necessary here to merge all spill hists.
   }
   ClearHistList(m_list_h1);
@@ -317,7 +317,13 @@ void OnlMonClient::ClearSpillHist()
   m_map_hist_sp.clear();
 }
 
-void OnlMonClient::MakeSpillHist()
+/**
+ * This function makes a set of histograms for the given spill ID, "spill_id".
+ * The set is copied from the histograms managed by "m_hm" into "m_map_hist_sp".
+ * When "spill_id_new" is given, a new entry for that spill is added to "m_map_hist_sp",
+ * which is just a set of pointers (not cloned objects) to the histograms managed by "m_hm".
+ */
+void OnlMonClient::MakeSpillHist(const int spill_id, const int spill_id_new)
 {
   bool add_dir = TH1::AddDirectoryStatus();
   TH1::AddDirectory(false); // Significantly speeds up deleting hists in dtor.
@@ -325,9 +331,10 @@ void OnlMonClient::MakeSpillHist()
     TH1* h1 = (TH1*)m_hm->getHisto(ih);
     string name = h1->GetName();
     ostringstream oss;
-    oss << name << "_sp" << m_spill_id_pre;
-    m_map_hist_sp[name][m_spill_id_pre] = (TH1*)h1->Clone(oss.str().c_str());
+    oss << name << "_sp" << spill_id;
+    m_map_hist_sp[name][spill_id] = (TH1*)h1->Clone(oss.str().c_str());
     h1->Reset("M");
+    if (spill_id_new > 0) m_map_hist_sp[name][spill_id_new] = h1;
   }
   TH1::AddDirectory(add_dir);
 }

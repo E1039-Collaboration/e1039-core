@@ -103,7 +103,7 @@ class OnlMonClient: public SubsysReco {
 
  private:
   void ClearSpillHist();
-  void MakeSpillHist();
+  void MakeSpillHist(const int spill_id, const int spill_id_new=0);
   void DisableSpillHist();
   void MakeMergedHist(HistList_t& list_h1, const int sp_min=0, const int sp_max=0);
   int  ReceiveHist();
