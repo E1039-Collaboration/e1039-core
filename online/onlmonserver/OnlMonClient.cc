@@ -98,9 +98,11 @@ int OnlMonClient::process_event(PHCompositeNode* topNode)
   if (sp_id != m_spill_id_pre) { // New spill
     OnlMonComm* comm = OnlMonComm::instance();
     if (m_spill_id_pre >= 0 && m_make_sp_hist) { // Not first spill
-      MakeSpillHist(m_spill_id_pre, sp_id);
-      if (comm->GetNumSpills() > comm->GetMaxNumSelSpills()) {
+      if (comm->GetNumSpills() <= comm->GetMaxNumSelSpills()) {
+        MakeSpillHist(m_spill_id_pre, sp_id);
+      } else {
         cout << Name() << ": Disable spill-by-spill hists." << endl;
+        MakeSpillHist(m_spill_id_pre);
         DisableSpillHist();
       }
     }
