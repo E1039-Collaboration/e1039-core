@@ -26,6 +26,8 @@ OnlMonComm::OnlMonComm()
   , m_sp_hi(0)
   , m_sp_min(0)
   , m_sp_max(0)
+  , m_sp_sel(true)
+  , m_n_sp_sel_max(2000)
 {
   ;
 }
@@ -86,7 +88,10 @@ int OnlMonComm::ReceiveFullSpillRange()
     char str[200];
     mess->ReadString(str, 200);
     istringstream iss(str);
-    if (! (iss >> m_sp_min >> m_sp_max)) m_sp_min = m_sp_max = 0;
+    if (! (iss >> m_sp_min >> m_sp_max >> m_sp_sel)) {
+      m_sp_min = m_sp_max = 0;
+      m_sp_sel = false;
+    }
     delete mess;
   } else {
     ret = 1;

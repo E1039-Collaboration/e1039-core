@@ -38,6 +38,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
+  se->SetOnline(is_online);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(2);
@@ -80,7 +81,6 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2L));
     se->registerSubsystem(new OnlMonH4   (OnlMonH4::H4Y2R));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D0));
-    se->registerSubsystem(new OnlMonCham (OnlMonCham::D1));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D2));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D3p));
     se->registerSubsystem(new OnlMonCham (OnlMonCham::D3m));

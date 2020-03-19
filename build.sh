@@ -1,4 +1,12 @@
 #!/bin/bash
+# Script to build all (or a part of) packages in e1039-core.
+# Usage:
+#   ./build.sh        ... Build all packages.
+#   ./build.sh pkg    ... Build a single package "pkg".
+#   ./build.sh -s pkg ... Build a single package "pkg".
+#   ./build.sh -r pkg ... Resume building all packages from "pkg".
+#
+# The 2nd usage is not recommended but kept available for backward compatibility for now.
 
 test -z "$OFFLINE_MAIN" && echo "Need set 'OFFLINE_MAIN'.  Abort." && exit
 test -z "$MY_INSTALL"   && echo   "Need set 'MY_INSTALL'.  Abort." && exit
@@ -7,12 +15,33 @@ src=$(dirname $(readlink -f $0))
 build=`pwd`/build
 install=$MY_INSTALL
 
-if [ $# -eq 1 ]; then
-  echo $1
-  declare -a packages=(
-    $1
-  )
-else
+mode=all
+OPTIND=1
+while getopts ":s:r:" OPT ; do
+    case $OPT in
+        s ) mode='single'
+	    package=$OPTARG
+            echo "Single mode: package = $package"
+            ;;
+        r ) mode='resume'
+	    package=$OPTARG
+            echo "Resuming mode: package = $package"
+            ;;
+        * ) echo 'Unsupported option.  Abort.'
+	    exit
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [ $# -eq 1 ]; then # backward compatilibity
+    mode='single'
+    package="$1"
+fi
+
+if [ $mode = 'single' ] ; then
+    declare -a packages=( $package )
+else # 'all' or 'resume'
   declare -a packages=(
     packages/global_consts
     packages/jobopts_svc
@@ -53,10 +82,16 @@ else
     module_example
     _macro_
 	)
+  if [ $mode = 'resume' ] ; then
+      NN=${#packages[@]}
+      for (( II = 0 ; II < $NN ; II++ )) ; do
+	  test ${packages[$II]} = $package && break
+	  unset packages[$II]
+      done
+  fi
 fi
 
-for package in "${packages[@]}"
-do
+for package in "${packages[@]}" ; do
   echo "================================================================"
   if [ $package = '_macro_' ] ; then
       echo "Install all macros to $install/macros/."
