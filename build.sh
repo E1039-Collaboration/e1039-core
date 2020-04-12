@@ -5,6 +5,8 @@
 #   ./build.sh pkg    ... Build a single package "pkg".
 #   ./build.sh -s pkg ... Build a single package "pkg".
 #   ./build.sh -r pkg ... Resume building all packages from "pkg".
+#   ./build.sh -i pkg ... Incrementally build "pkg" without clean up previous build.
+#   ./build.sh [-c cmake_args] Optionally pass addtional cmake args to the build
 #
 # The 2nd usage is not recommended but kept available for backward compatibility for now.
 
@@ -17,18 +19,26 @@ install=$MY_INSTALL
 
 mode=all
 OPTIND=1
-while getopts ":s:r:" OPT ; do
+cmake_args=""
+while getopts ":s:r:i:c:" OPT ; do
     case $OPT in
         s ) mode='single'
-	    package=$OPTARG
+	          package=$OPTARG
             echo "Single mode: package = $package"
             ;;
         r ) mode='resume'
-	    package=$OPTARG
+	          package=$OPTARG
             echo "Resuming mode: package = $package"
             ;;
+        i ) mode='increment'
+            package=$OPTARG
+            echo "Incremental mode: package = $package"
+            ;;
+        c ) cmake_args=$OPTARG
+            echo " - pass additional args $cmake_args to cmake"
+            ;;
         * ) echo 'Unsupported option.  Abort.'
-	    exit
+	          exit
             ;;
     esac
 done
@@ -39,7 +49,7 @@ if [ $# -eq 1 ]; then # backward compatilibity
     package="$1"
 fi
 
-if [ $mode = 'single' ] ; then
+if [ $mode = 'single' ] || [ $mode = 'increment' ]; then
     declare -a packages=( $package )
 else # 'all' or 'resume'
   declare -a packages=(
@@ -109,15 +119,24 @@ for package in "${packages[@]}" ; do
   fi
 
   echo $src/$package
-  if [ -d $build/$package ]; then
-    echo "Previous build exists, will clean up."
-    rm -rf $build/$package
+  if [ -f $build/$package/install_manifest.txt ]; then
+    cat $build/$package/install_manifest.txt | xargs rm -f
   fi
+  if [ $mode = 'increment' ] && [ -d $build/$package ]; then
+    echo "Previous build exists, will build incrementally."
+  else
+    if [ -d $build/$package ]; then
+      echo "Previous build exists, will clean up."
+      rm -rf $build/$package
+    fi
 
-  mkdir -p $build/$package
+    mkdir -p $build/$package
+    cd $build/$package
+    echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package $cmake_args
+    cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package $cmake_args
+  fi
+  
   cd $build/$package
-  echo cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
-  cmake -DCMAKE_INSTALL_PREFIX=$install $src/$package
   make -j4 install
 
   ret=$?
