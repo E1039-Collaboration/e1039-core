@@ -23,11 +23,11 @@ cmake_args=""
 while getopts ":s:r:i:c:" OPT ; do
     case $OPT in
         s ) mode='single'
-	    package=$OPTARG
+            package=$OPTARG
             echo "Single mode: package = $package"
             ;;
         r ) mode='resume'
-	    package=$OPTARG
+            package=$OPTARG
             echo "Resuming mode: package = $package"
             ;;
         i ) mode='increment'
@@ -38,7 +38,7 @@ while getopts ":s:r:i:c:" OPT ; do
             echo " - pass additional args $cmake_args to cmake"
             ;;
         * ) echo 'Unsupported option.  Abort.'
-	    exit
+            exit
             ;;
     esac
 done
