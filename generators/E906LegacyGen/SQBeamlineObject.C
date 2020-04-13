@@ -9,6 +9,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include "TGeoPhysicalConstants.h"
 #include <TMath.h>
 #include <TRandom3.h>
+#include <phool/PHRandomSeed.h>
 
 SQBeamlineObject::SQBeamlineObject() {}
 
@@ -57,7 +58,8 @@ double SQBeamlineObject::getZ()
 {
 
   double returnZ = 0.;
-
+  unsigned int iseed = PHRandomSeed();
+  gRandom->SetSeed(iseed);
   returnZ =  z_up - nucIntLen*TMath::Log(1. - attenuationSelf*gRandom->Uniform(0,1)); //Todo Fix this place holders
    
   return returnZ;
