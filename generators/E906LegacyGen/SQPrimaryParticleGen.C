@@ -156,7 +156,7 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 
 int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
 { 
-
+  gRandom->SetSeed(PHRandomSeed());
   ineve = findNode::getClass<PHG4InEvent>(topNode,"PHG4INEVENT");
   if (!ineve) {
     PHNodeIterator iter( topNode );
