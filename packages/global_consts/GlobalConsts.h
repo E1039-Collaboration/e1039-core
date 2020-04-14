@@ -55,7 +55,7 @@
 #define Z_ST2 1347.36
 #define Z_ABSORBER 2028.19
 #define Z_REF 0.
-#define Z_TARGET -129.54
+#define Z_TARGET -300.00
 #define Z_DUMP 42.
 #define Z_ST1 600.
 #define Z_ST3 1910.

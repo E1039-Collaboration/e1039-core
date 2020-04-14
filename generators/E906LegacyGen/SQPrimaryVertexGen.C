@@ -13,7 +13,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <TRandom3.h>
 #include <TMath.h>
 #include <TFile.h>
-
+#include <phool/PHRandomSeed.h>
 #include "SQPrimaryVertexGen.h"
 //#include "SQBeamlineObject.h"
 
@@ -30,7 +30,7 @@ void SQPrimaryVertexGen::Initfile(){
 
 void SQPrimaryVertexGen::InitRun(PHCompositeNode* topNode)
 {
-  beam_profile= false;
+  beam_profile= true;
   beamProfile = NULL;
   beamProfile = new TF2("beamProfile", "exp(-0.5*(x-[0])*(x-[0])/[1]/[1])*exp(-0.5*(y-[2])*(y-[2])/[3]/[3])", -10., 10., -10., 10.);
   beamProfile->SetParameter(0, 0.0);
@@ -38,6 +38,7 @@ void SQPrimaryVertexGen::InitRun(PHCompositeNode* topNode)
   beamProfile->SetParameter(2, 0.0);
   beamProfile->SetParameter(3, 0.76);
 
+  gRandom->SetSeed(PHRandomSeed());
   // beamProfile = new TF2("beamProfile", "exp(-0.5*(x-0.)*(x-0.)/0.414/0.414)*exp(-0.5*(y-0.)*(y-0.)/0.343/0.343)", -10., 10., -10., 10.);
   
   nPieces=0;
