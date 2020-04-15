@@ -81,8 +81,6 @@ else # 'all' or 'resume'
     packages/evt_filter
     packages/dptrigger
     #packages/db2g4
-    packages/PHGenFitPkg/GenFitExp
-    packages/PHGenFitPkg/PHGenFit
     packages/ktracker
     packages/embedding
     online/onlmonserver
