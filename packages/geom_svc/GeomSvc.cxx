@@ -100,11 +100,24 @@ void Plane::update()
     uVec[0] = cos(angleFromVert);
     uVec[1] = sin(angleFromVert);
     uVec[2] = 0.;
+    uVec = rotM*uVec;
 
     vVec[0] = -sin(angleFromVert);
     vVec[1] = cos(angleFromVert);
     vVec[2] = 0.;
+    vVec = rotM*vVec;
 
+    xVec[0] = 1.;
+    xVec[1] = 0.;
+    xVec[2] = 0.;
+    xVec = rotM*xVec;
+
+    yVec[0] = 0.;
+    yVec[1] = 1.;
+    yVec[2] = 0.;
+    yVec = rotM*yVec;
+
+    /*
     nVec[0] = 0.;
     nVec[1] = 0.;
     nVec[2] = 1.;
@@ -129,6 +142,7 @@ void Plane::update()
             vVec[i] += rotM[i][j]*temp[j];
         }
     }
+    */
 
     nVec[0] = uVec[1]*vVec[2] - vVec[1]*uVec[2];
     nVec[1] = uVec[2]*vVec[0] - vVec[2]*uVec[0];
@@ -150,6 +164,40 @@ double Plane::intercept(double tx, double ty, double x0_track, double y0_track) 
 
     //LogInfo(detectorID << "  " << detectorName << "  " << tx << "  " << ty << "  " << x0_track << "  " << y0_track << "  "  << -(vcp[0]*dpos[0] + vcp[1]*dpos[1] + vcp[2]*dpos[2])/det);
     return -(vcp[0]*dpos[0] + vcp[1]*dpos[1] + vcp[2]*dpos[2])/det + wc;
+}
+
+double Plane::getWirePosition(int elementID) const
+{
+    return (elementID - (nElements+1.)/2.)*spacing + xoffset + x0*costheta + y0*sintheta + deltaW;
+}
+
+TVectorD Plane::getEndPoint(int elementID, int sign) const
+{
+    //sign = -1 means start point, sign = 1 means end point, wire vector points from start to the end
+    TVectorD detCenter(3);
+    detCenter[0] = xc;
+    detCenter[1] = yc;
+    detCenter[2] = zc;
+
+    TVectorD ep(3);
+    if(planeType != 4) //special treatment for Y planes
+    {
+        double cellLength = fabs(y2 - y1)/cos(angleFromVert);
+        double hspacing = spacing/cos(angleFromVert);
+        double hoffset = xoffset/cos(angleFromVert);
+
+        ep = detCenter + ((elementID - (nElements+1.)/2.)*hspacing + hoffset)*xVec + 0.5*sign*cellLength*vVec;
+    }
+    else
+    {
+        double cellLength = fabs(x2 - x1)/sin(angleFromVert);
+        double vspacing = spacing/sin(angleFromVert);
+        double voffset = xoffset/sin(angleFromVert);
+
+        ep = detCenter + ((elementID - (nElements+1.)/2.)*vspacing + voffset)*yVec + 0.5*sign*cellLength*vVec;
+    }
+
+    return ep;
 }
 
 std::ostream& operator << (std::ostream& os, const Plane& plane)
@@ -799,13 +847,17 @@ void GeomSvc::initPlaneDbSvc() {
 void GeomSvc::initWireLUT() {
 
   ///Initialize the position look up table for all wires, hodos, and tubes
-  typedef std::map<std::pair<int, int>, double>::value_type posType;
+  typedef std::map<std::pair<int, int>, double>::value_type   posType;  
+  typedef std::map<std::pair<int, int>, TVectorD>::value_type epType;
   for(int i = 1; i <= nChamberPlanes; ++i)
   {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
           map_wirePosition.insert(posType(std::make_pair(i, j), pos));
+
+          map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
+          map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
       }
   }
 
@@ -825,6 +877,8 @@ void GeomSvc::initWireLUT() {
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
           }
           map_wirePosition.insert(posType(std::make_pair(i, j), pos));
+          map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
+          map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
       }
   }
 }
@@ -897,13 +951,38 @@ double GeomSvc::getMeasurement(int detectorID, int elementID)
     return map_wirePosition[std::make_pair(detectorID, elementID)];
 }
 
+void GeomSvc::getEndPoints(int detectorID, int elementID, TVectorD& ep1, TVectorD& ep2)
+{
+    ep1 = map_endPoint1[std::make_pair(detectorID, elementID)];
+    ep2 = map_endPoint2[std::make_pair(detectorID, elementID)];
+}
+
+void GeomSvc::getEndPoints(int detectorID, int elementID, TVector3& ep1, TVector3& ep2)
+{
+    TVectorD vp1(map_endPoint1[std::make_pair(detectorID, elementID)]);
+    TVectorD vp2(map_endPoint2[std::make_pair(detectorID, elementID)]);
+
+    ep1.SetXYZ(vp1[0], vp1[1], vp1[2]);
+    ep2.SetXYZ(vp2[0], vp2[1], vp2[2]);
+}
+
 int GeomSvc::getExpElementID(int detectorID, double pos_exp)
 {
     if(detectorID <= nChamberPlanes+nHodoPlanes)
     {
         int elementID_lo = int((pos_exp - planes[detectorID].xoffset - planes[detectorID].x0*planes[detectorID].costheta - planes[detectorID].y0*planes[detectorID].sintheta - planes[detectorID].deltaW + 0.5*(planes[detectorID].nElements + 1.)*planes[detectorID].spacing)/planes[detectorID].spacing);
 
-        return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + 1;
+        double deltap = pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)];
+        if(fabs(deltap) < 0.5*planes[detectorID].spacing)
+        {
+            return elementID_lo;
+        }
+        else
+        {
+            return elementID_lo + (deltap > 0 ? 1 : -1);
+        }
+
+        //return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + 1;
     }
 
     int elementID = -1;
