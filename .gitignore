@@ -2,6 +2,7 @@
 /.project
 /.settings
 /**/*.cache
+/**/.vscode
 
 /**/Makefile.in
 /**/aclocal.m4
