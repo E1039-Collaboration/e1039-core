@@ -1,11 +1,9 @@
 #include "GenFitExtrapolator.h"
-
+#include "GFField.h"
 
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHField.h>
-
-#include <genfitexp/Field.h>
 
 #include <GenFit/FieldManager.h>
 #include <GenFit/MaterialEffects.h>
@@ -45,7 +43,7 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 	iParType = 1;
 
 	assert(field);
-	genfit::Field *fieldMap = new genfit::Field(field);
+	SQGenFit::GFField *fieldMap = new SQGenFit::GFField(field);
 	genfit::FieldManager::getInstance()->init(fieldMap);
 
 	_tgeo_manager = const_cast<TGeoManager*>(geom);
