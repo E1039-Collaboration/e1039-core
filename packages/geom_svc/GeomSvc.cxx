@@ -569,12 +569,12 @@ void GeomSvc::init()
     zmin_kmag = 1064.26 - 120.*2.54;
     zmax_kmag = 1064.26 + 120.*2.54;
 
-#ifdef _DEBUG_ON
+//#ifdef 1//_DEBUG_ON
     for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
     {
         cout << planes[i] << endl;
     }
-#endif
+//#endif
 }
 
 void GeomSvc::initPlaneDirect() {
@@ -815,14 +815,19 @@ void GeomSvc::initWireLUT() {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos;
-          if(i <= nChamberPlanes+nHodoPlanes or (i >nChamberPlanes+nHodoPlanes+nPropPlanes))
+          if(i <= nChamberPlanes+nHodoPlanes)
           {
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }
-          else
+          else if(i <= nChamberPlanes+nHodoPlanes+nPropPlanes)
           {
               int moduleID = 8 - int((j - 1)/8);        //Need to re-define moduleID for run2, note it's reversed compared to elementID
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
+          }
+          else
+          {
+              int elementID = ((i-55) & 2) > 0 ? planes[i].nElements + 1 - j : j;
+              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (elementID - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }
           map_wirePosition.insert(posType(std::make_pair(i, j), pos));
       }
@@ -904,6 +909,15 @@ int GeomSvc::getExpElementID(int detectorID, double pos_exp)
         int elementID_lo = int((pos_exp - planes[detectorID].xoffset - planes[detectorID].x0*planes[detectorID].costheta - planes[detectorID].y0*planes[detectorID].sintheta - planes[detectorID].deltaW + 0.5*(planes[detectorID].nElements + 1.)*planes[detectorID].spacing)/planes[detectorID].spacing);
 
         return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + 1;
+    }
+    else if(detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes)
+    {
+        bool bottom = ((detectorID-55) & 2) > 0;
+        int elementID_lo = int((pos_exp - planes[detectorID].xoffset - planes[detectorID].x0*planes[detectorID].costheta - planes[detectorID].y0*planes[detectorID].sintheta - planes[detectorID].deltaW + 0.5*(planes[detectorID].nElements + 1.)*planes[detectorID].spacing)/planes[detectorID].spacing);
+        elementID_lo = bottom ? planes[detectorID].nElements + 1 - elementID_lo : elementID_lo;
+
+        return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + (bottom ? -1 : 1);
+ 
     }
 
     int elementID = -1;
