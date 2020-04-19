@@ -2,7 +2,8 @@
 #define _GFMEASUREMENT_H
 
 #include <GenFit/WireMeasurement.h>
-#include <ktracker/FastTracklet.h>
+
+#include "FastTracklet.h"
 
 namespace SQGenFit
 {

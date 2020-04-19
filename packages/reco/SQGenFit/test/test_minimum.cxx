@@ -8,13 +8,13 @@
 #include <jobopts_svc/JobOptsSvc.h>
 #include <geom_svc/GeomSvc.h>
 #include <phfield/PHField.h>
+#include <phool/recoConsts.h>
 
 #include "GFField.h"
 #include "GFFitter.h"
 #include "GFTrack.h"
-#include "ktracker/FastTracklet.h"
-#include "ktracker/KalmanFastTracking.h"
-#include "phool/recoConsts.h"
+#include "FastTracklet.h"
+#include "KalmanFastTracking.h"
 
 using namespace std;
 

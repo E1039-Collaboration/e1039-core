@@ -10,8 +10,7 @@
 #include <TString.h>
 #include <TVector3.h>
 
-#include "ktracker/FastTracklet.h"
-
+#include "FastTracklet.h"
 #include "GFMeasurement.h"
 
 namespace SQGenFit
