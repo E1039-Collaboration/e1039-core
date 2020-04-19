@@ -1,16 +1,2 @@
-/.cproject
-/.project
-/.settings
-/**/*.cache
 /**/.vscode
-
-/**/Makefile.in
-/**/aclocal.m4
-/**/compile
-/**/config.guess
-/**/config.sub
-/**/configure
-/**/depcomp
-/**/install-sh
-/**/ltmain.sh
-/**/missing
+/**/*.root

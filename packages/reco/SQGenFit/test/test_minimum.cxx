@@ -8,6 +8,8 @@
 #include <jobopts_svc/JobOptsSvc.h>
 #include <geom_svc/GeomSvc.h>
 #include <phfield/PHField.h>
+#include <phfield/PHFieldConfig_v3.h>
+#include <phfield/PHFieldUtility.h>
 #include <phool/recoConsts.h>
 
 #include "GFField.h"
@@ -21,8 +23,8 @@ using namespace std;
 int main()
 {
   recoConsts* rc = recoConsts::instance();
-  rc->set_DoubleFlag("FMAGSTR", 0.);
-  rc->set_DoubleFlag("KMAGSTR", 0.);
+  rc->set_DoubleFlag("FMAGSTR", 1.);
+  rc->set_DoubleFlag("KMAGSTR", 1.);
   rc->Print();
 
   JobOptsSvc* p_jobOptsSvc = JobOptsSvc::instance();
@@ -35,9 +37,10 @@ int main()
   TGeoManager::Import("geom.root");
 
   //Let's hack a zero field
-  PHField* phfield = nullptr;
+  unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
+	default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+  PHField* phfield = PHFieldUtility::BuildFieldMap(default_field_cfg.get(), 10);
   SQGenFit::GFField* gfield = new SQGenFit::GFField(phfield);
-  gfield->disable();
 
   KalmanFastTracking* fasttracker = new KalmanFastTracking(phfield, gGeoManager, false);
   
