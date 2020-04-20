@@ -333,10 +333,11 @@ void KalmanFastTracking::setRawEventDebug(SRawEvent* event_input)
 
 int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 {
-	//
-	for(auto iter=_timers.begin(); iter!=_timers.end();++iter) {
-		iter->second->reset();
-	}
+	//reset timer
+    for(auto iter=_timers.begin(); iter != _timers.end(); ++iter) 
+    {
+        iter->second->reset();
+    }
 
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
@@ -382,7 +383,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
 #ifndef ALIGNMENT_MODE
 #ifdef _DEBUG_ON
-        LogInfo("ALIGNMENT_MODE OFF");
+    LogInfo("ALIGNMENT_MODE OFF");
 #endif
     buildPropSegments();
     if(propSegs[0].empty() || propSegs[1].empty())
@@ -396,15 +397,10 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     //Build tracklets in station 2, 3+, 3-
     _timers["st2"]->restart();
-    //_t_st2->restart();
     buildTrackletsInStation(3, 1);   //3 for station-2, 1 for list position 1
-    //_t_st2->stop();
     _timers["st2"]->stop();
-
-    if(verbosity >= 2) {
-    	LogInfo("NTracklets in St2: " << trackletsInSt[1].size());
-    }
-
+    if(verbosity >= 2) LogInfo("NTracklets in St2: " << trackletsInSt[1].size());
+    
     if(trackletsInSt[1].empty())
     {
 #ifdef _DEBUG_ON
@@ -414,16 +410,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 
     _timers["st3"]->restart();
-    //_t_st3->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
-    //_t_st3->stop();
     _timers["st3"]->stop();
-
-    if(verbosity >= 2) {
-    	LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
-    }
-
+    if(verbosity >= 2) LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
+    
     if(trackletsInSt[2].empty())
     {
 #ifdef _DEBUG_ON
@@ -434,14 +425,10 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     //Build back partial tracks in station 2, 3+ and 3-
     _timers["st23"]->restart();
-    //_t_st23->restart();
     buildBackPartialTracks();
-    //_t_st23->stop();
     _timers["st23"]->stop();
+    if(verbosity >= 2) LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
 
-    if(verbosity >= 2) {
-    	LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
-    }
 
     if(trackletsInSt[3].empty())
     {
@@ -453,15 +440,10 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     //Connect tracklets in station 2/3 and station 1 to form global tracks
     _timers["global"]->restart();
-    //_t_global->restart();
     buildGlobalTracks();
-    //_t_global->stop();
     _timers["global"]->stop();
-
-    if(verbosity >= 2) {
-    	LogInfo("NTracklets Global: " << trackletsInSt[4].size());
-    }
-
+    if(verbosity >= 2) LogInfo("NTracklets Global: " << trackletsInSt[4].size());
+    
 #ifdef _DEBUG_ON
     for(int i = 0; i < 2; ++i)
     {
@@ -491,13 +473,11 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     //Build kalman tracks
     _timers["kalman"]->restart();
-    //_t_kalman->restart();
     for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
     }
-    //_t_kalman->stop();
     _timers["kalman"]->stop();
 
 #ifdef _DEBUG_ON
@@ -1832,48 +1812,51 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     kmtrk.setCurrTrkpar(trkpar_curr);
     kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
 
+    /*
     //Fit the track first with possibily a few nodes unresolved
     if(!fitTrack(kmtrk))
     {
 #ifdef _DEBUG_ON
-    	LogInfo("!fitTrack(kmtrk) - try flip charge");
+        LogInfo("!fitTrack(kmtrk) - try flip charge");
 #endif
-    	trkpar_curr._state_kf[0][0] *= -1.;
-      kmtrk.setCurrTrkpar(trkpar_curr);
-      kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
-      if(!fitTrack(kmtrk))
-      {
+        trkpar_curr._state_kf[0][0] *= -1.;
+        kmtrk.setCurrTrkpar(trkpar_curr);
+        kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
+        if(!fitTrack(kmtrk))
+        {
 #ifdef _DEBUG_ON
-      	LogInfo("!fitTrack(kmtrk) - failed flip charge also");
+            LogInfo("!fitTrack(kmtrk) - failed flip charge also");
 #endif
-  			SRecTrack strack = tracklet.getSRecTrack();
-  			strack.setKalmanStatus(-1);
-  			return strack;
-      }
+            SRecTrack strack = tracklet.getSRecTrack();
+            strack.setKalmanStatus(-1);
+            return strack;
+        }
     }
 
-    if(!kmtrk.isValid()) {
+    if(!kmtrk.isValid()) 
+    {
 #ifdef _DEBUG_ON
-    	LogInfo("!kmtrk.isValid() Chi2 = " << kmtrk.getChisq() << " - try flip charge");
+        LogInfo("!kmtrk.isValid() Chi2 = " << kmtrk.getChisq() << " - try flip charge");
 #endif
-    	trkpar_curr._state_kf[0][0] *= -1.;
-      kmtrk.setCurrTrkpar(trkpar_curr);
-      kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
-      if(!fitTrack(kmtrk))
-      {
+        trkpar_curr._state_kf[0][0] *= -1.;
+        kmtrk.setCurrTrkpar(trkpar_curr);
+        kmtrk.getNodeList().back().getPredicted() = trkpar_curr;
+        if(!fitTrack(kmtrk))
+        {
 #ifdef _DEBUG_ON
-      	LogInfo("!fitTrack(kmtrk) - failed flip charge also");
+            LogInfo("!fitTrack(kmtrk) - failed flip charge also");
 #endif
-  			SRecTrack strack = tracklet.getSRecTrack();
-  			strack.setKalmanStatus(-1);
-  			return strack;
-      }
+            SRecTrack strack = tracklet.getSRecTrack();
+            strack.setKalmanStatus(-1);
+            return strack;
+        }
 
 #ifdef _DEBUG_ON
-      LogInfo("Chi2 after flip charge: " << kmtrk.getChisq());
-      if(kmtrk.isValid()) {
-      	LogInfo("flip charge worked!");
-      }
+        LogInfo("Chi2 after flip charge: " << kmtrk.getChisq());
+        if(kmtrk.isValid()) 
+        {
+            LogInfo("flip charge worked!");
+        }
 #endif
     }
 
@@ -1883,6 +1866,7 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     LogInfo("kmtrk.printNodes()");
     kmtrk.printNodes();
 #endif
+    */
 
     //Resolve left-right based on the current solution, re-fit if anything changed
     //resolveLeftRight(kmtrk);
@@ -1970,19 +1954,13 @@ void KalmanFastTracking::resolveLeftRight(KalmanTrack& kmtrk)
 void KalmanFastTracking::printTimers() {
 	std::cout <<"KalmanFastTracking::printTimers: " << std::endl;
 	std::cout <<"================================================================" << std::endl;
-//	std::cout << "Tracklet St2                "<<_t_st2->get_accumulated_time()/1000. << " sec" <<std::endl;
-//	std::cout << "Tracklet St3                "<<_t_st3->get_accumulated_time()/1000. << " sec" <<std::endl;
-//	std::cout << "Tracklet St23               "<<_t_st23->get_accumulated_time()/1000. << " sec" <<std::endl;
-//	std::cout << "Tracklet Global             "<<_t_global->get_accumulated_time()/1000. << " sec" <<std::endl;
-//	std::cout << "  Global Kalman               "<<_t_global_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
-//	std::cout << "Tracklet Kalman             "<<_t_kalman->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St2                "<<_timers["st2"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St3                "<<_timers["st3"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet St23               "<<_timers["st23"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Global             "<<_timers["global"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "  Global St1                  "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "  Global Link                 "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
-	std::cout << "  Global Kalman               "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global St1                "<<_timers["global_st1"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global Link               "<<_timers["global_link"]->get_accumulated_time()/1000. << " sec" <<std::endl;
+	std::cout << "  Global Kalman             "<<_timers["global_kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout << "Tracklet Kalman             "<<_timers["kalman"]->get_accumulated_time()/1000. << " sec" <<std::endl;
 	std::cout <<"================================================================" << std::endl;
 }

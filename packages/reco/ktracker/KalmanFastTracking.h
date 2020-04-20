@@ -26,6 +26,7 @@ Created: 05-24-2013
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
+#include "GFFitter.h"
 
 class TGeoManager;
 
@@ -111,7 +112,7 @@ public:
     void chi2fit(int n, double x[], double y[], double& a, double& b);
 
 private:
-
+    //verbosity following Fun4All convention
     int verbosity;
 
     //Raw event input
@@ -195,6 +196,9 @@ private:
     //Kalman fitter
     KalmanFitter* kmfitter;
 
+    //GenFit-based fitter
+    SQGenFit::GFFitter* gffitter;
+
     //Geometry service
     GeomSvc* p_geomSvc;
 
@@ -204,17 +208,8 @@ private:
     //Flag for enable Kalman fitting
     const bool enable_KF;
 
-    std::map< std::string, PHTimer* > _timers;
-
-//    PHTimer* _t_st2;
-//    PHTimer* _t_st3;
-//    PHTimer* _t_st23;
-//    PHTimer* _t_global;
-//    PHTimer* _t_global_st1;
-//    PHTimer* _t_global_link;
-//    PHTimer* _t_global_kalman;
-//    PHTimer* _t_kalman;
-
+    //Timer
+    std::map<std::string, PHTimer*> _timers;
 };
 
 #endif
