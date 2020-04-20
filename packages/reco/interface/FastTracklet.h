@@ -10,7 +10,7 @@ Created: 06-09-2013
 #ifndef _FASTTRACKLET_H
 #define _FASTTRACKLET_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <list>
 #include <vector>
@@ -153,6 +153,7 @@ public:
     //Get momentum upstream/downstream
     TVector3 getMomentumSt1();
     TVector3 getMomentumSt3();
+    TVector3 getExpMomentum(double z);
 
     //Get the i-th signed hit
     SignedHit getSignedHit(int index);

@@ -95,7 +95,7 @@ void GFMeasurement::print(unsigned int debugLvl)
   fitstate.getPosMom(pos, mom);
   w = p_geomSvc->getInterceptionFast(_bfHit.hit.detectorID, pos.X(), pos.Y());
   printHelper(w, pos, mom, "Fitted       ");
-  if(debugLvl > 10) fitstate.getCov().Print();
+  if(debugLvl > 10) fitstate.get6DCov().Print();
 
   if(debugLvl > 1 && fitinfo->hasReferenceState())
   {
@@ -113,7 +113,7 @@ void GFMeasurement::print(unsigned int debugLvl)
     state->getPosMom(pos, mom);
     w = p_geomSvc->getInterceptionFast(_bfHit.hit.detectorID, pos.X(), pos.Y());
     printHelper(w, pos, mom, "F-prediction ");
-    if(debugLvl > 10) state->getCov().Print();
+    if(debugLvl > 10) state->get6DCov().Print();
   }
 
   if(debugLvl > 2 && fitinfo->hasForwardUpdate())
@@ -123,7 +123,7 @@ void GFMeasurement::print(unsigned int debugLvl)
     state->getPosMom(pos, mom);
     w = p_geomSvc->getInterceptionFast(_bfHit.hit.detectorID, pos.X(), pos.Y());
     printHelper(w, pos, mom, "F-update     ");
-    if(debugLvl > 10) state->getCov().Print();
+    if(debugLvl > 10) state->get6DCov().Print();
   }
 
   if(debugLvl > 3 && fitinfo->hasBackwardPrediction())
@@ -133,7 +133,7 @@ void GFMeasurement::print(unsigned int debugLvl)
     state->getPosMom(pos, mom);
     w = p_geomSvc->getInterceptionFast(_bfHit.hit.detectorID, pos.X(), pos.Y());
     printHelper(w, pos, mom, "B-prediction ");
-    if(debugLvl > 10) state->getCov().Print();
+    if(debugLvl > 10) state->get6DCov().Print();
   }
 
   if(debugLvl > 3 && fitinfo->hasBackwardUpdate())
@@ -143,7 +143,7 @@ void GFMeasurement::print(unsigned int debugLvl)
     state->getPosMom(pos, mom);
     w = p_geomSvc->getInterceptionFast(_bfHit.hit.detectorID, pos.X(), pos.Y());
     printHelper(w, pos, mom, "B-update     ");
-    if(debugLvl > 10) state->getCov().Print();
+    if(debugLvl > 10) state->get6DCov().Print();
   }
 }
 
@@ -152,6 +152,8 @@ void GFMeasurement::printHelper(double w, TVector3& pos, TVector3& mom, TString 
   std::cout << " -- " << name.Data() << ": ";
   std::cout << "pos (X,Y,Z,W) = " << std::setprecision(6) << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << w;
   std::cout << " - mom(Px,Py,Pz) = " << mom.X() << " " << mom.Y() << " " << mom.Z();
+  std::cout << " - rep(tx,ty,x0,y0) = " << mom.X()/mom.Z() << " " << mom.Y()/mom.Z() << " " << pos.X()-mom.X()/mom.Z()*pos.Z();
+  std::cout << " " << pos.Y()-mom.Y()/mom.Z()*pos.Z();
   std::cout << std::endl;
 }
 

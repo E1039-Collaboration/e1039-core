@@ -14,8 +14,8 @@
 #include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/StateOnPlane.h>
 
-#include <ktracker/SRawEvent.h>
-#include <ktracker/SRecEvent.h>
+#include "SRawEvent.h"
+#include "SRecEvent.h"
 
 
 namespace SQGenFit
@@ -139,16 +139,16 @@ bool GFTrack::setInitialStateForExtrap(genfit::MeasuredStateOnPlane& state, cons
   return true;
 }
 
-void GFTrack::setTracklet(Tracklet& tracklet, bool wildseedcov)
+void GFTrack::setTracklet(Tracklet& tracklet, double z_reference, bool wildseedcov)
 {
   _trkcand = &tracklet;
   _pdg = tracklet.getCharge() > 0 ? -13 : 13;
   _trkrep = new genfit::RKTrackRep(_pdg);
 
   TVectorD seed_state(6);
-  double z_st3 = 1900.;
-  TVector3 seed_mom = tracklet.getMomentumSt3();
-  TVector3 seed_pos(tracklet.getExpPositionX(z_st3), tracklet.getExpPositionY(z_st3), z_st3);
+    
+  TVector3 seed_mom = tracklet.getExpMomentum(z_reference);
+  TVector3 seed_pos(tracklet.getExpPositionX(z_reference), tracklet.getExpPositionY(z_reference), z_reference);
   seed_state[0] = seed_pos.X();
   seed_state[1] = seed_pos.Y();
   seed_state[2] = seed_pos.Z();
@@ -157,11 +157,12 @@ void GFTrack::setTracklet(Tracklet& tracklet, bool wildseedcov)
   seed_state[5] = seed_mom.Pz();
 
   TMatrixDSym seed_cov(6);
+  double uncertainty[6] = {10., 10., 10., 3., 3., 10.};
   for(int i = 0; i < 6; i++)
   {
     for(int j = 0; j < 6; j++)
     {
-      seed_cov[i][j] = 100.;
+      seed_cov[i][j] = uncertainty[i]*uncertainty[j];
     }
   }
 

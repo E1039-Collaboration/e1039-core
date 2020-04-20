@@ -20,8 +20,12 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
+  double fudgefactor = 0.;
+  if(argc > 1) fudgefactor = atof(argv[1]);
+  cout << "fudgefactor = " << fudgefactor << endl;
+
   recoConsts* rc = recoConsts::instance();
   rc->set_DoubleFlag("FMAGSTR", 1.);
   rc->set_DoubleFlag("KMAGSTR", 1.);
@@ -38,9 +42,10 @@ int main()
 
   //Let's hack a zero field
   unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
-	default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+  default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
   PHField* phfield = PHFieldUtility::BuildFieldMap(default_field_cfg.get(), 10);
   SQGenFit::GFField* gfield = new SQGenFit::GFField(phfield);
+  //gfield->disable();
 
   KalmanFastTracking* fasttracker = new KalmanFastTracking(phfield, gGeoManager, false);
   
@@ -49,23 +54,23 @@ int main()
   fitter->setVerbosity(99);
 
   Tracklet candidate;
-  candidate.stationID = 4;
-  candidate.tx = -0.02;
-  candidate.ty = -0.01;
-  candidate.x0 = -5.;
-  candidate.y0 = -5.;
+  candidate.stationID = 7;
+  candidate.tx = 0.01;
+  candidate.ty = 0.01;
+  candidate.x0 = 5.;
+  candidate.y0 = 5.;
   candidate.invP = 0.03;
 
   TRandom rndm(1);
-  for(int i = 0; i < 12; ++i)
+  for(int i = 0; i < 18; ++i)
   {
     SignedHit newHit;
 
-    newHit.hit.detectorID = 13+i;
+    newHit.hit.detectorID = i < 6 ? i+1 : i+13;
     double w_exp = candidate.getExpPositionW(newHit.hit.detectorID);
     newHit.hit.elementID = p_geomSvc->getExpElementID(newHit.hit.detectorID, w_exp);
     newHit.hit.pos = p_geomSvc->getMeasurement(newHit.hit.detectorID, newHit.hit.elementID);
-    newHit.hit.driftDistance = fabs(w_exp - newHit.hit.pos + rndm.Gaus(0., 1.*p_geomSvc->getPlaneResolution(newHit.hit.detectorID)));
+    newHit.hit.driftDistance = fabs(w_exp - newHit.hit.pos + rndm.Gaus(0., fudgefactor*p_geomSvc->getPlaneResolution(newHit.hit.detectorID)));
     newHit.sign = w_exp > newHit.hit.pos ? 1 : -1;
     newHit.hit.index = i;
 
@@ -95,8 +100,8 @@ int main()
   */
 
   cout << "----------------- Fit Results ------------------" << endl; 
-  gtrack.getGenFitTrack()->Print();
-  gtrack.print(10);
+  //gtrack.getGenFitTrack()->Print();
+  gtrack.print(99);
 
   //fitter->displayEvent();
   cout << "Exit" << endl;

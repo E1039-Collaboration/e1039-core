@@ -645,6 +645,11 @@ double Tracklet::getMomProb() const
     return (index >= 0 && index < 40) ? (weights[index] < 1.E-5 ? 1.E-5 : weights[index]) : 1.E-5;
 }
 
+TVector3 Tracklet::getExpMomentum(double z)
+{
+    return (kmag_on && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.) ? getMomentumSt1() : getMomentumSt3();
+}
+
 double Tracklet::getExpPositionX(double z) const
 {
     if(kmag_on && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.)

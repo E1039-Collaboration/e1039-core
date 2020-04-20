@@ -22,7 +22,7 @@ public:
   ~GFTrack();
 
   void setVerbosity(unsigned int v);
-  void setTracklet(Tracklet& tracklet, bool wildseedcov = false);
+  void setTracklet(Tracklet& tracklet, double z_reference = 590., bool wildseedcov = false);
   void addMeasurements(std::vector<GFMeasurement*>& measurements);
   void addMeasurement(GFMeasurement* measurement);
 
