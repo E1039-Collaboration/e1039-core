@@ -20,7 +20,6 @@ Created: 05-28-2013
 #include <TBox.h>
 #include <TMatrixD.h>
 
-//#include "KalmanFitter.h"
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 

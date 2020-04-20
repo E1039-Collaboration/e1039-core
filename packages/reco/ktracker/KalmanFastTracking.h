@@ -26,7 +26,6 @@ Created: 05-24-2013
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
-#include "GFFitter.h"
 
 class TGeoManager;
 
@@ -195,9 +194,6 @@ private:
 
     //Kalman fitter
     KalmanFitter* kmfitter;
-
-    //GenFit-based fitter
-    SQGenFit::GFFitter* gffitter;
 
     //Geometry service
     GeomSvc* p_geomSvc;
