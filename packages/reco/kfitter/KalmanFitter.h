@@ -13,7 +13,7 @@ Created: 10-18-2012
 #include <list>
 #include <vector>
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include "KalmanUtil.h"
 #include "KalmanTrack.h"

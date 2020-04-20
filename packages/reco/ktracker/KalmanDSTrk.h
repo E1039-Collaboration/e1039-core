@@ -9,10 +9,9 @@
 #ifndef _KalmanDSTrk_H
 #define _KalmanDSTrk_H
 
-#include "GlobalConsts.h"
-
-#include "jobopts_svc/JobOptsSvc.h"
-#include "geom_svc/GeomSvc.h"
+#include <GlobalConsts.h>
+#include <jobopts_svc/JobOptsSvc.h>
+#include <geom_svc/GeomSvc.h>
 
 #include "SRawEvent.h"
 #include "KalmanTrack.h"

@@ -12,7 +12,7 @@ Created: 06-17-2015
 #ifndef _EVENTREDUCER_H
 #define _EVENTREDUCER_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <list>
 #include <map>

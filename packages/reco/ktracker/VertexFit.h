@@ -17,11 +17,10 @@ Created: 2-8-2012
 
 // Fun4All includes
 #include <fun4all/SubsysReco.h>
+#include <GlobalConsts.h>
 
 #include <iostream>
 #include <vector>
-
-#include "GlobalConsts.h"
 
 #include <TFile.h>
 #include <TTree.h>

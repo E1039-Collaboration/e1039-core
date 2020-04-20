@@ -10,7 +10,9 @@ Created: 05-24-2013
 #ifndef _KALMANFASTTRACKING_H
 #define _KALMANFASTTRACKING_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
+#include <jobopts_svc/JobOptsSvc.h>
+#include <geom_svc/GeomSvc.h>
 
 #include <list>
 #include <vector>
@@ -20,8 +22,6 @@ Created: 05-24-2013
 #include <Math/Minimizer.h>
 #include <Math/Functor.h>
 
-#include "jobopts_svc/JobOptsSvc.h"
-#include "geom_svc/GeomSvc.h"
 #include "SRawEvent.h"
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"

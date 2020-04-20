@@ -13,7 +13,7 @@ Created: 11-20-2011
 #ifndef _KALMANUTIL_H
 #define _KALMANUTIL_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <iostream>
 #include <cmath>

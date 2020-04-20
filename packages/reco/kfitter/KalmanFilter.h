@@ -14,7 +14,7 @@ Created: 10-14-2011
 #ifndef _KALMANFILTER_H
 #define _KALMANFILTER_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <phfield/PHField.h>
 

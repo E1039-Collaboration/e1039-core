@@ -12,7 +12,7 @@ Created: 07-02-2012
 #ifndef _SRAWEVENT_H
 #define _SRAWEVENT_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <phool/PHObject.h>
 

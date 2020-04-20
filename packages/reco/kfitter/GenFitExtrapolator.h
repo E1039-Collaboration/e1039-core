@@ -22,7 +22,7 @@ Created: 10-13-2011
 #include <TMatrixDSym.h>
 #include <TVector3.h>
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 class TGeoManager;
 class PHField;

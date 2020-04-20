@@ -10,7 +10,7 @@ Created: 10-14-2012
 #ifndef _KALMANTRACK_H
 #define _KALMANTRACK_H
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
 
 #include <list>
 #include <vector>
