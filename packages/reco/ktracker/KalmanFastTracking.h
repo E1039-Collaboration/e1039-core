@@ -38,7 +38,7 @@ public:
     explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
     ~KalmanFastTracking();
 
-    //
+    //set/get verbosity
     void Verbosity(const int a) {verbosity = a;}
     int Verbosity() const {return verbosity;}
     void printTimers();

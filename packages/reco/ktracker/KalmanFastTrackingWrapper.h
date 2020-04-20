@@ -24,8 +24,8 @@
 #include <map>
 //#include <algorithm>
 
-//class KalmanFastTracking;
-class KalmanDSTrk;
+class KalmanFastTracking;
+//class KalmanDSTrk;
 class EventReducer;
 class SRawEvent;
 class SRecEvent;
@@ -146,8 +146,8 @@ private:
 
 	SRawEvent* BuildSRawEvent();
 
-	//KalmanFastTracking* fastfinder;
-	KalmanDSTrk* fastfinder;
+	KalmanFastTracking* fastfinder;
+	//KalmanDSTrk* fastfinder;
 	EventReducer* eventReducer;
 
 	std::string _hit_container_type;

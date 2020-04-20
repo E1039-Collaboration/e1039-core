@@ -9,6 +9,7 @@ Created: 05-28-2013
 
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
+#include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
 #include <algorithm>
@@ -25,17 +26,7 @@ Created: 05-28-2013
 
 //#define _DEBUG_ON
 
-KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag)
-: verbosity(0),
-	enable_KF(flag)
-//	_t_st2(nullptr),
-//	_t_st3(nullptr),
-//	_t_st23(nullptr),
-//	_t_global(nullptr),
-//	_t_global_st1(nullptr),
-//	_t_global_link(nullptr),
-//	_t_global_kalman(nullptr),
-//	_t_kalman(nullptr)
+KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag)
 {
     using namespace std;
 
@@ -52,15 +43,6 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager *
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_link", new PHTimer("global_link")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
-
-//    _t_st2 = new PHTimer("_t_st2");
-//    _t_st3 = new PHTimer("_t_st3");
-//    _t_st23 = new PHTimer("_t_st23");
-//    _t_global = new PHTimer("_t_global");
-//    _t_global_st1 = new PHTimer("_t_global_st1");
-//    _t_global_link = new PHTimer("_t_global_link");
-//    _t_global_kalman = new PHTimer("_t_global_kalman");
-//    _t_kalman = new PHTimer("_t_kalman");
 
     //Initialize jobOpts service
     p_jobOptsSvc = JobOptsSvc::instance();
@@ -531,20 +513,21 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
 bool KalmanFastTracking::acceptEvent(SRawEvent* rawEvent)
 {
-#ifdef _DEBUG_ON
-    LogInfo("D0: " << rawEvent->getNHitsInD0());
-    LogInfo("D1: " << rawEvent->getNHitsInD1());
-    LogInfo("D2: " << rawEvent->getNHitsInD2());
-    LogInfo("D3p: " << rawEvent->getNHitsInD3p());
-    LogInfo("D3m: " << rawEvent->getNHitsInD3m());
-    LogInfo("H1: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]));
-    LogInfo("H2: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]));
-    LogInfo("H3: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]));
-    LogInfo("H4: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]));
-    LogInfo("Prop:" << rawEvent->getNPropHitsAll());
-    LogInfo("NRoadsPos: " << rawEvent->getNRoadsPos());
-    LogInfo("NRoadsNeg: " << rawEvent->getNRoadsNeg());
-#endif
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) 
+    {
+        LogInfo("D0: " << rawEvent->getNHitsInD0());
+        LogInfo("D1: " << rawEvent->getNHitsInD1());
+        LogInfo("D2: " << rawEvent->getNHitsInD2());
+        LogInfo("D3p: " << rawEvent->getNHitsInD3p());
+        LogInfo("D3m: " << rawEvent->getNHitsInD3m());
+        LogInfo("H1: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]));
+        LogInfo("H2: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[1]));
+        LogInfo("H3: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[2]));
+        LogInfo("H4: " << rawEvent->getNHitsInDetectors(detectorIDs_maskX[3]));
+        LogInfo("Prop:" << rawEvent->getNPropHitsAll());
+        LogInfo("NRoadsPos: " << rawEvent->getNRoadsPos());
+        LogInfo("NRoadsNeg: " << rawEvent->getNRoadsNeg());
+    }
 
     if(rawEvent->getNHitsInD0() > 350) return false;
     if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
@@ -943,14 +926,8 @@ void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
             //LogInfo("Final: " << index_min << "  " << pull_min);
             if(index_min >= 0 && pull_min < threshold)//((tracklet.stationID == 5 && pull_min < 25.) || (tracklet.stationID == 6 && pull_min < 100.)))
             {
-            	//FIXME temp for debug purpose
-							//hit1->sign = possibility[index_min][0];
-							//hit2->sign = possibility[index_min][1];
-
-            	//FIXME temp for debug purpose
-            	hit1->sign = hit1->hit.driftDistance > 0 ? 1 : -1;
-            	hit2->sign = hit2->hit.driftDistance > 0 ? 1 : -1;
-
+                hit1->sign = possibility[index_min][0];
+                hit2->sign = possibility[index_min][1];
                 isUpdated = true;
             }
         }

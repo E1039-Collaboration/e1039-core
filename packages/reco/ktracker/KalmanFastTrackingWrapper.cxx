@@ -7,7 +7,7 @@
 
 #include "KalmanFastTrackingWrapper.h"
 
-#include "KalmanDSTrk.h"
+//#include "KalmanDSTrk.h"
 #include "KalmanFastTracking.h"
 #include "EventReducer.h"
 
@@ -59,7 +59,7 @@ SubsysReco(name),
  _input_type(KalmanFastTrackingWrapper::E1039),
 _enable_KF(true),
 _enable_event_reducer(false),
-_DS_level(KalmanDSTrk::NO_DS),
+_DS_level(0),
 _sim_db_name(""),
 _pattern_db_name(""),
 _hit_container_type("Vector"),
@@ -109,7 +109,8 @@ int KalmanFastTrackingWrapper::InitRun(PHCompositeNode* topNode) {
   }
 
 	/// init KalmanDSTrk
-	fastfinder = new KalmanDSTrk(field, _t_geo_manager, _enable_KF, _DS_level,_sim_db_name,_pattern_db_name);
+	//fastfinder = new KalmanDSTrk(field, _t_geo_manager, _enable_KF, _DS_level,_sim_db_name,_pattern_db_name);
+	fastfinder = new KalmanFastTracking(field, _t_geo_manager, _enable_KF);
 	fastfinder->Verbosity(verbosity);
 
 	if(_enable_event_reducer) {

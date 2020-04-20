@@ -1,2 +1,6 @@
 /**/.vscode
 /**/*.root
+
+build/*
+include/*
+lib/*
