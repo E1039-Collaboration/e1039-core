@@ -964,8 +964,8 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
         isUpdated = false;
         tracklet.calcChisq();
 
-        SignedHit* hit_remove = NULL;
-        SignedHit* hit_neighbour = NULL;
+        SignedHit* hit_remove = nullptr;
+        SignedHit* hit_neighbour = nullptr;
         double res_remove1 = -1.;
         double res_remove2 = -1.;
         for(std::list<SignedHit>::iterator hit_sign = tracklet.hits.begin(); hit_sign != tracklet.hits.end(); ++hit_sign)
@@ -984,7 +984,7 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
                 hit_neighbour = detectorID % 2 == 0 ? &(*(--iter)) : &(*(++iter));
             }
         }
-        if(hit_remove == NULL) continue;
+        if(hit_remove == nullptr) continue;
         if(hit_remove->sign == 0 && tracklet.isValid()) continue;  //if sign is undecided, and chisq is OKay, then pass
 
         double cut = hit_remove->sign == 0 ? hit_remove->hit.driftDistance + resol_plane[hit_remove->hit.detectorID] : resol_plane[hit_remove->hit.detectorID];
@@ -1097,7 +1097,7 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
 
     //Extract the X, U, V hit pairs
     std::list<SRawEvent::hit_pair> pairs_X, pairs_U, pairs_V;
-    if(pos_exp == NULL)
+    if(pos_exp == nullptr)
     {
         pairs_X = rawEvent->getPartialHitPairsInSuperDetector(superIDs[sID][0]);
         pairs_U = rawEvent->getPartialHitPairsInSuperDetector(superIDs[sID][1]);

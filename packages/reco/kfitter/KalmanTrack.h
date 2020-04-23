@@ -82,8 +82,8 @@ public:
     double getExpPosErrorY() { return sqrt(_node_next.getPredicted()._covar_kf[4][0]); }
 
     Node* getNearestNodePtr(double z);
-    void getExpPositionFast(double z, double& x, double& y, Node *_node = NULL);
-    void getExpPosErrorFast(double z, double& dx, double& dy, Node *_node = NULL);
+    void getExpPositionFast(double z, double& x, double& y, Node *_node = nullptr);
+    void getExpPosErrorFast(double z, double& dx, double& dy, Node *_node = nullptr);
 
     ///Get the expected slope
     double getExpLocalSlop();

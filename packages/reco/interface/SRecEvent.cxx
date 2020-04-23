@@ -291,12 +291,12 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
     //Store the steps on each point (center of the interval)
     bool cleanupPos = false;
     bool cleanupMom = false;
-    if(pos == NULL)
+    if(pos == nullptr)
     {
         pos = new TVector3[NSLICES_FMAG + NSTEPS_TARGET + 1];
         cleanupPos = true;
     }
-    if(mom == NULL)
+    if(mom == nullptr)
     {
         mom = new TVector3[NSLICES_FMAG + NSTEPS_TARGET + 1];
         cleanupMom = true;

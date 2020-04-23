@@ -52,7 +52,7 @@ public:
 
     ///Tracklet finding stuff
     //Build tracklets in a station
-    void buildTrackletsInStation(int stationID, int listID, double* pos_exp = NULL, double* window = NULL);
+    void buildTrackletsInStation(int stationID, int listID, double* pos_exp = nullptr, double* window = nullptr);
 
     //Build back partial tracks using tracklets in station 2 & 3
     void buildBackPartialTracks();

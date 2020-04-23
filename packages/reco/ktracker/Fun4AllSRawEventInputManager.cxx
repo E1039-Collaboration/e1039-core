@@ -248,9 +248,9 @@ Fun4AllSRawEventInputManager::ResetEvent()
 {
   //PHNodeIterator iter(topNode);
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
-  //PrdfNode->setData(NULL); // set pointer in Node to NULL before deleting it
+  //PrdfNode->setData(nullptr); // set pointer in Node to nullptr before deleting it
   //delete evt;
-  //evt = NULL;
+  //evt = nullptr;
   syncobject->Reset();
   return 0;
 }
@@ -289,7 +289,7 @@ Fun4AllSRawEventInputManager::PushBackEvents(const int i)
 //  int errorflag = 0;
 //  while (nevents > 0 && ! errorflag)
 //    {
-//			int * data_ptr = NULL;
+//			int * data_ptr = nullptr;
 //			unsigned int coda_id = 0;
 //			if(parser->coda->NextCodaEvent(coda_id, data_ptr))
 //				evt = new EVIO_Event(data_ptr);

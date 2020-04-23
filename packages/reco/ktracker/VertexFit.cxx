@@ -77,14 +77,14 @@ VertexFit::VertexFit(const std::string& name) :
 
   ///disable evaluation by default
   evalFileName = "vertex_eval.root";
-  evalFile = NULL;
-  evalTree = NULL;
+  evalFile = nullptr;
+  evalTree = nullptr;
 
 }
 
 VertexFit::~VertexFit()
 {
-    if(evalFile != NULL)
+    if(evalFile != nullptr)
     {
         evalFile->cd();
         evalTree->Write();
@@ -219,7 +219,7 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
   if(nPos*nNeg == 0) return VFEXIT_FAIL_DIMUONPAIR;
 
   //Prepare evaluation output
-  if(evalTree != NULL)
+  if(evalTree != nullptr)
   {
       runID = recEvent->getRunID();
       eventID = recEvent->getEventID();
@@ -646,7 +646,7 @@ void VertexFit::bookEvaluation(std::string evalFileName)
 
 void VertexFit::fillEvaluation()
 {
-    if(evalTree == NULL) return;
+    if(evalTree == nullptr) return;
 
     choice_by_kf_eval = -1;
     choice_by_vx_eval = -1;

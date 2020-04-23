@@ -428,7 +428,7 @@ Node* KalmanTrack::getNearestNodePtr(double z)
 
 void KalmanTrack::getExpPositionFast(double z, double& x, double& y, Node* _node)
 {
-    if(_node == NULL)
+    if(_node == nullptr)
     {
         _node = getNearestNodePtr(z);
     }
@@ -459,7 +459,7 @@ void KalmanTrack::getExpPositionFast(double z, double& x, double& y, Node* _node
 
 void KalmanTrack::getExpPosErrorFast(double z, double& dx, double& dy, Node* _node)
 {
-    if(_node == NULL)
+    if(_node == nullptr)
     {
         _node = getNearestNodePtr(z);
     }
@@ -510,7 +510,7 @@ double KalmanTrack::getExpLcSlopErr()
 
 Node *KalmanTrack::getNodeUpstream()
 {
-    Node* _node = NULL;
+    Node* _node = nullptr;
     for(std::list<Node>::iterator iter = _nodes.begin(); iter != _nodes.end(); ++iter)
     {
         int detectorID = iter->getHit().detectorID;
@@ -529,7 +529,7 @@ Node *KalmanTrack::getNodeUpstream()
 
 Node *KalmanTrack::getNodeDownstream()
 {
-    Node* _node = NULL;
+    Node* _node = nullptr;
     for(std::list<Node>::reverse_iterator iter = _nodes.rbegin(); iter != _nodes.rend(); ++iter)
     {
         int detectorID = iter->getHit().detectorID;

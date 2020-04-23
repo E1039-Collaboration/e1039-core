@@ -112,7 +112,7 @@ public:
     void setVertexFast(TVector3 mom, TVector3 pos);
 
     ///Simple swim to vertex
-    void swimToVertex(TVector3* pos = NULL, TVector3* mom = NULL);
+    void swimToVertex(TVector3* pos = nullptr, TVector3* mom = nullptr);
 
     ///Get the vertex info
     TLorentzVector getMomentumVertex();

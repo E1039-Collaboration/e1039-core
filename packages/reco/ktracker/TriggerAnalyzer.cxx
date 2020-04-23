@@ -37,8 +37,8 @@ TriggerAnalyzer::TriggerAnalyzer()
     detectorIDs_trigger.insert(detectorIDs_trigger.end(), H3X_trigger.begin(), H3X_trigger.end());
     detectorIDs_trigger.insert(detectorIDs_trigger.end(), H4X_trigger.begin(), H4X_trigger.end());
 
-    root[0] = NULL;
-    root[1] = NULL;
+    root[0] = nullptr;
+    root[1] = nullptr;
 }
 
 TriggerAnalyzer::~TriggerAnalyzer()
@@ -389,7 +389,7 @@ void TriggerAnalyzer::search(TNode* root, DataMatrix& data, int level, int charg
 
 void TriggerAnalyzer::printTree(TNode* root)
 {
-    if(root == NULL) return;
+    if(root == nullptr) return;
 
     roads_temp.push_back(root->uniqueID);
     if(root->children.empty())
@@ -409,7 +409,7 @@ void TriggerAnalyzer::printTree(TNode* root)
 
 void TriggerAnalyzer::clearTree(TNode* root)
 {
-    if(root == NULL) return;
+    if(root == nullptr) return;
     if(root->children.empty())
     {
         delete root;

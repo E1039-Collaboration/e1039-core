@@ -15,11 +15,11 @@ Created: 11-21-2011
 #include "jobopts_svc/JobOptsSvc.h"
 #include "KalmanFilter.h"
 
-KalmanFilter* KalmanFilter::p_kmfit = NULL;
+KalmanFilter* KalmanFilter::p_kmfit = nullptr;
 
 KalmanFilter* KalmanFilter::instance()
 {
-    if(p_kmfit == NULL)
+    if(p_kmfit == nullptr)
     {
         p_kmfit = new KalmanFilter();
     }
@@ -29,7 +29,7 @@ KalmanFilter* KalmanFilter::instance()
 
 void KalmanFilter::close()
 {
-    if(p_kmfit != NULL)
+    if(p_kmfit != nullptr)
     {
         delete p_kmfit;
     }
