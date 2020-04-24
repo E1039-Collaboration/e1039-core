@@ -24,7 +24,21 @@ ClassImp(SignedHit)
 ClassImp(PropSegment)
 ClassImp(Tracklet)
 
-//#define _DEBUG_ON
+namespace 
+{
+	//static pointer to geomtry service
+	static GeomSvc* p_geomSvc = nullptr;
+
+	//static flag of kmag on/off
+	static bool kmag_on = true;
+
+	//static flag of kmag strength
+	static double FMAGSTR = 1.0;
+	static double KMAGSTR = 1.0;
+
+	static double PT_KICK_FMAG = 2.909;
+	static double PT_KICK_KMAG = 0.4016;
+}
 
 //Signed hit definition
 SignedHit::SignedHit() : sign(0)
@@ -48,9 +62,7 @@ PropSegment::PropSegment() : a(-999.), b(-999.), err_a(100.), err_b(100.), chisq
 {
     for(int i = 0; i < 4; ++i) hits[i].hit.index = -1;
     for(int i = 0; i < 4; ++i) hodoHits[i].index = -1;
-#ifndef __CINT__
-    p_geomSvc = GeomSvc::instance();
-#endif
+    if(p_geomSvc == nullptr) p_geomSvc = GeomSvc::instance();
 }
 
 void PropSegment::init()
@@ -83,7 +95,6 @@ void PropSegment::print()
         cout << hits[i].hit.index << "  " << hits[i].hit.detectorID << "  " << hits[i].hit.elementID << " === ";
     }
     cout << endl;
-
 }
 
 double PropSegment::getClosestApproach(double z, double pos)
@@ -424,108 +435,40 @@ void PropSegment::linearFit_iterative()
 // Original imp.
 //const GeomSvc* Tracklet::p_geomSvc = GeomSvc::instance();
 //const bool Tracklet::kmag_on = JobOptsSvc::instance()->m_enableKMag;
-
-namespace {
-	//static pointer to geomtry service
-	static GeomSvc* p_geomSvc = nullptr;
-
-	//static flag of kmag on/off
-	static bool kmag_on = true;
-
-	//static flag of kmag strength
-	static double FMAGSTR = 1.0;
-	static double KMAGSTR = 1.0;
-
-	static double PT_KICK_FMAG = 2.909;
-	static double PT_KICK_KMAG = 0.4016;
-}
 //@}
 
 Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(9999.), chisq_vtx(9999.), tx(0.), ty(0.), x0(0.), y0(0.), invP(0.1), err_tx(-1.), err_ty(-1.), err_x0(-1.), err_y0(-1.), err_invP(-1.)
 {
     for(int i = 0; i < nChamberPlanes; i++) residual[i] = 999.;
 
-    p_geomSvc = GeomSvc::instance();
-    kmag_on = JobOptsSvc::instance()->m_enableKMag;
-    FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
-    KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
-    PT_KICK_FMAG = 2.909*FMAGSTR;
-    PT_KICK_KMAG = 0.4016*KMAGSTR;
+    if(p_geomSvc == nullptr) 
+    {
+        p_geomSvc = GeomSvc::instance();
+        kmag_on = JobOptsSvc::instance()->m_enableKMag;
+        FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
+        KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
+        PT_KICK_FMAG = 2.909*FMAGSTR;
+        PT_KICK_KMAG = 0.4016*KMAGSTR;
+    }
 }
 
 bool Tracklet::isValid()
 {
-    if(stationID < 1 || stationID > nStations)
-    {
-#ifdef _DEBUG_ON
-    	LogInfo("stationID: " << stationID);
-#endif
-    	return false;
-    }
-
-    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX)
-    {
-#ifdef _DEBUG_ON
-    	LogInfo("");
-#endif
-    	return false;
-    }
-
-    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX)
-    {
-#ifdef _DEBUG_ON
-    	LogInfo("");
-#endif
-    	return false;
-    }
-
-    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0)
-    {
-#ifdef _DEBUG_ON
-    	LogInfo("err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0");
-#endif
-    	return false;
-    }
-
+    if(stationID < 1 || stationID > nStations) return false;
+    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX) return false;
+    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX) return false;
+    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0) return false;
 
     double prob = getProb();
-    if(stationID != nStations && prob < PROB_LOOSE)
-    {
-#ifdef _DEBUG_ON
-    	LogInfo("");
-#endif
-    	return false;
-    }
-
-
+    if(stationID != nStations && prob < PROB_LOOSE) return false;
+    
     //Tracklets in each station
     int nHits = nXHits + nUHits + nVHits;
     if(stationID < nStations-1)
     {
-        if(nXHits < 1 || nUHits < 1 || nVHits < 1)
-        {
-    #ifdef _DEBUG_ON
-        	LogInfo("");
-    #endif
-        	return false;
-        }
-
-        if(nHits < 4)
-        {
-    #ifdef _DEBUG_ON
-        	LogInfo("");
-    #endif
-        	return false;
-        }
-
-        if(chisq > 40.)
-        {
-    #ifdef _DEBUG_ON
-        	LogInfo("");
-    #endif
-        	return false;
-        }
-
+        if(nXHits < 1 || nUHits < 1 || nVHits < 1) return false;
+        if(nHits < 4) return false;
+        if(chisq > 40.) return false;
     }
     else
     {
@@ -559,61 +502,20 @@ bool Tracklet::isValid()
         //Number of hits cut after removing bad hits
         for(int i = 1; i < 3; ++i)
         {
-            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1)
-            {
-        #ifdef _DEBUG_ON
-            	LogInfo("");
-        #endif
-            	return false;
-            }
-
-            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4)
-            {
-        #ifdef _DEBUG_ON
-            	LogInfo("nRealHits at " << i << " : " << nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2]);
-        #endif
-            	return false;
-            }
-
+            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1) return false;
+            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4) return false;
         }
 
         //for global tracks only -- TODO: may need to set a new station-1 cut
         if(stationID == nStations)
         {
-            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1)
-            {
-        #ifdef _DEBUG_ON
-            	LogInfo("");
-        #endif
-            	return false;
-            }
+            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1) return false;
+            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return false;
 
-            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4)
-            {
-        #ifdef _DEBUG_ON
-            	LogInfo("");
-        #endif
-            	return false;
-            }
-
-
-            if(prob < PROB_TIGHT)
-            {
-        #ifdef _DEBUG_ON
-            	LogInfo("");
-        #endif
-            	return false;
-            }
+            if(prob < PROB_TIGHT) return false;
             if(kmag_on)
             {
-                if(invP < INVP_MIN || invP > INVP_MAX)
-                {
-            #ifdef _DEBUG_ON
-                	LogInfo("");
-            #endif
-                	return false;
-                }
-
+                if(invP < INVP_MIN || invP > INVP_MAX) return false;
             }
         }
     }

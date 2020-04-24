@@ -104,12 +104,6 @@ public:
     //Hit list -- only 4 hits at most
     SignedHit hits[4];
 
-#ifndef __CINT__
-    //static pointer to geometry
-    //static const GeomSvc* p_geomSvc;
-    GeomSvc* p_geomSvc;
-#endif
-
     ClassDef(PropSegment, 4)
 };
 
