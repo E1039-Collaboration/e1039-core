@@ -1111,6 +1111,20 @@ double GeomSvc::getInterceptionFast(int detectorID, double tx, double ty, double
     return (tx*planes[detectorID].zc + x0)*planes[detectorID].costheta + (ty*planes[detectorID].zc + y0)*planes[detectorID].sintheta;
 }
 
+double GeomSvc::getDCA(int detectorID, int elementID, double tx, double ty, double x0, double y0)
+{
+    TVector3 trkp0(x0, y0, 0.);
+    TVector3 trkdir(tx, ty, 1.);
+
+    TVector3 ep1, ep2;
+    getEndPoints(detectorID, elementID, ep1, ep2);
+    TVector3 wiredir = ep2 - ep1;
+
+    TVector3 norm = trkdir.Cross(wiredir);
+    norm.SetMag(1.);
+    return (ep1 - trkp0).Dot(norm);
+}
+
 void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std::string& alignmentFile_hodo, const std::string& alignmentFile_prop)
 {
     using namespace std;
