@@ -33,10 +33,13 @@ PHFieldConfig_v3::PHFieldConfig_v3(
 		scale2_(scale2),
 		_taregetmag_y(targetmag_y)
 {
-	cout << "PHFieldConfig_v3::PHFieldConfig_v3:" << endl;
-	cout << " from file1 [" << filename1 << "]" << endl;
-	cout << "  and file2 [" << filename2 << "]" << endl;
-	cout << "scale1: " << scale1_ << ", scale2: " << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
+  if(filename1_.find("INVALID") == string::npos)  //suppress output when default ctor is called
+  {
+    cout << "PHFieldConfig_v3::PHFieldConfig_v3:" << endl;
+    cout << " from file1 [" << filename1 << "]" << endl;
+    cout << "  and file2 [" << filename2 << "]" << endl;
+    cout << "scale1: " << scale1_ << ", scale2: " << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
+  }
 }
 
 PHFieldConfig_v3::~PHFieldConfig_v3()
