@@ -22,6 +22,7 @@ Created: 10-14-2012
 #include "KalmanFilter.h"
 #include "SRecEvent.h"
 #include "SRawEvent.h"
+#include "FastTracklet.h"
 
 ///Seed structure to store the temporary prop. seeds information
 class Seed
@@ -56,6 +57,9 @@ public:
     KalmanTrack(Seed _seed_input);
     //KalmanTrack(Tracklet& tracklet);
     KalmanTrack(SRecTrack& _trk, SRawEvent *_rawevt, SRecEvent *_recevt);
+
+    //Convert from tracklet to KalmanTrack
+    void setTracklet(Tracklet& tracklet, bool wildseedcov = true);
 
     ///Get the seed associated
     Seed getSeed() { return _seed; }

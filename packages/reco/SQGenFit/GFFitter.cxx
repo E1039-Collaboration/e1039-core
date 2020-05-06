@@ -36,6 +36,7 @@ void GFFitter::init(GFField* field, const TString& fitter_choice)
   genfit::FieldManager::getInstance()->init(field);
   genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
 
+  _fitterTy = fitter_choice;
   if(fitter_choice == "KalmanFitterRefTrack")
     _kmfitter = new genfit::KalmanFitterRefTrack();
   else if(fitter_choice == "KalmanFitter")

@@ -212,12 +212,46 @@ KalmanTrack::KalmanTrack(SRecTrack& _trk, SRawEvent *_rawevt, SRecEvent *_recevt
     }
 }
 
+void KalmanTrack::setTracklet(Tracklet& tracklet, bool wildseedcov)
+{
+    //Set the whole hit and node list
+    for(auto iter = tracklet.hits.begin(); iter != tracklet.hits.end(); ++iter)
+    {
+        if(iter->hit.index < 0) continue;
+
+        Node node_add(*iter);
+        _nodes.push_back(node_add);
+        _hit_index.push_back(iter->sign*iter->hit.index);
+    }
+
+    //Set initial state
+
+    _trkpar_curr._z = GeomSvc::instance()->getPlanePosition(_nodes.back().getHit().detectorID);
+    _trkpar_curr._state_kf[0][0] = tracklet.getCharge()*tracklet.invP/sqrt(1. + tracklet.tx*tracklet.tx + tracklet.ty*tracklet.ty);
+    _trkpar_curr._state_kf[1][0] = tracklet.tx;
+    _trkpar_curr._state_kf[2][0] = tracklet.ty;
+    _trkpar_curr._state_kf[3][0] = tracklet.getExpPositionX(_trkpar_curr._z);
+    _trkpar_curr._state_kf[4][0] = tracklet.getExpPositionY(_trkpar_curr._z);
+
+    _trkpar_curr._covar_kf.Zero();
+    if(wildseedcov)
+    {
+        _trkpar_curr._covar_kf[0][0] = 0.001;//1E6*tracklet.err_invP*tracklet.err_invP;
+        _trkpar_curr._covar_kf[1][1] = 0.01;//1E6*tracklet.err_tx*tracklet.err_tx;
+        _trkpar_curr._covar_kf[2][2] = 0.01;//1E6*tracklet.err_ty*tracklet.err_ty;
+        _trkpar_curr._covar_kf[3][3] = 100;//1E6*tracklet.getExpPosErrorX(trkpar_curr._z)*tracklet.getExpPosErrorX(trkpar_curr._z);
+        _trkpar_curr._covar_kf[4][4] = 100;//1E6*tracklet.getExpPosErrorY(trkpar_curr._z)*tracklet.getExpPosErrorY(trkpar_curr._z);
+    }
+
+    _nodes.back().getPredicted() = _trkpar_curr;
+}
+
 bool KalmanTrack::isValid()
 {
 	//FIXME 20 for now; original _chisq < 150
-    if(_chisq < 0 || _chisq/_hit_index.size() > 20) return false;
+    if(_chisq < 0 || _chisq/_hit_index.size() > 100) return false;
     if(_nodes.empty()) return false;
-    if(getMomentumUpstream() < 1./INVP_MAX || getMomentumUpstream() > 1./INVP_MIN) return false;
+    if(getMomentumUpstream() < 0.9/INVP_MAX || getMomentumUpstream() > 1.1/INVP_MIN) return false;
 
     return true;
 }
@@ -967,6 +1001,7 @@ SRecTrack KalmanTrack::getSRecTrack()
     }
 
     _strack.swimToVertex();
+    _strack.setKalmanStatus(1);
     return _strack;
 }
 

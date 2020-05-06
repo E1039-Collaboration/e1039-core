@@ -112,7 +112,7 @@ public:
     void setVertexFast(TVector3 mom, TVector3 pos);
 
     ///Simple swim to vertex
-    void swimToVertex(TVector3* pos = nullptr, TVector3* mom = nullptr);
+    void swimToVertex(TVector3* pos = nullptr, TVector3* mom = nullptr, bool hyptest = true);
 
     ///Get the vertex info
     TLorentzVector getMomentumVertex();
@@ -146,14 +146,17 @@ public:
     void setTargetPos(TVector3 pos) { fTargetPos = pos; }
     void setXVertexPos(TVector3 pos) { fXVertexPos = pos; }
     void setYVertexPos(TVector3 pos) { fYVertexPos = pos; }
+    void setVertexPos(TVector3 pos) { fVertexPos = pos; }
     void setDumpMom(TVector3 mom) { fDumpMom = mom; }
     void setDumpFaceMom(TVector3 mom) { fDumpFaceMom = mom; }
     void setTargetMom(TVector3 mom) { fTargetMom = mom; }
     void setXVertexMom(TVector3 mom) { fXVertexMom = mom; }
     void setYVertexMom(TVector3 mom) { fYVertexMom = mom; }
+    void setVertexMom(TVector3 mom) { fVertexMom = mom; }
     void setChisqDump(Double_t chisq) { fChisqDump = chisq; }
     void setChisqTarget(Double_t chisq) { fChisqTarget = chisq; }
     void setChisqUpstream(Double_t chisq) { fChisqUpstream = chisq; }
+    void setChisqVertex(Double_t chisq) { fChisqVertex = chisq; }
 
     //Trigger road info
     void setTriggerRoad(Int_t roadID) { fTriggerID = roadID; }

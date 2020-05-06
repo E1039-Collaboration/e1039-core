@@ -286,7 +286,7 @@ bool SRecTrack::isDump()
     return (fVertexPos.Z() > 0. && fVertexPos.Z() < 150. && fChisqTarget - fChisqDump > 10.);
 }
 
-void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
+void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
 {
     //Store the steps on each point (center of the interval)
     bool cleanupPos = false;
@@ -467,7 +467,7 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom)
 #endif
 
 #ifdef _ENABLE_KF
-    updateVtxHypothesis();
+    if(hyptest) updateVtxHypothesis();
 #endif
 
     if(cleanupPos) delete[] pos;

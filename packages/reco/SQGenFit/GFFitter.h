@@ -7,8 +7,6 @@
 #include <TString.h>
 #include <TGeoManager.h>
 
-#include <phfield/PHField.h>
-
 #include "GFTrack.h"
 #include "GFField.h"
 
@@ -17,14 +15,6 @@ namespace SQGenFit
 class GFFitter
 {
 public:
-  enum FitterType
-  {
-    KalmanFitter,
-    KalmanFitterRefTrack,
-    DafSimple,
-    DafRef
-  };
-
   GFFitter();
   ~GFFitter();
 
@@ -33,9 +23,13 @@ public:
   void init(GFField* field, const TString& fitter_choice = "KalmanFitterRefTrack");
   int processTrack(GFTrack& track, bool display = false);
 
+  const TString& getFitterType() const { return _fitterTy; }
+  genfit::AbsKalmanFitter* getGenFitFitter() { return _kmfitter; }
+
   void displayEvent();
 
 private:
+  TString _fitterTy;
   genfit::AbsKalmanFitter* _kmfitter;
   unsigned int _verbosity;
 
