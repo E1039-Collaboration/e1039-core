@@ -42,7 +42,7 @@ target_link_libraries(sqgenfit -lgenfit2 -lktracker_interface -lphfield)
 
 install(TARGETS sqgenfit 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+message(STATUS ${PROJECT_SOURCE_DIR}/ " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
   ${PROJECT_SOURCE_DIR}/GFFitter.h
@@ -51,7 +51,6 @@ file(GLOB dist_headers
   ${PROJECT_SOURCE_DIR}/GFMeasurement.h
 )
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
-message(STATUS ${PROJECT_BINARY_DIR})
 
 # enable/disable test code build
 option(BUILDTEST "Build the test code for the package" OFF)

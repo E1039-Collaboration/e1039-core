@@ -2,6 +2,18 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(ktracker CXX C)
 
+# command line options to turn on DEBUG level
+option(DEBUG1 "Enable debug level 1" OFF)
+option(DEBUG2 "Enable debug level 2" OFF)
+if(DEBUG1)
+  message("-- IMPORTANT! Enabled debuging info level-1")
+  add_definitions(-D_DEBUG_ON)
+endif()
+if(DEBUG2)
+  message("-- IMPORTANT! Enabled debuging info level-2")
+  add_definitions(-D_DEBUG_ON_LEVEL_2)
+endif()
+
 # command line option to turn off KMAG
 option(KMAG "Turn KMAG ON/OFF" ON)
 if(KMAG)
@@ -18,25 +30,6 @@ if(KFENABLE)
 else()
   message("-- IMPORTANT! Kalman filter fitting is disabled")
 endif()
-
-# ROOT dict generation
-file(GLOB dicts "")
-file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
-foreach(LinkDefh ${LinkDefhs})
-	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
-	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
-	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} -I${PROJECT_SOURCE_DIR}/../interface -I${PROJECT_SOURCE_DIR}/../kfitter ${Dicth} ${LinkDefh})
-endforeach(LinkDefh)
-
-# source code
-include_directories("${PROJECT_SOURCE_DIR}/")
-include_directories("${PROJECT_SOURCE_DIR}/../interface")
-include_directories("${PROJECT_SOURCE_DIR}/../kfitter")
-include_directories("${PROJECT_SOURCE_DIR}/../SQGenFit")
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
 # ROOT
 find_program(ROOTCONF "root-config")
@@ -57,6 +50,7 @@ else()
   message(FATAL_ERROR "-- Detecting Geant4:  not found")
 endif()
 #find_package(Geant4 REQUIRED vis_all)
+execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -64,12 +58,31 @@ execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUT
 string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 
+# ROOT dict generation
+file(GLOB dicts "")
+file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
+foreach(LinkDefh ${LinkDefhs})
+	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
+	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
+	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
+	list(APPEND dicts ${DictC})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} -I${PROJECT_SOURCE_DIR}/../interface -I${PROJECT_SOURCE_DIR}/../kfitter -I${GEANT4_PREFIX}/include/Geant4 ${Dicth} ${LinkDefh})
+endforeach(LinkDefh)
+
+# source code
+include_directories("${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/../interface")
+include_directories("${PROJECT_SOURCE_DIR}/../kfitter")
+include_directories("${PROJECT_SOURCE_DIR}/../SQGenFit")
+file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
 target_link_libraries(ktracker -lktracker_interface -lkfitter -lgenfit2 -lsqgenfit -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc -lphg4hit ${ROOT_LINK})
 
-message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+message(STATUS ${PROJECT_SOURCE_DIR} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS ktracker DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 

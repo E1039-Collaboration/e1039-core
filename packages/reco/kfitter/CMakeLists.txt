@@ -19,17 +19,6 @@ else()
   message("-- IMPORTANT! Kalman filter fitting is disabled")
 endif()
 
-# ROOT dict generation
-file(GLOB dicts "")
-file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
-foreach(LinkDefh ${LinkDefhs})
-	string(REPLACE "LinkDef.h" ".h" Dicth ${LinkDefh})
-	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
-	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
-	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} ${Dicth} ${LinkDefh})
-endforeach(LinkDefh)
-
 # source code
 include_directories("${PROJECT_SOURCE_DIR}/")
 include_directories("${PROJECT_SOURCE_DIR}/../interface")
@@ -68,7 +57,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(kfitter SHARED ${sources} ${dicts})
 target_link_libraries(kfitter -lktracker_interface -lgenfit2 -lsqgenfit -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc -lphg4hit ${ROOT_LINK})
 
-message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
+message(STATUS ${PROJECT_SOURCE_DIR} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS kfitter DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
