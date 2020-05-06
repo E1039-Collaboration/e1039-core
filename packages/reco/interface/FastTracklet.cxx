@@ -890,14 +890,16 @@ double Tracklet::calcChisq()
 #endif
         if(iter->sign != 0) sigma = p_geomSvc->getPlaneResolution(detectorID);
 
-        double p = iter->hit.pos + iter->sign*fabs(iter->hit.driftDistance);
+        //double p = iter->hit.pos + iter->sign*fabs(iter->hit.driftDistance);
         if(kmag_on && stationID == nStations && detectorID <= 12)
         {
-            residual[index] = p - p_geomSvc->getInterception(detectorID, tx_st1, ty, x0_st1, y0);
+            //residual[index] = p - p_geomSvc->getInterception(detectorID, tx_st1, ty, x0_st1, y0);
+            residual[index] = iter->sign*fabs(iter->hit.driftDistance) - p_geomSvc->getDCA(detectorID, iter->hit.elementID, tx_st1, ty, x0_st1, y0);
         }
         else
         {
-            residual[index] = p - p_geomSvc->getInterception(detectorID, tx, ty, x0, y0);
+            //residual[index] = p - p_geomSvc->getInterception(detectorID, tx, ty, x0, y0);
+            residual[index] = iter->sign*fabs(iter->hit.driftDistance) - p_geomSvc->getDCA(detectorID, iter->hit.elementID, tx, ty, x0, y0);
         }
 
         chisq += (residual[index]*residual[index]/sigma/sigma);
