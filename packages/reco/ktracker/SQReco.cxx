@@ -164,7 +164,15 @@ int SQReco::InitRun(PHCompositeNode* topNode)
 
 int SQReco::InitField(PHCompositeNode* topNode)
 {
-  if (Verbosity() > 1) std::cout << "SQReco::InitField" << std::endl;
+  if(Verbosity() > 1)
+  {
+    std::cout << "SQReco::InitField" << std::endl;
+    if(!_enable_KF)
+    {
+      std::cout << " KF is disabled thus phfield is not needed. Skip InitField for SQReco." << std::endl;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+  }
   //_phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 
   if(_phfield && Verbosity() > 1) std::cout << "SQReco::InitField - use filed from NodeTree." << std::endl;
@@ -404,7 +412,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
 
     if(!fitOK)
     {
-      SRecTrack recTrack = iter->getSRecTrack();
+      SRecTrack recTrack = iter->getSRecTrack(_enable_KF && (_fitter_type == SQReco::LEGACY));
       recTrack.setKalmanStatus(-1);
       _recEvent->insertTrack(recTrack);
     }

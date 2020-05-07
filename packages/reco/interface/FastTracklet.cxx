@@ -935,7 +935,7 @@ double Tracklet::Eval(const double* par)
     return calcChisq();
 }
 
-SRecTrack Tracklet::getSRecTrack()
+SRecTrack Tracklet::getSRecTrack(bool hyptest)
 {
     SRecTrack strack;
     strack.setChisq(chisq);
@@ -979,7 +979,7 @@ SRecTrack Tracklet::getSRecTrack()
     }
 
     //Set single vertex swimming
-    strack.swimToVertex();
+    strack.swimToVertex(nullptr, nullptr, hyptest);
 
     //Set trigger road info
     TriggerRoad road(*this);

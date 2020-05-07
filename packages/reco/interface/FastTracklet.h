@@ -186,7 +186,7 @@ public:
     Tracklet operator*(const Tracklet& elem) const;
 
     //Convert to a SRecTrack
-    SRecTrack getSRecTrack();
+    SRecTrack getSRecTrack(bool hyptest = true);
 #endif
 
     //Station ID, ranging from 1 to nStation, nStation-1 means back partial track, nStation means global track
