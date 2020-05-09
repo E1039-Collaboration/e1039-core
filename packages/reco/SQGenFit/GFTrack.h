@@ -39,7 +39,7 @@ public:
   double extrapolateToLine(TVector3& endPoint1, TVector3& endPoint2, const int startPtID = 0);
   double extrapolateToPlane(TVector3& pO, TVector3& pU, TVector3& pV, const int startPtID = 0);
   double extrapolateToPoint(TVector3& point, bool update = false, const int startPtID = 0);
-  double updatePropState(TVectorD& meas, TMatrixDSym& V);
+  double updatePropState(const TVectorD& meas, const TMatrixDSym& V);
   void getExtrapPosMomCov(TVector3& pos, TVector3& mom, TMatrixDSym& cov) { _propState->getPosMomCov(pos, mom, cov); }
   void getExtrapPosMom(TVector3& pos, TVector3& mom) { _propState->getPosMom(pos, mom); }
 

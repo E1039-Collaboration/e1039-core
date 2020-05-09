@@ -13,7 +13,7 @@ class GFTrack;
 class GFMeasurement: public genfit::WireMeasurement
 {
 public:
-  GFMeasurement(SignedHit& rawHit, bool en = true);
+  GFMeasurement(const SignedHit& rawHit, bool en = true);
   virtual ~GFMeasurement() {}
 
   void setTrackPtr(GFTrack* trackPtr);

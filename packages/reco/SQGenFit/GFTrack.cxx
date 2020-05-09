@@ -20,14 +20,8 @@
 namespace SQGenFit
 {
 
-GFTrack::GFTrack()
-{
-  _track  = nullptr;
-  _trkrep = nullptr;
-
-  _propState = nullptr;
-  _virtMeas = nullptr;
-}
+GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+{}
 
 GFTrack::~GFTrack()
 {
@@ -159,7 +153,7 @@ double GFTrack::extrapolateToPoint(TVector3& point, bool update, const int start
   return len;
 }
 
-double GFTrack::updatePropState(TVectorD& meas, TMatrixDSym& V)
+double GFTrack::updatePropState(const TVectorD& meas, const TMatrixDSym& V)
 {
   //get the H matrix from measurement
   std::unique_ptr<const genfit::AbsHMatrix> H(_virtMeas->constructHMatrix(_propState->getRep()));

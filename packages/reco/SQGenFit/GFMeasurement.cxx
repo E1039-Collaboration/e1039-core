@@ -18,10 +18,8 @@
 namespace SQGenFit
 {
 
-GFMeasurement::GFMeasurement(SignedHit& rawHit, bool en)
+GFMeasurement::GFMeasurement(const SignedHit& rawHit, bool en): _bfHit(rawHit)
 {
-  _bfHit = rawHit;
-
   GeomSvc* p_geomSvc = GeomSvc::instance();
 
   TVectorD ep1(3), ep2(3), hitcoord(7);
