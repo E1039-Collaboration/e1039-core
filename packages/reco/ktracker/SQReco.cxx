@@ -22,6 +22,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <phool/recoConsts.h>
+#include <phgeom/PHGeomTGeo.h>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -34,6 +35,7 @@
 #include <limits>
 #include <memory>
 #include <fstream>
+#include <exception>
 #include <boost/lexical_cast.hpp>
 
 #ifdef _DEBUG_ON
@@ -173,19 +175,11 @@ int SQReco::InitField(PHCompositeNode* topNode)
       return Fun4AllReturnCodes::EVENT_OK;
     }
   }
-  //_phfield = PHFieldUtility::GetFieldMapNode(nullptr, topNode);
 
-  if(_phfield && Verbosity() > 1) std::cout << "SQReco::InitField - use filed from NodeTree." << std::endl;
+  std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile, recoConsts::instance()->get_DoubleFlag("FMAGSTR"), recoConsts::instance()->get_DoubleFlag("KMAGSTR"), 5.));
+  _phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
 
-  if(_phfield == nullptr) 
-  {
-    if(Verbosity() > 1) std::cout << "SQReco::InitField - create magnetic field setup" << std::endl;
-    std::unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
-    default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile, recoConsts::instance()->get_DoubleFlag("FMAGSTR"), recoConsts::instance()->get_DoubleFlag("KMAGSTR"), 5.));
-    _phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
-  }
-
-  if(Verbosity() > Fun4AllBase::VERBOSITY_SOME) 
+  if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
   {
     std::cout << "PHField check: " << "-------" << std::endl;
     std::ofstream field_scan("field_scan.csv");
@@ -199,20 +193,31 @@ int SQReco::InitField(PHCompositeNode* topNode)
 
 int SQReco::InitGeom(PHCompositeNode* topNode)
 {
-  if(Verbosity() > 1) std::cout << "SQReco::InitGeom" << std::endl;
-
-  //_t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
-  //if(_t_geo_manager && Verbosity() > 1) std::cout << "SQReco::InitGeom - use geom from NodeTree." << std::endl;
-
-  if(_t_geo_manager == nullptr && _geom_file_name != "")
+  if(Verbosity() > 1) 
   {
+    std::cout << "SQReco::InitGeom" << std::endl;
+    if(!_enable_KF)
+    {
+      std::cout << " KF is disabled thus TGeo is not needed. Skip InitGeom for SQReco." << std::endl;
+      return Fun4AllReturnCodes::EVENT_OK;
+    }
+  }
+
+  PHGeomTGeo* dstGeom = PHGeomUtility::GetGeomTGeoNode(topNode, true); //hacky way to bypass PHGeoUtility's lack of exception throwing
+  if(!dstGeom->isValid())
+  {
+    if(_geom_file_name == "") return Fun4AllReturnCodes::ABORTEVENT;
+
     if(Verbosity() > 1) std::cout << "SQReco::InitGeom - create geom from " << _geom_file_name << std::endl;
     int ret = PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-
-    _t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
+  }
+  else
+  {
+    if(Verbosity() > 1) std::cout << "SQReco::InitGeom - use geom from NodeTree." << std::endl;
   }
 
+  _t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
