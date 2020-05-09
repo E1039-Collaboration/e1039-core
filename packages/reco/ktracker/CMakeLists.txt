@@ -66,7 +66,7 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE "LinkDef.h" "_Dict.C" DictC ${LinkDefh})
 	string(REPLACE "${PROJECT_SOURCE_DIR}/" "" DictC ${DictC})
 	list(APPEND dicts ${DictC})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} -I${PROJECT_SOURCE_DIR}/../interface -I${PROJECT_SOURCE_DIR}/../kfitter -I${GEANT4_PREFIX}/include/Geant4 ${Dicth} ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC} -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} -I${PROJECT_SOURCE_DIR}/../interface -I${PROJECT_SOURCE_DIR}/../SQGenFit -I${PROJECT_SOURCE_DIR}/../kfitter -I${GEANT4_PREFIX}/include/Geant4 ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
 # source code

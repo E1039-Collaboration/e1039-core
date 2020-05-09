@@ -97,7 +97,7 @@ public:
     _enable_event_reducer = enableEventReducer;
   }
 
-  /*
+  //The following setter/getters are here only to be backwards compatible
   int get_DS_level() const {
     return _DS_level;
   }
@@ -121,7 +121,6 @@ public:
   void set_sim_db_name(const std::string& simDbName) {
     _sim_db_name = simDbName;
   }
-  */
 
 private:
 
