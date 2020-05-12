@@ -74,6 +74,7 @@ SQReco::SQReco(const std::string& name):
   _t_geo_manager(nullptr)
 {
   p_jobOptsSvc = JobOptsSvc::instance();
+  _eval_listIDs.clear();
 }
 
 SQReco::~SQReco()
@@ -86,7 +87,7 @@ int SQReco::Init(PHCompositeNode* topNode)
 
 int SQReco::InitRun(PHCompositeNode* topNode) 
 {
-  if(_enable_eval)
+  if(is_eval_enabled())
   {
     InitEvalTree();
     ResetEvalVars();
@@ -346,7 +347,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
 {
   LogDebug("Entering SQReco::process_event: " << _event);
 
-  if(_enable_eval) ResetEvalVars();
+  if(is_eval_enabled()) ResetEvalVars();
   if(_input_type == SQReco::E1039)
   {
     if(!_event_header) 
@@ -401,7 +402,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
   int nTracklets = 0;
   int nFittedTracks = 0;
   std::list<Tracklet>& rec_tracklets = _fastfinder->getFinalTracklets();
-  for(std::list<Tracklet>::iterator iter = rec_tracklets.begin(); iter != rec_tracklets.end(); ++iter)
+  for(auto iter = rec_tracklets.begin(); iter != rec_tracklets.end(); ++iter)
   {
     iter->calcChisq();
     if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) iter->print();
@@ -426,12 +427,22 @@ int SQReco::process_event(PHCompositeNode* topNode)
       ++nFittedTracks;
     }
 
-    if(_enable_eval) new((*_tracklets)[nTracklets]) Tracklet(*iter);
+    if(is_eval_enabled()) new((*_tracklets)[nTracklets]) Tracklet(*iter);
     ++nTracklets;
   }
   LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
 
-  if(_enable_eval) _eval_tree->Fill();
+  //add additional eval information if applicable
+  for(unsigned int i = 0; i < _eval_listIDs.size(); ++i)
+  {
+    std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
+    for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
+    {
+      new((*_tracklets)[nTracklets]) Tracklet(*iter);
+      ++nTracklets;
+    }
+  }
+  if(is_eval_enabled() && nTracklets > 0) _eval_tree->Fill();
 
   ++_event;
   return Fun4AllReturnCodes::EVENT_OK;
@@ -440,8 +451,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
 int SQReco::End(PHCompositeNode* topNode) 
 {
   if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) std::cout << "SQReco::End" << std::endl;
-
-  if(_enable_eval)
+  if(is_eval_enabled())
   {
     PHTFileServer::get().cd(_eval_file_name.Data());
     _eval_tree->Write();
@@ -531,6 +541,7 @@ int SQReco::InitEvalTree()
   _tracklets = new TClonesArray("Tracklet");
 
   _eval_tree = new TTree("eval", "eval");
+  _eval_tree->Branch("eventID", &_event, "eventID/I");
   _eval_tree->Branch("tracklets", &_tracklets, 256000, 99);
   _tracklets->BypassStreamer();
 
