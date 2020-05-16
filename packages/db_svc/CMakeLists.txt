@@ -38,7 +38,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -I$ENV{OFFLINE_MAIN}/include/ ${ROOT_CFLAGS} ${MYSQL_CFLAGS}")
 
 add_library(db_svc SHARED ${sources} DbSvc_Dict.cc)
-target_link_libraries(db_svc ${MYSQL_LIBS} ${ROOT_LINK})
+target_link_libraries(db_svc ${MYSQL_LIBS} ${ROOT_LINK} -lRSQLite)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

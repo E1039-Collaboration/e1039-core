@@ -5,6 +5,7 @@
 #include <fstream>
 #include <wordexp.h> //to expand environmentals
 #include <TMySQLServer.h>
+#include <TSQLiteServer.h>
 #include <TSQLStatement.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
@@ -53,6 +54,24 @@ DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cn
   }
   SelectServer();
   ConnectServer();
+}
+
+DbSvc::DbSvc(const SvrId_t svr_id, const std::string dbfile)
+{
+  m_svr_id = svr_id;
+  if (m_svr_id != LITE) {
+    LogInfo("DbSvc::DbSvc(const SvrId_t, const std::string) is for sqlite db only.");
+    return;
+  }
+
+  std::string m_dbfile = ExpandEnvironmentals(dbfile);
+  if (!FileExist(m_dbfile)) {
+    LogInfo("SQLITE DB file " << m_dbfile << " does not exist");
+    return;
+  }
+
+  m_svr = Form("sqlite://%s", m_dbfile.c_str());
+  m_con = new TSQLiteServer(m_svr.c_str());
 }
 
 DbSvc::~DbSvc()
@@ -203,6 +222,7 @@ void DbSvc::SelectServer()
   else if (m_svr_id == DB3 ) m_svr = "e906-db3.fnal.gov";
   else if (m_svr_id == DB01) m_svr = "seaquestdb01.fnal.gov:3310";
   else if (m_svr_id == UIUC) m_svr = "seaquel.physics.illinois.edu:3283";
+  else if (m_svr_id == LOCAL) m_svr = "localhost";
   else {
     cerr << "!!ERROR!!  DbSvc():  Unsupported server ID.  Abort.\n";
     exit(1);

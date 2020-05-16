@@ -8,7 +8,7 @@ class TSQLStatement;
 
 class DbSvc {
  public:
-  typedef enum { DB1, DB2, DB3, DB01, UIUC } SvrId_t;
+  typedef enum { DB1, DB2, DB3, DB01, UIUC, LITE, LOCAL } SvrId_t;
   typedef enum { Guest, Prod } UsrId_t;
   class VarList {
     std::vector<std::string> m_name;
@@ -21,6 +21,7 @@ class DbSvc {
   };
 
   DbSvc(const SvrId_t svr_id=DB1, const UsrId_t usr_id=Guest, const std::string my_cnf="");
+  DbSvc(const SvrId_t svr_id=LITE, const std::string dbfile="");
   ~DbSvc();
 
   void UseSchema(const char*       name, const bool do_create=false, const bool do_drop=false);
