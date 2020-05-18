@@ -158,7 +158,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   int topLVID = -1;
   int topPVID = -1;
   std::string topPVName;
-  stmt.reset(db_svc->Process(Form("SELECT pvID, pvName, lvID FROM PhysicalVolumes WHERE motherID=-1 AND pvName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(Form("SELECT pvID, pvName, lvID FROM PhysicalVolumes WHERE motherID=0 AND depth=1 AND pvName like '%s%'", vName.c_str())));
   while(stmt->NextResultRow())
   {
     ++nTopPV;

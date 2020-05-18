@@ -1297,7 +1297,7 @@ PMMA      -3  12.01 1.008 15.99  6.  1.  8.  1.19  3.6  5.7  1.4
   SQ_LH2->AddElement(G4Element::GetElement("H"), natoms = 2);
 
   G4Material* SQ_LD2 = new G4Material("SQ_LD2", density = 0.15707*g/cm3, ncomponents = 1);
-  SQ_LH2->AddElement(eleD, natoms = 2);
+  SQ_LD2->AddElement(eleD, natoms = 2);
 
   G4Material* SQ_NH3 = new G4Material("SQ_NH3", density = 0.917*g/cm3, ncomponents = 2);
   SQ_NH3->AddElement(G4Element::GetElement("N"), natoms = 1);
