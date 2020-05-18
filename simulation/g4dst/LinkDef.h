@@ -4,5 +4,6 @@
 #pragma link off all global;
 
 #pragma link C++ class TruthNodeMaker-!;
+#pragma link C++ class RequireParticlesInAcc-!;
 
 #endif
