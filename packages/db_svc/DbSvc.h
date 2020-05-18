@@ -21,7 +21,7 @@ class DbSvc {
   };
 
   DbSvc(const SvrId_t svr_id=DB1, const UsrId_t usr_id=Guest, const std::string my_cnf="");
-  DbSvc(const SvrId_t svr_id=LITE, const std::string dbfile="");
+  explicit DbSvc(const SvrId_t svr_id, std::string dbfile);  // this is only for sqlite db
   ~DbSvc();
 
   void UseSchema(const char*       name, const bool do_create=false, const bool do_drop=false);
