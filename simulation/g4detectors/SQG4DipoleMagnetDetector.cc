@@ -47,7 +47,7 @@ bool SQG4DipoleMagnetDetector::IsInBlock(G4VPhysicalVolume* volume) const
 void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
 {
   std::string dbfile = params->get_string_param("geomdb");
-  std::string vName = GetName();
+  std::string vName  = params->get_string_param("magname");
   std::cout << "SQDipoleMagnet - begin construction of " << vName << " from " << dbfile << std::endl;
 
   DbSvc* db_svc = new DbSvc(DbSvc::LITE, dbfile.c_str());
@@ -60,7 +60,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
 
   /// Read all box shapes from Table SolidBoxes
   stmt.reset(db_svc->Process(Form("SELECT sID, sName, xLength, yLength, zLength FROM SolidBoxes WHERE sName like '%s%'", vName.c_str())));
-  while(stmt->NextResultRow())
+  while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
     if(solids.find(sID) != solids.end())
@@ -73,12 +73,16 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     double xLength = stmt->GetDouble(2)*cm;
     double yLength = stmt->GetDouble(3)*cm;
     double zLength = stmt->GetDouble(4)*cm;
+    if(Verbosity() > 1)
+    {
+      std::cout << "SQDipoleMagnet Construct: create solid box " << sID << " " << sName << " " << xLength << " " << yLength << " " << zLength << std::endl;
+    }
     solids[sID] = new G4Box(sName, xLength/2., yLength/2., zLength/2.);
   }
 
   /// Read all tube shapes from Table SolidTubes
   stmt.reset(db_svc->Process(Form("SELECT sID, sName, length, radiusMin, radiusMax FROM SolidTubes WHERE sName like '%s%'", vName.c_str())));
-  while(stmt->NextResultRow())
+  while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
     if(solids.find(sID) != solids.end())
@@ -91,12 +95,16 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     double length = stmt->GetDouble(2)*cm;
     double radiusMin = stmt->GetDouble(3)*cm;
     double radiusMax = stmt->GetDouble(4)*cm;
+    if(Verbosity() > 1)
+    {
+      std::cout << "SQDipoleMagnet Construct: create solid tube " << sID << " " << sName << " " << length << " " << radiusMax << " " << radiusMin << std::endl;
+    }
     solids[sID] = new G4Tubs(sName, radiusMin, radiusMax, length/2., 0., 360.*deg);
   }
 
   /// Perform subtraction using Table SubtractionSolids
   stmt.reset(db_svc->Process(Form("SELECT sID, sName, shellID, holeID, rotX, rotY, rotZ, posX, posY, posZ FROM SubtractionSolids WHERE sName like '%s%'", vName.c_str())));
-  while(stmt->NextResultRow())
+  while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
     if(solids.find(sID) != solids.end())
@@ -108,7 +116,11 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     G4String sName = stmt->GetString(1);
     int holeID = stmt->GetInt(2);
     int shellID = stmt->GetInt(3);
-    if(solids.find(holeID) != solids.end() || solids.find(shellID) == solids.end())
+    if(Verbosity() > 1)
+    {
+      std::cout << "SQDipoleMagnet Construct: create solid subtraction " << sID << " " << sName << "  " << shellID << "  " << holeID << std::endl;
+    }
+    if(solids.find(holeID) == solids.end() || solids.find(shellID) == solids.end())
     {
       std::cout << "ERROR - SQDipoleMagnet Construction: cannot find solid component for " << sName << std::endl;
       return;
@@ -131,7 +143,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   // Create logical volumes using Table LogicalVolumes
   std::map<int, G4LogicalVolume*> logicals;
   stmt.reset(db_svc->Process(Form("SELECT lvID, lvName, sID, mName FROM LogicalVolumes WHERE lvName like '%s%'", vName.c_str())));
-  while(stmt->NextResultRow())
+  while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int lvID = stmt->GetInt(0);
     if(logicals.find(lvID) != logicals.end())
@@ -143,6 +155,10 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     G4String lvName = stmt->GetString(1);
     int sID = stmt->GetInt(2);
     G4String mName = stmt->GetString(3);
+    if(Verbosity() > 1)
+    {
+      std::cout << "SQDipoleMagnet Construct: create logical volume " << lvID << " " << lvName << " " << sID << " " << mName << std::endl;
+    }
     logicals[lvID] = new G4LogicalVolume(solids[sID], G4Material::GetMaterial(mName), lvName);
   }
 
@@ -180,6 +196,11 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     return;
   }
 
+  if(Verbosity() > 1)
+  {
+    std::cout << "SQDipoleMagnet Construct: create top physical volume " << topPVID << " " << topLVID << " " << topPVName << std::endl;
+  }
+
   // Now create the top volume
   G4RotationMatrix topRot;
   topRot.rotateX(params->get_double_param("rot_x")*rad);
@@ -195,8 +216,8 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   ++lvRefCount[topLVID];
 
   // The rest of the physical volumes
-  stmt.reset(db_svc->Process(Form("SELECT pvName, lvID, motherID, xRel, yRel, zRel, rotX, rotY, rotZ FROM PhysicalVolumes WHERE motherID>-1 AND pvName like '%s%'", vName.c_str())));
-  while(stmt->NextResultRow())
+  stmt.reset(db_svc->Process(Form("SELECT pvName, lvID, motherID, xRel, yRel, zRel, rotX, rotY, rotZ FROM PhysicalVolumes WHERE motherID>0 AND pvName like '%s%'", vName.c_str())));
+  while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     //may need to check duplicate pvID?
     G4String pvName = stmt->GetString(0);
@@ -212,6 +233,11 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     rot.rotateX(stmt->GetDouble(6)*rad);
     rot.rotateY(stmt->GetDouble(7)*rad);
     rot.rotateZ(stmt->GetDouble(8)*rad);
+
+    if(Verbosity() > 1)
+    {
+      std::cout << "SQDipoleMagnet Construct: create physical volume " << pvName << " " << lvID << " " << motherID << std::endl;
+    }
 
     new G4PVPlacement(G4Transform3D(rot, pos), logicals[lvID], pvName.c_str(), logicals[motherID], false, lvRefCount[lvID], overlapcheck);
     ++lvRefCount[lvID];

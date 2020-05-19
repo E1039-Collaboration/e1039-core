@@ -1291,7 +1291,7 @@ PMMA      -3  12.01 1.008 15.99  6.  1.  8.  1.19  3.6  5.7  1.4
   mRICH_Air->SetMaterialPropertiesTable(mRICH_Air_myMPT);
 
   //E1039 materials
-  G4Element* eleD = new G4Element("eleD", 1.0, 2.014);
+  G4Element* eleD = new G4Element("eleD", "eleD", 1.0, 2.014);
   
   G4Material* SQ_LH2 = new G4Material("SQ_LH2", density = 0.07066*g/cm3, ncomponents = 1);
   SQ_LH2->AddElement(G4Element::GetElement("H"), natoms = 2);

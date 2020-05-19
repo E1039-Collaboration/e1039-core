@@ -206,7 +206,7 @@ void DbSvc::CreateTable(const std::string name, const VarList list)
 TSQLStatement* DbSvc::Process(const char* query)
 {
   TSQLStatement* stmt = m_con->Statement(query);
-  if (! stmt->Process()) {
+  if ((! stmt->Process()) && m_svr_id != LITE) {    //sqlite returns false if the query returns no data - this should be accepted
     cerr << "!!ERROR!!  DbSvc::Process():  Failed to execute a statement:  " << stmt << ".\n"
          << "Abort." << endl;
     exit(1);

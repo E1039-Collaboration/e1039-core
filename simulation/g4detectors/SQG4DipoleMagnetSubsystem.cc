@@ -73,6 +73,7 @@ void SQG4DipoleMagnetSubsystem::SetDefaultParameters()
   set_default_string_param("material", "G4_Galactic");
 
   set_default_string_param("geomdb", "");
+  set_default_string_param("magname", "");
   set_default_int_param("enable_track_filter", 0);
   set_default_double_param("filter_max_slope", 10.);
   set_default_double_param("filter_min_energy", 0.);
