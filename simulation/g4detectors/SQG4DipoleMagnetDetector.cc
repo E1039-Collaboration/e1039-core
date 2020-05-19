@@ -53,6 +53,9 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   DbSvc* db_svc = new DbSvc(DbSvc::LITE, dbfile.c_str());
   std::unique_ptr<TSQLStatement> stmt;
 
+  // Verbosity(10);
+  // overlapcheck = true;
+
   //Elements and materials are constructed in PHG4Reco::DefineMaterials() - we start from shape contruction
 
   //Load all shapes
@@ -114,8 +117,8 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
     }
 
     G4String sName = stmt->GetString(1);
-    int holeID = stmt->GetInt(2);
-    int shellID = stmt->GetInt(3);
+    int shellID = stmt->GetInt(2);
+    int holeID  = stmt->GetInt(3);
     if(Verbosity() > 1)
     {
       std::cout << "SQDipoleMagnet Construct: create solid subtraction " << sID << " " << sName << "  " << shellID << "  " << holeID << std::endl;

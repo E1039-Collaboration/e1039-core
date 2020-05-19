@@ -15,17 +15,13 @@ void SetupSensitiveDetectors(
   using namespace std;
   GeomSvc* geom_svc = GeomSvc::instance();
 
-  LogDebug("");
   vector<string> sim_list = geom_svc->getDefaultSimList();
   for(int i=0; i<sim_list.size(); ++i) {
-    LogDebug(i);
     string name = sim_list[i];
 
     double size[3];
     double place[3];
     double rot[3];
-
-    LogDebug("");
 
     int id = geom_svc->getDetectorID(name);
     place[0] = geom_svc->getDetectorX0(name);
@@ -37,7 +33,6 @@ void SetupSensitiveDetectors(
     string material = geom_svc->getPlaneMaterial(id);
 
     if(verbosity > 2) {
-      LogDebug("");
       cout
         << "name: " << name
         << ", id: " << id
@@ -63,8 +58,6 @@ void SetupSensitiveDetectors(
     box->SetActive(1);
     g4Reco->registerSubsystem(box);
   }
-
-  LogDebug("");
 
   return;
 }
