@@ -25,6 +25,8 @@ and then prop. tubes
 #include <map>
 
 #include <TVector3.h>
+#include <TVectorD.h>
+#include <TMatrixD.h>
 #include <TSpline.h>
 
 #include "GlobalConsts.h"
@@ -42,6 +44,12 @@ public:
     double getX(double w, double y) const { return w/costheta - y*tantheta; }
     double getY(double x, double w) const { return w/sintheta - x/tantheta; }
     double getW(double x, double y) const { return x*costheta + y*sintheta; }
+    
+    //Get wire position by elementID
+    double getWirePosition(int elementID) const;
+
+    //Get end point vector by elementID
+    TVectorD getEndPoint(int elementID, int sign = -1) const;
 
     //Calculate the internal variables
     void update();
@@ -99,10 +107,12 @@ public:
     double rZ;
 
     //Geometric setup
-    double nVec[3];             //Perpendicular to plane
-    double uVec[3];             //measuring direction
-    double vVec[3];             //non-measuring direction
-    double rotM[3][3];          //rotation matrix
+    TVectorD nVec = TVectorD(3);             //Perpendicular to plane
+    TVectorD uVec = TVectorD(3);             //measuring direction
+    TVectorD vVec = TVectorD(3);             //wire direction
+    TVectorD xVec = TVectorD(3);             //X direction
+    TVectorD yVec = TVectorD(3);             //Y direction
+    TMatrixD rotM = TMatrixD(3, 3);          //rotation matrix
 
     //Calibration info
     double tmin;
@@ -220,10 +230,13 @@ public:
     double getInterception(int detectorID, double tx, double ty, double x0, double y0) const { return planes[detectorID].intercept(tx, ty, x0, y0); }
     double getInterceptionFast(int detectorID, double tx, double ty, double x0, double y0) const;
     double getInterceptionFast(int detectorID, double x_exp, double y_exp) const { return planes[detectorID].getW(x_exp, y_exp); }
+    double getDCA(int detectorID, int elementID, double tx, double ty, double x0, double y0);
 
     ///Convert the detectorID and elementID to the actual hit position
     void getMeasurement(int detectorID, int elementID, double& measurement, double& dmeasurement);
     double getMeasurement(int detectorID, int elementID);
+    void getEndPoints(int detectorID, int elementID, TVectorD& ep1, TVectorD& ep2);
+    void getEndPoints(int detectorID, int elementID, TVector3& ep1, TVector3& ep2);
     void get2DBoxSize(int detectorID, int elementID, double& x_min, double& x_max, double& y_min, double& y_max);
     void getWireEndPoints(int detectorID, int elementID, double& x_min, double& x_max, double& y_min, double& y_max);
     int getExpElementID(int detectorID, double pos_exp);
@@ -286,6 +299,10 @@ private:
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;
+
+    //Mapping to wire end position - wire actually includes all detectors
+    std::map<std::pair<int, int>, TVectorD> map_endPoint1;  
+    std::map<std::pair<int, int>, TVectorD> map_endPoint2;
 
     //singleton pointor
     static GeomSvc* p_geometrySvc;

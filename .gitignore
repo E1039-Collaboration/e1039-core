@@ -1,17 +1,12 @@
-build/
+
+/**/.vscode
+/**/*.root
 
 /.cproject
 /.project
 /.settings
 /**/*.cache
 
-/**/Makefile.in
-/**/aclocal.m4
-/**/compile
-/**/config.guess
-/**/config.sub
-/**/configure
-/**/depcomp
-/**/install-sh
-/**/ltmain.sh
-/**/missing
+build/*
+include/*
+lib/*
