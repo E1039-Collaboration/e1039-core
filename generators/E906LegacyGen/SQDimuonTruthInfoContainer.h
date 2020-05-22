@@ -28,7 +28,7 @@ class SQDimuonTruthInfoContainer: public PHObject
   void set_Dimuon_xs(const double xs){Dimuon_xs = xs;}
   void set_Dimuon_m(const double m){Dimuon_m = m;}
   void set_Dimuon_xF(const double xF){Dimuon_xF = xF;}
-  void set_Dimuon_pt(const double pt){Dimuon_m = pt;}
+  void set_Dimuon_pt(const double pt){Dimuon_pt = pt;}
   void set_Dimuon_cosThetaCS(const double costheta) {Dimuon_cosThetaCS = costheta;}
   void set_Dimuon_phiCS(const double phi) {Dimuon_phiCS = phi;}
   
