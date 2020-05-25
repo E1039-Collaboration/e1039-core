@@ -1289,6 +1289,43 @@ PMMA      -3  12.01 1.008 15.99  6.  1.  8.  1.19  3.6  5.7  1.4
   const G4Material *G4_AIR = G4Material::GetMaterial("G4_AIR");
   G4Material *mRICH_Air=  new G4Material("mRICH_Air",G4_AIR->GetDensity(),G4_AIR,G4_AIR->GetState(),G4_AIR->GetTemperature(),G4_AIR->GetPressure());
   mRICH_Air->SetMaterialPropertiesTable(mRICH_Air_myMPT);
+
+  //E1039 materials
+  G4Element* eleD = new G4Element("eleD", "eleD", 1.0, 2.014);
+  
+  G4Material* SQ_LH2 = new G4Material("SQ_LH2", density = 0.07066*g/cm3, ncomponents = 1);
+  SQ_LH2->AddElement(G4Element::GetElement("H"), natoms = 2);
+
+  G4Material* SQ_LD2 = new G4Material("SQ_LD2", density = 0.15707*g/cm3, ncomponents = 1);
+  SQ_LD2->AddElement(eleD, natoms = 2);
+
+  G4Material* SQ_NH3 = new G4Material("SQ_NH3", density = 0.917*g/cm3, ncomponents = 2);
+  SQ_NH3->AddElement(G4Element::GetElement("N"), natoms = 1);
+  SQ_NH3->AddElement(G4Element::GetElement("H"), natoms = 3);
+
+  G4Material* SQ_ND3 = new G4Material("SQ_ND3", density = 0.987*g/cm3, ncomponents = 2);
+  SQ_ND3->AddElement(G4Element::GetElement("N"), natoms = 1);
+  SQ_ND3->AddElement(eleD, natoms = 3);
+
+  G4Material* SQ_boratedPoly = new G4Material("SQ_boratedPoly", density = 0.95000146*g/cm3, ncomponents = 3);
+  SQ_boratedPoly->AddElement(G4Element::GetElement("B"), fractionmass = 0.7032045573308*perCent);
+  SQ_boratedPoly->AddElement(G4Element::GetElement("C"), fractionmass = 4.0128564211902*perCent);
+  SQ_boratedPoly->AddElement(G4Element::GetElement("H"), fractionmass = 95.283939021478*perCent);
+
+  G4Material* SQ_Scintillator = new G4Material("SQ_Scintillator", density = 1.02300158*g/cm3, ncomponents = 2);
+  SQ_Scintillator->AddElement(G4Element::GetElement("C"), fractionmass = 47.368421052631*perCent);
+  SQ_Scintillator->AddElement(G4Element::GetElement("H"), fractionmass = 52.631578947368*perCent);
+
+  G4Material* SQ_ArCO2 = new G4Material("SQ_ArCO2", density = 0.001822, ncomponents = 3);
+  SQ_ArCO2->AddElement(G4Element::GetElement("Ar"), fractionmass = 77.651981*perCent);
+  SQ_ArCO2->AddElement(G4Element::GetElement("C"), fractionmass = 5.83366*perCent);
+  SQ_ArCO2->AddElement(G4Element::GetElement("O"), fractionmass = 16.514359*perCent);
+
+  G4Material* SQ_P08CF4 = new G4Material("SQ_P08CF4", density = 0.00177504, ncomponents = 4);
+  SQ_P08CF4->AddElement(G4Element::GetElement("Ar"), fractionmass = 89.121162862311*perCent);
+  SQ_P08CF4->AddElement(G4Element::GetElement("C"), fractionmass = 3.2270886143930*perCent);
+  SQ_P08CF4->AddElement(G4Element::GetElement("H"), fractionmass = 0.7168203310375*perCent);
+  SQ_P08CF4->AddElement(G4Element::GetElement("F"), fractionmass = 6.9349281922577*perCent);
 }
 
 void

@@ -3,7 +3,7 @@ if [ $E1039_CORE ] ; then # Clean up the old components
     function DropEleFromPath {
 	local -r NAME=$1
 	local -r  ELE=$2
-	local -r CONT=$(eval "echo :\$$NAME:" | sed -e 's/:/::/g' -e "s%:$ELE:%%g" -e 's/:\+/:/g' -e 's/^://' -e 's/:$//')
+	local -r CONT=$(eval "echo :\$$NAME:" | sed -e 's/:/::/g' -e "s%:$ELE:%%g" -e 's/:\+/:/g' -e 's/^://' -e 's/:$//'  -e 's/\ /\\ /g')
 	eval "$NAME=$CONT"
     }
     DropEleFromPath PATH            $E1039_CORE/bin
@@ -31,4 +31,8 @@ export LD_LIBRARY_PATH=$E1039_CORE/lib:$LD_LIBRARY_PATH
 
 if [ -d $E1039_CORE/include ] ; then
     export ROOT_INCLUDE_PATH=$(find $E1039_CORE/include -type d -printf '%p:')$ROOT_INCLUDE_PATH_E1039_SHARE
+fi
+
+if [ -d $E1039_CORE/macros ] ; then
+    export ROOT_INCLUDE_PATH=$(find $E1039_CORE/macros -type d -printf '%p:')$ROOT_INCLUDE_PATH
 fi

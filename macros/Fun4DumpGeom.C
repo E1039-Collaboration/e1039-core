@@ -1,37 +1,66 @@
-/*
- * Fun4kTracker.C
- *
- *  Created on: Oct 30, 2017
- *      Author: yuhw@nmsu.edu
- */
+#include <TSystem.h>
 
-void Fun4kDumpGeom(
-		const int nevent = 2,
-		const char *indst = "dst.root",
-		const char *outeval = "eval.root"
-		) {
+#include "G4_Beamline.C"
+#include "G4_Target.C"
+#include "G4_InsensitiveVolumes.C"
+#include "G4_SensitiveDetectors.C"
 
-	int verbosity = 0;
+R__LOAD_LIBRARY(libfun4all)
+R__LOAD_LIBRARY(libg4detectors)
+R__LOAD_LIBRARY(libg4dst)
 
-	gSystem->Load("libfun4all.so");
-	Fun4AllServer* se = Fun4AllServer::instance();
-	se->Verbosity(verbosity);
+using namespace std;
 
-	gSystem->Load("libdb2g4.so");
-	DetectorConstructionWrapper *detector = new DetectorConstructionWrapper();
-	se->registerSubsystem(detector);
+int Fun4Geom(const bool display = true)
+{
+  // geometry setup
+  const bool do_collimator = true;
+  const bool do_target     = true;
+  const bool do_shielding  = true;
+  const bool do_fmag       = true;
+  const bool do_kmag       = true;
+  const bool do_absorber   = true;
 
-	Fun4AllInputManager *in = new Fun4AllDstInputManager("DSTIN");
-	in->fileopen(indst);
-	se->registerInputManager(in);
+  const double collimator_pos_z = -602.36;
+  const double target_coil_pos_z = -300.;
+  const double target_l = 7.9; //cm
+  const double target_z = (7.9-target_l)/2.; //cm
 
-	se->run(nevent);
+  //Fun4AllServer - intialize before all other subsystems
+  Fun4AllServer* se = Fun4AllServer::instance();
+  se->Verbosity(99);
 
-	se->End();
+  // Fun4All G4 module
+  PHG4Reco* g4Reco = new PHG4Reco();
+  g4Reco->SetWorldSizeX(1000);
+  g4Reco->SetWorldSizeY(1000);
+  g4Reco->SetWorldSizeZ(5000);
+  // shape of our world - it is a tube
+  g4Reco->SetWorldShape("G4BOX");
+  // this is what our world is filled with
+  g4Reco->SetWorldMaterial("G4_AIR"); //G4_Galactic, G4_AIR
 
-	delete se;
+  // sub-systems
+  SetupBeamline(g4Reco, do_collimator, collimator_pos_z);
+  SetupTarget(g4Reco, target_coil_pos_z, target_l, target_z, 1, 0);
+  SetupInsensitiveVolumes(g4Reco, do_shielding, do_fmag, do_kmag, do_absorber);
+  SetupSensitiveDetectors(g4Reco, 99);
+  se->registerSubsystem(g4Reco);
 
-	cout<<": "<<__LINE__<<endl;
+  // dummy input mananger
+  Fun4AllInputManager* in = new Fun4AllDummyInputManager("DUMMY");
+  se->registerInputManager(in);
 
-	cout << "Fun4kDumpGeom Done!" << endl;
+  se->run(1);
+  PHGeomUtility::ExportGeomtry(se->topNode(), "geom.root");
+
+  se->End();
+  delete se;
+
+  // draw the ROOT geometry
+  if(!display) return 0;
+  gGeoManager = TGeoManager::Import("geom.root");
+  gGeoManager->GetCurrentNode()->GetVolume()->Draw("ogl");
+
+  return 0;
 }
