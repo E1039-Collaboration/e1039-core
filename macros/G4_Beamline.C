@@ -9,7 +9,7 @@ void SetupBeamline(
   PHG4Reco* g4Reco,
   const bool toggle_collimator = true,
   const double collimator_pos_z = -300,
-  const int register_hits = 1) 
+  const int register_hits = 0) 
 {
   if(toggle_collimator) {
     PHG4CollimatorSubsystem* collimator = new PHG4CollimatorSubsystem("Collimator",0);

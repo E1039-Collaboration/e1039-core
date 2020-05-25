@@ -84,7 +84,7 @@ void SetupInsensitiveVolumes(
   }
 
   if(toggle_kmag) {
-    SQG4DipoleMagnetSubsystem* kmag = new SQG4DipoleMagnetSubsystem("fmag");
+    SQG4DipoleMagnetSubsystem* kmag = new SQG4DipoleMagnetSubsystem("kmag");
     kmag->set_string_param("geomdb", "$E1039_RESOURCE/geometry/magnetic_fields/magnet_geom.db");
     kmag->set_string_param("magname", "kmag");
     kmag->set_double_param("place_x", -1.34493);

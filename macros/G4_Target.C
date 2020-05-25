@@ -13,7 +13,7 @@ void SetupTarget(
   const double target_l = 7.9,
   const double target_z = 0.,
   const int use_g4steps = 1,
-  const int register_hits = 1) 
+  const int register_hits = 0) 
 {
   PHG4TargetCoilV2Subsystem* coil_0 = new PHG4TargetCoilV2Subsystem("Coil", 0);
   coil_0->SuperDetector("Coil");
