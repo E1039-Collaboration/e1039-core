@@ -1,0 +1,8 @@
+To create yout module, move "template" to your directory:
+
+cp -r $PATH_TO_INSTALL/e1039-core/template $PATH_TO_YOUR_MODULE/your_module_name
+
+
+Execute:
+./init.sh "your_module_name"
+
