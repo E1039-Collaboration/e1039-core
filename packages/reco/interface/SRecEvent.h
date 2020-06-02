@@ -235,11 +235,11 @@ class SRecDimuon: public PHObject
 {
 public:
 
-		/// PHObject virtual overloads
-		void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl;}
-		void         Reset() {*this = SRecDimuon();}
-		int          isValid() const;
-		SRecDimuon*        Clone() const {return (new SRecDimuon(*this));}
+    /// PHObject virtual overloads
+    void        identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl;}
+    void        Reset() {*this = SRecDimuon();}
+    int         isValid() const;
+    SRecDimuon* Clone() const {return (new SRecDimuon(*this));}
 
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
@@ -316,7 +316,7 @@ public:
     }
     void         Reset() {*this = SRecEvent();}
     int          isValid() const {return true;}
-    SRecEvent*        Clone() const {return (new SRecEvent(*this));}
+    SRecEvent*   Clone() const {return (new SRecEvent(*this));}
 
     ///Set/Get event info
     void setEventInfo(SRawEvent* rawEvent);

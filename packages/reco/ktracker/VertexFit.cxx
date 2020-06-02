@@ -33,21 +33,54 @@ Created: 2-8-2012
 
 using namespace std;
 
-//<TODO improve this part
-//@{
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
 
-namespace {
-  //static flag of kmag strength
-  static double FMAGSTR = 1.0;
-  static double KMAGSTR = 1.0;
+	//static flag of kmag strength
+	static double FMAGSTR = 1.0;
+	static double KMAGSTR = 1.0;
+
+    //Beam position and shape
+    static double X_BEAM   = 0.;
+    static double Y_BEAM   = 0.;
+    static double SIGX_BEAM = 0.5;
+    static double SIGY_BEAM = 0.5;
+
+    //Simple swimming settings 
+    static int NSTEPS_TARGET = 100;
+    static int NSTEPS_SHIELDING = 50;
+    static int NSTEPS_FMAG = 100;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+
+            SQRecoConfig* recoConf = SQRecoConfig::instance();
+            FMAGSTR = recoConf->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = recoConf->get_DoubleFlag("KMAGSTR");
+            
+            X_BEAM = recoConf->get_DoubleFlag("X_BEAM");
+            Y_BEAM = recoConf->get_DoubleFlag("Y_BEAM");
+            SIGX_BEAM = recoConf->get_DoubleFlag("SIGX_BEAM");
+            SIGY_BEAM = recoConf->get_DoubleFlag("SIGY_BEAM");
+
+            NSTEPS_TARGET = recoConf->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = recoConf->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = recoConf->get_IntFlag("NSTEPS_FMAG");
+        }
+    }
 }
-//@}
 
 VertexFit::VertexFit(const std::string& name) :
     SubsysReco(name)
 {
-  p_jobOptsSvc = JobOptsSvc::instance();
-
+  initGlobalVariables();
+  
   ///In construction, initialize the projector for the vertex node
   TMatrixD m(2, 1), cov(2, 2), proj(2, 5);
   m[0][0] = X_VTX;

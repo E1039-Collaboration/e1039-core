@@ -20,7 +20,6 @@ Created: 10-24-2011
 
 ClassImp(Hit)
 ClassImp(SRawEvent)
-ClassImp(SRawMCEvent)
 
 Hit::Hit() : index(-1), detectorID(-1), flag(0)
 {

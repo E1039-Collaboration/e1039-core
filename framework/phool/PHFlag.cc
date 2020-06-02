@@ -144,12 +144,46 @@ void PHFlag::set_IntFlag(const string &name, const int iflag)
   return ;
 }
 
+bool PHFlag::get_BoolFlag(const string &name) const
+{
+  map<string, bool>::const_iterator iter = boolflag.find(name);
+  if (iter != boolflag.end())
+    {
+      return iter->second;
+    }
+  cout << "PHFlag::getFlag: ERROR Unknown Bool Flag " << name
+       << ", The following are implemented: " << endl;
+  Print();
+  return false;
+}
+
+bool PHFlag::get_BoolFlag(const string &name, bool defaultval)
+{
+  map<string, bool>::const_iterator iter = boolflag.find(name);
+  if (iter != boolflag.end())
+    {
+      return iter->second;
+    }
+  else
+    {
+      set_BoolFlag(name,defaultval);
+      return get_BoolFlag(name);
+    }
+}
+
+void PHFlag::set_BoolFlag(const string &name, const bool bflag)
+{
+  boolflag[name] = bflag;
+  return ;
+}
+
 void PHFlag::Print() const
 {
   PrintIntFlags();
   PrintFloatFlags();
   PrintDoubleFlags();
   PrintCharFlags();
+  PrintBoolFlags();
   return ;
 }
 
@@ -201,6 +235,18 @@ void PHFlag::PrintCharFlags() const
   return ;
 }
 
+void PHFlag::PrintBoolFlags() const
+{
+  // loop over the map and print out the content (name and location in memory)
+  cout << endl << "Boolean Flags:" << endl;
+  map<string, bool>::const_iterator booliter;
+  for (booliter = boolflag.begin(); booliter != boolflag.end(); ++booliter)
+    {
+      cout << booliter->first << " is " << booliter->second << endl;
+    }
+  return ;
+}
+
 int PHFlag::FlagExist(const string &name) const
 {
   map<string, int>::const_iterator iter = intflag.find(name);
@@ -223,6 +269,11 @@ int PHFlag::FlagExist(const string &name) const
     {
       return 1;
     }
+  map<string, bool>::const_iterator biter = boolflag.find(name);
+  if (biter != boolflag.end())
+    {
+      return 1;
+    }
   return 0;
 }
 
@@ -237,6 +288,8 @@ void PHFlag::ReadFromFile(const string &name)
   int ivaluecount = 0;
   string cvalue;
   int cvaluecount = 0;
+  bool bvalue;
+  int bvaluecount = 0;
   string junk;
   int junkcount = 0;
 
@@ -268,6 +321,12 @@ void PHFlag::ReadFromFile(const string &name)
       ivaluecount++;
       set_IntFlag(label.substr(1,label.size()-1), ivalue);
       cout<<" I read "<< ivalue << endl;
+    }else if(label.substr(0,1)=="B")
+    {
+      infile>>bvalue;
+      bvaluecount++;
+      set_BoolFlag(label.substr(1,label.size()-1), bvalue);
+      cout<<" B read "<< ivalue << endl;
     }else{
       infile>>junk;
       junkcount++;
@@ -280,6 +339,7 @@ void PHFlag::ReadFromFile(const string &name)
     <<") FloatFlags("  << fvaluecount
     <<") DoubleFlags("  << dvaluecount
     <<") IntFlags("    << ivaluecount
+    <<") BoolFlags("    << bvaluecount
     <<") JunkEntries(" << junkcount
     <<") from file "<< name <<endl;
 
@@ -314,6 +374,12 @@ void PHFlag::WriteToFile(const string &name)
   for (chariter = charflag.begin(); chariter != charflag.end(); ++chariter)
   {
     outFile << "C" << chariter->first << "\t" << chariter->second << endl;
+  }
+
+  map<string, bool>::const_iterator booliter;
+  for (booliter = boolflag.begin(); booliter != boolflag.end(); ++booliter)
+  {
+    outFile << "B" << booliter->first << "\t" << booliter->second << endl;
   }
 
   outFile.close();

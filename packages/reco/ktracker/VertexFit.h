@@ -174,8 +174,6 @@ private:
     ///Flag to enable/disable optimization of final position
     bool optimize;
 
-
-    JobOptsSvc* p_jobOptsSvc;
     TGeoManager * _t_geo_manager;
 
     SRecEvent* _recEvent;

@@ -6,6 +6,5 @@
 
 #pragma link C++ class Hit+;
 #pragma link C++ class SRawEvent+;
-#pragma link C++ class SRawMCEvent+;
 
 #endif

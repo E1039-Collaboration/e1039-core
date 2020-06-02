@@ -12,7 +12,6 @@ Created: 11-21-2011
 #include <algorithm>
 #include <cmath>
 
-#include "jobopts_svc/JobOptsSvc.h"
 #include "KalmanFilter.h"
 
 KalmanFilter* KalmanFilter::p_kmfit = nullptr;

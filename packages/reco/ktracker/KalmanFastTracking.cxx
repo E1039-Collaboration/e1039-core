@@ -22,12 +22,76 @@ Created: 05-28-2013
 
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
+#include "SQRecoConfig.h"
 
 //#define _DEBUG_ON
+
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
+
+    //Sagitta ratio
+    static double SAGITTA_DUMP_CENTER = 1.5;
+    static double SAGITTA_DUMP_WIDTH = 0.3;
+    static double SAGITTA_TARGET_CENTER = 1.85;
+    static double SAGITTA_TARGET_WIDTH = 0.25;
+
+    //Track quality cuts
+    static double TX_MAX = 0.2;
+    static double TY_MAX = 0.2;
+    static double X0_MAX = 100.;
+    static double Y0_MAX = 100.;
+    static double INVP_MAX = 0.2;
+    static double INVP_MIN = 0.01;
+
+    //MuID cuts 
+    static double MUID_REJECTION = 4.;
+    static double MUID_Z_REF = 2028.19;
+    static double MUID_R_CUT = 3.;
+    static double MUID_THE_P0 = 0.11825;
+    static double MUID_EMP_P0 = 0.00643;
+    static double MUID_EMP_P1 = 0.;
+    static double MUID_EMP_P2 = 0.;
+
+    //Track merging threshold
+    static double MERGE_THRES = 0.015;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+
+            SQRecoConfig* recoConf = SQRecoConfig::instance();
+            TX_MAX = recoConf->get_DoubleFlag("TX_MAX");
+            TY_MAX = recoConf->get_DoubleFlag("TY_MAX");
+            X0_MAX = recoConf->get_DoubleFlag("X0_MAX");
+            Y0_MAX = recoConf->get_DoubleFlag("Y0_MAX");
+            INVP_MAX = recoConf->get_DoubleFlag("INVP_MAX");
+            INVP_MIN = recoConf->get_DoubleFlag("INVP_MIN");
+
+            SAGITTA_TARGET_CENTER = recoConf->get_DoubleFlag("SAGITTA_TARGET_CENTER");
+            SAGITTA_TARGET_WIDTH = recoConf->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
+            SAGITTA_DUMP_CENTER = recoConf->get_DoubleFlag("SAGITTA_DUMP_CENTER");
+            SAGITTA_DUMP_WIDTH = recoConf->get_DoubleFlag("SAGITTTA_DUMP_WIDTH");
+
+            MUID_REJECTION = recoConf->get_DoubleFlag("MUID_REJECTION");
+            MUID_Z_REF = recoConf->get_DoubleFlag("MUID_Z_REF");
+            MUID_R_CUT = recoConf->get_DoubleFlag("MUID_R_CUT");
+            MUID_THE_P0 = recoConf->get_DoubleFlag("MUID_THE_P0");
+            MUID_EMP_P0 = recoConf->get_DoubleFlag("MUID_EMP_P0");
+            MUID_EMP_P1 = recoConf->get_DoubleFlag("MUID_EMP_P1");
+            MUID_EMP_P2 = recoConf->get_DoubleFlag("MUID_EMP_P2");
+        }
+    }
+}
 
 KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag)
 {
     using namespace std;
+    initGlobalVariables();
 
 #ifdef _DEBUG_ON
     cout << "Initialization of KalmanFastTracking ..." << endl;
@@ -1331,7 +1395,7 @@ bool KalmanFastTracking::muonID_search(Tracklet& tracklet)
     {
         double cut_the = MUID_THE_P0*tracklet.invP;
         double cut_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        cut = MUID_REJECT*(cut_the > cut_emp ? cut_the : cut_emp);
+        cut = MUID_REJECTION*(cut_the > cut_emp ? cut_the : cut_emp);
     }
 
     double slope[2] = {tracklet.tx, tracklet.ty};
@@ -1403,7 +1467,7 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
     {
         double cut_the = MUID_THE_P0*tracklet.invP;
         double cut_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        cut = MUID_REJECT*(cut_the > cut_emp ? cut_the : cut_emp);
+        cut = MUID_REJECTION*(cut_the > cut_emp ? cut_the : cut_emp);
     }
 #ifdef _DEBUG_ON
     LogInfo("Muon ID cut is: " << cut << " rad.");
@@ -1459,7 +1523,7 @@ bool KalmanFastTracking::muonID_hodoAid(Tracklet& tracklet)
     {
         double win_the = MUID_THE_P0*tracklet.invP;
         double win_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        win = MUID_REJECT*(win_the > win_emp ? win_the : win_emp);
+        win = MUID_REJECTION*(win_the > win_emp ? win_the : win_emp);
         factor = 3.;
     }
 
@@ -1709,8 +1773,8 @@ void KalmanFastTracking::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_
 
         double pos_exp_target = SAGITTA_TARGET_CENTER*s2_target + pos_st3*(z_st1 - Z_TARGET)/(z_st3 - Z_TARGET);
         double pos_exp_dump   = SAGITTA_DUMP_CENTER*s2_dump + pos_st3*(z_st1 - Z_DUMP)/(z_st3 - Z_DUMP);
-        double win_target = fabs(s2_target*SAGITTA_TARGET_WIN);
-        double win_dump   = fabs(s2_dump*SAGITTA_DUMP_WIN);
+        double win_target = fabs(s2_target*SAGITTA_TARGET_WIDTH);
+        double win_dump   = fabs(s2_dump*SAGITTA_DUMP_WIDTH);
 
         double p_min = std::min(pos_exp_target - win_target, pos_exp_dump - win_dump);
         double p_max = std::max(pos_exp_target + win_target, pos_exp_dump + win_dump);
