@@ -6,6 +6,7 @@
 
 #pragma link C++ class SignedHit+;
 #pragma link C++ class PropSegment+;
-#pragma link C++ class Tracklet;
+#pragma link C++ class Tracklet+;
+#pragma link C++ class TrackletVector+;
 
 #endif

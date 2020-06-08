@@ -15,19 +15,26 @@ Created: 06-09-2013
 #include <list>
 #include <vector>
 
-#include <TObject.h>
 #include <TVector3.h>
 
 #include <geom_svc/GeomSvc.h>
+#include <phool/PHObject.h>
+
 #include "SRawEvent.h"
 #include "SRecEvent.h"
 
-class SignedHit : public TObject
+class SignedHit : public PHObject
 {
 public:
     SignedHit();
     explicit SignedHit(int detectorID);
     SignedHit(Hit hit_input, int sign_input);
+
+    //PHObject virtual overloads
+    void identify(std::ostream& os = std::cout) const;
+    void Reset() { hit = Hit(); sign = 0; }
+    int  isValid() const { return hit.index > 0; }
+    SignedHit* Clone() const { return (new SignedHit(hit, sign)); }
 
     //comparision operators for sorting
     bool operator<(const SignedHit elem) const { return hit.detectorID < elem.hit.detectorID; }
@@ -44,23 +51,29 @@ public:
     ClassDef(SignedHit, 1)
 };
 
-class PropSegment : public TObject
+class PropSegment : public PHObject
 {
 public:
     PropSegment();
+
+    //PHObject virtual overloads
+    void identify(std::ostream& os = std::cout) const { print(os); };
+    void Reset() { init(); }
+    int  isValid() const;
+    PropSegment* Clone() const { return (new PropSegment(*this)); }
 
     //init -- temporary, only used for tests
     void init();
 
     //Quality cut
-    bool isValid();
+    //bool isValid();
 
     //Debugging output
-    void print();
+    void print(std::ostream& os = std::cout) const;
 
 #ifndef __CINT__
     //Get expected position at a given Z
-    double getExpPosition(double z) { return a*z + b; }
+    double getExpPosition(double z) const { return a*z + b; }
 
     //Get the closest approach to a given space position/proptube wire
     double getClosestApproach(double z, double pos);
@@ -69,10 +82,10 @@ public:
     double getPosRef(double default_val = -9999.);
 
     //Number of hits
-    int getNHits();
+    int getNHits() const;
 
     //Number of planes
-    int getNPlanes();
+    int getNPlanes() const;
 
     //Fit the segment -- naive linear fit
     void fit();   // external call
@@ -107,22 +120,29 @@ public:
     ClassDef(PropSegment, 4)
 };
 
-class Tracklet : public TObject
+class Tracklet : public PHObject
 {
 public:
     Tracklet();
 
+    //PHObject virtual overloads
+    void identify(std::ostream& os = std::cout) const { os << "Tracklet @sID=" << stationID << std::endl;}
+    void Reset() { *this = Tracklet(); }
+    int  isValid() const;
+    Tracklet* Clone() const { return (new Tracklet(*this)); }
+
     //Basic quality cut
-    bool isValid();
+    //bool isValid();
 
     //Debuggin output
-    void print();
+    void print(std::ostream& os = std::cout);
 
 #ifndef __CINT__
     //Sort hit list
     void sortHits() { hits.sort(); }
 
-    //Get number of real hits
+    //Update/get number of real hits
+    void updateNHits();
     int getNHits() const { return nXHits + nUHits + nVHits; }
 
     //Number of all hits (even excluded)
@@ -227,6 +247,38 @@ public:
     double residual[nChamberPlanes];
 
     ClassDef(Tracklet, 4)
+};
+
+class TrackletVector : public PHObject
+{
+public:
+    TrackletVector();
+    virtual ~TrackletVector();
+
+    void identify(std::ostream& os = std::cout) const;
+    void Reset();
+    int  isValid() const { return 1; };
+    TrackletVector* Clone() const { return (new TrackletVector(*this)); }
+
+    bool empty() const { return trackletVec.empty(); }
+    size_t size() const { return trackletVec.size(); }
+    void clear() { Reset(); }
+
+    const Tracklet* at(const size_t index) const;
+    Tracklet* at(const size_t index);
+    void push_back(const Tracklet* tracklet);
+    size_t erase(const size_t index);
+
+    std::vector<Tracklet*>::const_iterator begin() const { return trackletVec.begin(); }
+    std::vector<Tracklet*>::const_iterator end()   const { return trackletVec.end(); }  
+
+    std::vector<Tracklet*>::iterator begin() { return trackletVec.begin(); }
+    std::vector<Tracklet*>::iterator end()   { return trackletVec.end(); }
+
+private:
+    std::vector<Tracklet*> trackletVec;
+
+    ClassDef(TrackletVector, 1)
 };
 
 

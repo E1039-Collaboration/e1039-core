@@ -23,6 +23,7 @@ Created: 05-28-2013
 ClassImp(SignedHit)
 ClassImp(PropSegment)
 ClassImp(Tracklet)
+ClassImp(TrackletVector)
 
 namespace 
 {
@@ -55,6 +56,15 @@ SignedHit::SignedHit(Hit hit_input, int sign_input) : hit(hit_input), sign(sign_
 {
 }
 
+void SignedHit::identify(std::ostream& os) const 
+{
+    if(sign > 0) os << "L - ";
+    if(sign > 0) os << "R - ";
+    if(sign == 0) os << "U - ";
+
+    os << hit.index << " " << hit.detectorID << "  " << hit.elementID << std::endl;
+}
+
 //Proptube segment definition
 //const GeomSvc* PropSegment::p_geomSvc = GeomSvc::instance();
 
@@ -62,7 +72,15 @@ PropSegment::PropSegment() : a(-999.), b(-999.), err_a(100.), err_b(100.), chisq
 {
     for(int i = 0; i < 4; ++i) hits[i].hit.index = -1;
     for(int i = 0; i < 4; ++i) hodoHits[i].index = -1;
-    if(p_geomSvc == nullptr) p_geomSvc = GeomSvc::instance();
+    if(p_geomSvc == nullptr) 
+    {
+        p_geomSvc = GeomSvc::instance();
+        kmag_on = JobOptsSvc::instance()->m_enableKMag;
+        FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
+        KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
+        PT_KICK_FMAG = 2.909*FMAGSTR;
+        PT_KICK_KMAG = 0.4016*KMAGSTR;
+    }
 }
 
 void PropSegment::init()
@@ -77,24 +95,24 @@ void PropSegment::init()
     chisq = 1E6;
 }
 
-void PropSegment::print()
+void PropSegment::print(std::ostream& os) const
 {
     using namespace std;
 
-    cout<< "nHits: " << getNHits() << ", nPlanes: " << getNPlanes() << endl;
-    cout << "a = " << a << ", b = " << b << ", chisq = " << chisq << endl;
-    cout << "TX_MAX = " << TX_MAX << ", X0_MAX = " << X0_MAX << ", chisq max = " << 5 << endl;
-    cout << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
+    os << "nHits: " << getNHits() << ", nPlanes: " << getNPlanes() << endl;
+    os << "a = " << a << ", b = " << b << ", chisq = " << chisq << endl;
+    os << "TX_MAX = " << TX_MAX << ", X0_MAX = " << X0_MAX << ", chisq max = " << 5 << endl;
+    os << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
 
     for(int i = 0; i < 4; ++i)
     {
-        if(hits[i].sign > 0) cout << "L: ";
-        if(hits[i].sign < 0) cout << "R: ";
-        if(hits[i].sign == 0) cout << "U: ";
+        if(hits[i].sign > 0) os << "L: ";
+        if(hits[i].sign < 0) os << "R: ";
+        if(hits[i].sign == 0) os << "U: ";
 
-        cout << hits[i].hit.index << "  " << hits[i].hit.detectorID << "  " << hits[i].hit.elementID << " === ";
+        os << hits[i].hit.index << "  " << hits[i].hit.detectorID << "  " << hits[i].hit.elementID << " === ";
     }
-    cout << endl;
+    os << endl;
 }
 
 double PropSegment::getClosestApproach(double z, double pos)
@@ -119,7 +137,7 @@ double PropSegment::getPosRef(double default_val)
     return pos_exp/nRefPoints;
 }
 
-int PropSegment::getNHits()
+int PropSegment::getNHits() const
 {
     int nHits = 0;
     for(int i = 0; i < 4; ++i)
@@ -129,7 +147,7 @@ int PropSegment::getNHits()
     return nHits;
 }
 
-int PropSegment::getNPlanes()
+int PropSegment::getNPlanes() const
 {
     int nPlanes = 0;
     for(int i = 0; i < 2; ++i)
@@ -139,17 +157,17 @@ int PropSegment::getNPlanes()
     return nPlanes;
 }
 
-bool PropSegment::isValid()
+int PropSegment::isValid() const
 {
-    if(getNHits() < 2) return false;
-    if(getNPlanes() != 2) return false;
-    if(chisq > 5.) return false;
+    if(getNHits() < 2) return 0;
+    if(getNPlanes() != 2) return 0;
+    if(chisq > 5.) return 0;
 
     //May need optimization
-    if(fabs(a) > TX_MAX) return false;
-    if(fabs(b) > X0_MAX) return false;
+    if(fabs(a) > TX_MAX) return 0;
+    if(fabs(b) > X0_MAX) return 0;
 
-    return true;
+    return 1;
 }
 
 void PropSegment::resolveLR()
@@ -452,32 +470,29 @@ Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(999
     }
 }
 
-bool Tracklet::isValid()
+int Tracklet::isValid() const
 {
-    if(stationID < 1 || stationID > nStations) return false;
-    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX) return false;
-    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX) return false;
-    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0) return false;
+    if(stationID < 1 || stationID > nStations) return 0;
+    if(fabs(tx) > TX_MAX || fabs(x0) > X0_MAX) return 0;
+    if(fabs(ty) > TY_MAX || fabs(y0) > Y0_MAX) return 0;
+    if(err_tx < 0 || err_ty < 0 || err_x0 < 0 || err_y0 < 0) return 0;
 
     double prob = getProb();
-    if(stationID != nStations && prob < PROB_LOOSE) return false;
+    if(stationID != nStations && prob < PROB_LOOSE) return 0;
     
     //Tracklets in each station
     int nHits = nXHits + nUHits + nVHits;
     if(stationID < nStations-1)
     {
-        if(nXHits < 1 || nUHits < 1 || nVHits < 1) return false;
-        if(nHits < 4) return false;
-        if(chisq > 40.) return false;
+        if(nXHits < 1 || nUHits < 1 || nVHits < 1) return 0;
+        if(nHits < 4) return 0;
+        if(chisq > 40.) return 0;
     }
     else
     {
         //Number of hits cuts, second index is X, U, V, first index is station-1, 2, 3
         int nRealHits[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-        nXHits = 0;
-        nUHits = 0;
-        nVHits = 0;
-        for(std::list<SignedHit>::iterator iter = hits.begin(); iter != hits.end(); ++iter)
+        for(std::list<SignedHit>::const_iterator iter = hits.begin(); iter != hits.end(); ++iter)
         {
             if(iter->hit.index < 0) continue;
 
@@ -485,42 +500,61 @@ bool Tracklet::isValid()
             int idx2 = p_geomSvc->getPlaneType(iter->hit.detectorID) - 1;
 
             ++nRealHits[idx1][idx2];
-            if(idx2 == 0)
-            {
-                ++nXHits;
-            }
-            else if(idx2 == 1)
-            {
-                ++nUHits;
-            }
-            else
-            {
-                ++nVHits;
-            }
         }
 
         //Number of hits cut after removing bad hits
         for(int i = 1; i < 3; ++i)
         {
-            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1) return false;
-            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4) return false;
+            if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1) return 0;
+            if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4) return 0;
         }
 
         //for global tracks only -- TODO: may need to set a new station-1 cut
         if(stationID == nStations)
         {
-            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1) return false;
-            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return false;
+            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1) return 0;
+            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return 0;
 
-            if(prob < PROB_TIGHT) return false;
+            if(prob < PROB_TIGHT) return 0;
             if(kmag_on)
             {
-                if(invP < INVP_MIN || invP > INVP_MAX) return false;
+                if(invP < INVP_MIN || invP > INVP_MAX) return 0;
             }
         }
     }
 
-    return true;
+    return 1;
+}
+
+void Tracklet::updateNHits()
+{
+    /*
+      This function is originally included in the isValid() function, applied when stationID >= nStations-1.
+      It is moved to this separate function so that isValid can be a const function
+      TODO: Need to verify this function is not really needed, i.e. the nX/U/Vhits counter has been properly taken care of for 
+      during  the hit removal process.
+    */
+    nXHits = 0;
+    nUHits = 0;
+    nVHits = 0;
+    for(std::list<SignedHit>::const_iterator iter = hits.begin(); iter != hits.end(); ++iter)
+    {
+        if(iter->hit.index < 0) continue;
+
+        int idx = p_geomSvc->getPlaneType(iter->hit.detectorID) - 1;
+        if(idx == 0)
+        {
+            ++nXHits;
+        }
+        else if(idx == 1)
+        {
+            ++nUHits;
+        }
+        else
+        {
+            ++nVHits;
+        }
+    }
 }
 
 double Tracklet::getProb() const
@@ -1007,30 +1041,78 @@ TVector3 Tracklet::getMomentumSt3()
     return TVector3(pz*tx, pz*ty, pz);
 }
 
-void Tracklet::print()
+void Tracklet::print(std::ostream& os)
 {
     using namespace std;
 
     calcChisq();
+    TVector3 mom1 = getMomentumSt1();
+    TVector3 mom3 = getMomentumSt3();
 
-    cout << "Tracklet in station " << stationID << endl;
-    cout << nXHits + nUHits + nVHits << " hits in this station with chisq = " << chisq << endl;
-    cout << "Momentum in z: " << 1./invP << " +/- " << err_invP/invP/invP << endl;
-    cout << "Charge: " << getCharge() << endl;
+    os << "Tracklet in station " << stationID << endl;
+    os << nXHits + nUHits + nVHits << " hits in this station with chisq = " << chisq << endl;
+    os << "Momentum in z @st1: " << mom1.Pz() << " +/- " << mom1.Pz()*err_invP/invP << endl;
+    os << "Momentum in z @st3: " << mom3.Pz() << " +/- " << mom3.Pz()*err_invP/invP << endl;
+    os << "Charge: " << getCharge() << endl;
     for(std::list<SignedHit>::iterator iter = hits.begin(); iter != hits.end(); ++iter)
     {
-        if(iter->sign > 0) cout << "L: ";
-        if(iter->sign < 0) cout << "R: ";
-        if(iter->sign == 0) cout << "U: ";
+        if(iter->sign > 0) os << "L: ";
+        if(iter->sign < 0) os << "R: ";
+        if(iter->sign == 0) os << "U: ";
 
-        cout << iter->hit.index << " " << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << residual[iter->hit.detectorID-1] << " === ";
+        os << iter->hit.index << " " << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << residual[iter->hit.detectorID-1] << " === ";
     }
-    cout << endl;
+    os << endl;
 
-    cout << "X-Z: (" << tx << " +/- " << err_tx << ")*z + (" << x0 << " +/- " << err_x0 << ")" << endl;
-    cout << "Y-Z: (" << ty << " +/- " << err_ty << ")*z + (" << y0 << " +/- " << err_y0 << ")" << endl;
+    os << "X-Z: (" << tx << " +/- " << err_tx << ")*z + (" << x0 << " +/- " << err_x0 << ")" << endl;
+    os << "Y-Z: (" << ty << " +/- " << err_ty << ")*z + (" << y0 << " +/- " << err_y0 << ")" << endl;
 
-    cout << "KMAG projection: X =  " << getExpPositionX(Z_KMAG_BEND) << " +/- " << getExpPosErrorX(Z_KMAG_BEND) << endl;
-    cout << "KMAG projection: Y =  " << getExpPositionY(Z_KMAG_BEND) << " +/- " << getExpPosErrorY(Z_KMAG_BEND) << endl;
-    cout << "KMAGSTR =  " << KMAGSTR << endl;
+    os << "KMAG projection: X =  " << getExpPositionX(Z_KMAG_BEND) << " +/- " << getExpPosErrorX(Z_KMAG_BEND) << endl;
+    os << "KMAG projection: Y =  " << getExpPositionY(Z_KMAG_BEND) << " +/- " << getExpPosErrorY(Z_KMAG_BEND) << endl;
+    os << "KMAGSTR =  " << KMAGSTR << endl;
+}
+
+TrackletVector::TrackletVector(): trackletVec()
+{}
+
+TrackletVector::~TrackletVector()
+{
+    Reset();
+}
+
+void TrackletVector::identify(std::ostream& os) const
+{
+    os << "TrackletVector with " << size() << " entries" << std::endl;
+}
+
+void TrackletVector::Reset()
+{
+    for(auto iter = trackletVec.begin(); iter != trackletVec.end(); ++iter) delete (*iter);
+    trackletVec.clear();
+}
+
+const Tracklet* TrackletVector::at(const size_t index) const
+{
+    if(index >= size()) return nullptr;
+    return trackletVec[index];
+}
+
+Tracklet* TrackletVector::at(const size_t index)
+{
+    if(index >= size()) return nullptr;
+    return trackletVec[index];
+}
+
+void TrackletVector::push_back(const Tracklet* tracklet)
+{
+    trackletVec.push_back(tracklet->Clone());
+}
+
+size_t TrackletVector::erase(const size_t index)
+{
+    if(index >= size()) return size();
+
+    delete trackletVec[index];
+    trackletVec.erase(trackletVec.begin() + index);
+    return trackletVec.size();
 }
