@@ -146,9 +146,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
     //}
   }
 
-  ///
-  /// Construct the true track and dimuon info
-  ///
+  /// Extract the true-track info
   m_vec_trk->clear();
   vector<int> vec_vtx_id;
   for (auto it = g4true->GetPrimaryParticleRange().first; it != g4true->GetPrimaryParticleRange().second; ++it) {
@@ -170,20 +168,19 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
     if (FindHitAtStation(trk_id, g4hc_d1x, &pos, &mom)) {
       trk.set_pos_st1(pos);
       trk.set_mom_st1(mom);
-      cout << "  D1 " << pos.X() << " " << pos.Y() << " " << pos.Z() << endl;
     }
 
     if (FindHitAtStation(trk_id, g4hc_d3px, &pos, &mom) ||
         FindHitAtStation(trk_id, g4hc_d3mx, &pos, &mom)   ) {
       trk.set_pos_st3(pos);
       trk.set_mom_st3(mom);
-      cout << "  D3 " << pos.X() << " " << pos.Y() << " " << pos.Z() << endl;
     }
 
     m_vec_trk->push_back(&trk);
     vec_vtx_id.push_back(vtx_id);
   }
 
+  /// Construct the dimuon info
   m_vec_dim->clear();
   unsigned int n_trk = m_vec_trk->size();
   for (unsigned int i1 = 0; i1 < n_trk; i1++) {
@@ -204,11 +201,9 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
       dim.set_track_id_pos(trk1->get_track_id());
       dim.set_track_id_neg(trk2->get_track_id());
       m_vec_dim->push_back(&dim);
-      cout << "mass = " << dim.get_mom().M() << endl;
     }
   }
   
-  cout << "N of tracks & simuons = " << m_vec_trk->size() << " & " << m_vec_dim->size() << endl;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
