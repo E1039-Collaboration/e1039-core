@@ -49,14 +49,7 @@ int TruthNodeMaker::InitRun(PHCompositeNode* topNode)
 
 int TruthNodeMaker::process_event(PHCompositeNode* topNode)
 {
-  //typedef std::map<const HepMC::GenParticle*, int> ParPtr2Id_t;
-  //ParPtr2Id_t map_par_ptr;
-
-  //m_vec_trk->clear();
-  //m_vec_dim->clear();
-  //int id_trk = 0; // to be incremented
-  int id_dim = 0; // to be incremented
-
+  /// Extract the hard process.
   if (genevtmap->size() != 1) {
     cout << "TruthNodeMaker::process_event(): size != 1 unexpectedly." << endl;
   }
@@ -73,7 +66,6 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
     }
     m_evt->set_process_id(evt->signal_process_id());
 
-    /// Extract the hard process.
     //HepMC::GenVertex* vtx = evt->signal_process_vertex(); // Return 0 as of 2019-11-19.
     HepMC::GenEvent::particle_const_iterator it = evt->particles_begin();
     it++; // Skip the 1st beam particle.
@@ -86,64 +78,6 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
       m_evt->set_particle_id(iii, par->pdg_id());
       m_evt->set_particle_momentum(iii, lvec);
     }
-
-    /// Extract muons.
-    //while (++it != evt->particles_end()) {
-    //  const HepMC::GenParticle* par = *it;
-    //  int pid = par->pdg_id();
-    //  if (abs(pid) != 13) continue;
-    //  HepMC::FourVector pos = par->production_vertex()->position();
-    //  HepMC::FourVector mom = par->momentum();
-    //
-    //  SQTrack_v1 trk;
-    //  //trk.set_track_id(id_trk++);
-    //  trk.set_track_id(par->barcode()); // Is this better than "id_trk"??
-    //  trk.set_charge(pid < 0 ? +1: -1); // -13 = mu+
-    //  trk.set_pos_vtx(TVector3      (pos.x(), pos.y(), pos.z()         ));
-    //  trk.set_mom_vtx(TLorentzVector(mom.x(), mom.y(), mom.z(), mom.t()));
-    //  SetTrackParamAtStation(1, par, &trk);
-    //  SetTrackParamAtStation(3, par, &trk);
-    //  m_vec_trk->push_back(&trk);
-    //
-    //  map_par_ptr[par] = trk.get_track_id();
-    //}
-
-    /// Extract dimuon vertecies.
-    //for (HepMC::GenEvent::vertex_const_iterator it = evt->vertices_begin(); it != evt->vertices_end(); it++) {
-    //  HepMC::GenVertex* vtx = *it;
-    //  if (   vtx->particles_in_size () != 1
-    //      || vtx->particles_out_size() != 2) continue;
-    //  HepMC::GenParticle* par_mup = 0;
-    //  HepMC::GenParticle* par_mum = 0;
-    //  for (HepMC::GenVertex::particles_out_const_iterator it_par = vtx->particles_out_const_begin(); it_par != vtx->particles_out_const_end(); it_par++) {
-    //    HepMC::GenParticle* par = *it_par;
-    //    int pdg_id = par->pdg_id();
-    //    if      (pdg_id == -13) par_mup = par;
-    //    else if (pdg_id == +13) par_mum = par;
-    //  }
-    //  if (! par_mup || ! par_mum) continue;
-    //  if (   map_par_ptr.find(par_mup) == map_par_ptr.end() 
-    //      || map_par_ptr.find(par_mum) == map_par_ptr.end()) {
-    //    cout << "ERROR:  GenVertex points to an invalid GenParticle!?" << endl;
-    //    return Fun4AllReturnCodes::ABORTEVENT;
-    //  }
-    //  int idx_mup = map_par_ptr[par_mup];
-    //  int idx_mum = map_par_ptr[par_mum];
-    //  HepMC::GenParticle* par_dim = *(vtx->particles_in_const_begin());
-    //  HepMC::FourVector pos = par_dim->production_vertex()->position();
-    //  HepMC::FourVector mom = par_dim->momentum();
-    //
-    //  SQDimuon_v1 dim;
-    //  dim.set_dimuon_id(id_dim++);
-    //  dim.set_pdg_id(par_dim->pdg_id());
-    //  dim.set_pos(TVector3      (pos.x(), pos.y(), pos.z()         ));
-    //  dim.set_mom(TLorentzVector(mom.x(), mom.y(), mom.z(), mom.t()));
-    //  dim.set_mom_pos(m_vec_trk->at(idx_mup)->get_mom_vtx());
-    //  dim.set_mom_neg(m_vec_trk->at(idx_mum)->get_mom_vtx());
-    //  dim.set_track_id_pos(idx_mup);
-    //  dim.set_track_id_neg(idx_mum);
-    //  m_vec_dim->push_back(&dim);
-    //}
   }
 
   /// Extract the true-track info
@@ -182,6 +116,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
 
   /// Construct the dimuon info
   m_vec_dim->clear();
+  int id_dim = 0; // to be incremented
   unsigned int n_trk = m_vec_trk->size();
   for (unsigned int i1 = 0; i1 < n_trk; i1++) {
     SQTrack* trk1 = m_vec_trk->at(i1);
@@ -193,7 +128,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
 
       SQDimuon_v1 dim;
       dim.set_dimuon_id(++id_dim);
-      //dim.set_pdg_id(par_dim->pdg_id());
+      //dim.set_pdg_id(par_dim->pdg_id()); // PDG ID is not accessible via PHG4Particle
       dim.set_pos         (trk1->get_pos_vtx());
       dim.set_mom         (trk1->get_mom_vtx() + trk2->get_mom_vtx());
       dim.set_mom_pos     (trk1->get_mom_vtx());

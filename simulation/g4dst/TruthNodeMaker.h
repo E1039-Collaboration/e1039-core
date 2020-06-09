@@ -24,10 +24,10 @@ class SQDimuonVector;
  * The contents of these nodes are not original but extracted from `HepMC::GenEvent`, `PHG4TruthInfoContainer`, etc.
  * Thus you can extract the same or more detailed info when necessary.
  *
- * The info on the true tracks is stored in `HepMC::GenEvent`,
+ * The info on the true tracks is stored in `HepMC::GenEvent` as well,
  * where it is extracted from `PHG4TruthInfoContainer` in this module.
  * It is because the positions/momenta of tracks at Stations 1 and 3 are accessible only via `PHG4TruthInfoContainer`.
- * As a side effect, the parent particle type (i.e. PDG ID) of each muon pair is not available, which is stored only in `HepMC::GenEvent`.
+ * As a side effect, the parent particle type (i.e. PDG ID) of each muon pair is not available now, which is stored only in `HepMC::GenEvent`.
  * Analyzer should use the (true) invariant mass of muon pair to identify its parent particle type.
  */
 class TruthNodeMaker: public SubsysReco {
