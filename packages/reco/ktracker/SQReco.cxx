@@ -52,6 +52,8 @@ SQReco::SQReco(const std::string& name):
   _eval_file_name("eval.root"),
   _eval_tree(nullptr),
   _tracklets(nullptr),
+  _enable_eval_dst(false),
+  _tracklet_vector(nullptr),
   _evt_reducer_opt(""),
   _fastfinder(nullptr),
   _eventReducer(nullptr),
@@ -428,6 +430,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
     }
 
     if(is_eval_enabled()) new((*_tracklets)[nTracklets]) Tracklet(*iter);
+    if(is_eval_dst_enabled()) _tracklet_vector->push_back(&(*iter));
     ++nTracklets;
   }
   LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
@@ -566,9 +569,18 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
   }
 
   _recEvent = new SRecEvent();
-  PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent,"SRecEvent", "PHObject");
+  PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
   eventNode->addNode(recEventNode);
   if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+
+  if(_enable_eval_dst)
+  {
+    _tracklet_vector = new TrackletVector();
+    _tracklet_vector->SplitLevel(99);
+    PHIODataNode<PHObject>* trackletVecNode = new PHIODataNode<PHObject>(_tracklet_vector, "TrackletVector", "PHObject");
+    eventNode->addNode(trackletVecNode);
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/TrackletVector Added");
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

@@ -654,7 +654,7 @@ void KalmanFastTracking::buildBackPartialTracks()
 #endif
         }
 
-        if(tracklet_best.isValid()) trackletsInSt[3].push_back(tracklet_best);
+        if(tracklet_best.isValid() > 0) trackletsInSt[3].push_back(tracklet_best);
     }
 
     reduceTrackletList(trackletsInSt[3]);
@@ -754,15 +754,15 @@ void KalmanFastTracking::buildGlobalTracks()
             _timers["global_link"]->stop();
 
             //The selection logic is, prefer the tracks with best p-value, as long as it's not low-pz
-            if(enable_KF && tracklet_best_prob.isValid() && 1./tracklet_best_prob.invP > 18.)
+            if(enable_KF && tracklet_best_prob.isValid() > 0 && 1./tracklet_best_prob.invP > 18.)
             {
                 tracklet_best[i] = tracklet_best_prob;
             }
-            else if(enable_KF && tracklet_best_vtx.isValid()) //otherwise select the one with best vertex chisq, TODO: maybe add a z-vtx constraint
+            else if(enable_KF && tracklet_best_vtx.isValid() > 0) //otherwise select the one with best vertex chisq, TODO: maybe add a z-vtx constraint
             {
                 tracklet_best[i] = tracklet_best_vtx;
             }
-            else if(tracklet_best_prob.isValid()) //then fall back to the default only choice
+            else if(tracklet_best_prob.isValid() > 0) //then fall back to the default only choice
             {
                 tracklet_best[i] = tracklet_best_prob;
             }
@@ -784,21 +784,21 @@ void KalmanFastTracking::buildGlobalTracks()
 #endif
         }
 
-        if(tracklet_merge.isValid() && tracklet_merge < tracklet_best[0] && tracklet_merge < tracklet_best[1])
+        if(tracklet_merge.isValid() > 0 && tracklet_merge < tracklet_best[0] && tracklet_merge < tracklet_best[1])
         {
 #ifdef _DEBUG_ON
             LogInfo("Choose merged tracklet");
 #endif
             trackletsInSt[4].push_back(tracklet_merge);
         }
-        else if(tracklet_best[0].isValid() && tracklet_best[0] < tracklet_best[1])
+        else if(tracklet_best[0].isValid() > 0 && tracklet_best[0] < tracklet_best[1])
         {
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-0");
 #endif
             trackletsInSt[4].push_back(tracklet_best[0]);
         }
-        else if(tracklet_best[1].isValid())
+        else if(tracklet_best[1].isValid() > 0)
         {
 #ifdef _DEBUG_ON
             LogInfo("Choose tracklet with station-1");
@@ -974,7 +974,7 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
             }
         }
         if(hit_remove == nullptr) continue;
-        if(hit_remove->sign == 0 && tracklet.isValid()) continue;  //if sign is undecided, and chisq is OKay, then pass
+        if(hit_remove->sign == 0 && tracklet.isValid() > 0) continue;  //if sign is undecided, and chisq is OKay, then pass
 
         double cut = hit_remove->sign == 0 ? hit_remove->hit.driftDistance + resol_plane[hit_remove->hit.detectorID] : resol_plane[hit_remove->hit.detectorID];
         if(res_remove1 > cut)
@@ -1200,7 +1200,7 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
                 }
 
                 tracklet_new.sortHits();
-                if(!tracklet_new.isValid())
+                if(tracklet_new.isValid() == 0) //TODO: What IS THIS?
                 {
                     fitTracklet(tracklet_new);
                 }
@@ -1244,7 +1244,7 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
 bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
 {
     //Tracklet itself is okay with enough hits (4-out-of-6) and small chi square
-    if(!tracklet.isValid())
+    if(tracklet.isValid() == 0)
     {
 #ifdef _DEBUG_ON
         LogInfo("Failed in quality check!");
@@ -1340,7 +1340,7 @@ bool KalmanFastTracking::muonID_search(Tracklet& tracklet)
     for(int i = 0; i < 2; ++i)
     {
         //this shorting circuting can only be done to X-Z, Y-Z needs more complicated thing
-        //if(i == 0 && segs[i]->getNHits() > 2 && segs[i]->isValid() && fabs(slope[i] - segs[i]->a) < cut) continue;
+        //if(i == 0 && segs[i]->getNHits() > 2 && segs[i]->isValid() > 0 && fabs(slope[i] - segs[i]->a) < cut) continue;
 
         segs[i]->init();
         for(int j = 0; j < 4; ++j)
@@ -1379,7 +1379,7 @@ bool KalmanFastTracking::muonID_search(Tracklet& tracklet)
         segs[i]->fit();
 
         //this shorting circuting can only be done to X-Z, Y-Z needs more complicated thing
-        //if(i == 0 && !(segs[i]->isValid() && fabs(slope[i] - segs[i]->a) < cut)) return false;
+        //if(i == 0 && !(segs[i]->isValid() > 0 && fabs(slope[i] - segs[i]->a) < cut)) return false;
     }
 
     muonID_hodoAid(tracklet);
@@ -1420,7 +1420,7 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
 #endif
 
         double pos_ref = i == 0 ? tracklet.getExpPositionX(MUID_Z_REF) : tracklet.getExpPositionY(MUID_Z_REF);
-        if(segs[i]->getNHits() > 2 && segs[i]->isValid() && fabs(slope[i] - segs[i]->a) < cut && fabs(segs[i]->getExpPosition(MUID_Z_REF) - pos_ref) < MUID_R_CUT)
+        if(segs[i]->getNHits() > 2 && segs[i]->isValid() > 0 && fabs(slope[i] - segs[i]->a) < cut && fabs(segs[i]->getExpPosition(MUID_Z_REF) - pos_ref) < MUID_R_CUT)
         {
 #ifdef _DEBUG_ON
             LogInfo("Muon ID are already avaiable!");
@@ -1444,7 +1444,7 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
             }
         }
 
-        if(!segs[i]->isValid()) return false;
+        if(segs[i]->isValid() == 0) return false;
     }
 
     if(segs[0]->getNHits() + segs[1]->getNHits() < 5) return false;
@@ -1549,7 +1549,7 @@ void KalmanFastTracking::buildPropSegments()
                 seg.print();
 #endif
 
-                if(seg.isValid())
+                if(seg.isValid() > 0)
                 {
                     propSegs[i].push_back(seg);
                 }

@@ -301,30 +301,99 @@ SRecTrack GFTrack::getSRecTrack()
   beamCov(0, 0) = 100.; beamCov(1, 1) = 100.;
 
   //test Z_UPSTREAM
-  extrapolateToPlane(pO, pU, pV);
-  strack.setChisqUpstream(updatePropState(beamCenter, beamCov));
+  try
+  {
+    double len = extrapolateToPlane(pO, pU, pV);
+    if(fabs(len) > 6000.) throw len;
+    strack.setChisqUpstream(updatePropState(beamCenter, beamCov));  
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed upstream: " << e.what() << std::endl;
+    strack.setChisqUpstream(999.);
+  }
+  catch(double len)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed upstream: " << len << std::endl;
+    strack.setChisqUpstream(999.);
+  }
 
   //test Z_TARGET
-  pO.SetZ(Z_TARGET);
-  extrapolateToPlane(pO, pU, pV);
-  strack.setChisqTarget(updatePropState(beamCenter, beamCov));
+  try
+  {
+    pO.SetZ(Z_TARGET);
+    double len = extrapolateToPlane(pO, pU, pV);
+    if(fabs(len) > 6000.) throw len;
+    strack.setChisqTarget(updatePropState(beamCenter, beamCov));
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed target: " << e.what() << std::endl;
+    strack.setChisqTarget(999.);
+  }
+  catch(double len)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed target: " << len << std::endl;
+    strack.setChisqTarget(999.);
+  }
 
   //test Z_DUMP
-  pO.SetZ(Z_DUMP);
-  strack.setChisqDump(updatePropState(beamCenter, beamCov));
+  try
+  {
+    pO.SetZ(Z_DUMP);
+    double len = extrapolateToPlane(pO, pU, pV);
+    if(fabs(len) > 6000.) throw len;
+    strack.setChisqDump(updatePropState(beamCenter, beamCov));
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed dump: " << e.what() << std::endl;
+    strack.setChisqDump(999.);
+  }
+  catch(double len)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed dump: " << len << std::endl;
+    strack.setChisqDump(999.);
+  }
 
-  //Find POCA to beamline
-  TVector3 ep1(0., 0., -350.);
+  /*
+  //Find POCA to beamline -- it seems to be funky and mostly found some place way upstream or downstream
+  // most likely because the cross product of the track direction and beam line direction is way too small 
+  // z axis to provide reasonable calculation of the POCA location. It's disabled for now.
+  TVector3 ep1(0., 0., -499.);
   TVector3 ep2(0., 0., 0.);
-  extrapolateToLine(ep1, ep2);
+  try
+  {
+    extrapolateToLine(ep1, ep2);
+    TVectorD beamR(1); beamR(0) = 0.;
+    TMatrixDSym beamC(1); beamC(0, 0) = 1000.;
+    strack.setChisqVertex(updatePropState(beamR, beamC));
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << "Hypothesis test failed at beamline: " << e.what() << std::endl;
+    print(0);
+  }
+  */
 
-  TVectorD beamR(1); beamR(0) = 0.;
-  TMatrixDSym beamC(1); beamC(0, 0) = 100.;
-  strack.setChisqVertex(updatePropState(beamR, beamC));
-  
-  TVector3 pos, mom;
-  getExtrapPosMom(pos, mom);
-  strack.setVertexFast(pos, mom);
+  //test Z_VERTEX
+  try
+  {
+    pO.SetZ(strack.getVertexPos().Z());
+    double len = extrapolateToPlane(pO, pU, pV);
+    if(fabs(len) > 6000.) throw len;
+    strack.setChisqVertex(updatePropState(beamCenter, beamCov));
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << strack.getVertexPos().Z() << ": " << e.what() << std::endl;
+    strack.setChisqVertex(999.);
+  }
+  catch(double len)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << strack.getVertexPos().Z() << ": " << len << std::endl;
+    strack.setChisqVertex(999.);
+  }
 
   strack.setKalmanStatus(1);
   return strack;
