@@ -82,8 +82,8 @@ bool PHG4EMCalSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     towerID = touch->GetCopyNumber(1);
     plateID = touch->GetCopyNumber(0);
 
-    towerIDY = towerID % m_nTowersX;
-    towerIDX = (towerID - towerIDY)/m_nTowersX;
+    towerIDY = towerID % m_nTowersY;
+    towerIDX = (towerID - towerIDY)/m_nTowersY;
   }
   else  //should not happen, just put here for sanity check
   {
