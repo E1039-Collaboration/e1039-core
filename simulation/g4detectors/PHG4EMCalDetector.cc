@@ -120,8 +120,9 @@ G4LogicalVolume* PHG4EMCalDetector::ConstructSingleTower()
   /* create geometry volumes for scintillator and absorber plates to place inside single_tower */
   // PHENIX EMCal JGL 3/27/2016
   double thickness_layer = m_tower_size_z/(float)m_npbsc_layers;
-  double thickness_absorber  = thickness_layer*0.27;      // 27% absorber by length
-  double thickness_scint     = thickness_layer*0.73;      // 73% scintillator by length
+  double thickness_absorber  = 1.5*mm;     
+  double thickness_scint     = 4.0*mm;   
+  double thickness_airgap    = thickness_layer - thickness_absorber - thickness_scint;
 
   G4VSolid* absorber_solid = new G4Box(Form("%_absorberplate_solid", name.c_str()), m_tower_size_x/2., m_tower_size_y/2., thickness_absorber/2.);
   G4VSolid* scint_solid    = new G4Box(Form("%_scintplate_solid", name.c_str()), m_tower_size_x/2., m_tower_size_y/2., thickness_scint/2.);
@@ -140,12 +141,12 @@ G4LogicalVolume* PHG4EMCalDetector::ConstructSingleTower()
     //std::cout << " -- creating absorber plate at z = " << zpos_i/cm << std::endl;
 
     //Scintilator plate second
-    zpos_i += (thickness_absorber/2. + thickness_scint/2.);
+    zpos_i += (thickness_absorber/2. + thickness_airgap/2. thickness_scint/2.);
     new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_scintLogical, Form("%s_sciplate_%d", name.c_str(), i), singleTower_logic, false, i, overlapcheck);
     //std::cout << " -- creating scintillator plate at z = " << zpos_i/cm << std::endl;
 
     //move to the next layer
-    zpos_i += (thickness_scint/2. + thickness_absorber/2.);
+    zpos_i += (thickness_scint/2. + thickness_airgap/2. thickness_absorber/2.);
   }
 
   return singleTower_logic;

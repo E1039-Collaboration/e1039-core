@@ -131,7 +131,7 @@ void PHG4EMCalSubsystem::SetDefaultParameters()
 
   set_default_double_param("tower_x", 5.535);
   set_default_double_param("tower_y", 5.535);
-  set_default_double_param("tower_z", 36.3);
+  set_default_double_param("tower_z", 0.56*66);
   set_default_int_param("n_layers", 66);
 
   set_int_param("absorberactive", 0);

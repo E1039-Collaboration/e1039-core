@@ -14,6 +14,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <map>
 
 class SQHit : public PHObject {
 
@@ -21,6 +22,7 @@ public:
   
   //FIXME temprory solution
   typedef unsigned long long PHG4HitDefs_keytype;
+  typedef std::map<short, float> CellType;
 
 	SQHit() {}
   virtual ~SQHit() {}
@@ -32,7 +34,7 @@ public:
   }
   virtual void         Reset() {};
   virtual int          isValid() const {return 0;}
-  virtual SQHit*        Clone() const {return NULL;}
+  virtual SQHit*       Clone() const {return NULL;}
 
   // digitized hit info
 
@@ -57,11 +59,17 @@ public:
   virtual float        get_pos() const                                  {return std::numeric_limits<float>::max();}
   virtual void         set_pos(const float a)                           {}
 
+  virtual float        get_edep() const                                 {return std::numeric_limits<float>::max();}
+  virtual void         set_edep(const float a)                          {}
+
   virtual int          get_track_id() const                             {return std::numeric_limits<int>::max();}
   virtual void         set_track_id(const int a)                        {}
 
+  virtual int          get_shower_id() const                            {return std::numeric_limits<int>::max();}
+  virtual void         set_shower_id(const int a)                       {}
+
   virtual PHG4HitDefs_keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs_keytype>::max();}
-  virtual void                          set_g4hit_id(const PHG4HitDefs_keytype a)                        {}
+  virtual void                         set_g4hit_id(const PHG4HitDefs_keytype a)                        {}
 
   virtual float        get_truth_x() const                              {return std::numeric_limits<float>::max();}
   virtual void         set_truth_x(const float a)                       {}
@@ -72,6 +80,15 @@ public:
   virtual float        get_truth_z() const                              {return std::numeric_limits<float>::max();}
   virtual void         set_truth_z(const float a)                       {}
 
+  virtual float        get_truth_px() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_px(const float a)                      {}
+
+  virtual float        get_truth_py() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_py(const float a)                      {}
+
+  virtual float        get_truth_pz() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_pz(const float a)                      {}
+
   virtual bool         is_in_time() const {return false;}
   virtual void         set_in_time(const bool a) {}
 
@@ -80,6 +97,11 @@ public:
 
   virtual bool         is_trigger_mask() const {return false;}
   virtual void         set_trigger_mask(const bool a) {}
+
+  virtual unsigned int get_n_cells() const      { return std::numeric_limits<int>::max(); }
+  virtual CellType     get_cells()              { CellType none; return none; } 
+  virtual float        get_cell(unsigned int i) { return std::numeric_limits<float>::max(); }
+  virtual void         add_cell(unsigned int i, float a)  {}
 
   enum HitQuality
   {

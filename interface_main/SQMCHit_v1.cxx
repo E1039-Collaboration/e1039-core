@@ -23,6 +23,7 @@ void SQMCHit_v1::identify(ostream& os) const {
   os << "track_id: " << get_track_id() << endl;
   os << "hit_id: " << get_hit_id() << endl;
   os << "truth_pos: (" << _truth_x << ", " << _truth_y << ", " << _truth_z << ")" << endl;
+  os << "truth_mom: (" << _truth_px << ", " << _truth_py << ", " << _truth_pz << ")" << endl;
 
   SQHit_v1::identify(os);
 
