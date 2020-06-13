@@ -41,8 +41,10 @@ Plane::Plane()
 
     x1 = 1.E6;
     y1 = 1.E6;
+    z1 = 1.E6;
     x2 = -1.E6;
     y2 = -1.E6;
+    z2 = -1.E6;
 
     thetaX = 0.;
     thetaY = 0.;
@@ -69,6 +71,7 @@ Plane::Plane()
     tmax = 1.E6;
 
     rtprofile = NULL;
+    elementPos.clear();
 }
 
 void Plane::update()
@@ -116,33 +119,6 @@ void Plane::update()
     yVec[1] = 1.;
     yVec[2] = 0.;
     yVec = rotM*yVec;
-
-    /*
-    nVec[0] = 0.;
-    nVec[1] = 0.;
-    nVec[2] = 1.;
-
-    double temp[3];
-    for(int i = 0; i < 3; ++i) temp[i] = uVec[i];
-    for(int i = 0; i < 3; ++i)
-    {
-        uVec[i] = 0.;
-        for(int j = 0; j < 3; ++j)
-        {
-            uVec[i] += rotM[i][j]*temp[j];
-        }
-    }
-
-    for(int i = 0; i < 3; ++i) temp[i] = vVec[i];
-    for(int i = 0; i < 3; ++i)
-    {
-        vVec[i] = 0.;
-        for(int j = 0; j < 3; ++j)
-        {
-            vVec[i] += rotM[i][j]*temp[j];
-        }
-    }
-    */
 
     nVec[0] = uVec[1]*vVec[2] - vVec[1]*uVec[2];
     nVec[1] = uVec[2]*vVec[0] - vVec[2]*uVec[0];
@@ -206,10 +182,12 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
        << std::setw(6) << std::setiosflags(std::ios::right) << plane.detectorName
        << std::setw(6) << std::setiosflags(std::ios::right) << plane.planeType
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.spacing
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.cellWidth
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.xoffset
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.overlap
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.x2 - plane.x1
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.y2 - plane.y1
+       << std::setw(10) << std::setiosflags(std::ios::right) << plane.z2 - plane.z1
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.nElements
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.angleFromVert
        << std::setw(10) << std::setiosflags(std::ios::right) << plane.xc
@@ -371,28 +349,6 @@ void GeomSvc::init()
     // No constant for this name group is defined in GlobalConsts.h.
 
     // TODO temp solution
-    for(int i=1; i<=18; ++i) {
-    	map_detid_material[i] = "G4_Ar";
-    	map_detid_scale_z[i]  = 6;
-    }
-    for(int i=19; i<=nChamberPlanes; ++i) {
-    	map_detid_material[i] = "G4_Ar";
-    	map_detid_scale_z[i]  = 5.9;
-    }
-    for(int i=nChamberPlanes+1; i<=nChamberPlanes+nHodoPlanes; ++i) {
-    	map_detid_material[i] = "G4_PLASTIC_SC_VINYLTOLUENE";
-    	map_detid_scale_z[i]  = 0.635;
-    }
-    for(int i=nChamberPlanes+nHodoPlanes+1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes; ++i) {
-    	map_detid_material[i] = "G4_Ar";
-    	map_detid_scale_z[i]  = 4;
-    }
-    for(int i=nChamberPlanes+nHodoPlanes+nPropPlanes+1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) {
-    	map_detid_material[i] = "G4_PLASTIC_SC_VINYLTOLUENE";
-    	map_detid_scale_z[i]  = 0.635; // todo: correct?????
-    }
-
-    // TODO temp solution
     for(int i=1; i<=nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) {
     	map_detid_triggerlv[i] = -1;
     }
@@ -408,183 +364,6 @@ void GeomSvc::init()
     for(int i=nChamberPlanes+11; i<=nChamberPlanes+16; ++i) {
     	map_detid_triggerlv[i] = 3;
     }
-
-  	//init map_dname_group
-    map_dname_group["D0U"]      = "D0U";
-    map_dname_group["D0Up"]     = "D0U";
-    map_dname_group["D0V"]      = "D0V";
-    map_dname_group["D0Vp"]     = "D0V";
-    map_dname_group["D0X"]      = "D0X";
-    map_dname_group["D0Xp"]     = "D0X";
-
-  	map_dname_group["D1U"]      = "D1U";
-  	map_dname_group["D1Up"]     = "D1U";
-  	map_dname_group["D1V"]      = "D1V";
-  	map_dname_group["D1Vp"]     = "D1V";
-  	map_dname_group["D1X"]      = "D1X";
-  	map_dname_group["D1Xp"]     = "D1X";
-
-  	map_dname_group["D2U"]      = "D2U";
-  	map_dname_group["D2Up"]     = "D2U";
-  	map_dname_group["D2V"]      = "D2V";
-  	map_dname_group["D2Vp"]     = "D2V";
-  	map_dname_group["D2X"]      = "D2X";
-  	map_dname_group["D2Xp"]     = "D2X";
-
-  	map_dname_group["D3pU"]     = "D3pU";
-  	map_dname_group["D3pUp"]    = "D3pU";
-  	map_dname_group["D3pV"]     = "D3pV";
-  	map_dname_group["D3pVp"]    = "D3pV";
-  	map_dname_group["D3pX"]     = "D3pX";
-  	map_dname_group["D3pXp"]    = "D3pX";
-
-  	map_dname_group["D3mU"]     = "D3mU";
-  	map_dname_group["D3mUp"]    = "D3mU";
-  	map_dname_group["D3mV"]     = "D3mV";
-  	map_dname_group["D3mVp"]    = "D3mV";
-  	map_dname_group["D3mX"]     = "D3mX";
-  	map_dname_group["D3mXp"]    = "D3mX";
-
-  	map_dname_group["H1T"]      = "H1T";
-  	map_dname_group["H1B"]      = "H1B";
-  	map_dname_group["H1L"]      = "H1L";
-  	map_dname_group["H1R"]      = "H1R";
-
-  	map_dname_group["H2T"]      = "H2T";
-  	map_dname_group["H2B"]      = "H2B";
-  	map_dname_group["H2L"]      = "H2L";
-  	map_dname_group["H2R"]      = "H2R";
-
-  	map_dname_group["H3T"]      = "H3T";
-  	map_dname_group["H3B"]      = "H3B";
-  	map_dname_group["H4Y1L"]    = "H4Y1L";
-  	map_dname_group["H4Y1R"]    = "H4Y1R";
-  	map_dname_group["H4Y2L"]    = "H4Y2L";
-  	map_dname_group["H4Y2R"]    = "H4Y2R";
-  	map_dname_group["H4T"]      = "H4T";
-  	map_dname_group["H4B"]      = "H4B";
-
-  	map_dname_group["P1Y1"]     = "P1Y1";
-  	map_dname_group["P1Y2"]     = "P1Y2";
-  	map_dname_group["P1X1"]     = "P1X1";
-  	map_dname_group["P1X2"]     = "P1X2";
-  	map_dname_group["P2Y1"]     = "P2Y1";
-  	map_dname_group["P2Y2"]     = "P2Y2";
-  	map_dname_group["P2X1"]     = "P2X1";
-  	map_dname_group["P2X2"]     = "P2X2";
-
-  	map_dname_group["DP1TL"]    = "DP1TL";
-  	map_dname_group["DP1TR"]    = "DP1TR";
-  	map_dname_group["DP1BL"]    = "DP1BL";
-  	map_dname_group["DP1BR"]    = "DP1BR";
-  	map_dname_group["DP2TL"]    = "DP2TL";
-  	map_dname_group["DP2TR"]    = "DP2TR";
-  	map_dname_group["DP2BL"]    = "DP2BL";
-  	map_dname_group["DP2BR"]    = "DP2BR";
-
-    vector_default_sim_group.push_back("D0U");
-    vector_default_sim_group.push_back("D0X");
-    vector_default_sim_group.push_back("D0V");
-    vector_default_sim_group.push_back("D1U");
-    vector_default_sim_group.push_back("D1X");
-    vector_default_sim_group.push_back("D1V");
-    vector_default_sim_group.push_back("D2V");
-    vector_default_sim_group.push_back("D2Xp");
-    vector_default_sim_group.push_back("D2U");
-    vector_default_sim_group.push_back("D3pVp");
-    vector_default_sim_group.push_back("D3pXp");
-    vector_default_sim_group.push_back("D3pUp");
-    vector_default_sim_group.push_back("D3mVp");
-    vector_default_sim_group.push_back("D3mXp");
-    vector_default_sim_group.push_back("D3mUp");
-
-    vector_default_sim_group.push_back("H1B");
-    vector_default_sim_group.push_back("H1T");
-    vector_default_sim_group.push_back("H1L");
-    vector_default_sim_group.push_back("H1R");
-    vector_default_sim_group.push_back("H2L");
-    vector_default_sim_group.push_back("H2R");
-    vector_default_sim_group.push_back("H2B");
-    vector_default_sim_group.push_back("H2T");
-    vector_default_sim_group.push_back("H3B");
-    vector_default_sim_group.push_back("H3T");
-    vector_default_sim_group.push_back("H4Y1L");
-    vector_default_sim_group.push_back("H4Y1R");
-    vector_default_sim_group.push_back("H4Y2L");
-    vector_default_sim_group.push_back("H4Y2R");
-    vector_default_sim_group.push_back("H4B");
-    vector_default_sim_group.push_back("H4T");
-
-    vector_default_sim_group.push_back("P1Y1");
-    vector_default_sim_group.push_back("P1Y2");
-    vector_default_sim_group.push_back("P1X1");
-    vector_default_sim_group.push_back("P1X2");
-    vector_default_sim_group.push_back("P2X1");
-    vector_default_sim_group.push_back("P2X2");
-    vector_default_sim_group.push_back("P2Y1");
-    vector_default_sim_group.push_back("P2Y2");
-
-    vector_default_sim_group.push_back("DP1TL");
-    vector_default_sim_group.push_back("DP1TR");
-    vector_default_sim_group.push_back("DP1BL");
-    vector_default_sim_group.push_back("DP1BR");
-    vector_default_sim_group.push_back("DP2TL");
-    vector_default_sim_group.push_back("DP2TR");
-    vector_default_sim_group.push_back("DP2BL");
-    vector_default_sim_group.push_back("DP2BR");
-
-
-  	//init map_dname_group
-//  	map_dname_group["D1U"]      = "D1";
-//  	map_dname_group["D1Up"]     = "D1";
-//  	map_dname_group["D1V"]      = "D1";
-//  	map_dname_group["D1Vp"]     = "D1";
-//  	map_dname_group["D1X"]      = "D1";
-//  	map_dname_group["D1Xp"]     = "D1";
-//  	map_dname_group["D2U"]      = "D2";
-//  	map_dname_group["D2Up"]     = "D2";
-//  	map_dname_group["D2V"]      = "D2";
-//  	map_dname_group["D2Vp"]     = "D2";
-//  	map_dname_group["D2X"]      = "D2";
-//  	map_dname_group["D2Xp"]     = "D2";
-//  	map_dname_group["D3pU"]     = "D3p";
-//  	map_dname_group["D3pUp"]    = "D3p";
-//  	map_dname_group["D3pV"]     = "D3p";
-//  	map_dname_group["D3pVp"]    = "D3p";
-//  	map_dname_group["D3pX"]     = "D3p";
-//  	map_dname_group["D3pXp"]    = "D3p";
-//  	map_dname_group["D3mU"]     = "D3m";
-//  	map_dname_group["D3mUp"]    = "D3m";
-//  	map_dname_group["D3mV"]     = "D3m";
-//  	map_dname_group["D3mVp"]    = "D3m";
-//  	map_dname_group["D3mX"]     = "D3m";
-//  	map_dname_group["D3mXp"]    = "D3m";
-//
-//  	map_dname_group["H1T"]      = "H1X";
-//  	map_dname_group["H1B"]      = "H1X";
-//  	map_dname_group["H1L"]      = "H1Y";
-//  	map_dname_group["H1R"]      = "H1Y";
-//  	map_dname_group["H2T"]      = "H2X";
-//  	map_dname_group["H2B"]      = "H2X";
-//  	map_dname_group["H2L"]      = "H2Y";
-//  	map_dname_group["H2R"]      = "H2Y";
-//  	map_dname_group["H3T"]      = "H3X";
-//  	map_dname_group["H3B"]      = "H3X";
-//  	map_dname_group["H4Y1L"]    = "H4Y1";
-//  	map_dname_group["H4Y1R"]    = "H4Y1";
-//  	map_dname_group["H4Y2L"]    = "H4Y2";
-//  	map_dname_group["H4Y2R"]    = "H4Y2";
-//  	map_dname_group["H4T"]      = "H4X";
-//  	map_dname_group["H4B"]      = "H4X";
-//
-//  	map_dname_group["P1Y1"]     = "P1Y";
-//  	map_dname_group["P1Y2"]     = "P1Y";
-//  	map_dname_group["P1X1"]     = "P1X";
-//  	map_dname_group["P1X2"]     = "P1X";
-//  	map_dname_group["P2Y1"]     = "P2Y";
-//  	map_dname_group["P2Y2"]     = "P2Y";
-//  	map_dname_group["P2X1"]     = "P2X";
-//  	map_dname_group["P2X2"]     = "P2X";
 
     typedef std::map<int, std::string>::value_type idToName;
     for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
@@ -617,12 +396,12 @@ void GeomSvc::init()
     zmin_kmag = 1064.26 - 120.*2.54;
     zmax_kmag = 1064.26 + 120.*2.54;
 
-#ifdef _DEBUG_ON
+//#ifdef _DEBUG_ON
     for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
     {
         cout << planes[i] << endl;
     }
-#endif
+//#endif
 }
 
 void GeomSvc::initPlaneDirect() {
@@ -717,6 +496,31 @@ void GeomSvc::initPlaneDirect() {
         planes[i].z0 = planes[i].z0/9.;
 
         planes[i].update();
+    }
+
+    //Set the depth of the plane for Geant4 simulation simplification
+    for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
+    {
+        if(i <= nChamberPlanes)  //For drift chambers the depth equals the wire spacing
+        {
+            planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
+            planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
+        }
+        else if(i <= nChamberPlanes+nHodoPlanes) //For hodos the depth is hard-coded
+        {
+            planes[i].z1 = planes[i].z0 - 0.635/2.;
+            planes[i].z2 = planes[i].z0 + 0.635/2.;
+        }
+        else if(i <= nChamberPlanes+nHodoPlanes+nPropPlanes) //For prop. tubes the depth is defined by the equivalent gas volume
+        {
+            planes[i].z1 = planes[i].z0 - planes[i].cellWidth*TMath::Pi()/8.;
+            planes[i].z2 = planes[i].z0 + planes[i].cellWidth*TMath::Pi()/8.;
+        }
+        else //For dark photon hodos the depth equals the cell width
+        {
+            planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
+            planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
+        }
     }
     cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << job_svc->m_geomVersion << endl;
 
@@ -841,6 +645,31 @@ void GeomSvc::initPlaneDbSvc() {
     
     planes[i].update();
   }
+
+  //Set the depth of the plane for Geant4 simulation simplification
+  for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
+  {
+    if(i <= nChamberPlanes)  //For drift chambers the depth equals the wire spacing
+    {
+      planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
+      planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
+    }
+    else if(i <= nChamberPlanes+nHodoPlanes) //For hodos the depth is hard-coded
+    {
+      planes[i].z1 = planes[i].z0 - 0.635/2.;
+      planes[i].z2 = planes[i].z0 + 0.635/2.;
+    }
+    else if(i <= nChamberPlanes+nHodoPlanes+nPropPlanes) //For prop. tubes the depth is defined by the equivalent gas volume
+    {
+      planes[i].z1 = planes[i].z0 - planes[i].cellWidth*TMath::Pi()/8.;
+      planes[i].z2 = planes[i].z0 + planes[i].cellWidth*TMath::Pi()/8.;
+    }
+    else //For dark photon hodos the depth equals the cell width
+    {
+      planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
+      planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
+    }
+  }
 }
 
 
@@ -858,7 +687,10 @@ void GeomSvc::initWireLUT() {
 
           map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
           map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
+
+          planes[i].elementPos.push_back(pos);
       }
+      std::sort(planes[i].elementPos.begin(), planes[i].elementPos.end());
   }
 
   // 2. for hodoscopes and prop. tubes
@@ -884,7 +716,9 @@ void GeomSvc::initWireLUT() {
           map_wirePosition.insert(posType(std::make_pair(i, j), pos));
           map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
           map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
+          planes[i].elementPos.push_back(pos);
       }
+      std::sort(planes[i].elementPos.begin(), planes[i].elementPos.end());
   }
 }
 
@@ -973,41 +807,22 @@ void GeomSvc::getEndPoints(int detectorID, int elementID, TVector3& ep1, TVector
 
 int GeomSvc::getExpElementID(int detectorID, double pos_exp)
 {
-    if(detectorID <= nChamberPlanes+nHodoPlanes)
-    {
-        int elementID_lo = int((pos_exp - planes[detectorID].xoffset - planes[detectorID].x0*planes[detectorID].costheta - planes[detectorID].y0*planes[detectorID].sintheta - planes[detectorID].deltaW + 0.5*(planes[detectorID].nElements + 1.)*planes[detectorID].spacing)/planes[detectorID].spacing);
+    //check if pos_exp is within the correct range
+    double pos_min = planes[detectorID].elementPos.front();
+    double pos_max = planes[detectorID].elementPos.back();
+    pos_min -= (0.5*planes[detectorID].cellWidth);
+    pos_max += (0.5*planes[detectorID].cellWidth);
 
-        double deltap = pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)];
-        if(fabs(deltap) < 0.5*planes[detectorID].spacing)
-        {
-            return elementID_lo;
-        }
-        else
-        {
-            return elementID_lo + (deltap > 0 ? 1 : -1);
-        }
+    if(pos_exp > pos_max) return planes[detectorID].nElements+1;
+    if(pos_exp < pos_min) return 0;
 
-        //return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + 1;
-    }
-    else if(detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes)
+    int index = std::lower_bound(planes[detectorID].elementPos.begin(), planes[detectorID].elementPos.end(), pos_exp) - planes[detectorID].elementPos.begin();
+    int elementID = index + 1 + (planes[detectorID].elementPos[index] - pos_exp > 0.5*planes[detectorID].spacing ? -1 : 0);
+
+    if(detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes)
     {
         bool bottom = ((detectorID-55) & 2) > 0;
-        int elementID_lo = int((pos_exp - planes[detectorID].xoffset - planes[detectorID].x0*planes[detectorID].costheta - planes[detectorID].y0*planes[detectorID].sintheta - planes[detectorID].deltaW + 0.5*(planes[detectorID].nElements + 1.)*planes[detectorID].spacing)/planes[detectorID].spacing);
-        elementID_lo = bottom ? planes[detectorID].nElements + 1 - elementID_lo : elementID_lo;
-
-        return fabs(pos_exp - map_wirePosition[std::make_pair(detectorID, elementID_lo)]) < 0.5*planes[detectorID].spacing ? elementID_lo : elementID_lo + (bottom ? -1 : 1);
- 
-    }
-
-    int elementID = -1;
-    for(int i = 1; i < planes[detectorID].nElements; i++)
-    {
-        double pos = map_wirePosition[std::make_pair(detectorID, i)];
-        if(fabs(pos - pos_exp) < 0.5*planes[detectorID].cellWidth)
-        {
-            elementID = i;
-            break;
-        }
+        if(bottom) elementID = planes[detectorID].nElements+1-elementID;
     }
 
     return elementID;
