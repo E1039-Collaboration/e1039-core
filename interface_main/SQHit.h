@@ -15,6 +15,7 @@
 #include <limits>
 #include <string>
 
+/// An SQ interface class to hold one detector hit.
 class SQHit : public PHObject {
 
 public:
