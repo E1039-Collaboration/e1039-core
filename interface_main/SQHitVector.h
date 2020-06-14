@@ -27,7 +27,7 @@
  * }
  * @endcode
  *
- * You can use utility functions defined in "UtilSQHit" for more complicated manipulations.
+ * You can use utility functions defined in UtilSQHit for more complicated manipulations.
  */
 class SQHitVector : public PHObject {
 
