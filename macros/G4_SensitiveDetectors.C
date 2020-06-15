@@ -10,17 +10,18 @@ typedef SQDigitizer DPDigitizer;  //so that the naming DPDigitizer is still avai
 
 void SetupSensitiveDetectors(
   PHG4Reco*   g4Reco,
-  std::string chamberGas = "SQ_ArCO2",
-  std::string hodoMat    = "SQ_Scintillator",
-  bool        doDPHodo   = true,
-  const int   verbosity  = 0)
+  bool        toggle_dphodo = true,
+  bool        toggle_dc1    = false,
+  std::string chamberGas    = "SQ_ArCO2",
+  std::string hodoMat       = "SQ_Scintillator",
+  const int   verbosity     = 0)
 {
   GeomSvc* geom_svc = GeomSvc::instance();
   for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) 
   {
     //D1 is disabled by default
-    if(i >= 7 && i <= 12) continue;
-    if(!doDPHodo && i > nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    if(!toggle_dc1    && i >= 7 && i <= 12) continue;
+    if(!toggle_dphodo && i > nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
 
     std::string detectorName = geom_svc->getDetectorName(i);
 
