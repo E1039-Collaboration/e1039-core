@@ -191,7 +191,7 @@ bool TruthNodeMaker::FindHitAtStation(const int trk_id, const PHG4HitContainer* 
     PHG4Hit* hit = it->second;
     if (hit->get_trkid() == trk_id) {
       pos->SetXYZ (hit->get_x(0)     , hit->get_y(0)     , hit->get_z(0)           );
-      mom->SetXYZM(hit->get_px(0)/1e3, hit->get_py(0)/1e3, hit->get_pz(0)/1e3, M_MU);
+      mom->SetXYZM(hit->get_px(0),     hit->get_py(0),     hit->get_pz(0), M_MU);
       return true;
     }
   }
