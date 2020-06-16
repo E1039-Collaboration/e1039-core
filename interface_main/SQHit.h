@@ -24,7 +24,7 @@ public:
   typedef unsigned long long PHG4HitDefs_keytype;
   typedef std::map<short, float> CellType;
 
-	SQHit() {}
+  SQHit() {}
   virtual ~SQHit() {}
 
   // PHObject virtual overloads

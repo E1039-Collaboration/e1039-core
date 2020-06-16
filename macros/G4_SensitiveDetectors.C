@@ -2,61 +2,63 @@
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4BlockSubsystem.h>
 class SubsysReco;
-R__LOAD_LIBRARY(libg4detectors)
-#include <iostream>
 #endif
 
-#define LogDebug(exp)   std::cout<<"DEBUG: "  <<__FILE__<<": "<<__LINE__<<": "<< exp << std::endl
+#include <iostream>
+#include <g4detectors/SQDigitizer.h>
+typedef SQDigitizer DPDigitizer;  //so that the naming DPDigitizer is still avaiable for backward compatibility
 
 void SetupSensitiveDetectors(
-  PHG4Reco* g4Reco,
-  const int verbosity = 0)
+  PHG4Reco*   g4Reco,
+  bool        toggle_dphodo = true,
+  bool        toggle_dc1    = false,
+  std::string chamberGas    = "SQ_ArCO2",
+  std::string hodoMat       = "SQ_Scintillator",
+  const int   verbosity     = 0)
 {
-  using namespace std;
   GeomSvc* geom_svc = GeomSvc::instance();
+  for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i) 
+  {
+    //D1 is disabled by default
+    if(!toggle_dc1    && i >= 7 && i <= 12) continue;
+    if(!toggle_dphodo && i > nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
 
-  vector<string> sim_list = geom_svc->getDefaultSimList();
-  for(int i=0; i<sim_list.size(); ++i) {
-    string name = sim_list[i];
+    std::string detectorName = geom_svc->getDetectorName(i);
 
     double size[3];
     double place[3];
     double rot[3];
-
-    int id = geom_svc->getDetectorID(name);
-    place[0] = geom_svc->getDetectorX0(name);
-    place[1] = geom_svc->getDetectorY0(name);
-    place[2] = geom_svc->getDetectorZ0(name);
-    size[0] = geom_svc->getPlaneScaleX(id);
-    size[1] = geom_svc->getPlaneScaleY(id);
-    size[2] = geom_svc->getPlaneScaleZ(id);
-    string material = geom_svc->getPlaneMaterial(id);
-
-    if(verbosity > 2) {
-      cout
-        << "name: " << name
-        << ", id: " << id
-        << " {" << size[0] << ", " << size[1] << ", " << size[2] << "} "
-        << " {" << place[0] << ", " << place[1] << ", " << place[2] << "} "
-        << " {" << rot[0] << ", " << rot[1] << ", " << rot[2] << "} "
-        << material
-        << endl;
+    place[0] = geom_svc->getPlaneCenterX(i);
+    place[1] = geom_svc->getPlaneCenterY(i);
+    place[2] = geom_svc->getPlaneCenterZ(i);
+    rot[0]   = geom_svc->getRotationInX(i);
+    rot[1]   = geom_svc->getRotationInY(i);
+    rot[2]   = geom_svc->getRotationInZ(i);
+    size[0]  = geom_svc->getPlaneScaleX(i);
+    size[1]  = geom_svc->getPlaneScaleY(i);
+    size[2]  = geom_svc->getPlaneScaleZ(i);
+    
+    PHG4BlockSubsystem* det = new PHG4BlockSubsystem(detectorName.c_str(), 0);
+    det->SuperDetector(detectorName.c_str());
+    det->set_double_param("size_x",  size[0]);
+    det->set_double_param("size_y",  size[1]);
+    det->set_double_param("size_z",  size[2]);
+    det->set_double_param("place_x", place[0]);
+    det->set_double_param("place_y", place[1]);
+    det->set_double_param("place_z", place[2]);
+    det->set_double_param("rot_x",   rot[0]);
+    det->set_double_param("rot_y",   rot[1]);
+    det->set_double_param("rot_z",   rot[2]);
+    if(i <= nChamberPlanes || (i > nChamberPlanes+nHodoPlanes && i <= nChamberPlanes+nHodoPlanes+nPropPlanes))
+    {
+      det->set_string_param("material", chamberGas.c_str());
     }
-
-    if(!(fabs(size[0])<10000)) continue;
-    if(place[2]>680 && place[2]<700) continue;
-
-    PHG4BlockSubsystem* box = new PHG4BlockSubsystem(name.c_str(), 0);
-    box->SuperDetector(name.c_str());
-    box->set_double_param("size_x", size[0]);
-    box->set_double_param("size_y", size[1]);
-    box->set_double_param("size_z", size[2]);
-    box->set_double_param("place_x", place[0]);
-    box->set_double_param("place_y", place[1]);
-    box->set_double_param("place_z", place[2]);
-    box->set_string_param("material", material.c_str());// G4_Si, G4_AIR, G4_Galactic
-    box->SetActive(1);
-    g4Reco->registerSubsystem(box);
+    else
+    {
+      det->set_string_param("material", hodoMat.c_str());
+    }
+    det->SetActive(1);
+    g4Reco->registerSubsystem(det);
   }
 
   return;
