@@ -21,6 +21,7 @@ int Fun4DumpGeom(const bool display = true)
   const bool do_fmag       = true;
   const bool do_kmag       = true;
   const bool do_absorber   = true;
+  const bool do_st1DC      = false;
   const bool do_dphodo     = true;
 
   const double collimator_pos_z = -602.36;
@@ -52,7 +53,7 @@ int Fun4DumpGeom(const bool display = true)
   SetupBeamline(g4Reco, do_collimator, collimator_pos_z);
   SetupTarget(g4Reco, target_coil_pos_z, target_l, target_z, 1, 0);
   SetupInsensitiveVolumes(g4Reco, do_shielding, do_fmag, do_kmag, do_absorber);
-  SetupSensitiveDetectors(g4Reco, chamberGas, hodoMat, do_dphodo);
+  SetupSensitiveDetectors(g4Reco, do_dphodo, do_st1DC, chamberGas, hodoMat);
   se->registerSubsystem(g4Reco);
 
   // dummy input mananger
