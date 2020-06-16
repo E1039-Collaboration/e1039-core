@@ -190,9 +190,9 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     digiHit.set_truth_x(x);
     digiHit.set_truth_y(y);
     digiHit.set_truth_z(z);
-    // digiHit.set_truth_px(px);
-    // digiHit.set_truth_py(py);
-    // digiHit.set_truth_pz(pz);
+    digiHit.set_truth_px(px);
+    digiHit.set_truth_py(py);
+    digiHit.set_truth_pz(pz);
     digiHit.set_hit_id(digits->size());
     digiHit.set_in_time(1);
     digiHit.set_hodo_mask(0);
