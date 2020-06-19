@@ -33,7 +33,7 @@ public:
   //! module initialization
   int InitRun(PHCompositeNode* topNode);
 
-    //! event processing
+	//! event processing
   int process_event(PHCompositeNode* topNode);
 
 	//!main external call, fill the digi hit vector
@@ -49,7 +49,10 @@ public:
 	int getTriggerLv(int detectorID) { return p_geomSvc->getTriggerLv(detectorID); }
 
 	//!Register additional EMCal detector for digitizing
-	void registerEMCal(std::string ecalName, int ecalID = 100) { detIDByName[ecalName] = ecalID; }
+	void registerDetector(std::string detectorName, int detectorID = 100) { detIDByName[detectorName] = detectorID; }
+
+	//!Remove detector from the digitization list
+	void unregisterDetector(std::string detectorName) { if(detIDByName.find(detectorName) != detIDByName.end()) detIDByName.erase(detectorName); }
 
 private:
 	//!GeomSvc

@@ -141,12 +141,12 @@ G4LogicalVolume* PHG4EMCalDetector::ConstructSingleTower()
     //std::cout << " -- creating absorber plate at z = " << zpos_i/cm << std::endl;
 
     //Scintilator plate second
-    zpos_i += (thickness_absorber/2. + thickness_airgap/2. thickness_scint/2.);
+    zpos_i += (thickness_absorber/2. + thickness_airgap/2. + thickness_scint/2.);
     new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_scintLogical, Form("%s_sciplate_%d", name.c_str(), i), singleTower_logic, false, i, overlapcheck);
     //std::cout << " -- creating scintillator plate at z = " << zpos_i/cm << std::endl;
 
     //move to the next layer
-    zpos_i += (thickness_scint/2. + thickness_airgap/2. thickness_absorber/2.);
+    zpos_i += (thickness_scint/2. + thickness_airgap/2. + thickness_absorber/2.);
   }
 
   return singleTower_logic;

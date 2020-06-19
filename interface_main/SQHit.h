@@ -22,7 +22,7 @@ public:
   
   //FIXME temprory solution
   typedef unsigned long long PHG4HitDefs_keytype;
-  typedef std::map<short, float> CellType;
+  typedef std::map<short, float> CellType;    //!< key -> plateID, float -> edep
 
   SQHit() {}
   virtual ~SQHit() {}

@@ -128,6 +128,11 @@ bool PHG4EMCalSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
       m_Hit->set_y(0, prePoint->GetPosition().y()/cm);
       m_Hit->set_z(0, prePoint->GetPosition().z()/cm);
 
+      // Set hit momentum
+      m_Hit->set_px(0, prePoint->GetMomentum().x()/GeV);
+      m_Hit->set_py(0, prePoint->GetMomentum().y()/GeV);
+      m_Hit->set_pz(0, prePoint->GetMomentum().z()/GeV);
+      
       // Set hit time 
       m_Hit->set_t(0, prePoint->GetGlobalTime()/nanosecond);
 
