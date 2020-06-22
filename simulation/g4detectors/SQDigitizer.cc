@@ -35,7 +35,7 @@
 #ifndef __CINT__
 int SQDigitizer::Init(PHCompositeNode *topNode)
 {
-	p_geomSvc = GeomSvc::instance();
+  p_geomSvc = GeomSvc::instance();
   for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
     if(i >= 7 && i <= 12) continue;      
@@ -52,7 +52,7 @@ int SQDigitizer::Init(PHCompositeNode *topNode)
 
 SQDigitizer::SQDigitizer(const std::string& name, const int verbose): SubsysReco(name), p_geomSvc(nullptr)
 {
-	Verbosity(0);
+  Verbosity(0);
 }
 
 SQDigitizer::~SQDigitizer() 
