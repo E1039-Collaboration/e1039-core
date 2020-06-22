@@ -51,6 +51,10 @@ public:
 	//!Register additional EMCal detector for digitizing
 	void registerEMCal(std::string ecalName, int ecalID = 100) { detIDByName[ecalName] = ecalID; }
 
+	//!enable/disable certain detectors
+	void set_enable_st1dc(const bool en)  { enableDC1 = en; }
+	void set_enable_dphodo(const bool en) { enableDPHodo = en; }
+
 private:
 	//!GeomSvc
 	GeomSvc* p_geomSvc;
@@ -61,8 +65,12 @@ private:
 	//!input node - G4HitContainers
 	std::map<std::string, PHG4HitContainer*> hitContainerByName;
 
-	//Auxillary container
+	//!Auxillary container
 	std::map<std::string, int> detIDByName;
+
+	//!flags to toggle station-1 DC and dark photon dp
+	bool enableDC1;
+	bool enableDPHodo;
 };
 
 #endif
