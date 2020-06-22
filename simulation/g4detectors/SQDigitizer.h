@@ -33,7 +33,7 @@ public:
   //! module initialization
   int InitRun(PHCompositeNode* topNode);
 
-  //! event processing
+    //! event processing
   int process_event(PHCompositeNode* topNode);
 
   //!main external call, fill the digi hit vector
@@ -49,10 +49,11 @@ public:
   int getTriggerLv(int detectorID) { return p_geomSvc->getTriggerLv(detectorID); }
 
   //!Register additional EMCal detector for digitizing
-  void registerDetector(std::string detectorName, int detectorID = 100) { detIDByName[detectorName] = detectorID; }
+  void registerEMCal(std::string ecalName, int ecalID = 100) { detIDByName[ecalName] = ecalID; }
 
-  //!Remove detector from the digitization list
-  void unregisterDetector(std::string detectorName) { if(detIDByName.find(detectorName) != detIDByName.end()) detIDByName.erase(detectorName); }
+  //!enable/disable certain detectors
+  void set_enable_st1dc(const bool en)  { enableDC1 = en; }
+  void set_enable_dphodo(const bool en) { enableDPHodo = en; }
 
 private:
   //!GeomSvc
@@ -64,8 +65,12 @@ private:
   //!input node - G4HitContainers
   std::map<std::string, PHG4HitContainer*> hitContainerByName;
 
-  //Auxillary container
+  //!Auxillary container
   std::map<std::string, int> detIDByName;
+
+  //!flags to toggle station-1 DC and dark photon dp
+  bool enableDC1;
+  bool enableDPHodo;
 };
 
 #endif

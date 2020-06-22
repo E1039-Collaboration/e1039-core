@@ -36,9 +36,11 @@
 int SQDigitizer::Init(PHCompositeNode *topNode)
 {
   p_geomSvc = GeomSvc::instance();
+  detIDByName.clear();
   for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
-    if(i >= 7 && i <= 12) continue;      
+    if(!enableDC1 && (i >= 7 && i <= 12)) continue;
+    if(!enableDPHodo && (i > nChamberPlanes+nHodoPlanes+nPropPlanes && i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes)) continue;      
 
     std::string detName = p_geomSvc->getDetectorName(i);
     detIDByName[detName] = i;
@@ -50,7 +52,11 @@ int SQDigitizer::Init(PHCompositeNode *topNode)
 }
 #endif
 
-SQDigitizer::SQDigitizer(const std::string& name, const int verbose): SubsysReco(name), p_geomSvc(nullptr)
+SQDigitizer::SQDigitizer(const std::string& name, const int verbose): 
+  SubsysReco(name), 
+  p_geomSvc(nullptr),
+  enableDC1(false),
+  enableDPHodo(true)
 {
   Verbosity(0);
 }
