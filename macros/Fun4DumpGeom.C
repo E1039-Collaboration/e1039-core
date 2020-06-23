@@ -6,12 +6,13 @@
 #include "G4_SensitiveDetectors.C"
 
 R__LOAD_LIBRARY(libfun4all)
+R__LOAD_LIBRARY(libgeom_svc)
 R__LOAD_LIBRARY(libg4detectors)
 R__LOAD_LIBRARY(libg4dst)
 
 using namespace std;
 
-int Fun4Geom(const bool display = true)
+int Fun4DumpGeom(const bool display = true)
 {
   // geometry setup
   const bool do_collimator = true;
@@ -20,11 +21,19 @@ int Fun4Geom(const bool display = true)
   const bool do_fmag       = true;
   const bool do_kmag       = true;
   const bool do_absorber   = true;
+  const bool do_st1DC      = false;
+  const bool do_dphodo     = true;
 
   const double collimator_pos_z = -602.36;
   const double target_coil_pos_z = -300.;
   const double target_l = 7.9; //cm
   const double target_z = (7.9-target_l)/2.; //cm
+
+  const string chamberGas = "SQ_ArCO2";
+  const string hodoMat    = "SQ_Scintillator";
+
+  GeomSvc::UseDbSvc(true);
+  GeomSvc* geom_svc = GeomSvc::instance();
 
   //Fun4AllServer - intialize before all other subsystems
   Fun4AllServer* se = Fun4AllServer::instance();
@@ -44,7 +53,7 @@ int Fun4Geom(const bool display = true)
   SetupBeamline(g4Reco, do_collimator, collimator_pos_z);
   SetupTarget(g4Reco, target_coil_pos_z, target_l, target_z, 1, 0);
   SetupInsensitiveVolumes(g4Reco, do_shielding, do_fmag, do_kmag, do_absorber);
-  SetupSensitiveDetectors(g4Reco, 99);
+  SetupSensitiveDetectors(g4Reco, do_dphodo, do_st1DC, chamberGas, hodoMat);
   se->registerSubsystem(g4Reco);
 
   // dummy input mananger

@@ -22,7 +22,7 @@ public:
   //FIXME temprory solution
   typedef unsigned long long PHG4HitDefs_keytype;
 
-	SQHit() {}
+  SQHit() {}
   virtual ~SQHit() {}
 
   // PHObject virtual overloads
@@ -71,6 +71,15 @@ public:
 
   virtual float        get_truth_z() const                              {return std::numeric_limits<float>::max();}
   virtual void         set_truth_z(const float a)                       {}
+
+  virtual float        get_truth_px() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_px(const float a)                      {}
+
+  virtual float        get_truth_py() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_py(const float a)                      {}
+
+  virtual float        get_truth_pz() const                             {return std::numeric_limits<float>::max();}
+  virtual void         set_truth_pz(const float a)                      {}
 
   virtual bool         is_in_time() const {return false;}
   virtual void         set_in_time(const bool a) {}

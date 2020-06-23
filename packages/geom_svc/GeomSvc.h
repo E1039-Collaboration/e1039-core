@@ -80,8 +80,10 @@ public:
     double z0;
     double x1;     //x1, y1 define the lower/left edge of detector
     double y1;
+    double z1;     //z1 is the upstream z position of the detector
     double x2;     //x2, y2 define the upper/right edge of detector
     double y2;
+    double z2;     //z2 is the downstream z position of the detector
     double thetaX;
     double thetaY;
     double thetaZ;
@@ -118,6 +120,9 @@ public:
     double tmin;
     double tmax;
     TSpline3* rtprofile;
+
+    //Vector to contain the wire positions
+    std::vector<double> elementPos;
 };
 
 class GeomSvc
@@ -183,12 +188,6 @@ public:
     {
     	return map_detectorName.find(detectorID)!=map_detectorName.end() ? map_detectorName.at(detectorID) : "";
     }
-    std::string getDetectorGroupName(const std::string & detectorName) const
-    {
-    	return map_dname_group.find(detectorName)!=map_dname_group.end() ? map_dname_group.at(detectorName) : "";
-    }
-
-    std::vector<std::string> getDefaultSimList() {return vector_default_sim_group;}
 
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
@@ -196,14 +195,14 @@ public:
     Plane getPlane(int detectorID) const { return planes[detectorID]; }
     double getPlanePosition(int detectorID) const { return planes[detectorID].zc; }
     double getPlaneSpacing(int detectorID) const  { return planes[detectorID].spacing; }
+    double getPlaneOverlap(int detectorID) const  { return planes[detectorID].overlap; }
     double getCellWidth(int detectorID)     { return planes[detectorID].cellWidth; }
     double getCostheta(int detectorID) const  { return planes[detectorID].costheta; }
     double getSintheta(int detectorID) const  { return planes[detectorID].sintheta; }
     double getTantheta(int detectorID) const  { return planes[detectorID].tantheta; }
     double getPlaneScaleX(int detectorID)   { return planes[detectorID].x2 - planes[detectorID].x1; }
     double getPlaneScaleY(int detectorID)   { return planes[detectorID].y2 - planes[detectorID].y1; }
-    double getPlaneScaleZ(int detectorID)   { return map_detid_scale_z[detectorID]; }
-    std::string getPlaneMaterial(int detectorID)   { return map_detid_material[detectorID]; }
+    double getPlaneScaleZ(int detectorID)   { return planes[detectorID].z2 - planes[detectorID].z1; }
     int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
     int getPlaneNElements(int detectorID)   { return planes[detectorID].nElements; }
     double getPlaneResolution(int detectorID) const { return planes[detectorID].resolution; }
@@ -282,20 +281,8 @@ private:
     std::map<std::string, int> map_detectorID;
     std::map<int, std::string> map_detectorName;
 
-    //! detectorName -> detecotr group name (used in simulation)
-    std::map<std::string, std::string> map_dname_group;
-
-    //! detectorID -> detector thickness
-    std::map<int, double> map_detid_scale_z;
-
-    //! detectorID -> detector material
-    std::map<int, std::string> map_detid_material;
-
     //! detectorID -> trigger level
     std::map<int, int> map_detid_triggerlv;
-
-    //! default groups to put into simulation
-    std::vector<std::string> vector_default_sim_group;
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;

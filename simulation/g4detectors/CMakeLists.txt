@@ -119,8 +119,8 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4BlockSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4BlockSubsystem.cc
   PHG4BlockSubsystem_Dict.cc
-  ${PROJECT_SOURCE_DIR}/DPDigitizer.cc
-  DPDigitizer_Dict.cc
+  ${PROJECT_SOURCE_DIR}/SQDigitizer.cc
+  SQDigitizer_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4ConeDetector.cc
   ${PROJECT_SOURCE_DIR}/PHG4ConeRegionSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4ConeSteppingAction.cc
@@ -225,7 +225,7 @@ file(GLOB dist_headers
   PHG4Parameters.h
   PHG4ParametersContainer.h
   PHG4StepStatusDecode.h
-  DPDigitizer.h
+  SQDigitizer.h
 )
 
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
