@@ -43,6 +43,15 @@ public:
   virtual float        get_truth_z() const                              {return _truth_z;}
   virtual void         set_truth_z(const float a)                       {_truth_z = a;}
 
+  virtual float        get_truth_px() const                             {return _truth_px;}
+  virtual void         set_truth_px(const float a)                      {_truth_px = a;}
+
+  virtual float        get_truth_py() const                             {return _truth_py;}
+  virtual void         set_truth_py(const float a)                      {_truth_py = a;}
+
+  virtual float        get_truth_pz() const                             {return _truth_pz;}
+  virtual void         set_truth_pz(const float a)                      {_truth_pz = a;}
+
 private:
 
   int _track_id;  ///< truth track id
@@ -52,7 +61,11 @@ private:
   float _truth_y;
   float _truth_z;
 
-  ClassDef(SQMCHit_v1, 1);
+  float _truth_px;
+  float _truth_py;
+  float _truth_pz;
+
+  ClassDef(SQMCHit_v1, 2);
 };
 
 
