@@ -35,8 +35,9 @@
 #ifndef __CINT__
 int SQDigitizer::Init(PHCompositeNode *topNode)
 {
+  if(Verbosity() > 2) std::cout << "SQDigitizer: Init " << detIDByName.size() << std::endl;
+
   p_geomSvc = GeomSvc::instance();
-  detIDByName.clear();
   for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
     if(!enableDC1 && (i >= 7 && i <= 12)) continue;
@@ -58,6 +59,7 @@ SQDigitizer::SQDigitizer(const std::string& name, const int verbose):
   enableDC1(false),
   enableDPHodo(true)
 {
+  detIDByName.clear();
   Verbosity(0);
 }
 
@@ -277,7 +279,7 @@ void SQDigitizer::digitizeEMCal(const std::string& detName)
 
   for(auto iter = digiHits.begin(); iter != digiHits.end(); ++iter)
   {
-    iter->second.identify();
+    //iter->second.identify();
     iter->second.set_hit_id(digits->size());
     digits->push_back(&(iter->second));
   }

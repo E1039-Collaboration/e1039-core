@@ -116,7 +116,7 @@ void g4guithread(void *ptr);
 //_________________________________________________________________
 PHG4Reco::PHG4Reco(const string &name)
   : SubsysReco(name)
-  , magfield(1.4)
+  , magfield(0.)
   , magfield_rescale(1.0)
   , field_(nullptr)
   , runManager_(nullptr)

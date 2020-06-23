@@ -50,14 +50,6 @@ int PHG4EMCalSubsystem::InitRunSubsystem(PHCompositeNode* topNode)
   std::set<std::string> nodes;
   if(GetParams()->get_int_param("active") > 0)
   {
-    PHNodeIterator dstIter(dstNode);
-    PHCompositeNode* DetNode = dynamic_cast<PHCompositeNode*>(dstIter.findFirst("PHCompositeNode", SuperDetector()));
-    if(!DetNode)
-    {
-      DetNode = new PHCompositeNode(SuperDetector());
-      dstNode->addNode(DetNode);
-    }
-
     std::ostringstream nodename;
     if(SuperDetector() != "NONE")
     {
@@ -89,7 +81,7 @@ int PHG4EMCalSubsystem::InitRunSubsystem(PHCompositeNode* topNode)
       if(!g4_hits)
       {
         g4_hits = new PHG4HitContainer(nodename);
-        DetNode->addNode(new PHIODataNode<PHObject>(g4_hits, nodename, "PHObject"));
+        dstNode->addNode(new PHIODataNode<PHObject>(g4_hits, nodename, "PHObject"));
       }
     }
 
