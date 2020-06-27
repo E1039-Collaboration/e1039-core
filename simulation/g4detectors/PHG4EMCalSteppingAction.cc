@@ -114,7 +114,10 @@ bool PHG4EMCalSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     G4StepPoint* prePoint = aStep->GetPreStepPoint();
     if(prePoint->GetStepStatus() == fGeomBoundary || prePoint->GetStepStatus() == fUndefined)
     {
-      if(m_Hit == nullptr) m_Hit = new PHG4Hitv1();
+      if(m_Hit == nullptr)
+      {
+        m_Hit = new PHG4Hitv1();
+      }
   
       m_Hit->set_scint_id(towerID);
 
@@ -183,6 +186,10 @@ bool PHG4EMCalSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     m_Hit->set_y(1, postPoint->GetPosition().y()/cm);
     m_Hit->set_z(1, postPoint->GetPosition().z()/cm);
     m_Hit->set_t(1, postPoint->GetGlobalTime()/nanosecond);
+
+    m_Hit->set_px(1, postPoint->GetMomentum().x()/GeV);
+    m_Hit->set_py(1, postPoint->GetMomentum().y()/GeV);
+    m_Hit->set_pz(1, postPoint->GetMomentum().z()/GeV);
 
     // sum up the energy to get total deposited 
     m_Hit->set_edep(m_Hit->get_edep() + edep);
