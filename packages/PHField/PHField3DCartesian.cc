@@ -61,7 +61,7 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
          << "\n      Magnetic field Module - Verbosity:"
          << "\n-----------------------------------------------------------\n";
 
-  bool root_input = false;
+  bool root_input = (filename.find(".root") != string::npos);
   if(root_input) {
 		// open file
 		TFile *rootinput = TFile::Open(filename.c_str());
