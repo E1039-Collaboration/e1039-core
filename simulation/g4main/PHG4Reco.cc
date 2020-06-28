@@ -382,7 +382,7 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
   for (PHG4Subsystem *g4sub : subsystems_)
   {
     //re-calculate the place_z for some of the volumes in the non-field-zone
-    if(fabs(zero_field_line_) < 0.5*WorldSize[2] && g4sub->GetDetector() != nullptr)
+    if(fabs(zero_field_line_) < 0.5*WorldSize[2] && g4sub->GetParams() != nullptr) //only true for class inherited from PHG4DetectorSubsystem
     {
       double z_in_world = g4sub->GetParams()->get_double_param("place_z");
       if(z_in_world > zero_field_line_)
@@ -394,6 +394,10 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
       {
         detector_->AddDetector(g4sub->GetDetector(), 0);
       }
+    }
+    else
+    {
+      detector_->AddDetector(g4sub->GetDetector(), 0);
     }
   }
   runManager_->SetUserInitialization(detector_);

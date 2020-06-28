@@ -104,7 +104,7 @@ class PHG4Reco : public SubsysReco
   //! speed-up options setters
   void set_optical_photon(bool b) { optical_photon_ = b; }
   void set_energy_threshold(double t) { energy_threshold_ = t; }
-  void set_zero_field_line_(double z) { zero_field_line_ = z; }
+  void set_zero_field_line(double z) { zero_field_line_ = z; }
 
   //! Save geometry from Geant4 to DST
   void save_DST_geometry(bool b) { save_DST_geometry_ = b; }
