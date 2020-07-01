@@ -157,7 +157,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
       }
       else if(_fitter_type == SQReco::DAFREF)
       {
-        _gfitter->init(_gfield, "Daf");
+        _gfitter->init(_gfield, "DafRef");
       }
 
       //TODO: common settings for sqfitter
