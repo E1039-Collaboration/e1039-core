@@ -113,8 +113,8 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
 
   std::cout << "  its demensions and ranges of the field: " << records.size() << std::endl;
   std::cout << "    X: " << xvals.size() << " bins, " << xmin/cm << " cm -- " << xmax/cm << " cm." << std::endl;
-  std::cout << "    Y: " << xvals.size() << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm." << std::endl;
-  std::cout << "    Z: " << xvals.size() << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm." << std::endl;
+  std::cout << "    Y: " << yvals.size() << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm." << std::endl;
+  std::cout << "    Z: " << zvals.size() << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm." << std::endl;
 
   //Fill the 3D fieldmap for each dimension
   for(int i = 0; i < 3; ++i)
@@ -129,7 +129,7 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   {
     bgrid[0]->Fill(iter->x, iter->y, iter->z, iter->Bx);
     bgrid[1]->Fill(iter->x, iter->y, iter->z, iter->By);
-    bgrid[2]->Fill(iter->x, iter->y, iter->z, iter->By);
+    bgrid[2]->Fill(iter->x, iter->y, iter->z, iter->Bz);
   }
 
   std::cout << "\n================= End Construct Mag Field ======================\n" << std::endl;
