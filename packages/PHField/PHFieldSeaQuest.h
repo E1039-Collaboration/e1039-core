@@ -37,4 +37,4 @@ class PHFieldSeaQuest : public PHField
   PHFieldRegionalConst targetmag;
 };
 
-#endif  // __PHFIELD3D_H
+#endif  // __SQField3D_H
