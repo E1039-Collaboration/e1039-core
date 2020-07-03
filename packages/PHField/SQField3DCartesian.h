@@ -3,7 +3,7 @@
 
 #include "PHField.h"
 
-#include <TH3D.h>
+#include <TVector3.h>
 
 #include <vector>
 #include <string>
@@ -25,13 +25,28 @@ public:
   double GetZMin() const { return zmin; }
   double GetZMax() const { return zmax; }
 
+  //! return the index of the global index based on the local index
+  int GetGlobalIndex(int xIdx, int yIdx, int zIdx) const;
+
 protected:
+  class FieldPoint
+  {
+  public:
+    double x;
+    double y;
+    double z;
+    TVector3 B;
+  };
+
   std::string filename;
   std::set<double> xvals;
   std::set<double> yvals;
   std::set<double> zvals;
-  TH3D* bgrid[3];
+  std::vector<FieldPoint> fpoints;
 
+  int xsteps;
+  int ysteps;
+  int zsteps;
   double xmin;
   double xmax;
   double ymin;
@@ -43,16 +58,6 @@ protected:
   double zstepsize;
 
   double fieldstr;
-
-  struct FieldRecord
-  {
-    double x;
-    double y;
-    double z;
-    double Bx;
-    double By;
-    double Bz;
-  };
 };
 
 #endif  // __SQField3D_H

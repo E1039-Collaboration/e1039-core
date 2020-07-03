@@ -77,6 +77,16 @@ void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const
     Bfield[1] = 0.;
     Bfield[2] = 0.;
   }
+
+  /*
+  std::cout << "GetFieldValue: " 
+                << "x: " << point[0]/cm
+                << ", y: " << point[1]/cm
+                << ", z: " << point[2]/cm
+                << ", Bx: " << Bfield[0]/tesla
+                << ", By: " << Bfield[1]/tesla
+                << ", Bz: " << Bfield[2]/tesla << std::endl;
+  */
 }
 
 void PHFieldSeaQuest::identify(std::ostream& os) const {

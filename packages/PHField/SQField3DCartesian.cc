@@ -13,6 +13,9 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   , xvals()
   , yvals()
   , zvals()
+  , xsteps(0)
+  , ysteps(0)
+  , zsteps(0)
   , xmin(1000000)
   , xmax(-1000000)
   , ymin(1000000)
@@ -27,10 +30,9 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   std::cout << "\n-----------------------------------------------------------"
             << "\n      Magnetic field Module - Verbosity:"
             << "\n-----------------------------------------------------------\n";
-  for(int i = 0; i < 3; ++i) bgrid[i] = nullptr;
 
   //load from input file first
-  std::vector<FieldRecord> records;
+  fpoints.clear();
   if(filename.find(".root") != std::string::npos) 
   {
     TFile* inputFile = TFile::Open(filename.c_str());
@@ -51,19 +53,19 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
     inputTree->SetBranchAddress("Bz", &Bz);
 
     unsigned int nRecords = inputTree->GetEntries();
-    records.reserve(nRecords);
+    fpoints.reserve(nRecords);
     for(unsigned int i = 0; i < nRecords; ++i)
     {
       inputTree->GetEntry(i);
 
-      FieldRecord r;
-      r.x = x*cm; r.y = y*cm; r.z = z*cm;
-      r.Bx = fieldstr*Bx*tesla; r.By = fieldstr*By*tesla; r.Bz = fieldstr*Bz*tesla;
-      records.push_back(r);
+      FieldPoint p;
+      p.x = x*cm; p.y = y*cm; p.z = z*cm;
+      p.B.SetXYZ(fieldstr*Bx*tesla, fieldstr*By*tesla, fieldstr*Bz*tesla);
+      fpoints.push_back(p);
 
-      xvals.insert(r.x);
-      yvals.insert(r.y);
-      zvals.insert(r.z);
+      xvals.insert(p.x);
+      yvals.insert(p.y);
+      zvals.insert(p.z);
     }
 
     inputFile->Close();
@@ -86,14 +88,14 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
       std::stringstream ss(line);
       ss >> x >> y >> z >> Bx >> By >> Bz;
 
-      FieldRecord r;
-      r.x = x*cm; r.y = y*cm; r.z = z*cm;
-      r.Bx = fieldstr*Bx*tesla; r.By = fieldstr*By*tesla; r.Bz = fieldstr*Bz*tesla;
-      records.push_back(r);
+      FieldPoint p;
+      p.x = x*cm; p.y = y*cm; p.z = z*cm;
+      p.B.SetXYZ(fieldstr*Bx*tesla, fieldstr*By*tesla, fieldstr*Bz*tesla);
+      fpoints.push_back(p);
 
-      xvals.insert(r.x);
-      yvals.insert(r.y);
-      zvals.insert(r.z);
+      xvals.insert(p.x);
+      yvals.insert(p.y);
+      zvals.insert(p.z);
     }
 
     fin.close();
@@ -107,64 +109,94 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   zmin = *(zvals.begin());
   zmax = *(zvals.rbegin());
 
-  xstepsize = (xmax - xmin)/(xvals.size() - 1);
-  ystepsize = (ymax - ymin)/(yvals.size() - 1);
-  zstepsize = (zmax - zmin)/(zvals.size() - 1);
+  xsteps = xvals.size();
+  ysteps = yvals.size();
+  zsteps = zvals.size();
 
-  std::cout << "  its demensions and ranges of the field: " << records.size() << std::endl;
-  std::cout << "    X: " << xvals.size() << " bins, " << xmin/cm << " cm -- " << xmax/cm << " cm." << std::endl;
-  std::cout << "    Y: " << yvals.size() << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm." << std::endl;
-  std::cout << "    Z: " << zvals.size() << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm." << std::endl;
+  xstepsize = (xmax - xmin)/(xsteps - 1);
+  ystepsize = (ymax - ymin)/(ysteps - 1);
+  zstepsize = (zmax - zmin)/(zsteps - 1);
 
-  //Fill the 3D fieldmap for each dimension
-  for(int i = 0; i < 3; ++i)
-  {
-    bgrid[i] = new TH3D(Form("field_map_%d_%s", i, filename.c_str()), Form("field_map_%d_%s", i, filename.c_str()),
-                        xvals.size(), xmin - 0.5*xstepsize, xmax + 0.5*xstepsize,
-                        yvals.size(), ymin - 0.5*ystepsize, ymax + 0.5*ystepsize,
-                        zvals.size(), zmin - 0.5*zstepsize, zmax + 0.5*zstepsize);
-  }
+  //NOTE here we assume the input files (text or root) are pre-sorted. Otherwise we need to sort the fpoints vector
+  //using something like this: 
+  //std::sort(fpoints.begin(), fpoints.end(), [&](FieldPoint a, FieldPoint b) 
+  //{ return (int((a.z-zmin)/zstepsize) + zsteps*(int((a.y-ymin)/ystepsize)) + ysteps*(int((a.x-xmin)/xstepsize))) < 
+  //         (int((b.z-zmin)/zstepsize) + zsteps*(int((b.y-ymin)/ystepsize)) + ysteps*(int((b.x-xmin)/xstepsize))); })
 
-  for(auto iter = records.begin(); iter != records.end(); ++iter)
-  {
-    bgrid[0]->Fill(iter->x, iter->y, iter->z, iter->Bx);
-    bgrid[1]->Fill(iter->x, iter->y, iter->z, iter->By);
-    bgrid[2]->Fill(iter->x, iter->y, iter->z, iter->Bz);
-  }
+  std::cout << "  its demensions and ranges of the field: " << fpoints.size() << std::endl;
+  std::cout << "    X: " << xsteps << " bins, " << xmin/cm << " cm -- " << xmax/cm << " cm, step size = " << xstepsize/cm << " cm." << std::endl;
+  std::cout << "    Y: " << ysteps << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm, step size = " << ystepsize/cm << " cm." << std::endl;
+  std::cout << "    Z: " << zsteps << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm, step size = " << zstepsize/cm << " cm." << std::endl;
 
   std::cout << "\n================= End Construct Mag Field ======================\n" << std::endl;
 }
 
 SQField3DCartesian::~SQField3DCartesian()
+{}
+
+int SQField3DCartesian::GetGlobalIndex(int xIdx, int yIdx, int zIdx) const
 {
-  for(int i = 0; i < 3; ++i) delete bgrid[i];
+  return zIdx + zsteps*(yIdx + ysteps*xIdx);
 }
 
 void SQField3DCartesian::GetFieldValue(const double point[4], double* Bfield) const
 {
-  for(int i = 0; i < 3; ++i) Bfield[i] = 0.;
+  //This 3D intepolation algorithm is based on the wiki link http://en.wikipedia.org/wiki/Trilinear_interpolation
 
+  for(int i = 0; i < 3; ++i) Bfield[i] = 0.;
   double x = point[0];
   double y = point[1];
   double z = point[2];
-  if(!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
-     x < xmin || x > xmax || y < ymin || y > ymax || z < zmin || z > zmax)
+
+  int ubx = int((xsteps-1)*(x - xmin)/(xmax - xmin));
+  int uby = int((ysteps-1)*(y - ymin)/(ymax - ymin));
+  int ubz = int((zsteps-1)*(z - zmin)/(zmax - zmin));
+  int obx = ubx + 1;
+  int oby = uby + 1;
+  int obz = ubz + 1;
+
+  if(ubx < 0 || uby < 0 || ubz < 0 ||
+     obx >= xsteps || oby >= ysteps || obz >= zsteps)
   {
+    /*
     static int ifirst = 0;
     if(ifirst < 10)
     {
       ++ifirst;
       std::cout << "SQField3DCartesian::GetFieldValue: WARNING " << filename << " "
-                << "Invalid coordinates: "
+                << "Out-of-boundary coordinates: "
                 << "x: " << x/cm
                 << ", y: " << y/cm
                 << ", z: " << z/cm
                 << " bailing out returning zero bfield" << std::endl;
     }
+    */
     return;
   }
 
-  for(int i = 0; i < 3; ++i) Bfield[i] = bgrid[i]->Interpolate(x, y, z);
+  int idx000 = GetGlobalIndex(ubx, uby, ubz);
+  int idx001 = GetGlobalIndex(ubx, uby, obz);
+  int idx010 = GetGlobalIndex(ubx, oby, ubz);
+  int idx011 = GetGlobalIndex(ubx, oby, obz);
+  int idx100 = GetGlobalIndex(obx, uby, ubz);
+  int idx101 = GetGlobalIndex(obx, uby, obz);
+  int idx110 = GetGlobalIndex(obx, oby, ubz);
+  int idx111 = GetGlobalIndex(obx, oby, obz);
 
-  return;
+  double xp = (x - fpoints[idx000].x)/xstepsize;
+  double yp = (y - fpoints[idx000].y)/ystepsize;
+  double zp = (z - fpoints[idx000].z)/zstepsize;
+
+  TVector3 i1 = fpoints[idx000].B*(1. - zp) + fpoints[idx001].B*zp;
+  TVector3 i2 = fpoints[idx010].B*(1. - zp) + fpoints[idx011].B*zp;
+  TVector3 j1 = fpoints[idx100].B*(1. - zp) + fpoints[idx101].B*zp;
+  TVector3 j2 = fpoints[idx110].B*(1. - zp) + fpoints[idx111].B*zp;
+
+  TVector3 w1 = i1*(1. - yp) + i2*yp;
+  TVector3 w2 = j1*(1. - yp) + j2*yp;
+
+  TVector3 res = w1*(1. - xp) + w2*xp;
+  Bfield[0] = res.X();
+  Bfield[1] = res.Y();
+  Bfield[2] = res.Z();
 }
