@@ -143,7 +143,7 @@ PHG4Reco::PHG4Reco(const string &name)
   , force_decay_type_(kAll)
   , save_DST_geometry_(true)
   , optical_photon_(false)
-  , energy_threshold_(-1.)
+  , energy_threshold_(0.0005)
   , zero_field_line_(99999.)
   , _timer(PHTimeServer::get()->insert_new(name))
 {
