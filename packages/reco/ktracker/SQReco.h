@@ -25,7 +25,6 @@ class KalmanFitter;
 class EventReducer;
 class SRawEvent;
 class SRecEvent;
-class JobOptsSvc;
 
 class SQRun;
 class SQSpillMap;
@@ -116,7 +115,7 @@ private:
   PHField* _phfield;
   SQGenFit::GFField* _gfield;
 
-  JobOptsSvc* p_jobOptsSvc;
+  recoConsts* rc;
 
   std::string _hit_container_type;
   size_t _event;

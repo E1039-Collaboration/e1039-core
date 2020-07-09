@@ -20,6 +20,7 @@ PHFlag::get_CharFlag(const string &flag) const
   cout << "PHFlag::getString: ERROR Unknown character Flag " << flag
        << ", The following are implemented: " << endl;
   Print();
+  exit(EXIT_FAILURE);
   return NULL;
 }
 
@@ -55,6 +56,7 @@ double PHFlag::get_DoubleFlag(const string &name) const
   cout << "PHFlag::getFlag: ERROR Unknown Double Flag " << name
        << ", The following are implemented: " << endl;
   Print();
+  exit(EXIT_FAILURE);
   return 0.0;
 }
 
@@ -88,6 +90,7 @@ float PHFlag::get_FloatFlag(const string &name) const
   cout << "PHFlag::getFlag: ERROR Unknown Float Flag " << name
        << ", The following are implemented: " << endl;
   Print();
+  exit(EXIT_FAILURE);
   return 0.0;
 }
 
@@ -121,6 +124,7 @@ int PHFlag::get_IntFlag(const string &name) const
   cout << "PHFlag::getFlag: ERROR Unknown Int Flag " << name
        << ", The following are implemented: " << endl;
   Print();
+  exit(EXIT_FAILURE);
   return 0;
 }
 
@@ -154,6 +158,7 @@ bool PHFlag::get_BoolFlag(const string &name) const
   cout << "PHFlag::getFlag: ERROR Unknown Bool Flag " << name
        << ", The following are implemented: " << endl;
   Print();
+  exit(EXIT_FAILURE);
   return false;
 }
 
@@ -242,7 +247,7 @@ void PHFlag::PrintBoolFlags() const
   map<string, bool>::const_iterator booliter;
   for (booliter = boolflag.begin(); booliter != boolflag.end(); ++booliter)
     {
-      cout << booliter->first << " is " << booliter->second << endl;
+      cout << booliter->first << " is " << (booliter->second ? "TRUE" : "FALSE") << endl;
     }
   return ;
 }
@@ -277,7 +282,7 @@ int PHFlag::FlagExist(const string &name) const
   return 0;
 }
 
-void PHFlag::ReadFromFile(const string &name)
+void PHFlag::ReadFromFile(const string& name, bool verbose)
 {
   string label;
   float fvalue;
@@ -296,41 +301,41 @@ void PHFlag::ReadFromFile(const string &name)
   ifstream infile(name.c_str());
   while(infile>>label)
   {
-    cout<<"Label"<<label;
+    if(verbose) cout<<"Label "<<label;
     if(label.substr(0,1)=="C")
     {
       infile>>cvalue;
       cvaluecount++;
       set_CharFlag(label.substr(1,label.size()-1), cvalue);
-      cout<<" C read "<< cvalue << endl;
+      if(verbose) cout<<" C read "<< cvalue << endl;
     }else if(label.substr(0,1)=="F")
     {
       infile>>fvalue;
       fvaluecount++;
       set_FloatFlag(label.substr(1,label.size()-1), fvalue);
-      cout<<" F read "<< fvalue << endl;
+      if(verbose) cout<<" F read "<< fvalue << endl;
     }else if(label.substr(0,1)=="D")
     {
       infile>>dvalue;
       dvaluecount++;
       set_DoubleFlag(label.substr(1,label.size()-1), dvalue);
-      cout<<" D read "<< dvalue << endl;
+      if(verbose) cout<<" D read "<< dvalue << endl;
     }else if(label.substr(0,1)=="I")
     {
       infile>>ivalue;
       ivaluecount++;
       set_IntFlag(label.substr(1,label.size()-1), ivalue);
-      cout<<" I read "<< ivalue << endl;
+      if(verbose) cout<<" I read "<< ivalue << endl;
     }else if(label.substr(0,1)=="B")
     {
       infile>>bvalue;
       bvaluecount++;
       set_BoolFlag(label.substr(1,label.size()-1), bvalue);
-      cout<<" B read "<< ivalue << endl;
+      if(verbose) cout<<" B read "<< ivalue << endl;
     }else{
       infile>>junk;
       junkcount++;
-      cout<<" Junk read "<< junk << endl;
+      if(verbose) cout<<" Junk read "<< junk << endl;
     }
 
   }

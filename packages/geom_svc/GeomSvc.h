@@ -29,7 +29,8 @@ and then prop. tubes
 #include <TMatrixD.h>
 #include <TSpline.h>
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
+#include <phool/recoConsts.h>
 
 class Plane
 {
@@ -256,6 +257,10 @@ public:
     bool isInElement(int detectorID, int elementID, double x, double y, double tolr = 0.);
     bool isInKMAG(double x, double y);
 
+    // ///Getter/setters for a set of fixed parameters - should not be changed unless absolutely necessary
+    // double _KMAG_BEND() const         { return 0; }
+    // void   _KMAG_BEND(const double v) { return;   }
+
     ///Debugging print of the content
     void printAlignPar();
     void printTable();
@@ -290,6 +295,9 @@ private:
     //Mapping to wire end position - wire actually includes all detectors
     std::map<std::pair<int, int>, TVectorD> map_endPoint1;  
     std::map<std::pair<int, int>, TVectorD> map_endPoint2;
+
+    //Pointer to the reco constants
+    recoConsts* rc;
 
     //singleton pointor
     static GeomSvc* p_geometrySvc;

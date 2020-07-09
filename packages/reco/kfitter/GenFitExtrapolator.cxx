@@ -1,7 +1,7 @@
 #include "GenFitExtrapolator.h"
 #include "GFField.h"
-#include "SQRecoConfig.h"
 
+#include <phool/recoConsts.h>
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHField.h>
@@ -41,13 +41,11 @@ namespace
         if(!inited) 
         {
             inited = true;
-
-            SQRecoConfig* recoConf = SQRecoConfig::instance();
+            recoConsts* rc = recoConsts::instance();
            
-
-            NSTEPS_TARGET = recoConf->get_IntFlag("NSTEPS_TARGET");
-            NSTEPS_SHIELDING = recoConf->get_IntFlag("NSTEPS_SHIELDING");
-            NSTEPS_FMAG = recoConf->get_IntFlag("NSTEPS_FMAG");
+            NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
         }
     }
 }
@@ -79,27 +77,27 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 
 #ifdef _DEBUG_ON
 	double z_test = 1000;
-  LogInfo("");
-  {
-		double p[4] = {0, 0, z_test*cm, 0};
-		double B[3] = {0, 0, 0};
-		field->GetFieldValue(p, B);
-		cout << "PHField (CLHEP) at Z = " << z_test << endl;
-		cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
-  }
-  {
-		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
-		TVector3 H = f->get(TVector3(0,0,z_test));
-		H *= kilogauss/tesla;
-		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
-		H.Print();
+    LogInfo("");
+    {
+        double p[4] = {0, 0, z_test*cm, 0};
+        double B[3] = {0, 0, 0};
+        field->GetFieldValue(p, B);
+        cout << "PHField (CLHEP) at Z = " << z_test << endl;
+        cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
+    }
+    {
+        genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
+        TVector3 H = f->get(TVector3(0,0,z_test));
+        H *= kilogauss/tesla;
+        cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
+        H.Print();
 
-		z_test = 250;
-		H = f->get(TVector3(0,0,z_test));
-		H *= kilogauss/tesla;
-		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
-		H.Print();
-  }
+        z_test = 250;
+        H = f->get(TVector3(0,0,z_test));
+        H *= kilogauss/tesla;
+        cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
+        H.Print();
+    }
 #endif
 
   _tgeo_manager->Export("GenFitExtrapolatorGeom.root");

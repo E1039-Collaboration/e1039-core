@@ -2,23 +2,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(ktracker CXX C)
 
-# command line option to turn off KMAG
-option(KMAG "Turn KMAG ON/OFF" ON)
-if(KMAG)
-  add_definitions(-DKMAG_ON=1)
-else()
-  message("-- IMPORTANT! Turning KMAG off")
-  add_definitions(-DKMAG_ON=0)
-endif()
-
-# command line option to turn off KF
-option(KFENABLE "Enable Kalman filter fitting in track fitting" ON)
-if(KFENABLE)
-  add_definitions(-D_ENABLE_KF)
-else()
-  message("-- IMPORTANT! Kalman filter fitting is disabled")
-endif()
-
 # source code
 include_directories("${PROJECT_SOURCE_DIR}/")
 include_directories("${PROJECT_SOURCE_DIR}/../interface")

@@ -33,7 +33,6 @@ Created: 2-8-2012
 
 class KalmanTrack;
 class KalmanFilter;
-//class GenFitExtrapolator;
 class PHField;
 class TGeoManager;
 class JobOptsSvc;

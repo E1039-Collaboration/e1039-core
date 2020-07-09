@@ -12,8 +12,9 @@ Created: 01-21-2013
 #include <TLorentzVector.h>
 #include <TMatrixD.h>
 
+#include <phool/recoConsts.h>
+
 #include "SRecEvent.h"
-#include "SQRecoConfig.h"
 #include "KalmanUtil.h"
 #include "KalmanFilter.h"
 
@@ -27,36 +28,36 @@ namespace
     static bool inited = false;
 
 	//static flag of kmag on/off
-	static bool KMAG_ON = true;
+	static bool KMAG_ON;
 
 	//static flag of kmag strength
-	static double FMAGSTR = 1.0;
-	static double KMAGSTR = 1.0;
+	static double FMAGSTR;
+	static double KMAGSTR;
 
-	static double PT_KICK_FMAG = 2.909;
-	static double PT_KICK_KMAG = 0.4016;
+	static double PT_KICK_FMAG;
+	static double PT_KICK_KMAG ;
 
     //Beam position and shape
-    static double X_BEAM   = 0.;
-    static double Y_BEAM   = 0.;
-    static double SIGX_BEAM = 0.5;
-    static double SIGY_BEAM = 0.5;
+    static double X_BEAM;
+    static double Y_BEAM;
+    static double SIGX_BEAM;
+    static double SIGY_BEAM;
 
     //Simple swimming settings 
-    static int NSTEPS_TARGET = 100;
-    static int NSTEPS_SHIELDING = 50;
-    static int NSTEPS_FMAG = 100;
+    static int NSTEPS_TARGET;
+    static int NSTEPS_SHIELDING;
+    static int NSTEPS_FMAG;
 
-    static double DEDX_UNIT_0 = 0.;
-    static double DEDX_UNIT_1 = 0.;
-    static double DEDX_UNIT_2 = 0.;
-    static double DEDX_UNIT_3 = 0.;
-    static double DEDX_UNIT_4 = 0.;
-    static double PTKICK_UNIT = 0.;
+    static double DEDX_UNIT_0;
+    static double DEDX_UNIT_1;
+    static double DEDX_UNIT_2;
+    static double DEDX_UNIT_3;
+    static double DEDX_UNIT_4;
+    static double PTKICK_UNIT;
 
-    static double STEP_TARGET = 0.;
-    static double STEP_SHIELDING = 0.;
-    static double STEP_FMAG = 0.;
+    static double STEP_TARGET;
+    static double STEP_SHIELDING;
+    static double STEP_FMAG;
 
     //initialize global variables
     void initGlobalVariables()
@@ -65,27 +66,27 @@ namespace
         {
             inited = true;
 
-            SQRecoConfig* recoConf = SQRecoConfig::instance();
-            KMAG_ON = recoConf->get_BoolFlag("KMAG_ON");
-            FMAGSTR = recoConf->get_DoubleFlag("FMAGSTR");
-            KMAGSTR = recoConf->get_DoubleFlag("KMAGSTR");
-            PT_KICK_FMAG = recoConf->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
-            PT_KICK_KMAG = recoConf->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
+            recoConsts* rc = recoConsts::instance();
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
+            PT_KICK_FMAG = rc->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
+            PT_KICK_KMAG = rc->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
             
-            X_BEAM = recoConf->get_DoubleFlag("X_BEAM");
-            Y_BEAM = recoConf->get_DoubleFlag("Y_BEAM");
-            SIGX_BEAM = recoConf->get_DoubleFlag("SIGX_BEAM");
-            SIGY_BEAM = recoConf->get_DoubleFlag("SIGY_BEAM");
+            X_BEAM = rc->get_DoubleFlag("X_BEAM");
+            Y_BEAM = rc->get_DoubleFlag("Y_BEAM");
+            SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
+            SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
 
-            NSTEPS_TARGET = recoConf->get_IntFlag("NSTEPS_TARGET");
-            NSTEPS_SHIELDING = recoConf->get_IntFlag("NSTEPS_SHIELDING");
-            NSTEPS_FMAG = recoConf->get_IntFlag("NSTEPS_FMAG");
+            NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
 
-            DEDX_UNIT_0 = recoConf->get_DoubleFlag("DEDX_FE_P0")/FMAG_LENGTH;
-            DEDX_UNIT_1 = recoConf->get_DoubleFlag("DEDX_FE_P1")/FMAG_LENGTH;
-            DEDX_UNIT_2 = recoConf->get_DoubleFlag("DEDX_FE_P2")/FMAG_LENGTH;
-            DEDX_UNIT_3 = recoConf->get_DoubleFlag("DEDX_FE_P3")/FMAG_LENGTH;
-            DEDX_UNIT_4 = recoConf->get_DoubleFlag("DEDX_FE_P4")/FMAG_LENGTH;
+            DEDX_UNIT_0 = rc->get_DoubleFlag("DEDX_FE_P0")/FMAG_LENGTH;
+            DEDX_UNIT_1 = rc->get_DoubleFlag("DEDX_FE_P1")/FMAG_LENGTH;
+            DEDX_UNIT_2 = rc->get_DoubleFlag("DEDX_FE_P2")/FMAG_LENGTH;
+            DEDX_UNIT_3 = rc->get_DoubleFlag("DEDX_FE_P3")/FMAG_LENGTH;
+            DEDX_UNIT_4 = rc->get_DoubleFlag("DEDX_FE_P4")/FMAG_LENGTH;
             PTKICK_UNIT = PT_KICK_FMAG/FMAG_LENGTH;
 
             STEP_TARGET = fabs(Z_TARGET)/NSTEPS_TARGET;

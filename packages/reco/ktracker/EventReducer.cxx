@@ -19,16 +19,16 @@ EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), 
     if(options.Contains("r")) realization = true;
     if(options.Contains("n")) difnim = true;
 
-    p_config = SQRecoConfig::instance();
-    timeOffset = p_config->get_DoubleFlag("TDCTimeOffset");
-    SAGITTA_TARGET_CENTER = p_config->get_DoubleFlag("SAGITTA_TARGET_CENTER");
-    SAGITTA_TARGET_WIDTH = p_config->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
-    SAGITTA_DUMP_CENTER = p_config->get_DoubleFlag("SAGITTA_DUMP_CENTER");
-    SAGITTA_TARGET_WIDTH = p_config->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
-    TX_MAX = p_config->get_DoubleFlag("TX_MAX");
-    TY_MAX = p_config->get_DoubleFlag("TY_MAX");
-    USE_V1495_HIT = p_config->get_BoolFlag("USE_V1495_HIT");
-    USE_TWTDC_HIT = p_config->get_BoolFlag("USE_TWTDC_HIT");
+    rc = recoConsts::instance();
+    timeOffset = rc->get_DoubleFlag("TDCTimeOffset");
+    SAGITTA_TARGET_CENTER = rc->get_DoubleFlag("SAGITTA_TARGET_CENTER");
+    SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
+    SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
+    SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
+    TX_MAX = rc->get_DoubleFlag("TX_MAX");
+    TY_MAX = rc->get_DoubleFlag("TY_MAX");
+    USE_V1495_HIT = rc->get_BoolFlag("USE_V1495_HIT");
+    USE_TWTDC_HIT = rc->get_BoolFlag("USE_TWTDC_HIT");
     chamEff    = 0.94;
     chamResol  = 0.04;
 
@@ -75,7 +75,7 @@ int EventReducer::reduceEvent(SRawEvent* rawEvent)
 
     //temporarily disable trigger road masking if this event is not fired by any MATRIX triggers
     bool triggermask_local = triggermask;
-    if(!(p_config->get_BoolFlag("MC_MODE") || rawEvent->isFPGATriggered()))
+    if(!(rc->get_BoolFlag("MC_MODE") || rawEvent->isFPGATriggered()))
     {
         triggermask_local = false;
     }

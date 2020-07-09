@@ -16,10 +16,8 @@ Created: 05-28-2013
 #include <TMath.h>
 #include <TMatrixD.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
 #include "FastTracklet.h"
 #include "TriggerRoad.h"
-#include "SQRecoConfig.h"
 
 ClassImp(SignedHit)
 ClassImp(PropSegment)
@@ -35,24 +33,24 @@ namespace
 	static GeomSvc* p_geomSvc = nullptr;
 
 	//static flag of kmag on/off
-	static bool KMAG_ON = true;
+	static bool KMAG_ON;
 
 	//static flag of kmag strength
-	static double FMAGSTR = 1.0;
-	static double KMAGSTR = 1.0;
+	static double FMAGSTR;
+	static double KMAGSTR;
 
-	static double PT_KICK_FMAG = 2.909;
-	static double PT_KICK_KMAG = 0.4016;
+	static double PT_KICK_FMAG;
+	static double PT_KICK_KMAG;
 
     //Track quality cuts
-    static double TX_MAX = 0.2;
-    static double TY_MAX = 0.2;
-    static double X0_MAX = 100.;
-    static double Y0_MAX = 100.;
-    static double INVP_MAX = 0.2;
-    static double INVP_MIN = 0.01;
-    static double PROB_LOOSE = 0.1;
-    static double PROB_TIGHT = 0.001;
+    static double TX_MAX;
+    static double TY_MAX;
+    static double X0_MAX;
+    static double Y0_MAX;
+    static double INVP_MAX;
+    static double INVP_MIN;
+    static double PROB_LOOSE;
+    static double PROB_TIGHT;
 
     //initialize global variables
     void initGlobalVariables()
@@ -62,21 +60,21 @@ namespace
             inited = true;
             p_geomSvc = GeomSvc::instance();
 
-            SQRecoConfig* recoConf = SQRecoConfig::instance();
-            KMAG_ON = recoConf->get_BoolFlag("KMAG_ON");
-            FMAGSTR = recoConf->get_DoubleFlag("FMAGSTR");
-            KMAGSTR = recoConf->get_DoubleFlag("KMAGSTR");
-            PT_KICK_FMAG = recoConf->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
-            PT_KICK_KMAG = recoConf->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
+            recoConsts* rc = recoConsts::instance();
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
+            PT_KICK_FMAG = rc->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
+            PT_KICK_KMAG = rc->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
 
-            TX_MAX = recoConf->get_DoubleFlag("TX_MAX");
-            TY_MAX = recoConf->get_DoubleFlag("TY_MAX");
-            X0_MAX = recoConf->get_DoubleFlag("X0_MAX");
-            Y0_MAX = recoConf->get_DoubleFlag("Y0_MAX");
-            INVP_MAX = recoConf->get_DoubleFlag("INVP_MAX");
-            INVP_MIN = recoConf->get_DoubleFlag("INVP_MIN");
-            PROB_LOOSE = recoConf->get_DoubleFlag("PROB_LOOSE");
-            PROB_TIGHT = recoConf->get_DoubleFlag("PROB_TIGHT");
+            TX_MAX = rc->get_DoubleFlag("TX_MAX");
+            TY_MAX = rc->get_DoubleFlag("TY_MAX");
+            X0_MAX = rc->get_DoubleFlag("X0_MAX");
+            Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
+            INVP_MAX = rc->get_DoubleFlag("INVP_MAX");
+            INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
+            PROB_LOOSE = rc->get_DoubleFlag("PROB_LOOSE");
+            PROB_TIGHT = rc->get_DoubleFlag("PROB_TIGHT");
         }
     }
 }
@@ -113,15 +111,6 @@ PropSegment::PropSegment() : a(-999.), b(-999.), err_a(100.), err_b(100.), chisq
     for(int i = 0; i < 4; ++i) hits[i].hit.index = -1;
     for(int i = 0; i < 4; ++i) hodoHits[i].index = -1;
     initGlobalVariables();
-    if(p_geomSvc == nullptr) 
-    {
-        p_geomSvc = GeomSvc::instance();
-        kmag_on = JobOptsSvc::instance()->m_enableKMag;
-        FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
-        KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
-        PT_KICK_FMAG = 2.909*FMAGSTR;
-        PT_KICK_KMAG = 0.4016*KMAGSTR;
-    }
 }
 
 void PropSegment::init()
@@ -143,7 +132,7 @@ void PropSegment::print(std::ostream& os) const
     os << "nHits: " << getNHits() << ", nPlanes: " << getNPlanes() << endl;
     os << "a = " << a << ", b = " << b << ", chisq = " << chisq << endl;
     os << "TX_MAX = " << TX_MAX << ", X0_MAX = " << X0_MAX << ", chisq max = " << 5 << endl;
-    os << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
+    //os << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
 
     for(int i = 0; i < 4; ++i)
     {

@@ -4,30 +4,30 @@
 #ifndef RECOCONSTS_H__
 #define RECOCONSTS_H__
 
+#include <string>
+
 #include "PHFlag.h"
 
-class recoConsts : public PHFlag
+class recoConsts: public PHFlag
 {
+public:
+  static recoConsts* instance();
+  void set_defaults();
 
- public:
+  void init(int runNo = 0, bool verbose = false);
+  void init(const std::string& filename, bool verbose = false);
 
-  static recoConsts * instance()
-    {
-      if (__instance) return __instance;
-      __instance =  new recoConsts();
-      return __instance;
-    }
+  //overide the virtual function to expand the environmental variables
+  virtual void set_CharFlag(const std::string& name, const std::string& flag);
 
   void Print() const;
 
- protected: 
-  recoConsts() {}
-  
-  static recoConsts *__instance;
+protected: 
+  recoConsts();
+  std::string ExpandEnvironmentals(const std::string& input);
+
+  static recoConsts* __instance;
 
 };
 
-
 #endif /* __RECOCONSTS_H__ */
-
-

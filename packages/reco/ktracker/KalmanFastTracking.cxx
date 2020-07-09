@@ -9,6 +9,7 @@ Created: 05-28-2013
 
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
+#include <phool/recoConsts.h>
 #include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
@@ -22,7 +23,6 @@ Created: 05-28-2013
 
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
-#include "SQRecoConfig.h"
 
 //#define _DEBUG_ON
 
@@ -32,30 +32,36 @@ namespace
     static bool inited = false;
 
     //Sagitta ratio
-    static double SAGITTA_DUMP_CENTER = 1.5;
-    static double SAGITTA_DUMP_WIDTH = 0.3;
-    static double SAGITTA_TARGET_CENTER = 1.85;
-    static double SAGITTA_TARGET_WIDTH = 0.25;
+    static double SAGITTA_DUMP_CENTER;
+    static double SAGITTA_DUMP_WIDTH;
+    static double SAGITTA_TARGET_CENTER;
+    static double SAGITTA_TARGET_WIDTH;
 
     //Track quality cuts
-    static double TX_MAX = 0.2;
-    static double TY_MAX = 0.2;
-    static double X0_MAX = 100.;
-    static double Y0_MAX = 100.;
-    static double INVP_MAX = 0.2;
-    static double INVP_MIN = 0.01;
+    static double TX_MAX;
+    static double TY_MAX;
+    static double X0_MAX;
+    static double Y0_MAX;
+    static double INVP_MAX;
+    static double INVP_MIN;
 
     //MuID cuts 
-    static double MUID_REJECTION = 4.;
-    static double MUID_Z_REF = 2028.19;
-    static double MUID_R_CUT = 3.;
-    static double MUID_THE_P0 = 0.11825;
-    static double MUID_EMP_P0 = 0.00643;
-    static double MUID_EMP_P1 = 0.;
-    static double MUID_EMP_P2 = 0.;
+    static double MUID_REJECTION;
+    static double MUID_Z_REF;
+    static double MUID_R_CUT;
+    static double MUID_THE_P0;
+    static double MUID_EMP_P0;
+    static double MUID_EMP_P1;
+    static double MUID_EMP_P2;
 
     //Track merging threshold
-    static double MERGE_THRES = 0.015;
+    static double MERGE_THRES;
+
+    //static flag of kmag on/off
+	static bool KMAG_ON;
+
+    //running mode
+    static bool MC_MODE;
 
     //initialize global variables
     void initGlobalVariables()
@@ -64,26 +70,29 @@ namespace
         {
             inited = true;
 
-            SQRecoConfig* recoConf = SQRecoConfig::instance();
-            TX_MAX = recoConf->get_DoubleFlag("TX_MAX");
-            TY_MAX = recoConf->get_DoubleFlag("TY_MAX");
-            X0_MAX = recoConf->get_DoubleFlag("X0_MAX");
-            Y0_MAX = recoConf->get_DoubleFlag("Y0_MAX");
-            INVP_MAX = recoConf->get_DoubleFlag("INVP_MAX");
-            INVP_MIN = recoConf->get_DoubleFlag("INVP_MIN");
+            recoConsts* rc = recoConsts::instance();
+            MC_MODE = rc->get_BoolFlag("MC_MODE");
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            
+            TX_MAX = rc->get_DoubleFlag("TX_MAX");
+            TY_MAX = rc->get_DoubleFlag("TY_MAX");
+            X0_MAX = rc->get_DoubleFlag("X0_MAX");
+            Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
+            INVP_MAX = rc->get_DoubleFlag("INVP_MAX");
+            INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
 
-            SAGITTA_TARGET_CENTER = recoConf->get_DoubleFlag("SAGITTA_TARGET_CENTER");
-            SAGITTA_TARGET_WIDTH = recoConf->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
-            SAGITTA_DUMP_CENTER = recoConf->get_DoubleFlag("SAGITTA_DUMP_CENTER");
-            SAGITTA_DUMP_WIDTH = recoConf->get_DoubleFlag("SAGITTTA_DUMP_WIDTH");
+            SAGITTA_TARGET_CENTER = rc->get_DoubleFlag("SAGITTA_TARGET_CENTER");
+            SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
+            SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
+            SAGITTA_DUMP_WIDTH = rc->get_DoubleFlag("SAGITTTA_DUMP_WIDTH");
 
-            MUID_REJECTION = recoConf->get_DoubleFlag("MUID_REJECTION");
-            MUID_Z_REF = recoConf->get_DoubleFlag("MUID_Z_REF");
-            MUID_R_CUT = recoConf->get_DoubleFlag("MUID_R_CUT");
-            MUID_THE_P0 = recoConf->get_DoubleFlag("MUID_THE_P0");
-            MUID_EMP_P0 = recoConf->get_DoubleFlag("MUID_EMP_P0");
-            MUID_EMP_P1 = recoConf->get_DoubleFlag("MUID_EMP_P1");
-            MUID_EMP_P2 = recoConf->get_DoubleFlag("MUID_EMP_P2");
+            MUID_REJECTION = rc->get_DoubleFlag("MUID_REJECTION");
+            MUID_Z_REF = rc->get_DoubleFlag("MUID_Z_REF");
+            MUID_R_CUT = rc->get_DoubleFlag("MUID_R_CUT");
+            MUID_THE_P0 = rc->get_DoubleFlag("MUID_THE_P0");
+            MUID_EMP_P0 = rc->get_DoubleFlag("MUID_EMP_P0");
+            MUID_EMP_P1 = rc->get_DoubleFlag("MUID_EMP_P1");
+            MUID_EMP_P2 = rc->get_DoubleFlag("MUID_EMP_P2");
         }
     }
 }
@@ -107,9 +116,6 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
 
-    //Initialize jobOpts service
-    p_jobOptsSvc = JobOptsSvc::instance();
-
     //Initialize Kalman fitter
     if(enable_KF)
     {
@@ -120,7 +126,7 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     //Initialize minuit minimizer
     minimizer[0] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Simplex");
     minimizer[1] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Combined");
-    fcn = ROOT::Math::Functor(&tracklet_curr, &Tracklet::Eval, p_jobOptsSvc->m_enableKMag ? 5 : 4);
+    fcn = ROOT::Math::Functor(&tracklet_curr, &Tracklet::Eval, KMAG_ON ? 5 : 4);
 
     for(int i = 0; i < 2; ++i)
     {
@@ -334,23 +340,23 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
 #else
         if(i <= 6)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st0_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC0");
         }
         else if(i <= 12)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st1_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC1");
         }
         else if(i <= 18)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st2_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC2");
         }
         else if(i <= 24)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st3p_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3p");
         }
         else
         {
-            resol_plane[i] = p_jobOptsSvc->m_st3m_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3m");
         }
 #endif
         spacing_plane[i] = p_geomSvc->getPlaneSpacing(i);
@@ -419,7 +425,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     {
         //std::cout << "For station " << i << std::endl;
         hitIDs_mask[i].clear();
-        if(p_jobOptsSvc->m_mcMode || rawEvent->isFPGATriggered())
+        if(MC_MODE || rawEvent->isFPGATriggered())
         {
             hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_maskX[i]);
         }
@@ -736,7 +742,7 @@ void KalmanFastTracking::buildGlobalTracks()
             trackletsInSt[0].clear();
 
             //Calculate the window in station 1
-            if(p_jobOptsSvc->m_enableKMag)
+            if(KMAG_ON)
             {
                 getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
             }
@@ -1643,7 +1649,7 @@ int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
     minimizer[idx]->SetLimitedVariable(1, "ty", tracklet.ty, 0.001, -TY_MAX, TY_MAX);
     minimizer[idx]->SetLimitedVariable(2, "x0", tracklet.x0, 0.1, -X0_MAX, X0_MAX);
     minimizer[idx]->SetLimitedVariable(3, "y0", tracklet.y0, 0.1, -Y0_MAX, Y0_MAX);
-    if(p_jobOptsSvc->m_enableKMag)
+    if(KMAG_ON)
     {
         minimizer[idx]->SetLimitedVariable(4, "invP", tracklet.invP, 0.001*tracklet.invP, INVP_MIN, INVP_MAX);
     }
@@ -1659,7 +1665,7 @@ int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
     tracklet.err_x0 = minimizer[idx]->Errors()[2];
     tracklet.err_y0 = minimizer[idx]->Errors()[3];
 
-    if(p_jobOptsSvc->m_enableKMag && tracklet.stationID == nStations)
+    if(KMAG_ON && tracklet.stationID == nStations)
     {
         tracklet.invP = minimizer[idx]->X()[4];
         tracklet.err_invP = minimizer[idx]->Errors()[4];

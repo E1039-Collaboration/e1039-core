@@ -21,8 +21,8 @@ Created: 06-17-2015
 
 #include "SRawEvent.h"
 #include "TriggerAnalyzer.h"
-#include "SQRecoConfig.h"
 
+#include <phool/recoConsts.h>
 #include <geom_svc/GeomSvc.h>
 
 class EventReducer
@@ -59,7 +59,7 @@ private:
     GeomSvc* p_geomSvc;
 
     //pointer to the reco configuration 
-    SQRecoConfig* p_config;
+    recoConsts* rc;
 
     //pointer to trigger analyzer, inited inside
     TriggerAnalyzer* p_triggerAna;

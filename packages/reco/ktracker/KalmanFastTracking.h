@@ -11,7 +11,6 @@ Created: 05-24-2013
 #define _KALMANFASTTRACKING_H
 
 #include <GlobalConsts.h>
-#include <jobopts_svc/JobOptsSvc.h>
 #include <geom_svc/GeomSvc.h>
 
 #include <list>
@@ -197,9 +196,6 @@ private:
 
     //Geometry service
     GeomSvc* p_geomSvc;
-
-    //Job option service
-    JobOptsSvc* p_jobOptsSvc;
 
     //Flag for enable Kalman fitting
     const bool enable_KF;

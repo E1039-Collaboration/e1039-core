@@ -7,9 +7,9 @@
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 
-#include "TriggerAnalyzer.h"
+#include <phool/recoConsts.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
+#include "TriggerAnalyzer.h"
 
 #define REQUIRE_TB
 
@@ -51,7 +51,7 @@ bool TriggerAnalyzer::init()
 {
     using namespace std;
 
-    JobOptsSvc* p_jobOptsSvc = JobOptsSvc::instance();
+    recoConsts* rc = recoConsts::instance();
 
     int H1TID = p_geomSvc->getDetectorID("H1T");
     int H2TID = p_geomSvc->getDetectorID("H2T");
@@ -62,7 +62,12 @@ bool TriggerAnalyzer::init()
     int H3BID = p_geomSvc->getDetectorID("H3B");
     int H4BID = p_geomSvc->getDetectorID("H4B");
 
-    std::string fileNames[4] = {p_jobOptsSvc->GetRoadsFilePlusTop(), p_jobOptsSvc->GetRoadsFilePlusBottom(), p_jobOptsSvc->GetRoadsFileMinusTop(), p_jobOptsSvc->GetRoadsFileMinusBottom()};
+    std::string roadsPT = Form("%s/firmware/roads/L1/%s/roads_plus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsPB = Form("%s/firmware/roads/L1/%s/roads_plus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsMT = Form("%s/firmware/roads/L1/%s/roads_minus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsMB = Form("%s/firmware/roads/L1/%s/roads_minus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+
+    std::string fileNames[4] = {roadsPT, roadsPB, roadsMT, roadsMB};
     char buffer[300];
     int pRoads = 0;
     int mRoads = 0;

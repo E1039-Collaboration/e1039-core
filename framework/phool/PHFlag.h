@@ -49,7 +49,7 @@ class PHFlag
   virtual void PrintFloatFlags() const;
   virtual void PrintCharFlags() const;
   virtual void PrintBoolFlags() const;
-  virtual void ReadFromFile(const std::string &name);
+  virtual void ReadFromFile(const std::string& name, bool verbose = false);
   virtual void WriteToFile(const std::string &name);
 
   virtual int FlagExist(const std::string &name) const;
