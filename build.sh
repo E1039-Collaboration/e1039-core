@@ -90,7 +90,6 @@ else # 'all' or 'resume'
     packages/Display/display
     packages/Display/modules
     packages/Display/interface
-    module_example
     _macro_
 	)
   if [ $mode = 'resume' ] ; then

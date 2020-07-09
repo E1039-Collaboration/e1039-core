@@ -24,12 +24,12 @@ PHFieldSeaQuest::PHFieldSeaQuest(
 		targetmag(targermag_y)
 
 {
-  zValues[0] = -204.0*cm;  // front of fmag field map
-  zValues[1] = 403.74*cm;  // front of kmag field map
-  zValues[2] = 712.0*cm;   // end of fmag field map
-  zValues[3] = 1572.26*cm; // end of kmag field map
-
   kmagZOffset = 1064.26*cm;
+
+  zValues[0] = fmag.GetZMin();                // front of fmag field map
+  zValues[1] = kmag.GetZMin() + kmagZOffset;  // front of kmag field map
+  zValues[2] = fmag.GetZMax();                // end of fmag field map
+  zValues[3] = kmag.GetZMax() + kmagZOffset;  // end of kmag field map
 
   targetmag.set_mean_x(0*cm);
   targetmag.set_mean_y(0*cm);
@@ -43,31 +43,50 @@ PHFieldSeaQuest::~PHFieldSeaQuest()
   //        << endl;
 }
 
-void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const {
+void PHFieldSeaQuest::GetFieldValue(const double point[4], double *Bfield) const 
+{
+  double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
 
-	double kmag_point[4] = {point[0], point[1], point[2]-kmagZOffset, point[3]};
-
-	if(point[2] < zValues[0]) {
-		targetmag.GetFieldValue(point, Bfield);
-	}else if (point[2]>zValues[0] && point[2]<zValues[1])
+  if(point[2] < zValues[0]) 
   {
-    fmag.GetFieldValue( point, Bfield );
-  } else if ((point[2]>zValues[2])&&(point[2]<zValues[3])) {
-    kmag.GetFieldValue( kmag_point, Bfield );
-  } else if ((point[2]>zValues[1])&&(point[2]<zValues[2])) {
-  	fmag.GetFieldValue( point, Bfield );
+    targetmag.GetFieldValue(point, Bfield);
+  }
+  else if(point[2] > zValues[0] && point[2] < zValues[1])
+  {
+    fmag.GetFieldValue(point, Bfield);
+  } 
+  else if(point[2] > zValues[2] && point[2] < zValues[3]) 
+  {
+    kmag.GetFieldValue(kmag_point, Bfield);
+  } 
+  else if(point[2] > zValues[1] && point[2] < zValues[2]) 
+  {
+    fmag.GetFieldValue(point, Bfield);
     double xTemp = Bfield[0];
     double yTemp = Bfield[1];
     double zTemp = Bfield[2];
-    kmag.GetFieldValue( kmag_point, Bfield );
+
+    kmag.GetFieldValue(kmag_point, Bfield);
     Bfield[0] = Bfield[0] + xTemp;
     Bfield[1] = Bfield[1] + yTemp;
     Bfield[2] = Bfield[2] + zTemp;
-  } else {
-  	Bfield[0] = 0;
-  	Bfield[1] = 0;
-  	Bfield[2] = 0;
+  } 
+  else 
+  {
+    Bfield[0] = 0.;
+    Bfield[1] = 0.;
+    Bfield[2] = 0.;
   }
+
+  /*
+  std::cout << "GetFieldValue: " 
+                << "x: " << point[0]/cm
+                << ", y: " << point[1]/cm
+                << ", z: " << point[2]/cm
+                << ", Bx: " << Bfield[0]/tesla
+                << ", By: " << Bfield[1]/tesla
+                << ", Bz: " << Bfield[2]/tesla << std::endl;
+  */
 }
 
 void PHFieldSeaQuest::identify(std::ostream& os) const {

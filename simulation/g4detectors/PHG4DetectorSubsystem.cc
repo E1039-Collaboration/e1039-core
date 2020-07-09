@@ -21,7 +21,7 @@ using namespace std;
 
 PHG4DetectorSubsystem::PHG4DetectorSubsystem(const std::string &name, const int lyr): 
   PHG4Subsystem(name),
-  params(new PHParameters(Name())),
+  //params(new PHParameters(Name())),
   paramscontainer(NULL),
   savetopNode(NULL),
   overlapcheck(false),
@@ -37,6 +37,8 @@ PHG4DetectorSubsystem::PHG4DetectorSubsystem(const std::string &name, const int 
   ostringstream nam;
   nam << name << "_" << lyr;
   Name(nam.str().c_str());
+
+  params = new PHParameters(Name());
 }
 
 int 

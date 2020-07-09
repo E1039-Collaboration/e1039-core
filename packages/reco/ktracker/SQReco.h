@@ -70,6 +70,8 @@ public:
 
   bool is_eval_enabled() const { return _enable_eval; }
   void set_enable_eval(bool enable) { _enable_eval = enable; }
+  bool is_eval_dst_enabled() const { return _enable_eval_dst; }
+  void set_enable_eval_dst(bool enable) { _enable_eval_dst = enable; }
   void add_eval_list(int listID) { _eval_listIDs.push_back(listID); }
 
   const TString& get_evt_reducer_opt() const { return _evt_reducer_opt; }
@@ -99,6 +101,9 @@ private:
   TTree*  _eval_tree;
   TClonesArray* _tracklets;
   std::vector<int> _eval_listIDs;
+
+  bool _enable_eval_dst;
+  TrackletVector* _tracklet_vector;
 
   TString _evt_reducer_opt;
   KalmanFastTracking* _fastfinder;

@@ -82,7 +82,7 @@ class PHG4DetectorSubsystem : public PHG4Subsystem
   int BeginRunExecuted() const {return beginrunexecuted;}
 
  private:
-  PHParameters *params;
+  //PHParameters *params;
   PHParametersContainer *paramscontainer;
   PHCompositeNode *savetopNode;
   bool overlapcheck;

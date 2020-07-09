@@ -38,7 +38,7 @@ PHFieldConfig_v3::PHFieldConfig_v3(
     cout << "PHFieldConfig_v3::PHFieldConfig_v3:" << endl;
     cout << " from file1 [" << filename1 << "]" << endl;
     cout << "  and file2 [" << filename2 << "]" << endl;
-    cout << "scale1: " << scale1_ << ", scale2: " << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
+    cout << "scale1: " << setprecision(5) << scale1_ << ", scale2: " << setprecision(5) << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
   }
 }
 

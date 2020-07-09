@@ -65,6 +65,7 @@ add_library(phfield SHARED
   ${PROJECT_SOURCE_DIR}/PHField2D.cc
   ${PROJECT_SOURCE_DIR}/PHField3DCylindrical.cc
   ${PROJECT_SOURCE_DIR}/PHField3DCartesian.cc
+  ${PROJECT_SOURCE_DIR}/SQField3DCartesian.cc
   ${PROJECT_SOURCE_DIR}/PHFieldRegionalConst.cc
   ${PROJECT_SOURCE_DIR}/PHFieldSeaQuest.cc
   PHFieldUtility_Dict.C
