@@ -396,12 +396,12 @@ void GeomSvc::init()
     zmin_kmag = 1064.26 - 120.*2.54;
     zmax_kmag = 1064.26 + 120.*2.54;
 
-//#ifdef _DEBUG_ON
+#ifdef _DEBUG_ON
     for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
     {
         cout << planes[i] << endl;
     }
-//#endif
+#endif
 }
 
 void GeomSvc::initPlaneDirect() {

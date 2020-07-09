@@ -1,5 +1,3 @@
-
-
 #ifndef __PHFIELD_H__
 #define __PHFIELD_H__
 
@@ -7,7 +5,7 @@
 
 // units of this class. To convert internal value to Geant4/CLHEP units for fast access
 //#include <CLHEP/Units/SystemOfUnits.h>
-#include <G4SystemOfUnits.hh>
+#include <Geant4/G4SystemOfUnits.hh>
 
 #include <vector>
 

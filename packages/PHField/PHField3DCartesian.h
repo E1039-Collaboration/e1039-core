@@ -21,6 +21,10 @@ class PHField3DCartesian : public PHField
   //! @param[out] Bfield  field value. In the case of magnetic field, the order is Bx, By, Bz in in Geant4/CLHEP units
   void GetFieldValue(const double Point[4], double *Bfield) const;
 
+  //! return the min and max in z
+  double GetZMin() const { return zmin; }
+  double GetZMax() const { return zmax; }
+
  protected:
   std::string filename;
 	std::set<double> xvals;
