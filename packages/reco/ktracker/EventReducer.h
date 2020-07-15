@@ -100,6 +100,8 @@ private:
     double SAGITTA_DUMP_WIDTH;
     double SAGITTA_TARGET_CENTER;
     double SAGITTA_TARGET_WIDTH;
+    double Z_TARGET;
+    double Z_DUMP;
 
     //Hodo masking parameters
     double TX_MAX;

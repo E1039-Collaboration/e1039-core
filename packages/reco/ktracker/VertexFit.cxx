@@ -52,6 +52,12 @@ namespace
     static int NSTEPS_SHIELDING;
     static int NSTEPS_FMAG;
 
+    //Geometric constants
+    static double Z_TARGET;
+    static double Z_DUMP;
+    static double Z_UPSTREAM;
+    static double Z_DOWNSTREAM;
+
     //initialize global variables
     void initGlobalVariables()
     {
@@ -71,6 +77,11 @@ namespace
             NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
             NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
             NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
+
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+            Z_DOWNSTREAM = rc->get_DoubleFlag("Z_DOWNSTREAM");
         }
     }
 }

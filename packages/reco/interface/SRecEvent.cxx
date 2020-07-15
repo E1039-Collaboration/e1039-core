@@ -35,7 +35,16 @@ namespace
 	static double KMAGSTR;
 
 	static double PT_KICK_FMAG;
-	static double PT_KICK_KMAG ;
+	static double PT_KICK_KMAG;
+
+    //Geometric positions
+    static double FMAG_LENGTH;
+    static double Z_TARGET;
+    static double Z_DUMP;
+    static double Z_UPSTREAM;
+    static double Z_DOWNSTREAM;
+    static double FMAG_HOLE_LENGTH;
+    static double FMAG_HOLE_RADIUS;
 
     //Beam position and shape
     static double X_BEAM;
@@ -77,6 +86,14 @@ namespace
             Y_BEAM = rc->get_DoubleFlag("Y_BEAM");
             SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
             SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+
+            FMAG_LENGTH = rc->get_DoubleFlag("FMAG_LENGTH");
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+            Z_DOWNSTREAM = rc->get_DoubleFlag("Z_DOWNSTREAM");
+            FMAG_HOLE_RADIUS = rc->get_DoubleFlag("FMAG_HOLE_RADIUS");
+            FMAG_HOLE_LENGTH = rc->get_DoubleFlag("FMAG_HOLE_LENGTH");
 
             NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
             NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");

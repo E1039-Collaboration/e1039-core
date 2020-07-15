@@ -15,6 +15,9 @@ recoConsts* recoConsts::instance()
   return __instance;
 }
 
+recoConsts::recoConsts()
+{}
+
 void recoConsts::set_CharFlag(const std::string& name, const std::string& flag)
 {
   std::string flag_expanded = ExpandEnvironmentals(flag);
@@ -124,6 +127,24 @@ void recoConsts::set_defaults()
 
   set_DoubleFlag("PT_KICK_KMAG", 0.4016);
   set_DoubleFlag("PT_KICK_FMAG", 2.909);
+
+  set_DoubleFlag("Z_KMAG_BEND", 1064.26);
+  set_DoubleFlag("Z_FMAG_BEND", 251.4);
+  set_DoubleFlag("Z_KFMAG_BEND", 375.);
+  set_DoubleFlag("ELOSS_KFMAG", 8.12);
+  set_DoubleFlag("ELOSS_ABSORBER", 1.81);
+  set_DoubleFlag("Z_ST2", 1347.36);
+  set_DoubleFlag("Z_ABSORBER", 2028.19);
+  set_DoubleFlag("Z_REF", 0.);
+  set_DoubleFlag("Z_TARGET", -300.00);
+  set_DoubleFlag("Z_DUMP", 42.);
+  set_DoubleFlag("Z_ST1", 600.);
+  set_DoubleFlag("Z_ST3", 1910.);
+  set_DoubleFlag("FMAG_HOLE_LENGTH", 27.94);
+  set_DoubleFlag("FMAG_HOLE_RADIUS", 1.27);
+  set_DoubleFlag("FMAG_LENGTH", 502.92);
+  set_DoubleFlag("Z_UPSTREAM", -500.);
+  set_DoubleFlag("Z_DOWNSTREAM", 500.);
 }
 
 void recoConsts::init(int runNo, bool verbose)

@@ -25,10 +25,14 @@ EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), 
     SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
     SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
     SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
+    Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+    Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+
     TX_MAX = rc->get_DoubleFlag("TX_MAX");
     TY_MAX = rc->get_DoubleFlag("TY_MAX");
     USE_V1495_HIT = rc->get_BoolFlag("USE_V1495_HIT");
     USE_TWTDC_HIT = rc->get_BoolFlag("USE_TWTDC_HIT");
+    
     chamEff    = 0.94;
     chamResol  = 0.04;
 

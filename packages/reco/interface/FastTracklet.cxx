@@ -52,6 +52,14 @@ namespace
     static double PROB_LOOSE;
     static double PROB_TIGHT;
 
+    //Geometric positions
+    static double Z_KMAG_BEND;
+    static double Z_ABSORBER;
+    static double Z_FMAG_BEND;
+    static double Z_KFMAG_BEND;
+    static double ELOSS_KFMAG;
+    static double ELOSS_ABSORBER;
+
     //initialize global variables
     void initGlobalVariables()
     {
@@ -75,6 +83,13 @@ namespace
             INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
             PROB_LOOSE = rc->get_DoubleFlag("PROB_LOOSE");
             PROB_TIGHT = rc->get_DoubleFlag("PROB_TIGHT");
+
+            Z_KMAG_BEND = p_geomSvc->Z_KMAG_BEND();
+            Z_ABSORBER = p_geomSvc->Z_ABSORBER();
+            Z_FMAG_BEND = p_geomSvc->Z_FMAG_BEND();
+            Z_KFMAG_BEND = p_geomSvc->Z_KFMAG_BEND();
+            ELOSS_KFMAG = p_geomSvc->ELOSS_KFMAG();
+            ELOSS_ABSORBER = p_geomSvc->ELOSS_ABSORBER();
         }
     }
 }
@@ -732,7 +747,6 @@ double Tracklet::getMomentum() const
 
 int Tracklet::getCharge() const
 {
-    std::cout << __FILE__ << "  " << KMAGSTR << std::endl;
 	return x0*KMAGSTR > tx ? 1 : -1;
 }
 

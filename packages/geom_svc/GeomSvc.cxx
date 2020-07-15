@@ -371,6 +371,7 @@ void GeomSvc::init()
         map_detectorName.insert(idToName(iter->second, iter->first));
     }
 
+    //----------------------- hard-coded part is over-----------------------
     if (use_dbsvc) initPlaneDbSvc();
     else           initPlaneDirect();
 

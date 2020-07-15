@@ -15,13 +15,41 @@
 #include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/StateOnPlane.h>
 
+#include <phool/recoConsts.h>
+
 #include "SRawEvent.h"
+
+namespace
+{
+  //static flag to indicate the initialized has been done
+  static bool inited = false;
+
+  static double Z_TARGET;
+  static double Z_DUMP;
+  static double Z_UPSTREAM;
+
+  //initialize global variables
+  void initGlobalVariables()
+  {
+    if(!inited) 
+    {
+      inited = true;
+
+      recoConsts* rc = recoConsts::instance();
+      Z_TARGET   = rc->get_DoubleFlag("Z_TARGET");
+      Z_DUMP     = rc->get_DoubleFlag("Z_DUMP");
+      Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+    }
+  }
+};
 
 namespace SQGenFit
 {
 
 GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
-{}
+{
+  initGlobalVariables();
+}
 
 GFTrack::~GFTrack()
 {

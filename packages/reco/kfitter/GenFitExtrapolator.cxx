@@ -35,6 +35,9 @@ namespace
     static int NSTEPS_SHIELDING = 50;
     static int NSTEPS_FMAG = 100;
 
+    static double FMAG_LENGTH;
+    static double Z_UPSTREAM;
+
     //initialize global variables
     void initGlobalVariables()
     {
@@ -46,6 +49,9 @@ namespace
             NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
             NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
             NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
+
+            FMAG_LENGTH = rc->get_DoubleFlag("FMAG_LENGTH");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
         }
     }
 }

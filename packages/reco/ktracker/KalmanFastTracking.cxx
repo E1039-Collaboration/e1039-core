@@ -36,6 +36,8 @@ namespace
     static double SAGITTA_DUMP_WIDTH;
     static double SAGITTA_TARGET_CENTER;
     static double SAGITTA_TARGET_WIDTH;
+    static double Z_TARGET;
+    static double Z_DUMP;
 
     //Track quality cuts
     static double TX_MAX;
@@ -44,6 +46,7 @@ namespace
     static double Y0_MAX;
     static double INVP_MAX;
     static double INVP_MIN;
+    static double Z_KMAG_BEND;
 
     //MuID cuts 
     static double MUID_REJECTION;
@@ -80,11 +83,14 @@ namespace
             Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
             INVP_MAX = rc->get_DoubleFlag("INVP_MAX");
             INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
+            Z_KMAG_BEND = rc->get_DoubleFlag("Z_KMAG_BEND");
 
             SAGITTA_TARGET_CENTER = rc->get_DoubleFlag("SAGITTA_TARGET_CENTER");
             SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
             SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
-            SAGITTA_DUMP_WIDTH = rc->get_DoubleFlag("SAGITTTA_DUMP_WIDTH");
+            SAGITTA_DUMP_WIDTH = rc->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
 
             MUID_REJECTION = rc->get_DoubleFlag("MUID_REJECTION");
             MUID_Z_REF = rc->get_DoubleFlag("MUID_Z_REF");
