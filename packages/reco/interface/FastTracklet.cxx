@@ -965,7 +965,7 @@ double Tracklet::calcChisq()
         }
 
         chisq += (residual[index]*residual[index]/sigma/sigma);
-        //std::cout << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << iter->sign << "  " << iter->hit.pos << "  " << iter->hit.driftDistance << "  " << costheta << "  " << sintheta << "  " << z << "  " << (x0_st1 + tx_st1*z) << "  " << (x0 + tx*z) << "  " << (y0 + ty*z) << "  " << sigma << std::endl;
+        //std::cout << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << iter->sign << "  " << iter->hit.pos << "  " << iter->hit.driftDistance << "  " << residual[index] << "  " <<  sigma << "  " << chisq << std::endl;
     }
 
     //std::cout << chisq << std::endl;

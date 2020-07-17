@@ -53,13 +53,13 @@ void recoConsts::set_defaults()
   set_BoolFlag("OnlineAlignment", false);
   set_BoolFlag("IdealGeom", false);
 
-  set_CharFlag("AlignmentMille", "$E1039_RESOURCE/alignment/run6/alignment_chamber.txt");
+  set_CharFlag("AlignmentMille", "$E1039_RESOURCE/alignment/run6/align_mille.txt");
   set_CharFlag("AlignmentHodo", "$E1039_RESOURCE/alignment/run6/alignment_hodo.txt");
   set_CharFlag("AlignmentProp", "$E1039_RESOURCE/alignment/run6/alignment_prop.txt");
   set_CharFlag("Calibration", "$E1039_RESOURCE/alignment/run6/calibration.txt");
 
   set_CharFlag("MySQLURL", "e906-db1.fnal.gov");
-  set_CharFlag("Geometry", "geometry_G17_run3");
+  set_CharFlag("Geometry", "user_e1039_geom_plane.param_G9_run5_2");
 
   set_CharFlag("TRIGGER_Repo", "$TRIGGER_ROOT");
   set_CharFlag("TRIGGER_L1", "67");
@@ -79,7 +79,7 @@ void recoConsts::set_defaults()
   set_DoubleFlag("PROB_TIGHT", 1.E-12);
   set_DoubleFlag("BAD_HIT_REJECTION", 3.);
   set_DoubleFlag("MERGE_THRESH", 0.015);
-  set_DoubleFlag("RESOLUTION_FACTOR", 1.5);
+  set_DoubleFlag("RESOLUTION_FACTOR", 1.6);
 
   set_DoubleFlag("X_BEAM", 0.);
   set_DoubleFlag("Y_BEAM", 0.);

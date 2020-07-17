@@ -37,6 +37,14 @@ void SetupSensitiveDetectors(
     size[0]  = geom_svc->getPlaneScaleX(i);
     size[1]  = geom_svc->getPlaneScaleY(i);
     size[2]  = geom_svc->getPlaneScaleZ(i);
+
+    if(verbosity != 0)
+    {
+      std::cout << i << "  " << detectorName << " - "
+                << place[0] << " " << place[1] << " " << place[2] << " - "
+                << rot[0] << " " << rot[1] << " " << rot[2] << " - "
+                << size[0] << " " << size[1] << " " << size[2] << std::endl;
+    }
     
     PHG4BlockSubsystem* det = new PHG4BlockSubsystem(detectorName.c_str(), 0);
     det->SuperDetector(detectorName.c_str());

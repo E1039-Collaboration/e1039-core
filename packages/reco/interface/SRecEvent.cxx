@@ -106,9 +106,9 @@ namespace
             DEDX_UNIT_4 = rc->get_DoubleFlag("DEDX_FE_P4")/FMAG_LENGTH;
             PTKICK_UNIT = PT_KICK_FMAG/FMAG_LENGTH;
 
-            STEP_TARGET = fabs(Z_TARGET)/NSTEPS_TARGET;
+            STEP_TARGET = fabs(Z_UPSTREAM)/NSTEPS_TARGET;
             STEP_SHIELDING = 0.;
-            STEP_FMAG = FMAG_LENGTH/NSTEPS_FMAG;
+            STEP_FMAG = FMAG_LENGTH/NSTEPS_FMAG/2.;
         }
     }
 }
