@@ -32,6 +32,8 @@ Created: 01-21-2013
 #include <TVector3.h>
 #include <TLorentzVector.h>
 
+#include <GenFit/MeasuredStateOnPlane.h>
+
 #include "SRawEvent.h"
 
 class SRecTrack: public PHObject
@@ -40,11 +42,10 @@ public:
     SRecTrack();
 
     /// PHObject virtual overloads
-    void         identify(std::ostream& os = std::cout) const {print(os);}
-    void         Reset() {*this = SRecTrack();}
+    void         identify(std::ostream& os = std::cout) const { print(os); }
+    void         Reset() { *this = SRecTrack(); }
     int          isValid() const;
-    SRecTrack*        Clone() const {return (new SRecTrack(*this));}
-
+    SRecTrack*   Clone() const  {return (new SRecTrack(*this)); }
 
     ///Gets
     Int_t getCharge() const { return (fState[0])[0][0] > 0 ? 1 : -1; }
@@ -59,6 +60,12 @@ public:
     TMatrixD getCovariance(Int_t i) { return fCovar[i]; }
     Double_t getZ(Int_t i) { return fZ[i]; }
     Double_t getChisqAtNode(Int_t i) { return fChisqAtNode[i]; }
+
+    TVector3 getGFPlaneO(Int_t i) { return fDetPlaneVec[0][i]; }
+    TVector3 getGFPlaneU(Int_t i) { return fDetPlaneVec[1][i]; }
+    TVector3 getGFPlaneV(Int_t i) { return fDetPlaneVec[2][i]; }
+    TVectorD getGFState(Int_t i)  { return fGFStateVec[i]; }
+    TMatrixDSym getGFCov(Int_t i) { return fGFCov[i]; }
 
     Int_t getNearestNode(Double_t z);
     void getExpPositionFast(Double_t z, Double_t& x, Double_t& y, Int_t iNode = -1);
@@ -99,6 +106,7 @@ public:
     void insertCovariance(TMatrixD covar) { fCovar.push_back(covar); }
     void insertZ(Double_t z) { fZ.push_back(z); }
     void insertChisq(Double_t chisq) { fChisqAtNode.push_back(chisq); }
+    void insertGFState(const genfit::MeasuredStateOnPlane& msop);
 
     ///Fast-adjust of kmag
     void adjustKMag(double kmagStr);
@@ -228,7 +236,12 @@ private:
     Double_t fChisqDump;
     Double_t fChisqUpstream;
 
-    ClassDef(SRecTrack, 10)
+    //GenFit track info - only available if the track comes from GF fitter
+    std::vector<TVector3> fDetPlaneVec[3];
+    std::vector<TVectorD> fGFStateVec;
+    std::vector<TMatrixDSym> fGFCov;
+
+    ClassDef(SRecTrack, 11)
 };
 
 class SRecDimuon: public PHObject
@@ -236,10 +249,10 @@ class SRecDimuon: public PHObject
 public:
 
     /// PHObject virtual overloads
-    void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl;}
-    void         Reset() {*this = SRecDimuon();}
+    void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl; }
+    void         Reset() { *this = SRecDimuon(); }
     int          isValid() const;
-    SRecDimuon*        Clone() const {return (new SRecDimuon(*this));}
+    SRecDimuon*  Clone() const { return (new SRecDimuon(*this)); }
 
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
@@ -394,6 +407,68 @@ private:
     Int_t fSource2;
 
     ClassDef(SRecEvent, 5)
+};
+
+class SRecTrackVector: public PHObject
+{
+public:
+    SRecTrackVector();
+    virtual ~SRecTrackVector();
+
+    void identify(std::ostream& os = std::cout) const;
+    void Reset();
+    int  isValid() const { return 1; }
+    SRecTrackVector* Clone() const { return (new SRecTrackVector(*this)); }
+
+    bool empty() const { return recTrackVec.empty(); }
+    size_t size() const { return recTrackVec.size(); }
+    void clear() { Reset(); }
+
+    const SRecTrack* at(const size_t index) const;
+    SRecTrack* at(const size_t index);
+    void push_back(const SRecTrack* recTrack);
+    size_t erase(const size_t index);
+
+    std::vector<SRecTrack*>::const_iterator begin() const { return recTrackVec.begin(); }
+    std::vector<SRecTrack*>::const_iterator end()   const { return recTrackVec.end(); }  
+
+    std::vector<SRecTrack*>::iterator begin() { return recTrackVec.begin(); }
+    std::vector<SRecTrack*>::iterator end()   { return recTrackVec.end(); }
+
+private:
+    std::vector<SRecTrack*> recTrackVec;
+    ClassDef(SRecTrackVector, 1)
+};
+
+class SRecDimuonVector: public PHObject
+{
+public:
+    SRecDimuonVector();
+    virtual ~SRecDimuonVector();
+
+    void identify(std::ostream& os = std::cout) const;
+    void Reset();
+    int  isValid() const { return 1; }
+    SRecDimuonVector* Clone() const { return (new SRecDimuonVector(*this)); }
+
+    bool empty() const { return recDimuonVec.empty(); }
+    size_t size() const { return recDimuonVec.size(); }
+    void clear() { Reset(); }
+
+    const SRecDimuon* at(const size_t index) const;
+    SRecDimuon* at(const size_t index);
+    void push_back(const SRecDimuon* recTrack);
+    size_t erase(const size_t index);
+
+    std::vector<SRecDimuon*>::const_iterator begin() const { return recDimuonVec.begin(); }
+    std::vector<SRecDimuon*>::const_iterator end()   const { return recDimuonVec.end(); }  
+
+    std::vector<SRecDimuon*>::iterator begin() { return recDimuonVec.begin(); }
+    std::vector<SRecDimuon*>::iterator end()   { return recDimuonVec.end(); }
+
+private:
+    std::vector<SRecDimuon*> recDimuonVec;
+    ClassDef(SRecDimuonVector, 1)
 };
 
 #endif

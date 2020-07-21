@@ -23,6 +23,48 @@ namespace SQGenFit
 GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
 {}
 
+GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+{
+  _pdg = recTrack.getCharge() > 0 ? -13 : 13;
+  _trkrep = new genfit::RKTrackRep(_pdg);
+    
+  TVector3 seed_mom = recTrack.getMomentumVecSt1();
+  TVector3 seed_pos = recTrack.getPositionVecSt1();
+
+  TVectorD seed_state(6);
+  seed_state[0] = seed_pos.X();
+  seed_state[1] = seed_pos.Y();
+  seed_state[2] = seed_pos.Z();
+  seed_state[3] = seed_mom.Px();
+  seed_state[4] = seed_mom.Py();
+  seed_state[5] = seed_mom.Pz();
+
+  TMatrixDSym seed_cov(6);
+  double uncertainty[6] = {10., 10., 10., 3., 3., 10.};
+  for(int i = 0; i < 6; i++)
+  {
+    for(int j = 0; j < 6; j++)
+    {
+      seed_cov[i][j] = uncertainty[i]*uncertainty[j];
+    }
+  }
+  _track = new genfit::Track(_trkrep, seed_state, seed_cov);
+
+  _fitstates.clear();
+  int nHits = recTrack.getNHits();
+  for(int i = 0; i < nHits; ++i)
+  {
+    genfit::SharedPlanePtr detPlane(new genfit::DetPlane(recTrack.getGFPlaneO(i), recTrack.getGFPlaneU(i), recTrack.getGFPlaneV(i)));
+    
+    _fitstates.push_back(genfit::MeasuredStateOnPlane(recTrack.getGFState(i), recTrack.getGFCov(i), detPlane, _trkrep));
+  }
+}
+
+GFTrack::GFTrack(Tracklet& tracklet): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+{
+  setTracklet(tracklet, 590., false);
+}
+
 GFTrack::~GFTrack()
 {
   if(_track != nullptr) delete _track;
@@ -193,11 +235,18 @@ double GFTrack::updatePropState(const TVectorD& meas, const TMatrixDSym& V)
 bool GFTrack::setInitialStateForExtrap(const int startPtID)
 {
   genfit::AbsTrackRep* rep = _track->getCardinalRep();
-  genfit::TrackPoint*   tp = _track->getPointWithMeasurementAndFitterInfo(startPtID, rep);
-  if(tp == nullptr) return false;
+  if(_track->getNumPoints() > 0)
+  {
+    genfit::TrackPoint*   tp = _track->getPointWithMeasurementAndFitterInfo(startPtID, rep);
+    if(tp == nullptr) return false;
 
-  genfit::KalmanFitterInfo* info = static_cast<genfit::KalmanFitterInfo*>(tp->getFitterInfo(rep));
-  _propState.reset(new genfit::MeasuredStateOnPlane(info->getFittedState()));
+    genfit::KalmanFitterInfo* info = static_cast<genfit::KalmanFitterInfo*>(tp->getFitterInfo(rep));
+    _propState.reset(new genfit::MeasuredStateOnPlane(info->getFittedState()));
+  }
+  else
+  {
+    _propState.reset(new genfit::MeasuredStateOnPlane(_fitstates[startPtID]));
+  }
 
   return true;
 }
@@ -269,6 +318,7 @@ SRecTrack GFTrack::getSRecTrack()
     strack.insertHitIndex((*iter)->getBeforeFitHit().hit.index);
 
     const genfit::MeasuredStateOnPlane& fitstate = (*iter)->getTrackPoint()->getKalmanFitterInfo()->getFittedState(true);
+    strack.insertGFState(fitstate);
     
     TVector3 pos, mom;
     fitstate.getPosMom(pos, mom);
