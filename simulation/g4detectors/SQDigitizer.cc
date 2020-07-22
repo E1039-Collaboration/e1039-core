@@ -185,7 +185,7 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     double x0 = x - tx*z;
     double y0 = y - ty*z;
 
-    double z_ref = p_geomSvc->getPlanePosition(detID);\
+    double z_ref = p_geomSvc->getPlanePosition(detID);
     double x_ref = tx*z_ref + x0;
     double y_ref = ty*z_ref + y0;
 
