@@ -18,6 +18,7 @@ endforeach(LinkDefh)
 
 # source code
 include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/../simulation")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 

@@ -55,17 +55,20 @@ class PHG4HitContainer: public PHObject
   { return layers.size(); }
   std::pair<LayerIter, LayerIter> getLayers() const
      { return make_pair(layers.begin(), layers.end());} 
-  void AddLayer(const unsigned int ilayer) {layers.insert(ilayer);}
+  void AddLayer(const unsigned int ilayer);
   void RemoveZeroEDep();
   PHG4HitDefs::keytype getmaxkey(const unsigned int detid);
+
+  void registerHitOnLayer(const PHG4Hit* hit);
 
  protected:
 
   int id; //< unique identifier from hash of node name. Defined following PHG4HitDefs::get_volume_id
   Map hitmap;
   std::set<unsigned int> layers; // layers is not reset since layers must not change event by event
+  std::map<unsigned int, PHG4HitDefs::keytype> layerMaxID;
 
-  ClassDef(PHG4HitContainer,1)
+  ClassDef(PHG4HitContainer,2)
 };
 
 #endif
