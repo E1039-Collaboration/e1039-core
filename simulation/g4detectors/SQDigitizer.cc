@@ -185,6 +185,10 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     double x0 = x - tx*z;
     double y0 = y - ty*z;
 
+    double z_ref = p_geomSvc->getPlanePosition(detID);\
+    double x_ref = tx*z_ref + x0;
+    double y_ref = ty*z_ref + y0;
+
     double w = p_geomSvc->getInterception(detID, tx, ty, x0, y0);
     int eleID = p_geomSvc->getExpElementID(detID, w);
     if(eleID < 1 || eleID > p_geomSvc->getPlaneNElements(detID)) continue; //only save hits within active region
@@ -192,9 +196,9 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     SQMCHit_v1 digiHit;
     digiHit.set_track_id(track_id);
     digiHit.set_g4hit_id(g4hit.get_hit_id());
-    digiHit.set_truth_x(x);
-    digiHit.set_truth_y(y);
-    digiHit.set_truth_z(z);
+    digiHit.set_truth_x(x_ref);
+    digiHit.set_truth_y(y_ref);
+    digiHit.set_truth_z(z_ref);
     digiHit.set_truth_px(px);
     digiHit.set_truth_py(py);
     digiHit.set_truth_pz(pz);
