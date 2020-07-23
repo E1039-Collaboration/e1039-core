@@ -61,11 +61,12 @@ public:
     Double_t getZ(Int_t i) { return fZ[i]; }
     Double_t getChisqAtNode(Int_t i) { return fChisqAtNode[i]; }
 
-    TVector3 getGFPlaneO(Int_t i) { return fDetPlaneVec[0][i]; }
-    TVector3 getGFPlaneU(Int_t i) { return fDetPlaneVec[1][i]; }
-    TVector3 getGFPlaneV(Int_t i) { return fDetPlaneVec[2][i]; }
-    TVectorD getGFState(Int_t i)  { return fGFStateVec[i]; }
-    TMatrixDSym getGFCov(Int_t i) { return fGFCov[i]; }
+    TVector3 getGFPlaneO(Int_t i)  { return fGFDetPlaneVec[0][i]; }
+    TVector3 getGFPlaneU(Int_t i)  { return fGFDetPlaneVec[1][i]; }
+    TVector3 getGFPlaneV(Int_t i)  { return fGFDetPlaneVec[2][i]; }
+    TVectorD getGFAuxInfo(Int_t i) { return fGFAuxInfo[i]; }
+    TVectorD getGFState(Int_t i)   { return fGFStateVec[i]; }
+    TMatrixDSym getGFCov(Int_t i)  { return fGFCov[i]; }
 
     Int_t getNearestNode(Double_t z);
     void getExpPositionFast(Double_t z, Double_t& x, Double_t& y, Int_t iNode = -1);
@@ -237,7 +238,8 @@ private:
     Double_t fChisqUpstream;
 
     //GenFit track info - only available if the track comes from GF fitter
-    std::vector<TVector3> fDetPlaneVec[3];
+    std::vector<TVector3> fGFDetPlaneVec[3];
+    std::vector<TVectorD> fGFAuxInfo;
     std::vector<TVectorD> fGFStateVec;
     std::vector<TMatrixDSym> fGFCov;
 

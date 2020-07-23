@@ -62,16 +62,16 @@ SQReco::SQReco(const std::string& name):
   _gfitter(nullptr),
   _phfield(nullptr),
   _gfield(nullptr),
-  _hit_container_type("Vector"),
   _event(0),
   _run_header(nullptr),
   _spill_map(nullptr),
   _event_header(nullptr),
-  _hit_map(nullptr),
   _hit_vector(nullptr),
   _triggerhit_vector(nullptr),
+  _legacy_rec_container(true),
   _rawEvent(nullptr),
   _recEvent(nullptr),
+  _recTrackVec(nullptr),
   _geom_file_name(""),
   _t_geo_manager(nullptr)
 {
@@ -377,7 +377,6 @@ int SQReco::process_event(PHCompositeNode* topNode)
     up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
     _rawEvent = up_raw_event.get();
   }
-  _recEvent->setRawEvent(_rawEvent);
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
   {
@@ -398,7 +397,11 @@ int SQReco::process_event(PHCompositeNode* topNode)
   }
 
   int finderstatus = _fastfinder->setRawEvent(_rawEvent);
-  _recEvent->setRecStatus(finderstatus);
+  if(_legacy_rec_container) 
+  {
+    _recEvent->setRawEvent(_rawEvent);
+    _recEvent->setRecStatus(finderstatus);
+  }
   if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) _fastfinder->printTimers();
 
   int nTracklets = 0;
@@ -422,7 +425,8 @@ int SQReco::process_event(PHCompositeNode* topNode)
     {
       SRecTrack recTrack = iter->getSRecTrack(_enable_KF && (_fitter_type == SQReco::LEGACY));
       recTrack.setKalmanStatus(-1);
-      _recEvent->insertTrack(recTrack);
+      
+      fillRecTrack(recTrack);
     }
     else
     {
@@ -499,7 +503,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
   strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
   strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
 
-  _recEvent->insertTrack(strack);
+  fillRecTrack(strack);
   return true;
 }
 
@@ -533,7 +537,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
   strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
   strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
 
-  _recEvent->insertTrack(strack);
+  fillRecTrack(strack);
   return true;
 }
 
@@ -557,6 +561,14 @@ int SQReco::ResetEvalVars()
   return 0;
 }
 
+void SQReco::fillRecTrack(SRecTrack& recTrack)
+{
+  if(_legacy_rec_container)
+    _recEvent->insertTrack(recTrack);
+  else
+    _recTrackVec->push_back(&recTrack);
+}
+
 int SQReco::MakeNodes(PHCompositeNode* topNode) 
 {
   PHNodeIterator iter(topNode);
@@ -568,10 +580,20 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
     topNode->addNode(eventNode);
   }
 
-  _recEvent = new SRecEvent();
-  PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
-  eventNode->addNode(recEventNode);
-  if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+  if(_legacy_rec_container)
+  {
+    _recEvent = new SRecEvent();
+    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
+    eventNode->addNode(recEventNode);
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+  }
+  else
+  {
+    _recTrackVec = new SRecTrackVector();
+    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SRecTrackVector", "PHObject");
+    eventNode->addNode(recEventNode);
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecTrackVector Added");
+  }
 
   if(_enable_eval_dst)
   {
@@ -610,31 +632,18 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    if(_hit_container_type.find("Map") != std::string::npos) 
+    _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+    if(!_hit_vector) 
     {
-      _hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
-      if(!_hit_map) 
-      {
-        LogDebug("!_hit_map");
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
+      LogDebug("!_hit_vector");
+      return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    if(_hit_container_type.find("Vector") != std::string::npos) 
+    _triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+    if(!_triggerhit_vector) 
     {
-      _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-      if(!_hit_vector) 
-      {
-        LogDebug("!_hit_vector");
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
-
-      _triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-      if(!_triggerhit_vector) 
-      {
-        if(Verbosity() > 2) LogDebug("!_triggerhit_vector");
-        //return Fun4AllReturnCodes::ABORTEVENT;
-      }
+      if(Verbosity() > 2) LogDebug("!_triggerhit_vector");
+      //return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
   else
@@ -644,13 +653,6 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
     {
       if(Verbosity() > 0) LogInfo("Using SRawEvent as input for E906-like data input");
     }
-  }
-
-  _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
-  if(!_recEvent) 
-  {
-    if(Verbosity() > 2) LogDebug("!_recEvent");
-    return Fun4AllReturnCodes::ABORTEVENT;
   }
 
   return Fun4AllReturnCodes::EVENT_OK;

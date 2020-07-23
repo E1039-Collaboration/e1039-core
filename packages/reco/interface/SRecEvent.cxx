@@ -257,11 +257,12 @@ void SRecTrack::insertGFState(const genfit::MeasuredStateOnPlane& msop)
 {
     fGFStateVec.push_back(msop.getState());
     fGFCov.push_back(msop.getCov());
+    fGFAuxInfo.push_back(msop.getAuxInfo());
 
     const genfit::SharedPlanePtr& plane = msop.getPlane();
-    fDetPlaneVec[0].push_back(plane->getO());
-    fDetPlaneVec[1].push_back(plane->getU());
-    fDetPlaneVec[2].push_back(plane->getV());
+    fGFDetPlaneVec[0].push_back(plane->getO());
+    fGFDetPlaneVec[1].push_back(plane->getU());
+    fGFDetPlaneVec[2].push_back(plane->getV());
 }
 
 void SRecTrack::adjustKMag(double kmagStr)

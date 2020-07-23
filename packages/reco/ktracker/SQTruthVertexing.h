@@ -10,8 +10,33 @@ class SQTrackVector;
 class SQDimuonVector;
 class SRecEvent;
 class SRecTrack;
+class SRecDimuon;
 class SRecTrackVector;
 class SRecDimuonVector;
+
+/// An SubsysReco module to create create dimuons based on the truth vertex information
+/**
+ * This module adds the following information depending on the container type of the reconstruction info
+ *  - SRecDimuon based on either the truth dimuon info, or random compbination of all available dimuon paris
+ *  - SRecTrack, if is matched to a true track, its single muon vertex information (pos/mom/chi2) will be 
+ *    updated with truth vertex information
+ * 
+ * In all reconstruction-related modules, two different container mode is supported:
+ *  - legacy mode: all the reconstructed tracks (SRecTrack) and dimuons (SRecDimuon) are stored inside a
+ *    SRecEvent node which internally maintains vectors of all tracks and dimuons
+ *  - Fun4All-style mode: new container node SRecTrackVector and SRecDimuonVector are used to store the 
+ *    reconstructed tracks and dimuons. The access interface is the same as other fun4all containers like SQHitVector
+ *
+ * Since this module relies on the existence of SQTrack and its correlation with SRecTrack, it needs to be added after 
+ * TruthNodeMaker otherwise it will throw ABORT in InitRun().
+ * 
+ * Typical usage looks like this:
+ * 
+ *  SQTruthVertexing* truthvtx = new SQTruthVertexing();
+ *  truthvtx->set_legacy_rec_container(false);    // set the rec info container type like mentioned above, default is true
+ *  truthvtx->set_vtx_smearing(50.);              // smear the truth z_vertex to mimic resolution effect, default is 0.
+ *  se->registerSubsystem(truthvtx);
+ */
 
 class SQTruthVertexing: public SubsysReco
 {
@@ -24,22 +49,20 @@ public:
   int process_event(PHCompositeNode* topNode);
   int End(PHCompositeNode* topNode);
 
-  void set_enable_legacy_container(const bool enable = true) { legacyContainer = enable; }
-  void set_enable_vtx_smearing(const bool enable = true) { vtxSmearing = enable; };
-  void set_vtx_resolution(const double r) { vtxResolution = r;}
+  void set_legacy_rec_container(const bool enable = true) { legacyContainer = enable; }
+  void set_vtx_smearing(const double r) { vtxSmearing = r; }
 
 private:
   int MakeNodes(PHCompositeNode* topNode);
   int GetNodes(PHCompositeNode* topNode);
 
-  int findTruthTrack(SRecTrack* recTrack);
+  bool buildRecDimuon(double z_vtx, SRecTrack* posTrack, SRecTrack* negTrack, SRecDimuon* dimuon);
   bool swimTrackToVertex(SRecTrack* track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
 
   TRandom1 rndm;
 
   bool legacyContainer;
-  bool vtxSmearing;
-  double vtxResolution;
+  double vtxSmearing;
 
   SRecEvent* recEvent;
   SRecTrackVector* recTrackVec;

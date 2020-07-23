@@ -56,7 +56,7 @@ GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _prop
   {
     genfit::SharedPlanePtr detPlane(new genfit::DetPlane(recTrack.getGFPlaneO(i), recTrack.getGFPlaneU(i), recTrack.getGFPlaneV(i)));
     
-    _fitstates.push_back(genfit::MeasuredStateOnPlane(recTrack.getGFState(i), recTrack.getGFCov(i), detPlane, _trkrep));
+    _fitstates.push_back(genfit::MeasuredStateOnPlane(recTrack.getGFState(i), recTrack.getGFCov(i), detPlane, _trkrep, recTrack.getGFAuxInfo(i)));
   }
 }
 

@@ -13,15 +13,13 @@
 #include "SRecEvent.h"
 #include "GFTrack.h"
 
-
 #include <iostream>
 #include <vector>
 
 SQTruthVertexing::SQTruthVertexing(const std::string& name):
   SubsysReco(name),
   legacyContainer(false),
-  vtxSmearing(false),
-  vtxResolution(35.),
+  vtxSmearing(-1.),
   recEvent(nullptr),
   recTrackVec(nullptr),
   truthTrackVec(nullptr),
@@ -52,31 +50,29 @@ int SQTruthVertexing::InitRun(PHCompositeNode* topNode)
 
 int SQTruthVertexing::process_event(PHCompositeNode* topNode)
 {
-  //start with processing all the rec tracks using its truth vertex - match by momentum at station-1 
-  //TODO - in the future may consider using st1 hits instead?
   std::map<int, SRecTrack*> posTracks;
   std::map<int, SRecTrack*> negTracks;
-  int nTracks = legacyContainer ? recEvent->getNTracks() : recTrackVec->size();
+  int nTracks = truthTrackVec->size();
+  int nRecTracks = legacyContainer ? recEvent->getNTracks() : recTrackVec->size();
   for(int i = 0; i < nTracks; ++i)
   {
-    SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(i)) : (recTrackVec->at(i));
-    int truthID = findTruthTrack(recTrack);
-    if(truthID == -1) continue;
+    SQTrack* trk = truthTrackVec->at(i);
+    int recTrackIdx = trk->get_rec_track_id();
+    if(recTrackIdx < 0 || recTrackIdx >= nRecTracks) continue;
 
-    SQTrack* truthTrack = truthTrackVec->at(i);
-    double z_vtx = truthTrack->get_pos_vtx().Z() + (vtxSmearing ? rndm.Gaus(0., vtxResolution) : 0.);
+    SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(recTrackIdx)) : recTrackVec->at(recTrackIdx);
+    double z_vtx = trk->get_pos_vtx().Z() + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
 
-    if(!swimTrackToVertex(recTrack, z_vtx)) continue;
+    if(swimTrackToVertex(recTrack, z_vtx) < 0.) continue;
     if(recTrack->getCharge() > 0)
     {
-      posTracks[truthTrack->get_track_id()] = recTrack;
+      posTracks[trk->get_track_id()] = recTrack;
     }
     else
     {
-      negTracks[truthTrack->get_track_id()] = recTrack;
+      negTracks[trk->get_track_id()] = recTrack;
     }
   }
-
   if(posTracks.empty() || negTracks.empty()) return Fun4AllReturnCodes::EVENT_OK;
 
   //if true dimuons exist, only pair the tracks that are associated with the true dimuon, otherwise produce all possible combinations
@@ -91,7 +87,12 @@ int SQTruthVertexing::process_event(PHCompositeNode* topNode)
       if(posTracks.find(pid) == posTracks.end() || negTracks.find(mid) == negTracks.end()) continue;
 
       SRecDimuon recDimuon;
+      double z_vtx = trueDimuon->get_pos().Z() + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
+      if(!buildRecDimuon(z_vtx, posTracks[pid], negTracks[mid], &recDimuon)) continue;
+      recDimuon.trackID_pos = pid;
+      recDimuon.trackID_neg = mid;
 
+      trueDimuon->set_rec_dimuon_id(legacyContainer ? recEvent->getNDimuons() : recDimuonVec->size());
       if(!legacyContainer)
         recDimuonVec->push_back(&recDimuon);
       else
@@ -104,7 +105,11 @@ int SQTruthVertexing::process_event(PHCompositeNode* topNode)
     {
       for(auto mtrk = negTracks.begin(); mtrk != negTracks.end(); ++mtrk)
       {
+        double z_vtx = 0.5*(ptrk->second->getVertexPos().Z() + mtrk->second->getVertexPos().Z())  + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
         SRecDimuon recDimuon;
+        if(!buildRecDimuon(z_vtx, ptrk->second, mtrk->second, &recDimuon)) continue;
+        recDimuon.trackID_pos = ptrk->first;
+        recDimuon.trackID_neg = mtrk->first;
 
         if(!legacyContainer)
           recDimuonVec->push_back(&recDimuon);
@@ -113,7 +118,6 @@ int SQTruthVertexing::process_event(PHCompositeNode* topNode)
       }
     }
   }
-
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -174,17 +178,12 @@ int SQTruthVertexing::MakeNodes(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int SQTruthVertexing::findTruthTrack(SRecTrack* recTrack)
-{
-  return 0;
-}
-
 bool SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* pos, TVector3* mom)
 {
   //Basic constants
   TVector3 pU(1., 0., 0.);
   TVector3 pV(0., 1., 0.);
-  TVector3 pO(0., 0., z);
+  TVector3 pO(0., 0., z );
   
   TVectorD beamCenter(2);
   beamCenter[0] = 0.; beamCenter[1] = 0.;
@@ -192,6 +191,7 @@ bool SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* p
   beamCov.Zero();
   beamCov(0, 0) = 100.; beamCov(1, 1) = 100.;
 
+  double chi2 = -1.;
   try
   {
     SQGenFit::GFTrack gftrk(*track);
@@ -203,28 +203,79 @@ bool SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* p
     {
       TVector3 pos, mom;
 
-      track->setChisqVertex(gftrk.updatePropState(beamCenter, beamCov));
+      chi2 = gftrk.updatePropState(beamCenter, beamCov);
       gftrk.getExtrapPosMom(pos, mom);
 
+      track->setChisqVertex(chi2);
       track->setVertexPos(pos);
       track->setVertexMom(mom);
     }
     else
     {
-      gftrk.updatePropState(beamCenter, beamCov);
+      chi2 = gftrk.updatePropState(beamCenter, beamCov);
       gftrk.getExtrapPosMom(*pos, *mom);
     }
   }
   catch(genfit::Exception& e)
   {
     std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << track->getVertexPos().Z() << ": " << e.what() << std::endl;
-    return false;
+    return -1.;
   }
   catch(double len)
   {
     std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << track->getVertexPos().Z() << ": " << len << std::endl;
-    return false;
+    return -1.;
   }
+
+  return chi2;
+}
+
+bool SQTruthVertexing::buildRecDimuon(double z_vtx, SRecTrack* posTrack, SRecTrack* negTrack, SRecDimuon* dimuon)
+{
+  const double M_MU = 0.1056583745;
+
+  TVector3 p_mom, p_pos = posTrack->getVertexPos();
+  double p_chi2;
+  if(fabs(p_pos.Z() - z_vtx) > 1.)
+  {
+    p_chi2 = swimTrackToVertex(posTrack, z_vtx, &p_pos, &p_mom);
+    if(p_chi2 < 0.) return false;
+  }
+  else
+  {
+    p_mom = posTrack->getVertexMom();
+    p_chi2 = posTrack->getChisqVertex();
+  }
+
+  TVector3 m_mom, m_pos = negTrack->getVertexPos();
+  double m_chi2;
+  if(fabs(m_pos.Z() - z_vtx) > 1.)
+  {
+    m_chi2 = swimTrackToVertex(negTrack, z_vtx, &p_pos, &p_mom);
+    if(m_chi2 < 0.) return false;
+  }
+  else
+  {
+    m_mom = negTrack->getVertexMom();
+    m_chi2 = negTrack->getChisqVertex();
+  }
+
+  dimuon->p_pos.SetVectM(p_mom, M_MU);
+  dimuon->p_neg.SetVectM(m_mom, M_MU);
+  dimuon->chisq_kf = p_chi2 + m_chi2;
+  dimuon->vtx.SetXYZ(0., 0., z_vtx);
+  dimuon->vtx_pos = p_pos;
+  dimuon->vtx_neg = m_pos;
+  dimuon->proj_target_pos = posTrack->getTargetPos();
+  dimuon->proj_dump_pos = posTrack->getDumpPos();
+  dimuon->proj_target_neg = negTrack->getTargetPos();
+  dimuon->proj_dump_neg = negTrack->getDumpPos();
+  dimuon->chisq_target = posTrack->getChisqTarget() + negTrack->getChisqTarget();
+  dimuon->chisq_dump = posTrack->getChisqDump() + negTrack->getChisqDump();
+  dimuon->chisq_upstream = posTrack->getChisqUpstream() + negTrack->getChisqUpstream();
+  dimuon->chisq_single = 0.;
+  dimuon->chisq_vx = 0.;
+  dimuon->calcVariables();
 
   return true;
 }
