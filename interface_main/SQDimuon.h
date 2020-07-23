@@ -16,6 +16,9 @@ class SQDimuon: public PHObject {
   virtual int  get_dimuon_id() const = 0;
   virtual void set_dimuon_id(const int a) = 0;
 
+  virtual int  get_rec_dimuon_id() const = 0;
+  virtual void set_rec_dimuon_id(const int a) = 0;
+
   virtual int  get_pdg_id() const = 0;
   virtual void set_pdg_id(const int a) = 0;
 

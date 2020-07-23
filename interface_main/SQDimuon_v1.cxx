@@ -3,6 +3,7 @@ using namespace std;
 
 SQDimuon_v1::SQDimuon_v1()
   : _id(-1)
+  , _rec_id(-1)
   , _pdg_id(0)
   , _track_id_pos(0)
   , _track_id_neg(0)

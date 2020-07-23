@@ -15,6 +15,9 @@ class SQTrack_v1 : public SQTrack {
   virtual int  get_track_id() const { return _id; }
   virtual void set_track_id(const int a)   { _id = a; }
 
+  virtual int  get_rec_track_id() const { return _rec_id; }
+  virtual void set_rec_track_id(const int a)   { _rec_id = a; }
+
   virtual int  get_charge() const { return _charge; }
   virtual void set_charge(const int a)   { _charge = a; }
 
@@ -41,6 +44,7 @@ class SQTrack_v1 : public SQTrack {
 
  protected:
   int _id;
+  int _rec_id;
   int _charge;
   int _n_hits;
   TVector3 _pos_vtx;

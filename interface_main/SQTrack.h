@@ -16,6 +16,9 @@ class SQTrack: public PHObject {
   virtual int  get_track_id() const = 0;
   virtual void set_track_id(const int a) = 0;
 
+  virtual int  get_rec_track_id() const = 0;
+  virtual void set_rec_track_id(const int a) = 0;
+
   virtual int  get_charge() const = 0;
   virtual void set_charge(const int a) = 0;
 
