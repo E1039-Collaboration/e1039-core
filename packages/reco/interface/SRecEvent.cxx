@@ -38,6 +38,11 @@ SRecTrack::SRecTrack()
     fZ.clear();
     fChisqAtNode.clear();
 
+    for(Int_t i = 0; i < 3; ++i) fGFDetPlaneVec[i].clear();
+    fGFAuxInfo.clear();
+    fGFStateVec.clear();
+    fGFCov.clear();
+
     fChisqVertex = -99.;
     fVertexPos.SetXYZ(999., 999., 999.);
     fStateVertex.ResizeTo(5, 1);
