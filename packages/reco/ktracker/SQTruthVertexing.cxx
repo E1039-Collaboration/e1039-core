@@ -99,25 +99,29 @@ int SQTruthVertexing::process_event(PHCompositeNode* topNode)
         recEvent->insertDimuon(recDimuon);
     }
   }
-  else
-  {
-    for(auto ptrk = posTracks.begin(); ptrk != posTracks.end(); ++ptrk)
-    {
-      for(auto mtrk = negTracks.begin(); mtrk != negTracks.end(); ++mtrk)
-      {
-        double z_vtx = 0.5*(ptrk->second->getVertexPos().Z() + mtrk->second->getVertexPos().Z())  + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
-        SRecDimuon recDimuon;
-        if(!buildRecDimuon(z_vtx, ptrk->second, mtrk->second, &recDimuon)) continue;
-        recDimuon.trackID_pos = ptrk->first;
-        recDimuon.trackID_neg = mtrk->first;
+  // else
+  // {
+  //   for(auto ptrk = posTracks.begin(); ptrk != posTracks.end(); ++ptrk)
+  //   {
+  //     double z_pos = ptrk->second->getVertexPos().Z();
+  //     for(auto mtrk = negTracks.begin(); mtrk != negTracks.end(); ++mtrk)
+  //     {
+  //       double z_neg = mtrk->second->getVertexPos().Z();
+  //       if(fabs(z_pos - z_neg) > 100.) continue;
 
-        if(!legacyContainer)
-          recDimuonVec->push_back(&recDimuon);
-        else
-          recEvent->insertDimuon(recDimuon);
-      }
-    }
-  }
+  //       double z_vtx = 0.5*(z_pos + z_neg) + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
+  //       SRecDimuon recDimuon;
+  //       if(!buildRecDimuon(z_vtx, ptrk->second, mtrk->second, &recDimuon)) continue;
+  //       recDimuon.trackID_pos = ptrk->first;
+  //       recDimuon.trackID_neg = mtrk->first;
+
+  //       if(!legacyContainer)
+  //         recDimuonVec->push_back(&recDimuon);
+  //       else
+  //         recEvent->insertDimuon(recDimuon);
+  //     }
+  //   }
+  // }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
