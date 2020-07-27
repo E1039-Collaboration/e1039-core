@@ -17,6 +17,7 @@ Created: 01-21-2013
 #include <GlobalConsts.h>
 
 #include <phool/PHObject.h>
+#include <interface_main/SQTrack.h>
 
 #include <iostream>
 #include <vector>
@@ -25,6 +26,7 @@ Created: 01-21-2013
 #include <algorithm>
 #include <map>
 #include <cmath>
+#include <stdexcept>
 
 #include <TObject.h>
 #include <TROOT.h>
@@ -36,7 +38,7 @@ Created: 01-21-2013
 
 #include "SRawEvent.h"
 
-class SRecTrack: public PHObject
+class SRecTrack: public SQTrack
 {
 public:
     SRecTrack();
@@ -46,6 +48,52 @@ public:
     void         Reset() { *this = SRecTrack(); }
     int          isValid() const;
     SRecTrack*   Clone() const  {return (new SRecTrack(*this)); }
+
+    /// SQTrack virtual overloads
+    virtual int  get_track_id() const      { return 0; }
+    virtual void set_track_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_rec_track_id() const      { return 0; }
+    virtual void set_rec_track_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_charge() const      { return getCharge(); }
+    virtual void set_charge(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_num_hits() const      { return getNHits(); }
+    virtual void set_num_hits(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TVector3 get_pos_vtx() const           { return fVertexPos; }
+    virtual void     set_pos_vtx(const TVector3 a) { fVertexPos = a;    } 
+
+    virtual TVector3 get_pos_st1() const           { return getPositionVecSt1(); }
+    virtual void     set_pos_st1(const TVector3 a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TVector3 get_pos_st3() const           { return getPositionVecSt3(); }
+    virtual void     set_pos_st3(const TVector3 a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_vtx() const                 { return getlvec(fVertexMom); }
+    virtual void           set_mom_vtx(const TLorentzVector a) { fVertexMom = a.Vect(); }
+
+    virtual TLorentzVector get_mom_st1() const                 { return getlvec(getMomentumVecSt1()); }
+    virtual void           set_mom_st1(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_st3() const                 { return getlvec(getMomentumVecSt3()); }
+    virtual void           set_mom_st3(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual double get_chisq() const          { return fChisq; }
+    virtual double get_chisq_target() const   { return fChisqVertex; }
+    virtual double get_chisq_dump() const     { return fChisqDump; } 
+    virtual double get_chsiq_upstream() const { return fChisqUpstream; } 
+
+    virtual TVector3 get_pos_target() const   { return fTargetPos; }
+    virtual TVector3 get_pos_dump() const     { return fDumpPos; }
+
+    virtual TLorentzVector get_mom_target() const { return getlvec(fTargetMom); }
+    virtual TLorentzVector get_mom_dump() const   { return getlvec(fDumpMom); }
+
+    virtual int get_hit_id(const int i) const { return fHitIndex[i]; }
+
+    inline TLorentzVector getlvec(const TVector3& vec) const { TLorentzVector lvec; lvec.SetVectM(vec, M_MU); return lvec; }
 
     ///Gets
     Int_t getCharge() const { return (fState[0])[0][0] > 0 ? 1 : -1; }
@@ -74,24 +122,24 @@ public:
     Double_t getExpMomentumFast(Double_t z, Double_t& px, Double_t& py, Double_t& pz, Int_t iNode = -1);
     Double_t getExpMomentumFast(Double_t z, Int_t iNode = -1);
 
-    Double_t getMomentumSt1(Double_t& px, Double_t& py, Double_t& pz) { return getMomentum(fState.front(), px, py, pz); }
-    Double_t getMomentumSt1() { Double_t px, py, pz; return getMomentumSt1(px, py, pz); }
-    TVector3 getMomentumVecSt1() { Double_t px, py, pz; getMomentumSt1(px, py, pz); return TVector3(px, py, pz); }
+    Double_t getMomentumSt1(Double_t& px, Double_t& py, Double_t& pz) const { return getMomentum(fState.front(), px, py, pz); }
+    Double_t getMomentumSt1() const { Double_t px, py, pz; return getMomentumSt1(px, py, pz); }
+    TVector3 getMomentumVecSt1() const { Double_t px, py, pz; getMomentumSt1(px, py, pz); return TVector3(px, py, pz); }
 
-    Double_t getMomentumSt3(Double_t& px, Double_t& py, Double_t& pz) { return getMomentum(fState.back(), px, py, pz); }
-    Double_t getMomentumSt3() { Double_t px, py, pz; return getMomentumSt3(px, py, pz); }
-    TVector3 getMomentumVecSt3() { Double_t px, py, pz; getMomentumSt3(px, py, pz); return TVector3(px, py, pz); }
+    Double_t getMomentumSt3(Double_t& px, Double_t& py, Double_t& pz) const { return getMomentum(fState.back(), px, py, pz); }
+    Double_t getMomentumSt3() const { Double_t px, py, pz; return getMomentumSt3(px, py, pz); }
+    TVector3 getMomentumVecSt3() const { Double_t px, py, pz; getMomentumSt3(px, py, pz); return TVector3(px, py, pz); }
 
-    Double_t getPositionSt1(Double_t& x, Double_t& y) { return getPosition(fState.front(), x, y); }
-    Double_t getPositionSt1() { Double_t x, y; return getPositionSt1(x, y); }
-    TVector3 getPositionVecSt1() { Double_t x, y; getPositionSt1(x, y); return TVector3(x, y, fZ.front()); }
+    Double_t getPositionSt1(Double_t& x, Double_t& y) const { return getPosition(fState.front(), x, y); }
+    Double_t getPositionSt1() const { Double_t x, y; return getPositionSt1(x, y); }
+    TVector3 getPositionVecSt1() const { Double_t x, y; getPositionSt1(x, y); return TVector3(x, y, fZ.front()); }
 
-    Double_t getPositionSt3(Double_t& x, Double_t& y) { return getPosition(fState.back(), x, y); }
-    Double_t getPositionSt3() { Double_t x, y; return getPositionSt3(x, y); }
-    TVector3 getPositionVecSt3() { Double_t x, y; getPositionSt3(x, y); return TVector3(x, y, fZ.back()); }
+    Double_t getPositionSt3(Double_t& x, Double_t& y) const { return getPosition(fState.back(), x, y); }
+    Double_t getPositionSt3() const { Double_t x, y; return getPositionSt3(x, y); }
+    TVector3 getPositionVecSt3() const { Double_t x, y; getPositionSt3(x, y); return TVector3(x, y, fZ.back()); }
 
-    Double_t getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz);
-    Double_t getPosition(TMatrixD& state, Double_t& x, Double_t& y);
+    Double_t getMomentum(const TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz) const;
+    Double_t getPosition(const TMatrixD& state, Double_t& x, Double_t& y) const;
 
     ///Fit status
     Bool_t isKalmanFitted() { return fKalmanStatus > 0; }

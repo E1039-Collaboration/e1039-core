@@ -321,7 +321,7 @@ Double_t SRecTrack::getExpMomentumFast(Double_t z, Double_t& px, Double_t& py, D
 
 }
 
-Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz)
+Double_t SRecTrack::getMomentum(const TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz) const
 {
     Double_t p = 1./fabs(state[0][0]);
     pz = p/sqrt(1. + state[1][0]*state[1][0] + state[2][0]*state[2][0]);
@@ -331,7 +331,7 @@ Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Dou
     return p;
 }
 
-Double_t SRecTrack::getPosition(TMatrixD& state, Double_t& x, Double_t& y)
+Double_t SRecTrack::getPosition(const TMatrixD& state, Double_t& x, Double_t& y) const
 {
     x = state[3][0];
     y = state[4][0];
