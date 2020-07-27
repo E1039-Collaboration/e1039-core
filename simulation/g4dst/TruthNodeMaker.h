@@ -45,6 +45,7 @@ class TruthNodeMaker: public SubsysReco {
   SQHitVector*      m_vec_hit;
   SRecEvent*        m_rec_evt;
   SRecTrackVector*  m_vec_rec_trk;
+  std::map<int, PHG4HitContainer*> m_g4hc;
 
   // output nodes
   SQMCEvent*      m_evt;
@@ -74,8 +75,8 @@ class TruthNodeMaker: public SubsysReco {
   int  GetNodes(PHCompositeNode *topNode);
   int MakeNodes(PHCompositeNode *topNode);
 
-  int FindHitAtStation(int target_detIDs[], const std::vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom);
-  int FindCommonHitIDs(std::vector<int>& hitidvec1, std::vector<int>& hitidvec2);
+  bool FindHitAtStation(int target_detIDs[], int trkid, const std::vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom);
+  int  FindCommonHitIDs(std::vector<int>& hitidvec1, std::vector<int>& hitidvec2);
 };
 
 #endif /* _TRUTH_NODE_MAKER__H_ */

@@ -38,7 +38,9 @@ TruthNodeMaker::TruthNodeMaker()
   , m_do_truthtrk_tagging(true)
   , m_matching_threshold(0.75)
 {
-  ;
+  for(int i = 0; i <= nChamberPlanes; ++i) {
+    m_g4hc[i] = nullptr;
+  }
 }
 
 TruthNodeMaker::~TruthNodeMaker()
@@ -178,15 +180,15 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
     TVector3 pos;
     TLorentzVector mom;
     int detIDs_st1[6] = {3, 4, 2, 5, 1, 6};
-    if(FindHitAtStation(detIDs_st1, trkid_hitvec[trkid], pos, mom) >= 0) {
+    if(FindHitAtStation(detIDs_st1, trkid, trkid_hitvec[trkid], pos, mom)) {
       trk->set_pos_st1(pos);
       trk->set_mom_st1(mom);
     }
 
     int detIDs_st3p[6] = {21, 22, 20, 23, 19, 24};
     int detIDs_st3m[6] = {27, 28, 26, 29, 25, 30};
-    if(FindHitAtStation(detIDs_st3p, trkid_hitvec[trkid], pos, mom) >= 0 ||
-       FindHitAtStation(detIDs_st3m, trkid_hitvec[trkid], pos, mom) >= 0) {
+    if(FindHitAtStation(detIDs_st3p, trkid, trkid_hitvec[trkid], pos, mom) ||
+       FindHitAtStation(detIDs_st3m, trkid, trkid_hitvec[trkid], pos, mom)) {
       trk->set_pos_st3(pos);
       trk->set_mom_st3(mom);
     }
@@ -285,6 +287,13 @@ int TruthNodeMaker::GetNodes(PHCompositeNode* topNode)
     cout << Name() << ": failed locating HepMCGenEvent, event process info will be missing" << endl;
   }
 
+  GeomSvc* p_geomSvc = GeomSvc::instance();
+  for(int i = 1; i <= nChamberPlanes; ++i)
+  {
+    string g4hitNodeName = "G4HIT_" + p_geomSvc->getDetectorName(i);
+    m_g4hc[i] = findNode::getClass<PHG4HitContainer>(topNode, g4hitNodeName);
+  }
+
   if(m_legacy_rec_container) {
     m_rec_evt = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
     if(!m_rec_evt) {
@@ -322,20 +331,32 @@ int TruthNodeMaker::MakeNodes(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int TruthNodeMaker::FindHitAtStation(int target_detIDs[], const vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom)
+bool TruthNodeMaker::FindHitAtStation(int target_detIDs[], int trkid, const vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom)
 {
   const double M_MU = 0.1056583745; // GeV
   for(int i = 0; i < 6; ++i) {
+    //We try to find the wanted hit from SQHitVector first
     for(unsigned int j = 0; j < hitvec.size(); ++j) {
       if(hitvec[j]->get_detector_id() == target_detIDs[i]) {
         pos.SetXYZ(hitvec[j]->get_truth_x(), hitvec[j]->get_truth_y(), hitvec[j]->get_truth_z());
         mom.SetXYZM(hitvec[j]->get_truth_px(), hitvec[j]->get_truth_py(), hitvec[j]->get_truth_pz(), M_MU);
+        return true;
+      }
+    }
 
-        return j;
+    //if failed, we resort to the default solution of G4HIT list
+    if(!m_g4hc[target_detIDs[i]]) continue;
+    PHG4HitContainer::ConstRange range = m_g4hc[target_detIDs[i]]->getHits();
+    for(PHG4HitContainer::ConstIterator it = range.first; it != range.second; it++) {
+      PHG4Hit* hit = it->second;
+      if(hit->get_trkid() == trkid) {
+        pos.SetXYZ (hit->get_x(0)     , hit->get_y(0)     , hit->get_z(0)       );
+        mom.SetXYZM(hit->get_px(0),     hit->get_py(0),     hit->get_pz(0), M_MU);
+        return true;
       }
     }
   }
-  return -1;
+  return false;
 }
 
 int TruthNodeMaker::FindCommonHitIDs(vector<int>& hitidvec1, vector<int>& hitidvec2)
