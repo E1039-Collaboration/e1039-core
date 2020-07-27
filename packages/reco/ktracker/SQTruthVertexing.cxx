@@ -60,7 +60,7 @@ int SQTruthVertexing::process_event(PHCompositeNode* topNode)
     int recTrackIdx = trk->get_rec_track_id();
     if(recTrackIdx < 0 || recTrackIdx >= nRecTracks) continue;
 
-    SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(recTrackIdx)) : recTrackVec->at(recTrackIdx);
+    SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(recTrackIdx)) : dynamic_cast<SRecTrack*>(recTrackVec->at(recTrackIdx));
     double z_vtx = trk->get_pos_vtx().Z() + (vtxSmearing>0. ? rndm.Gaus(0., vtxSmearing) : 0.);
 
     if(swimTrackToVertex(recTrack, z_vtx) < 0.) continue;
@@ -152,7 +152,7 @@ int SQTruthVertexing::GetNodes(PHCompositeNode* topNode)
   }
   else
   {
-    recTrackVec = findNode::getClass<SRecTrackVector>(topNode, "SRecTrackVector");
+    recTrackVec = findNode::getClass<SQTrackVector>(topNode, "SQRecTrackVector");
   }
 
   if((!recEvent) && (!recTrackVec))
@@ -236,8 +236,6 @@ bool SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* p
 
 bool SQTruthVertexing::buildRecDimuon(double z_vtx, SRecTrack* posTrack, SRecTrack* negTrack, SRecDimuon* dimuon)
 {
-  const double M_MU = 0.1056583745;
-
   TVector3 p_mom, p_pos = posTrack->getVertexPos();
   double p_chi2;
   if(fabs(p_pos.Z() - z_vtx) > 1.)

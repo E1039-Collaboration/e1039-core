@@ -18,7 +18,6 @@ class SQTrackVector;
 class SQDimuonVector;
 class SQHitVector;
 class SRecEvent;
-class SRecTrackVector;
 class SQHit;
 class GeomSvc;
 
@@ -44,7 +43,7 @@ class TruthNodeMaker: public SubsysReco {
   PHG4TruthInfoContainer* g4true;
   SQHitVector*      m_vec_hit;
   SRecEvent*        m_rec_evt;
-  SRecTrackVector*  m_vec_rec_trk;
+  SQTrackVector*    m_vec_rec_trk;
   std::map<int, PHG4HitContainer*> m_g4hc;
 
   // output nodes

@@ -216,7 +216,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
   } else {
     n_rtrks = m_vec_rec_trk->size();
     for(int i = 0; i < n_rtrks; ++i) {
-      SRecTrack* recTrack = m_vec_rec_trk->at(i);
+      SRecTrack* recTrack = dynamic_cast<SRecTrack*>(m_vec_rec_trk->at(i));
       rtrkid_hitidvec[i] = vector<int>();
       
       int n_rhits = recTrack->getNHits();
@@ -301,7 +301,7 @@ int TruthNodeMaker::GetNodes(PHCompositeNode* topNode)
       cout << Name() << ": failed locating rec event, no truth track tagging." << endl;
     }
   } else {
-    m_vec_rec_trk = findNode::getClass<SRecTrackVector>(topNode, "SRecTrackVector");
+    m_vec_rec_trk = findNode::getClass<SQTrackVector>(topNode, "SQRecTrackVector");
     if(!m_vec_rec_trk) {
       m_do_truthtrk_tagging = false;
       cout << Name() << ": failed locating rec track vector, no truth track tagging." << endl;
@@ -333,7 +333,6 @@ int TruthNodeMaker::MakeNodes(PHCompositeNode* topNode)
 
 bool TruthNodeMaker::FindHitAtStation(int target_detIDs[], int trkid, const vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom)
 {
-  const double M_MU = 0.1056583745; // GeV
   for(int i = 0; i < 6; ++i) {
     //We try to find the wanted hit from SQHitVector first
     for(unsigned int j = 0; j < hitvec.size(); ++j) {

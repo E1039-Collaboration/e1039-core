@@ -15,6 +15,7 @@
 #include <interface_main/SQRun_v1.h>
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQTrackVector_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/PHTFileServer.h>
@@ -583,10 +584,10 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
   }
   else
   {
-    _recTrackVec = new SRecTrackVector();
-    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SRecTrackVector", "PHObject");
+    _recTrackVec = new SQTrackVector_v1();
+    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject");
     eventNode->addNode(recEventNode);
-    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecTrackVector Added");
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
   }
 
   if(_enable_eval_dst)

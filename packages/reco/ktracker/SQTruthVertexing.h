@@ -11,7 +11,6 @@ class SQDimuonVector;
 class SRecEvent;
 class SRecTrack;
 class SRecDimuon;
-class SRecTrackVector;
 class SRecDimuonVector;
 
 /// An SubsysReco module to create create dimuons based on the truth vertex information
@@ -64,8 +63,8 @@ private:
   bool legacyContainer;
   double vtxSmearing;
 
-  SRecEvent* recEvent;
-  SRecTrackVector* recTrackVec;
+  SRecEvent*      recEvent;
+  SQTrackVector*  recTrackVec;
   SQTrackVector*  truthTrackVec;
   SQDimuonVector* truthDimuonVec;
 

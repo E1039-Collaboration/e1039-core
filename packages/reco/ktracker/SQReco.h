@@ -32,7 +32,7 @@ class SQSpillMap;
 class SQEvent;
 class SQHitMap;
 class SQHitVector;
-class SRecTrackVector;
+class SQTrackVector;
 
 class TFile;
 class TTree;
@@ -135,7 +135,7 @@ private:
   bool _legacy_rec_container;
   SRawEvent* _rawEvent;
   SRecEvent* _recEvent;
-  SRecTrackVector* _recTrackVec;
+  SQTrackVector* _recTrackVec;
 
   std::string  _geom_file_name;
   TGeoManager* _t_geo_manager;
