@@ -35,6 +35,9 @@ namespace
 	//static flag of kmag on/off
 	static bool KMAG_ON;
 
+    //corase geometry
+    static bool COARSE_MODE;
+
 	//static flag of kmag strength
 	static double FMAGSTR;
 	static double KMAGSTR;
@@ -70,6 +73,8 @@ namespace
 
             recoConsts* rc = recoConsts::instance();
             KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
+
             FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
             KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
             PT_KICK_FMAG = rc->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
@@ -944,13 +949,10 @@ double Tracklet::calcChisq()
         int index = detectorID - 1;
 
         double sigma;
-#ifdef COARSE_MODE
-        if(iter->sign == 0) sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
-#else
-        //if(iter->sign == 0) sigma = fabs(iter->hit.driftDistance);
-        if(iter->sign == 0) sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
-#endif
-        if(iter->sign != 0) sigma = p_geomSvc->getPlaneResolution(detectorID);
+        if(iter->sign == 0 || COARSE_MODE) 
+            sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
+        else
+            sigma = p_geomSvc->getPlaneResolution(detectorID);
 
         //double p = iter->hit.pos + iter->sign*fabs(iter->hit.driftDistance);
         if(KMAG_ON && stationID == nStations && detectorID <= 12)

@@ -50,6 +50,7 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/PHG4InputFilter.h
   ${PROJECT_SOURCE_DIR}/PHG4PileupGenerator.h
   ${PROJECT_SOURCE_DIR}/PHG4SimpleEventGenerator.h
+  ${PROJECT_SOURCE_DIR}/SQCosmicGen.h
   ${PROJECT_SOURCE_DIR}/PHG4PSScanGenerator.h
   ${PROJECT_SOURCE_DIR}/PHG4ParticleGun.h
   ${PROJECT_SOURCE_DIR}/PHG4ParticleGenerator.h
@@ -129,6 +130,7 @@ add_library(g4testbench SHARED
     ${PROJECT_SOURCE_DIR}/PHG4ParameterisationTubsEta.cc
     ${PROJECT_SOURCE_DIR}/PHG4PileupGenerator.cc
     ${PROJECT_SOURCE_DIR}/PHG4SimpleEventGenerator.cc
+    ${PROJECT_SOURCE_DIR}/SQCosmicGen.cc
     ${PROJECT_SOURCE_DIR}/PHG4PSScanGenerator.cc
     ${PROJECT_SOURCE_DIR}/PHG4ParticleGun.cc
     ${PROJECT_SOURCE_DIR}/PHG4ParticleGeneratorBase.cc
@@ -185,6 +187,7 @@ file(GLOB dist_headers
   PHG4Reco.h
   PHG4RegionInformation.h
   PHG4SimpleEventGenerator.h
+  SQCosmicGen.h
   PHG4ParticleGun.h
   PHG4PSScanGenerator.h
   PHG4Shower.h

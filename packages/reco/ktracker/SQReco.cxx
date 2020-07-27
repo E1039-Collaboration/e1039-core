@@ -649,3 +649,11 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
+
+void SQReco::add_eval_list(int listID)
+{
+  if(std::find(_eval_listIDs.begin(), _eval_listIDs.end(), listID) == _eval_listIDs.end())
+  {
+    _eval_listIDs.push_back(listID);
+  }
+}

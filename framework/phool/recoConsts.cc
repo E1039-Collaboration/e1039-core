@@ -46,8 +46,8 @@ void recoConsts::set_defaults()
   //set to appropriate values in the configuration set
   set_BoolFlag("KMAG_ON", true);
   set_BoolFlag("COARSE_MODE", false);
-  set_BoolFlag("ALIGNMENT_MODE", false);
   set_BoolFlag("MC_MODE", false);
+  set_BoolFlag("COSMIC_MODE", false);
 
   //Following values are fed to GeomSvc
   set_BoolFlag("OnlineAlignment", false);
@@ -83,8 +83,8 @@ void recoConsts::set_defaults()
 
   set_DoubleFlag("X_BEAM", 0.);
   set_DoubleFlag("Y_BEAM", 0.);
-  set_DoubleFlag("SIGX_BEAM", 0.5);
-  set_DoubleFlag("SIGY_BEAM", 0.5);
+  set_DoubleFlag("SIGX_BEAM", 10.);
+  set_DoubleFlag("SIGY_BEAM", 10.);
 
   set_CharFlag("EventReduceOpts", "aoc");
 
@@ -103,6 +103,12 @@ void recoConsts::set_defaults()
   set_DoubleFlag("RejectWinDC3p", 0.16);
   set_DoubleFlag("RejectWinDC3m", 0.14);
 
+  set_IntFlag("MaxHitsDC0", 100);
+  set_IntFlag("MaxHitsDC1", 100);
+  set_IntFlag("MaxHitsDC2", 100);
+  set_IntFlag("MaxHitsDC3p", 100);
+  set_IntFlag("MaxHitsDC3m", 100);
+
   //Following numbers are related to the geometric set up thus should not
   //change under most circumstances, unless one is studying the effects of these cuts
   //could be excluded from the configuration set
@@ -111,6 +117,7 @@ void recoConsts::set_defaults()
   set_DoubleFlag("SAGITTA_DUMP_CENTER", 1.5);
   set_DoubleFlag("SAGITTA_DUMP_WIDTH", 0.3);
 
+  set_IntFlag("MUID_MINHITS", 1);
   set_DoubleFlag("MUID_REJECTION", 4.);
   set_DoubleFlag("MUID_THE_P0", 0.11825);
   set_DoubleFlag("MUID_EMP_P0", 0.00643);
@@ -153,7 +160,22 @@ void recoConsts::init(int runNo, bool verbose)
   return;
 }
 
-void recoConsts::init(const std::string& filename, bool verbose)
+void recoConsts::init(const std::string& setname, bool verbose)
+{
+  if(setname == "cosmic")
+  {
+    set_BoolFlag("KMAG_ON", false);
+
+    set_DoubleFlag("TX_MAX", 1.);
+    set_DoubleFlag("TY_MAX", 1.);
+    set_DoubleFlag("X0_MAX", 1000.);
+    set_DoubleFlag("Y0_MAX", 1000.);
+  }
+
+  if(verbose) Print();
+}
+
+void recoConsts::initfile(const std::string& filename, bool verbose)
 {
   ReadFromFile(filename, verbose);
   return;

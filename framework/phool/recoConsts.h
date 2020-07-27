@@ -8,8 +8,9 @@
  * This class instantiates a singleton object that can be accessed via recoConsts::instance()
  * User is expected to do the following at the begining of the user macro:
  *   - recoConsts* rc = recoConsts::instance();    // get an instance of the recoConsts
- *   - rc->init(runNo);    // initiate the constants by run numer, or
- *   - rc->init("cosmic"); // initiate the constants by a pre-defined parameter set, or
+ *   - rc->init(runNo);    // initiatiate the constants by run numer, or
+ *   - rc->init("cosmic"); // initiatiate the constants by a pre-defined parameter set, or
+ *   - rc->initfile("const.txt"); //initialize the constants by reading a file, or
  *   - rc->set_DoubleFlag("something", somevalue);  // set specific constants individually
  */ 
 
@@ -26,6 +27,9 @@ public:
 
   //! initialize the constants by pre-defined parameter set name - not implemented yet
   void init(const std::string& setname, bool verbose = false);
+
+  //! initialize by reading a file
+  void initfile(const std::string& filename, bool verbose = false);
 
   //! overide the virtual function to expand the environmental variables
   virtual void set_CharFlag(const std::string& name, const std::string& flag);
