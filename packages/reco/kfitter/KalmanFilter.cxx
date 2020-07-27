@@ -12,7 +12,8 @@ Created: 11-21-2011
 #include <algorithm>
 #include <cmath>
 
-#include "jobopts_svc/JobOptsSvc.h"
+#include <phool/recoConsts.h>
+
 #include "KalmanFilter.h"
 
 KalmanFilter* KalmanFilter::p_kmfit = nullptr;
@@ -86,7 +87,7 @@ bool KalmanFilter::predict(Node& _node)
     _extrapolator.getPropagator(_node.getPropagator());
     _node.setPredictionDone();
 
-    if(z_pred > FMAG_LENGTH)
+    if(z_pred > recoConsts::instance()->get_DoubleFlag("FMAG_LENGTH"))
     {
         _node.getPredicted()._covar_kf = SMatrix::getABCt(_node.getPropagator(), _trkpar_curr._covar_kf, _node.getPropagator());
     }

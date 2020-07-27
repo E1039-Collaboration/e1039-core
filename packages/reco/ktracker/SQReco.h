@@ -25,7 +25,6 @@ class KalmanFitter;
 class EventReducer;
 class SRawEvent;
 class SRecEvent;
-class JobOptsSvc;
 
 class SQRun;
 class SQSpillMap;
@@ -72,7 +71,7 @@ public:
   void set_enable_eval(bool enable) { _enable_eval = enable; }
   bool is_eval_dst_enabled() const { return _enable_eval_dst; }
   void set_enable_eval_dst(bool enable) { _enable_eval_dst = enable; }
-  void add_eval_list(int listID) { _eval_listIDs.push_back(listID); }
+  void add_eval_list(int listID);
 
   const TString& get_evt_reducer_opt() const { return _evt_reducer_opt; }
   void set_evt_reducer_opt(const TString& opt) { _evt_reducer_opt = opt; }
@@ -116,7 +115,7 @@ private:
   PHField* _phfield;
   SQGenFit::GFField* _gfield;
 
-  JobOptsSvc* p_jobOptsSvc;
+  recoConsts* rc;
 
   std::string _hit_container_type;
   size_t _event;

@@ -15,13 +15,51 @@
 #include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/StateOnPlane.h>
 
+#include <phool/recoConsts.h>
+
 #include "SRawEvent.h"
+
+namespace
+{
+  //static flag to indicate the initialized has been done
+  static bool inited = false;
+
+  static double Z_TARGET;
+  static double Z_DUMP;
+  static double Z_UPSTREAM;
+
+  static double X_BEAM;
+  static double Y_BEAM;
+  static double SIGX_BEAM;
+  static double SIGY_BEAM;
+
+  //initialize global variables
+  void initGlobalVariables()
+  {
+    if(!inited) 
+    {
+      inited = true;
+
+      recoConsts* rc = recoConsts::instance();
+      Z_TARGET   = rc->get_DoubleFlag("Z_TARGET");
+      Z_DUMP     = rc->get_DoubleFlag("Z_DUMP");
+      Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+
+      X_BEAM    = rc->get_DoubleFlag("X_BEAM");
+      Y_BEAM    = rc->get_DoubleFlag("Y_BEAM");
+      SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
+      SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+    }
+  }
+};
 
 namespace SQGenFit
 {
 
 GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
-{}
+{
+  initGlobalVariables();
+}
 
 GFTrack::~GFTrack()
 {
@@ -295,10 +333,10 @@ SRecTrack GFTrack::getSRecTrack()
   TVector3 pU(1., 0., 0.);
   TVector3 pV(0., 1., 0.);
   TVectorD beamCenter(2);
-  beamCenter[0] = 0.; beamCenter[1] = 0.;
+  beamCenter[0] = X_BEAM; beamCenter[1] = Y_BEAM; 
   TMatrixDSym beamCov(2);
   beamCov.Zero();
-  beamCov(0, 0) = 100.; beamCov(1, 1) = 100.;
+  beamCov(0, 0) = SIGX_BEAM*SIGX_BEAM; beamCov(1, 1) = SIGY_BEAM*SIGY_BEAM;
 
   //test Z_UPSTREAM
   try

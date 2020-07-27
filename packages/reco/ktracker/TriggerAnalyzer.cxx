@@ -7,9 +7,9 @@
 #include <TSQLResult.h>
 #include <TSQLRow.h>
 
-#include "TriggerAnalyzer.h"
+#include <phool/recoConsts.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
+#include "TriggerAnalyzer.h"
 
 #define REQUIRE_TB
 
@@ -51,7 +51,7 @@ bool TriggerAnalyzer::init()
 {
     using namespace std;
 
-    JobOptsSvc* p_jobOptsSvc = JobOptsSvc::instance();
+    recoConsts* rc = recoConsts::instance();
 
     int H1TID = p_geomSvc->getDetectorID("H1T");
     int H2TID = p_geomSvc->getDetectorID("H2T");
@@ -62,7 +62,12 @@ bool TriggerAnalyzer::init()
     int H3BID = p_geomSvc->getDetectorID("H3B");
     int H4BID = p_geomSvc->getDetectorID("H4B");
 
-    std::string fileNames[4] = {p_jobOptsSvc->GetRoadsFilePlusTop(), p_jobOptsSvc->GetRoadsFilePlusBottom(), p_jobOptsSvc->GetRoadsFileMinusTop(), p_jobOptsSvc->GetRoadsFileMinusBottom()};
+    std::string roadsPT = Form("%s/firmware/roads/L1/%s/roads_plus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsPB = Form("%s/firmware/roads/L1/%s/roads_plus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsMT = Form("%s/firmware/roads/L1/%s/roads_minus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsMB = Form("%s/firmware/roads/L1/%s/roads_minus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+
+    std::string fileNames[4] = {roadsPT, roadsPB, roadsMT, roadsMB};
     char buffer[300];
     int pRoads = 0;
     int mRoads = 0;
@@ -268,13 +273,13 @@ bool TriggerAnalyzer::buildData(int nHits, int detectorIDs[], int elementIDs[])
     return true;
 }
 
-bool TriggerAnalyzer::acceptEvent(SRawEvent* rawEvent, int mode)
+bool TriggerAnalyzer::acceptEvent(SRawEvent* rawEvent, bool USE_TRIGGER_HIT, bool USE_HIT)
 {
     int nHits = 0;
     int detectorIDs[10000];
     int elementIDs[10000];
 
-    if((mode & USE_HIT) != 0)
+    if(USE_HIT)
     {
         for(std::vector<Hit>::iterator iter = rawEvent->getAllHits().begin(); iter != rawEvent->getAllHits().end(); ++iter)
         {
@@ -288,7 +293,7 @@ bool TriggerAnalyzer::acceptEvent(SRawEvent* rawEvent, int mode)
         }
     }
 
-    if((mode & USE_TRIGGER_HIT) != 0)
+    if(USE_TRIGGER_HIT)
     {
         for(std::vector<Hit>::iterator iter = rawEvent->getTriggerHits().begin(); iter != rawEvent->getTriggerHits().end(); ++iter)
         {
@@ -524,9 +529,9 @@ void TriggerAnalyzer::outputEnabled()
     fout_pair.close();
 }
 
-void TriggerAnalyzer::trimEvent(SRawEvent* rawEvent, std::list<Hit>& hitlist, int mode)
+void TriggerAnalyzer::trimEvent(SRawEvent* rawEvent, std::list<Hit>& hitlist, bool USE_TRIGGER_HIT, bool USE_HIT)
 {
-    rawEvent->setTriggerEmu(acceptEvent(rawEvent, mode));
+    rawEvent->setTriggerEmu(acceptEvent(rawEvent, USE_TRIGGER_HIT, USE_HIT));
 
     int nRoads[4] = {getNRoadsPosTop(), getNRoadsPosBot(), getNRoadsNegTop(), getNRoadsNegBot()};
     rawEvent->setNRoads(nRoads);

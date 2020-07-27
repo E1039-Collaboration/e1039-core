@@ -16,7 +16,6 @@ Created: 05-28-2013
 #include <TMath.h>
 #include <TMatrixD.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
 #include "FastTracklet.h"
 #include "TriggerRoad.h"
 
@@ -27,18 +26,77 @@ ClassImp(TrackletVector)
 
 namespace 
 {
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
+
 	//static pointer to geomtry service
 	static GeomSvc* p_geomSvc = nullptr;
 
 	//static flag of kmag on/off
-	static bool kmag_on = true;
+	static bool KMAG_ON;
+
+    //corase geometry
+    static bool COARSE_MODE;
 
 	//static flag of kmag strength
-	static double FMAGSTR = 1.0;
-	static double KMAGSTR = 1.0;
+	static double FMAGSTR;
+	static double KMAGSTR;
 
-	static double PT_KICK_FMAG = 2.909;
-	static double PT_KICK_KMAG = 0.4016;
+	static double PT_KICK_FMAG;
+	static double PT_KICK_KMAG;
+
+    //Track quality cuts
+    static double TX_MAX;
+    static double TY_MAX;
+    static double X0_MAX;
+    static double Y0_MAX;
+    static double INVP_MAX;
+    static double INVP_MIN;
+    static double PROB_LOOSE;
+    static double PROB_TIGHT;
+
+    //Geometric positions
+    static double Z_KMAG_BEND;
+    static double Z_ABSORBER;
+    static double Z_FMAG_BEND;
+    static double Z_KFMAG_BEND;
+    static double ELOSS_KFMAG;
+    static double ELOSS_ABSORBER;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+            p_geomSvc = GeomSvc::instance();
+
+            recoConsts* rc = recoConsts::instance();
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
+
+            FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
+            PT_KICK_FMAG = rc->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
+            PT_KICK_KMAG = rc->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
+
+            TX_MAX = rc->get_DoubleFlag("TX_MAX");
+            TY_MAX = rc->get_DoubleFlag("TY_MAX");
+            X0_MAX = rc->get_DoubleFlag("X0_MAX");
+            Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
+            INVP_MAX = rc->get_DoubleFlag("INVP_MAX");
+            INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
+            PROB_LOOSE = rc->get_DoubleFlag("PROB_LOOSE");
+            PROB_TIGHT = rc->get_DoubleFlag("PROB_TIGHT");
+
+            Z_KMAG_BEND = p_geomSvc->Z_KMAG_BEND();
+            Z_ABSORBER = p_geomSvc->Z_ABSORBER();
+            Z_FMAG_BEND = p_geomSvc->Z_FMAG_BEND();
+            Z_KFMAG_BEND = p_geomSvc->Z_KFMAG_BEND();
+            ELOSS_KFMAG = p_geomSvc->ELOSS_KFMAG();
+            ELOSS_ABSORBER = p_geomSvc->ELOSS_ABSORBER();
+        }
+    }
 }
 
 //Signed hit definition
@@ -72,15 +130,7 @@ PropSegment::PropSegment() : a(-999.), b(-999.), err_a(100.), err_b(100.), chisq
 {
     for(int i = 0; i < 4; ++i) hits[i].hit.index = -1;
     for(int i = 0; i < 4; ++i) hodoHits[i].index = -1;
-    if(p_geomSvc == nullptr) 
-    {
-        p_geomSvc = GeomSvc::instance();
-        kmag_on = JobOptsSvc::instance()->m_enableKMag;
-        FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
-        KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
-        PT_KICK_FMAG = 2.909*FMAGSTR;
-        PT_KICK_KMAG = 0.4016*KMAGSTR;
-    }
+    initGlobalVariables();
 }
 
 void PropSegment::init()
@@ -102,7 +152,7 @@ void PropSegment::print(std::ostream& os) const
     os << "nHits: " << getNHits() << ", nPlanes: " << getNPlanes() << endl;
     os << "a = " << a << ", b = " << b << ", chisq = " << chisq << endl;
     os << "TX_MAX = " << TX_MAX << ", X0_MAX = " << X0_MAX << ", chisq max = " << 5 << endl;
-    os << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
+    //os << "Absorber projection: " << getExpPosition(MUID_Z_REF) << endl;
 
     for(int i = 0; i < 4; ++i)
     {
@@ -446,28 +496,11 @@ void PropSegment::linearFit_iterative()
     }
 }
 
-//General tracklet part
-
-//<TODO improve this part
-//@{
-// Original imp.
-//const GeomSvc* Tracklet::p_geomSvc = GeomSvc::instance();
-//const bool Tracklet::kmag_on = JobOptsSvc::instance()->m_enableKMag;
-//@}
 
 Tracklet::Tracklet() : stationID(-1), nXHits(0), nUHits(0), nVHits(0), chisq(9999.), chisq_vtx(9999.), tx(0.), ty(0.), x0(0.), y0(0.), invP(0.1), err_tx(-1.), err_ty(-1.), err_x0(-1.), err_y0(-1.), err_invP(-1.)
 {
     for(int i = 0; i < nChamberPlanes; i++) residual[i] = 999.;
-
-    if(p_geomSvc == nullptr) 
-    {
-        p_geomSvc = GeomSvc::instance();
-        kmag_on = JobOptsSvc::instance()->m_enableKMag;
-        FMAGSTR = recoConsts::instance()->get_DoubleFlag("FMAGSTR");
-        KMAGSTR = recoConsts::instance()->get_DoubleFlag("KMAGSTR");
-        PT_KICK_FMAG = 2.909*FMAGSTR;
-        PT_KICK_KMAG = 0.4016*KMAGSTR;
-    }
+    initGlobalVariables();
 }
 
 int Tracklet::isValid() const
@@ -516,7 +549,7 @@ int Tracklet::isValid() const
             if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return 0;
 
             if(prob < PROB_TIGHT) return 0;
-            if(kmag_on)
+            if(KMAG_ON)
             {
                 if(invP < INVP_MIN || invP > INVP_MAX) return 0;
             }
@@ -560,7 +593,7 @@ void Tracklet::updateNHits()
 double Tracklet::getProb() const
 {
     int ndf;
-    if(stationID == nStations && kmag_on)
+    if(stationID == nStations && KMAG_ON)
     {
         ndf = getNHits() - 5;
     }
@@ -583,12 +616,12 @@ double Tracklet::getMomProb() const
 
 TVector3 Tracklet::getExpMomentum(double z)
 {
-    return (kmag_on && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.) ? getMomentumSt1() : getMomentumSt3();
+    return (KMAG_ON && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.) ? getMomentumSt1() : getMomentumSt3();
 }
 
 double Tracklet::getExpPositionX(double z) const
 {
-    if(kmag_on && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.)
+    if(KMAG_ON && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.)
     {
         double tx_st1 = tx + PT_KICK_KMAG*invP*getCharge();
         double x0_st1 = tx*Z_KMAG_BEND + x0 - tx_st1*Z_KMAG_BEND;
@@ -604,7 +637,7 @@ double Tracklet::getExpPositionX(double z) const
 double Tracklet::getExpPosErrorX(double z) const
 {
     double err_x;
-    if(kmag_on && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.)
+    if(KMAG_ON && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.)
     {
         double err_kick = fabs(err_invP*PT_KICK_KMAG);
         double err_tx_st1 = err_tx + err_kick;
@@ -724,7 +757,7 @@ int Tracklet::getCharge() const
 
 void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
 {
-    if(kmag_on)
+    if(KMAG_ON)
     {
         tx_st1 = tx + PT_KICK_KMAG*invP*getCharge();
         x0_st1 = tx*Z_KMAG_BEND + x0 - tx_st1*Z_KMAG_BEND;
@@ -738,7 +771,7 @@ void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
 
 void Tracklet::getXZErrorInSt1(double& err_tx_st1, double& err_x0_st1)
 {
-    if(kmag_on)
+    if(KMAG_ON)
     {
         double err_kick = fabs(err_invP*PT_KICK_KMAG);
         err_tx_st1 = err_tx + err_kick;
@@ -903,7 +936,7 @@ double Tracklet::calcChisq()
     chisq = 0.;
 
     double tx_st1, x0_st1;
-    if(stationID == nStations && kmag_on)
+    if(stationID == nStations && KMAG_ON)
     {
         getXZInfoInSt1(tx_st1, x0_st1);
     }
@@ -916,16 +949,13 @@ double Tracklet::calcChisq()
         int index = detectorID - 1;
 
         double sigma;
-#ifdef COARSE_MODE
-        if(iter->sign == 0) sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
-#else
-        //if(iter->sign == 0) sigma = fabs(iter->hit.driftDistance);
-        if(iter->sign == 0) sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
-#endif
-        if(iter->sign != 0) sigma = p_geomSvc->getPlaneResolution(detectorID);
+        if(iter->sign == 0 || COARSE_MODE) 
+            sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
+        else
+            sigma = p_geomSvc->getPlaneResolution(detectorID);
 
         //double p = iter->hit.pos + iter->sign*fabs(iter->hit.driftDistance);
-        if(kmag_on && stationID == nStations && detectorID <= 12)
+        if(KMAG_ON && stationID == nStations && detectorID <= 12)
         {
             //residual[index] = p - p_geomSvc->getInterception(detectorID, tx_st1, ty, x0_st1, y0);
             residual[index] = iter->sign*fabs(iter->hit.driftDistance) - p_geomSvc->getDCA(detectorID, iter->hit.elementID, tx_st1, ty, x0_st1, y0);
@@ -937,7 +967,7 @@ double Tracklet::calcChisq()
         }
 
         chisq += (residual[index]*residual[index]/sigma/sigma);
-        //std::cout << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << iter->sign << "  " << iter->hit.pos << "  " << iter->hit.driftDistance << "  " << costheta << "  " << sintheta << "  " << z << "  " << (x0_st1 + tx_st1*z) << "  " << (x0 + tx*z) << "  " << (y0 + ty*z) << "  " << sigma << std::endl;
+        //std::cout << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << iter->sign << "  " << iter->hit.pos << "  " << iter->hit.driftDistance << "  " << residual[index] << "  " <<  sigma << "  " << chisq << std::endl;
     }
 
     //std::cout << chisq << std::endl;
@@ -963,7 +993,7 @@ double Tracklet::Eval(const double* par)
     ty = par[1];
     x0 = par[2];
     y0 = par[3];
-    if(kmag_on) invP = par[4];
+    if(KMAG_ON) invP = par[4];
 
     //std::cout << tx << "  " << ty << "  " << x0 << "  " << y0 << "  " << 1./invP << std::endl;
     return calcChisq();
