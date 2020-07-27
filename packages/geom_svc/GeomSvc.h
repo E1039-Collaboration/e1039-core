@@ -29,7 +29,8 @@ and then prop. tubes
 #include <TMatrixD.h>
 #include <TSpline.h>
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
+#include <phool/recoConsts.h>
 
 class Plane
 {
@@ -256,6 +257,42 @@ public:
     bool isInElement(int detectorID, int elementID, double x, double y, double tolr = 0.);
     bool isInKMAG(double x, double y);
 
+    ///Getter/setters for a set of fixed parameters - should not be changed unless absolutely necessary
+    double Z_KMAG_BEND() const         { return rc->get_DoubleFlag("Z_KMAG_BEND"); }
+    void   Z_KMAG_BEND(const double v) { rc->set_DoubleFlag("Z_KMAG_BEND", v);     }
+    double Z_FMAG_BEND() const         { return rc->get_DoubleFlag("Z_FMAG_BEND"); }
+    void   Z_FMAG_BEND(const double v) { rc->set_DoubleFlag("Z_FMAG_BEND", v);     }
+    double Z_KFMAG_BEND() const         { return rc->get_DoubleFlag("Z_KFMAG_BEND"); }
+    void   Z_KFMAG_BEND(const double v) { rc->set_DoubleFlag("Z_KFMAG_BEND", v);     }
+    double ELOSS_KFMAG() const         { return rc->get_DoubleFlag("ELOSS_KFMAG"); }
+    void   ELOSS_KFMAG(const double v) { rc->set_DoubleFlag("ELOSS_KFMAG", v);     }
+    double ELOSS_ABSORBER() const         { return rc->get_DoubleFlag("ELOSS_ABSORBER"); }
+    void   ELOSS_ABSORBER(const double v) { rc->set_DoubleFlag("ELOSS_ABSORBER", v);     }
+    double Z_ST2() const         { return rc->get_DoubleFlag("Z_ST2"); }
+    void   Z_ST2(const double v) { rc->set_DoubleFlag("Z_ST2", v);     }
+    double Z_ABSORBER() const         { return rc->get_DoubleFlag("Z_ABSORBER"); }
+    void   Z_ABSORBER(const double v) { rc->set_DoubleFlag("Z_ABSORBER", v);     }
+    double Z_REF() const         { return rc->get_DoubleFlag("Z_REF"); }
+    void   Z_REF(const double v) { rc->set_DoubleFlag("Z_REF", v);     }
+    double Z_TARGET() const         { return rc->get_DoubleFlag("Z_TARGET"); }
+    void   Z_TARGET(const double v) { rc->set_DoubleFlag("Z_TARGET", v);     }
+    double Z_DUMP() const         { return rc->get_DoubleFlag("Z_DUMP"); }
+    void   Z_DUMP(const double v) { rc->set_DoubleFlag("Z_DUMP", v);     }
+    double Z_ST1() const         { return rc->get_DoubleFlag("Z_ST1"); }
+    void   Z_ST1(const double v) { rc->set_DoubleFlag("Z_ST1", v);     }
+    double Z_ST3() const         { return rc->get_DoubleFlag("Z_ST3"); }
+    void   Z_ST3(const double v) { rc->set_DoubleFlag("Z_ST3", v);     }
+    double FMAG_HOLE_LENGTH() const         { return rc->get_DoubleFlag("FMAG_HOLE_LENGTH"); }
+    void   FMAG_HOLE_LENGTH(const double v) { rc->set_DoubleFlag("FMAG_HOLE_LENGTH", v);     }
+    double FMAG_HOLE_RADIUS() const         { return rc->get_DoubleFlag("FMAG_HOLE_RADIUS"); }
+    void   FMAG_HOLE_RADIUS(const double v) { rc->set_DoubleFlag("FMAG_HOLE_RADIUS", v);     }
+    double FMAG_LENGTH() const         { return rc->get_DoubleFlag("FMAG_LENGTH"); }
+    void   FMAG_LENGTH(const double v) { rc->set_DoubleFlag("FMAG_LENGTH", v);     }
+    double Z_UPSTREAM() const         { return rc->get_DoubleFlag("Z_UPSTREAM"); }
+    void   Z_UPSTREAM(const double v) { rc->set_DoubleFlag("Z_UPSTREAM", v);     }
+    double Z_DOWNSTREAM() const         { return rc->get_DoubleFlag("Z_DOWNSTREAM"); }
+    void   Z_DOWNSTREAM(const double v) { rc->set_DoubleFlag("Z_DOWNSTREAM", v);     }
+
     ///Debugging print of the content
     void printAlignPar();
     void printTable();
@@ -290,6 +327,9 @@ private:
     //Mapping to wire end position - wire actually includes all detectors
     std::map<std::pair<int, int>, TVectorD> map_endPoint1;  
     std::map<std::pair<int, int>, TVectorD> map_endPoint2;
+
+    //Pointer to the reco constants
+    recoConsts* rc;
 
     //singleton pointor
     static GeomSvc* p_geometrySvc;

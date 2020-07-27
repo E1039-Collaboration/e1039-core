@@ -331,7 +331,7 @@ public:
     }
     void         Reset() {*this = SRecEvent();}
     int          isValid() const {return true;}
-    SRecEvent*        Clone() const {return (new SRecEvent(*this));}
+    SRecEvent*   Clone() const {return (new SRecEvent(*this));}
 
     ///Set/Get event info
     void setEventInfo(SRawEvent* rawEvent);

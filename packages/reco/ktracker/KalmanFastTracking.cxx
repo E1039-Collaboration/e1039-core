@@ -9,6 +9,7 @@ Created: 05-28-2013
 
 #include <phfield/PHField.h>
 #include <phool/PHTimer.h>
+#include <phool/recoConsts.h>
 #include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
@@ -25,9 +26,106 @@ Created: 05-28-2013
 
 //#define _DEBUG_ON
 
-KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag)
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
+
+    //Event acceptance cut
+    static int MaxHitsDC0;
+    static int MaxHitsDC1;
+    static int MaxHitsDC2;
+    static int MaxHitsDC3p;
+    static int MaxHitsDC3m;
+
+    //Sagitta ratio
+    static double SAGITTA_DUMP_CENTER;
+    static double SAGITTA_DUMP_WIDTH;
+    static double SAGITTA_TARGET_CENTER;
+    static double SAGITTA_TARGET_WIDTH;
+    static double Z_TARGET;
+    static double Z_DUMP;
+
+    //Track quality cuts
+    static double TX_MAX;
+    static double TY_MAX;
+    static double X0_MAX;
+    static double Y0_MAX;
+    static double INVP_MAX;
+    static double INVP_MIN;
+    static double Z_KMAG_BEND;
+
+    //MuID cuts 
+    static double MUID_REJECTION;
+    static double MUID_Z_REF;
+    static double MUID_R_CUT;
+    static double MUID_THE_P0;
+    static double MUID_EMP_P0;
+    static double MUID_EMP_P1;
+    static double MUID_EMP_P2;
+    static int    MUID_MINHITS;
+
+    //Track merging threshold
+    static double MERGE_THRES;
+
+    //static flag of kmag on/off
+	static bool KMAG_ON;
+
+    //running mode
+    static bool MC_MODE;
+    static bool COSMIC_MODE;
+    static bool COARSE_MODE;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+
+            recoConsts* rc = recoConsts::instance();
+            MC_MODE = rc->get_BoolFlag("MC_MODE");
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            COSMIC_MODE = rc->get_BoolFlag("COSMIC_MODE");
+            COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
+
+            MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
+            MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
+            MaxHitsDC2 = rc->get_IntFlag("MaxHitsDC2");
+            MaxHitsDC3p = rc->get_IntFlag("MaxHitsDC3p");
+            MaxHitsDC3m = rc->get_IntFlag("MaxHitsDC3m");
+            
+            TX_MAX = rc->get_DoubleFlag("TX_MAX");
+            TY_MAX = rc->get_DoubleFlag("TY_MAX");
+            X0_MAX = rc->get_DoubleFlag("X0_MAX");
+            Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
+            INVP_MAX = rc->get_DoubleFlag("INVP_MAX");
+            INVP_MIN = rc->get_DoubleFlag("INVP_MIN");
+            Z_KMAG_BEND = rc->get_DoubleFlag("Z_KMAG_BEND");
+
+            SAGITTA_TARGET_CENTER = rc->get_DoubleFlag("SAGITTA_TARGET_CENTER");
+            SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
+            SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
+            SAGITTA_DUMP_WIDTH = rc->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+
+            MUID_REJECTION = rc->get_DoubleFlag("MUID_REJECTION");
+            MUID_Z_REF = rc->get_DoubleFlag("MUID_Z_REF");
+            MUID_R_CUT = rc->get_DoubleFlag("MUID_R_CUT");
+            MUID_THE_P0 = rc->get_DoubleFlag("MUID_THE_P0");
+            MUID_EMP_P0 = rc->get_DoubleFlag("MUID_EMP_P0");
+            MUID_EMP_P1 = rc->get_DoubleFlag("MUID_EMP_P1");
+            MUID_EMP_P2 = rc->get_DoubleFlag("MUID_EMP_P2");
+            MUID_MINHITS = rc->get_IntFlag("MUID_MINHITS");
+        }
+    }
+}
+
+KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag), outputListIdx(4)
 {
     using namespace std;
+    initGlobalVariables();
 
 #ifdef _DEBUG_ON
     cout << "Initialization of KalmanFastTracking ..." << endl;
@@ -43,9 +141,6 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     _timers.insert(std::make_pair<std::string, PHTimer*>("global_kalman", new PHTimer("global_kalman")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("kalman", new PHTimer("kalman")));
 
-    //Initialize jobOpts service
-    p_jobOptsSvc = JobOptsSvc::instance();
-
     //Initialize Kalman fitter
     if(enable_KF)
     {
@@ -56,7 +151,7 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     //Initialize minuit minimizer
     minimizer[0] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Simplex");
     minimizer[1] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Combined");
-    fcn = ROOT::Math::Functor(&tracklet_curr, &Tracklet::Eval, p_jobOptsSvc->m_enableKMag ? 5 : 4);
+    fcn = ROOT::Math::Functor(&tracklet_curr, &Tracklet::Eval, KMAG_ON ? 5 : 4);
 
     for(int i = 0; i < 2; ++i)
     {
@@ -270,23 +365,23 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
 #else
         if(i <= 6)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st0_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC0");
         }
         else if(i <= 12)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st1_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC1");
         }
         else if(i <= 18)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st2_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC2");
         }
         else if(i <= 24)
         {
-            resol_plane[i] = p_jobOptsSvc->m_st3p_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3p");
         }
         else
         {
-            resol_plane[i] = p_jobOptsSvc->m_st3m_reject;
+            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3m");
         }
 #endif
         spacing_plane[i] = p_geomSvc->getPlaneSpacing(i);
@@ -355,7 +450,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     {
         //std::cout << "For station " << i << std::endl;
         hitIDs_mask[i].clear();
-        if(p_jobOptsSvc->m_mcMode || rawEvent->isFPGATriggered())
+        if(MC_MODE || COSMIC_MODE || rawEvent->isFPGATriggered())
         {
             hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_maskX[i]);
         }
@@ -380,19 +475,17 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
         hitIDs_muidHodoAid[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_muidHodoAid[i]);
     }
 
-#ifndef ALIGNMENT_MODE
-#ifdef _DEBUG_ON
-    LogInfo("ALIGNMENT_MODE OFF");
-#endif
-    buildPropSegments();
-    if(propSegs[0].empty() || propSegs[1].empty())
+    if(!COARSE_MODE)
     {
+        buildPropSegments();
+        if(propSegs[0].empty() || propSegs[1].empty())
+        {
 #ifdef _DEBUG_ON
-        LogInfo("Failed in prop tube segment building: " << propSegs[0].size() << ", " << propSegs[1].size());
+            LogInfo("Failed in prop tube segment building: " << propSegs[0].size() << ", " << propSegs[1].size());
 #endif
-        //return TFEXIT_FAIL_ROUGH_MUONID;
+            //return TFEXIT_FAIL_ROUGH_MUONID;
+        }
     }
-#endif
 
     //Build tracklets in station 2, 3+, 3-
     _timers["st2"]->restart();
@@ -400,7 +493,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     _timers["st2"]->stop();
     if(verbosity >= 2) LogInfo("NTracklets in St2: " << trackletsInSt[1].size());
     
-    if(trackletsInSt[1].empty())
+    if(outputListIdx > 1 && trackletsInSt[1].empty())
     {
 #ifdef _DEBUG_ON
         LogInfo("Failed in tracklet build at station 2");
@@ -414,7 +507,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     _timers["st3"]->stop();
     if(verbosity >= 2) LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
     
-    if(trackletsInSt[2].empty())
+    if(outputListIdx > 2 && trackletsInSt[2].empty())
     {
 #ifdef _DEBUG_ON
         LogInfo("Failed in tracklet build at station 3");
@@ -429,7 +522,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     if(verbosity >= 2) LogInfo("NTracklets St2+St3: " << trackletsInSt[3].size());
 
 
-    if(trackletsInSt[3].empty())
+    if(outputListIdx > 3 && trackletsInSt[3].empty())
     {
 #ifdef _DEBUG_ON
         LogInfo("Failed in connecting station-2 and 3 tracks");
@@ -467,12 +560,12 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
     }
 #endif
 
-    if(trackletsInSt[4].empty()) return TFEXIT_FAIL_GLOABL;
+    if(outputListIdx == 4 && trackletsInSt[4].empty()) return TFEXIT_FAIL_GLOABL;
     if(!enable_KF) return TFEXIT_SUCCESS;
 
     //Build kalman tracks
     _timers["kalman"]->restart();
-    for(std::list<Tracklet>::iterator tracklet = trackletsInSt[4].begin(); tracklet != trackletsInSt[4].end(); ++tracklet)
+    for(std::list<Tracklet>::iterator tracklet = trackletsInSt[outputListIdx].begin(); tracklet != trackletsInSt[outputListIdx].end(); ++tracklet)
     {
         SRecTrack strack = processOneTracklet(*tracklet);
         stracks.push_back(strack);
@@ -508,11 +601,11 @@ bool KalmanFastTracking::acceptEvent(SRawEvent* rawEvent)
         LogInfo("NRoadsNeg: " << rawEvent->getNRoadsNeg());
     }
 
-    if(rawEvent->getNHitsInD0() > 350) return false;
-    if(rawEvent->getNHitsInD1() > 350) return false; // 31% - 58 hit per plane
-    if(rawEvent->getNHitsInD2() > 170) return false; // 23% - 28 hit per plane
-    if(rawEvent->getNHitsInD3p() > 140) return false;// 18% - 23 hit per plane
-    if(rawEvent->getNHitsInD3m() > 140) return false;// 18% - 23 hit per plane
+    if(rawEvent->getNHitsInD0() > MaxHitsDC0) return false;
+    if(rawEvent->getNHitsInD1() > MaxHitsDC1) return false; 
+    if(rawEvent->getNHitsInD2() > MaxHitsDC2) return false; 
+    if(rawEvent->getNHitsInD3p() > MaxHitsDC3p) return false;
+    if(rawEvent->getNHitsInD3m() > MaxHitsDC3m) return false;
 
     /*
     if(rawEvent->getNHitsInDetectors(detectorIDs_maskX[0]) > 15) return false;
@@ -530,69 +623,70 @@ bool KalmanFastTracking::acceptEvent(SRawEvent* rawEvent)
 
 void KalmanFastTracking::buildBackPartialTracks()
 {
-#ifndef ALIGNMENT_MODE
     //Temporary container for a simple chisq fit
     int nHitsX2, nHitsX3;
     double z_fit[4], x_fit[4];
     double a, b;
-#endif
 
     for(std::list<Tracklet>::iterator tracklet3 = trackletsInSt[2].begin(); tracklet3 != trackletsInSt[2].end(); ++tracklet3)
     {
-#ifndef ALIGNMENT_MODE
-        //Extract the X hits only from station-3 tracks
-        nHitsX3 = 0;
-        for(std::list<SignedHit>::iterator ptr_hit = tracklet3->hits.begin(); ptr_hit != tracklet3->hits.end(); ++ptr_hit)
+        if(!COARSE_MODE)
         {
-            if(ptr_hit->hit.index < 0) continue;
-            if(p_geomSvc->getPlaneType(ptr_hit->hit.detectorID) == 1)
-            {
-                z_fit[nHitsX3] = z_plane[ptr_hit->hit.detectorID];
-                x_fit[nHitsX3] = ptr_hit->hit.pos;
-                ++nHitsX3;
-            }
-        }
-#endif
-        Tracklet tracklet_best;
-        for(std::list<Tracklet>::iterator tracklet2 = trackletsInSt[1].begin(); tracklet2 != trackletsInSt[1].end(); ++tracklet2)
-        {
-            if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
-
-#ifndef ALIGNMENT_MODE
-            //Extract the X hits from station-2 tracke
-            nHitsX2 = nHitsX3;
-            for(std::list<SignedHit>::iterator ptr_hit = tracklet2->hits.begin(); ptr_hit != tracklet2->hits.end(); ++ptr_hit)
+            //Extract the X hits only from station-3 tracks
+            nHitsX3 = 0;
+            for(std::list<SignedHit>::iterator ptr_hit = tracklet3->hits.begin(); ptr_hit != tracklet3->hits.end(); ++ptr_hit)
             {
                 if(ptr_hit->hit.index < 0) continue;
                 if(p_geomSvc->getPlaneType(ptr_hit->hit.detectorID) == 1)
                 {
-                    z_fit[nHitsX2] = z_plane[ptr_hit->hit.detectorID];
-                    x_fit[nHitsX2] = ptr_hit->hit.pos;
-                    ++nHitsX2;
+                    z_fit[nHitsX3] = z_plane[ptr_hit->hit.detectorID];
+                    x_fit[nHitsX3] = ptr_hit->hit.pos;
+                    ++nHitsX3;
                 }
             }
+        }
 
-            //Apply a simple linear fit to get rough estimation of X-Z slope and intersection
-            chi2fit(nHitsX2, z_fit, x_fit, a, b);
-            if(fabs(a) > 2.*TX_MAX || fabs(b) > 2.*X0_MAX) continue;
-
-            //Project to proportional tubes to see if there is enough
-            int nPropHits = 0;
-            for(int i = 0; i < 4; ++i)
+        Tracklet tracklet_best;
+        for(std::list<Tracklet>::iterator tracklet2 = trackletsInSt[1].begin(); tracklet2 != trackletsInSt[1].end(); ++tracklet2)
+        {
+            if(!COARSE_MODE)
             {
-                double x_exp = a*z_mask[detectorIDs_muid[0][i] - nChamberPlanes - 1] + b;
-                for(std::list<int>::iterator iter = hitIDs_muid[0][i].begin(); iter != hitIDs_muid[0][i].end(); ++iter)
+                if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
+
+                //Extract the X hits from station-2 tracke
+                nHitsX2 = nHitsX3;
+                for(std::list<SignedHit>::iterator ptr_hit = tracklet2->hits.begin(); ptr_hit != tracklet2->hits.end(); ++ptr_hit)
                 {
-                    if(fabs(hitAll[*iter].pos - x_exp) < 5.08)
+                    if(ptr_hit->hit.index < 0) continue;
+                    if(p_geomSvc->getPlaneType(ptr_hit->hit.detectorID) == 1)
                     {
-                        ++nPropHits;
-                        break;
+                        z_fit[nHitsX2] = z_plane[ptr_hit->hit.detectorID];
+                        x_fit[nHitsX2] = ptr_hit->hit.pos;
+                        ++nHitsX2;
                     }
                 }
-                if(nPropHits > 0) break;
+
+                //Apply a simple linear fit to get rough estimation of X-Z slope and intersection
+                chi2fit(nHitsX2, z_fit, x_fit, a, b);
+                if(fabs(a) > 2.*TX_MAX || fabs(b) > 2.*X0_MAX) continue;
+
+                //Project to proportional tubes to see if there is enough
+                int nPropHits = 0;
+                for(int i = 0; i < 4; ++i)
+                {
+                    double x_exp = a*z_mask[detectorIDs_muid[0][i] - nChamberPlanes - 1] + b;
+                    for(std::list<int>::iterator iter = hitIDs_muid[0][i].begin(); iter != hitIDs_muid[0][i].end(); ++iter)
+                    {
+                        if(fabs(hitAll[*iter].pos - x_exp) < 5.08)
+                        {
+                            ++nPropHits;
+                            break;
+                        }
+                    }
+                    if(nPropHits > 0) break;
+                }
+                if(nPropHits == 0) continue;
             }
-            if(nPropHits == 0) continue;
-#endif
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
 #ifdef _DEBUG_ON
@@ -612,7 +706,7 @@ void KalmanFastTracking::buildBackPartialTracks()
                 continue;
             }
 
-            if(!hodoMask(tracklet_23))
+            if(!COARSE_MODE && !hodoMask(tracklet_23))
             {
 #ifdef _DEBUG_ON
                 LogInfo("Hodomasking failed!");
@@ -623,10 +717,12 @@ void KalmanFastTracking::buildBackPartialTracks()
             LogInfo("Hodomasking Scucess!");
 #endif
 
-#ifndef COARSE_MODE
-            resolveLeftRight(tracklet_23, 40.);
-            resolveLeftRight(tracklet_23, 150.);
-#endif
+            if(!COARSE_MODE)
+            {
+                resolveLeftRight(tracklet_23, 40.);
+                resolveLeftRight(tracklet_23, 150.);
+            }
+
             ///Remove bad hits if needed
             removeBadHits(tracklet_23);
 
@@ -672,7 +768,7 @@ void KalmanFastTracking::buildGlobalTracks()
             trackletsInSt[0].clear();
 
             //Calculate the window in station 1
-            if(p_jobOptsSvc->m_enableKMag)
+            if(KMAG_ON)
             {
                 getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
             }
@@ -704,12 +800,14 @@ void KalmanFastTracking::buildGlobalTracks()
                 fitTracklet(tracklet_global);
                 if(!hodoMask(tracklet_global)) continue;
 
-#ifndef COARSE_MODE
                 ///Resolve the left-right with a tight pull cut, then a loose one, then resolve by single projections
-                resolveLeftRight(tracklet_global, 75.);
-                resolveLeftRight(tracklet_global, 150.);
-                resolveSingleLeftRight(tracklet_global);
-#endif
+                if(!COARSE_MODE)
+                {
+                    resolveLeftRight(tracklet_global, 75.);
+                    resolveLeftRight(tracklet_global, 150.);
+                    resolveSingleLeftRight(tracklet_global);
+                }
+
                 ///Remove bad hits if needed
                 removeBadHits(tracklet_global);
 
@@ -1252,16 +1350,16 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
         return false;
     }
 
+    if(COARSE_MODE) return true;
+
     //Hodoscope masking requirement
     if(!hodoMask(tracklet)) return false;
 
     //For back partials, require projection inside KMAG, and muon id in prop. tubes
     if(tracklet.stationID > nStations-2)
     {
-        if(!p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
-#ifndef ALIGNMENT_MODE
+        if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
         if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false;
-#endif
     }
 
     //If everything is fine ...
@@ -1331,7 +1429,7 @@ bool KalmanFastTracking::muonID_search(Tracklet& tracklet)
     {
         double cut_the = MUID_THE_P0*tracklet.invP;
         double cut_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        cut = MUID_REJECT*(cut_the > cut_emp ? cut_the : cut_emp);
+        cut = MUID_REJECTION*(cut_the > cut_emp ? cut_the : cut_emp);
     }
 
     double slope[2] = {tracklet.tx, tracklet.ty};
@@ -1383,7 +1481,7 @@ bool KalmanFastTracking::muonID_search(Tracklet& tracklet)
     }
 
     muonID_hodoAid(tracklet);
-    if(segs[0]->getNHits() + segs[1]->getNHits() >= 5)
+    if(segs[0]->getNHits() + segs[1]->getNHits() >= MUID_MINHITS)
     {
         return true;
     }
@@ -1403,7 +1501,7 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
     {
         double cut_the = MUID_THE_P0*tracklet.invP;
         double cut_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        cut = MUID_REJECT*(cut_the > cut_emp ? cut_the : cut_emp);
+        cut = MUID_REJECTION*(cut_the > cut_emp ? cut_the : cut_emp);
     }
 #ifdef _DEBUG_ON
     LogInfo("Muon ID cut is: " << cut << " rad.");
@@ -1447,7 +1545,7 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
         if(segs[i]->isValid() == 0) return false;
     }
 
-    if(segs[0]->getNHits() + segs[1]->getNHits() < 5) return false;
+    if(segs[0]->getNHits() + segs[1]->getNHits() < MUID_MINHITS) return false;
     return true;
 }
 
@@ -1459,7 +1557,7 @@ bool KalmanFastTracking::muonID_hodoAid(Tracklet& tracklet)
     {
         double win_the = MUID_THE_P0*tracklet.invP;
         double win_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
-        win = MUID_REJECT*(win_the > win_emp ? win_the : win_emp);
+        win = MUID_REJECTION*(win_the > win_emp ? win_the : win_emp);
         factor = 3.;
     }
 
@@ -1579,7 +1677,7 @@ int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
     minimizer[idx]->SetLimitedVariable(1, "ty", tracklet.ty, 0.001, -TY_MAX, TY_MAX);
     minimizer[idx]->SetLimitedVariable(2, "x0", tracklet.x0, 0.1, -X0_MAX, X0_MAX);
     minimizer[idx]->SetLimitedVariable(3, "y0", tracklet.y0, 0.1, -Y0_MAX, Y0_MAX);
-    if(p_jobOptsSvc->m_enableKMag)
+    if(KMAG_ON)
     {
         minimizer[idx]->SetLimitedVariable(4, "invP", tracklet.invP, 0.001*tracklet.invP, INVP_MIN, INVP_MAX);
     }
@@ -1595,7 +1693,7 @@ int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
     tracklet.err_x0 = minimizer[idx]->Errors()[2];
     tracklet.err_y0 = minimizer[idx]->Errors()[3];
 
-    if(p_jobOptsSvc->m_enableKMag && tracklet.stationID == nStations)
+    if(KMAG_ON && tracklet.stationID == nStations)
     {
         tracklet.invP = minimizer[idx]->X()[4];
         tracklet.err_invP = minimizer[idx]->Errors()[4];
@@ -1709,8 +1807,8 @@ void KalmanFastTracking::getSagittaWindowsInSt1(Tracklet& tracklet, double* pos_
 
         double pos_exp_target = SAGITTA_TARGET_CENTER*s2_target + pos_st3*(z_st1 - Z_TARGET)/(z_st3 - Z_TARGET);
         double pos_exp_dump   = SAGITTA_DUMP_CENTER*s2_dump + pos_st3*(z_st1 - Z_DUMP)/(z_st3 - Z_DUMP);
-        double win_target = fabs(s2_target*SAGITTA_TARGET_WIN);
-        double win_dump   = fabs(s2_dump*SAGITTA_DUMP_WIN);
+        double win_target = fabs(s2_target*SAGITTA_TARGET_WIDTH);
+        double win_dump   = fabs(s2_dump*SAGITTA_DUMP_WIDTH);
 
         double p_min = std::min(pos_exp_target - win_target, pos_exp_dump - win_dump);
         double p_max = std::max(pos_exp_target + win_target, pos_exp_dump + win_dump);

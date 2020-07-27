@@ -54,10 +54,9 @@ if [ $mode = 'single' ] || [ $mode = 'increment' ]; then
 else # 'all' or 'resume'
   declare -a packages=(
     packages/global_consts
-    packages/jobopts_svc
     packages/db_svc
-    packages/geom_svc
     framework/phool
+    packages/geom_svc
     framework/ffaobjects
     framework/fun4all
     interface_main
