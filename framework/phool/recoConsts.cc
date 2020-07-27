@@ -165,6 +165,7 @@ void recoConsts::init(const std::string& setname, bool verbose)
   if(setname == "cosmic")
   {
     set_BoolFlag("KMAG_ON", false);
+    set_BoolFlag("COSMIC_MODE", true);
 
     set_DoubleFlag("TX_MAX", 1.);
     set_DoubleFlag("TY_MAX", 1.);
