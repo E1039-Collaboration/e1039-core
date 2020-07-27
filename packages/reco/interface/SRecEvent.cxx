@@ -12,11 +12,8 @@ Created: 01-21-2013
 #include <TLorentzVector.h>
 #include <TMatrixD.h>
 
-<<<<<<< HEAD
 #include <GenFit/SharedPlanePtr.h>
-=======
 #include <phool/recoConsts.h>
->>>>>>> master
 
 #include "SRecEvent.h"
 #include "KalmanUtil.h"
@@ -27,8 +24,6 @@ ClassImp(SRecDimuon)
 ClassImp(SRecEvent)
 ClassImp(SRecTrackVector)
 ClassImp(SRecDimuonVector)
-
-#define KMAG_ON 1
 
 namespace 
 {
