@@ -141,7 +141,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
       dim.set_pos         (trk1->get_pos_vtx());
       dim.set_mom         (trk1->get_mom_vtx() + trk2->get_mom_vtx());
       dim.set_mom_pos     (trk1->get_mom_vtx());
-      dim.set_mom_neg     (trk1->get_mom_vtx());
+      dim.set_mom_neg     (trk2->get_mom_vtx());
       dim.set_track_id_pos(trk1->get_track_id());
       dim.set_track_id_neg(trk2->get_track_id());
       m_vec_dim->push_back(&dim);
