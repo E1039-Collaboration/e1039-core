@@ -176,8 +176,8 @@ int SQTruthVertexing::MakeNodes(PHCompositeNode* topNode)
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    recDimuonVec = new SRecDimuonVector();
-    dstNode->addNode(new PHIODataNode<PHObject>(recDimuonVec, "SRecDimuonVector", "PHObject"));
+    recDimuonVec = new SQDimuonVector_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(recDimuonVec, "SQRecDimuonVector", "PHObject"));
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }

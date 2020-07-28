@@ -19,7 +19,7 @@ class RequireParticlesInAcc: public SubsysReco {
   PHG4HitContainer *g4hc_h4b;
 
  public:
-  RequireParticlesInAcc();
+  RequireParticlesInAcc(const std::string& name = "ACCEPTANCE");
   virtual ~RequireParticlesInAcc();
   int Init(PHCompositeNode *topNode);
   int InitRun(PHCompositeNode *topNode);

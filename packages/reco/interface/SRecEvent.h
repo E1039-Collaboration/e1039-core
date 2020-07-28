@@ -18,6 +18,7 @@ Created: 01-21-2013
 
 #include <phool/PHObject.h>
 #include <interface_main/SQTrack.h>
+#include <interface_main/SQDimuon.h>
 
 #include <iostream>
 #include <vector>
@@ -294,7 +295,7 @@ private:
     ClassDef(SRecTrack, 11)
 };
 
-class SRecDimuon: public PHObject
+class SRecDimuon: public SQDimuon
 {
 public:
 
@@ -303,6 +304,41 @@ public:
     void         Reset() { *this = SRecDimuon(); }
     int          isValid() const;
     SRecDimuon*  Clone() const { return (new SRecDimuon(*this)); }
+
+    //SQDimuon virtual functions
+    virtual int  get_dimuon_id() const      { return 0; }
+    virtual void set_dimuon_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_rec_dimuon_id() const      { return 0; }
+    virtual void set_rec_dimuon_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_pdg_id() const      { return 0; }
+    virtual void set_pdg_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_track_id_pos() const      { return trackID_pos; }
+    virtual void set_track_id_pos(const int a) { trackID_pos = a; }
+
+    virtual int  get_track_id_neg() const      { return trackID_neg; }
+    virtual void set_track_id_neg(const int a) { trackID_neg = a; }
+
+    virtual TVector3 get_pos() const           { return vtx; }
+    virtual void     set_pos(const TVector3 a) { vtx = a; }
+
+    virtual TLorentzVector get_mom() const                 { return p_pos + p_neg; }
+    virtual void           set_mom(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_pos() const                 { return p_pos; }
+    virtual void           set_mom_pos(const TLorentzVector a) { p_pos = a; }
+
+    virtual TLorentzVector get_mom_neg() const                 { return p_neg; }
+    virtual void           set_mom_neg(const TLorentzVector a) { p_neg = a; }
+
+    virtual double get_mass() const { return mass; }
+    virtual double get_x1()   const { return x1; }
+    virtual double get_x2()   const { return x2; }
+    virtual double get_xf()   const { return xF; }
+
+    virtual double get_chisq() const { return chisq_kf; }
 
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
@@ -416,7 +452,7 @@ public:
 
     ///Get dimuons
     Int_t getNDimuons() { return fDimuons.size(); }
-    SRecDimuon getDimuon(Int_t i) { return fDimuons[i]; }
+    SRecDimuon& getDimuon(Int_t i) { return fDimuons[i]; }
 
     ///Insert tracks
     void insertTrack(SRecTrack trk) { fAllTracks.push_back(trk); }
@@ -457,68 +493,6 @@ private:
     Int_t fSource2;
 
     ClassDef(SRecEvent, 5)
-};
-
-class SRecTrackVector: public PHObject
-{
-public:
-    SRecTrackVector();
-    virtual ~SRecTrackVector();
-
-    void identify(std::ostream& os = std::cout) const;
-    void Reset();
-    int  isValid() const { return 1; }
-    SRecTrackVector* Clone() const { return (new SRecTrackVector(*this)); }
-
-    bool empty() const { return recTrackVec.empty(); }
-    size_t size() const { return recTrackVec.size(); }
-    void clear() { Reset(); }
-
-    const SRecTrack* at(const size_t index) const;
-    SRecTrack* at(const size_t index);
-    void push_back(const SRecTrack* recTrack);
-    size_t erase(const size_t index);
-
-    std::vector<SRecTrack*>::const_iterator begin() const { return recTrackVec.begin(); }
-    std::vector<SRecTrack*>::const_iterator end()   const { return recTrackVec.end(); }  
-
-    std::vector<SRecTrack*>::iterator begin() { return recTrackVec.begin(); }
-    std::vector<SRecTrack*>::iterator end()   { return recTrackVec.end(); }
-
-private:
-    std::vector<SRecTrack*> recTrackVec;
-    ClassDef(SRecTrackVector, 1)
-};
-
-class SRecDimuonVector: public PHObject
-{
-public:
-    SRecDimuonVector();
-    virtual ~SRecDimuonVector();
-
-    void identify(std::ostream& os = std::cout) const;
-    void Reset();
-    int  isValid() const { return 1; }
-    SRecDimuonVector* Clone() const { return (new SRecDimuonVector(*this)); }
-
-    bool empty() const { return recDimuonVec.empty(); }
-    size_t size() const { return recDimuonVec.size(); }
-    void clear() { Reset(); }
-
-    const SRecDimuon* at(const size_t index) const;
-    SRecDimuon* at(const size_t index);
-    void push_back(const SRecDimuon* recTrack);
-    size_t erase(const size_t index);
-
-    std::vector<SRecDimuon*>::const_iterator begin() const { return recDimuonVec.begin(); }
-    std::vector<SRecDimuon*>::const_iterator end()   const { return recDimuonVec.end(); }  
-
-    std::vector<SRecDimuon*>::iterator begin() { return recDimuonVec.begin(); }
-    std::vector<SRecDimuon*>::iterator end()   { return recDimuonVec.end(); }
-
-private:
-    std::vector<SRecDimuon*> recDimuonVec;
-    ClassDef(SRecDimuonVector, 1)
 };
 
 #endif

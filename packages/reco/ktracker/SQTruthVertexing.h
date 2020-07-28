@@ -11,7 +11,6 @@ class SQDimuonVector;
 class SRecEvent;
 class SRecTrack;
 class SRecDimuon;
-class SRecDimuonVector;
 
 /// An SubsysReco module to create create dimuons based on the truth vertex information
 /**
@@ -23,7 +22,7 @@ class SRecDimuonVector;
  * In all reconstruction-related modules, two different container mode is supported:
  *  - legacy mode: all the reconstructed tracks (SRecTrack) and dimuons (SRecDimuon) are stored inside a
  *    SRecEvent node which internally maintains vectors of all tracks and dimuons
- *  - Fun4All-style mode: new container node SRecTrackVector and SRecDimuonVector are used to store the 
+ *  - Fun4All-style mode: container node SQTrackVector and SQDimuonVector are used to store the 
  *    reconstructed tracks and dimuons. The access interface is the same as other fun4all containers like SQHitVector
  *
  * Since this module relies on the existence of SQTrack and its correlation with SRecTrack, it needs to be added after 
@@ -68,7 +67,7 @@ private:
   SQTrackVector*  truthTrackVec;
   SQDimuonVector* truthDimuonVec;
 
-  SRecDimuonVector* recDimuonVec;
+  SQDimuonVector* recDimuonVec;
 };
 
 #endif

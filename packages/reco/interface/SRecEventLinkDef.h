@@ -7,7 +7,5 @@
 #pragma link C++ class SRecTrack+;
 #pragma link C++ class SRecDimuon+;
 #pragma link C++ class SRecEvent+;
-#pragma link C++ class SRecTrackVector+;
-#pragma link C++ class SRecDimuonVector+;
 
 #endif

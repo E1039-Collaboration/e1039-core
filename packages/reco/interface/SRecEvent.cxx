@@ -22,8 +22,6 @@ Created: 01-21-2013
 ClassImp(SRecTrack)
 ClassImp(SRecDimuon)
 ClassImp(SRecEvent)
-ClassImp(SRecTrackVector)
-ClassImp(SRecDimuonVector)
 
 namespace 
 {
@@ -735,94 +733,4 @@ void SRecEvent::clear()
     fDimuons.clear();
 
     fRecStatus = 0;
-}
-
-SRecTrackVector::SRecTrackVector(): recTrackVec()
-{}
-
-SRecTrackVector::~SRecTrackVector()
-{
-    Reset();
-}
-
-void SRecTrackVector::identify(std::ostream& os) const
-{
-    os << "SRecTrackVector with " << size() << " entries" << std::endl;
-}
-
-void SRecTrackVector::Reset()
-{
-    for(auto iter = recTrackVec.begin(); iter != recTrackVec.end(); ++iter) delete (*iter);
-    recTrackVec.clear();
-}
-
-const SRecTrack* SRecTrackVector::at(const size_t index) const
-{
-    if(index >= size()) return nullptr;
-    return recTrackVec[index];
-}
-
-SRecTrack* SRecTrackVector::at(const size_t index)
-{
-    if(index >= size()) return nullptr;
-    return recTrackVec[index];
-}
-
-void SRecTrackVector::push_back(const SRecTrack* recTrack)
-{
-    recTrackVec.push_back(recTrack->Clone());
-}
-
-size_t SRecTrackVector::erase(const size_t index)
-{
-    if(index >= size()) return size();
-
-    delete recTrackVec[index];
-    recTrackVec.erase(recTrackVec.begin() + index);
-    return recTrackVec.size();
-}
-
-SRecDimuonVector::SRecDimuonVector(): recDimuonVec()
-{}
-
-SRecDimuonVector::~SRecDimuonVector()
-{
-    Reset();
-}
-
-void SRecDimuonVector::identify(std::ostream& os) const
-{
-    os << "SRecDimuonVector with " << size() << " entries" << std::endl;
-}
-
-void SRecDimuonVector::Reset()
-{
-    for(auto iter = recDimuonVec.begin(); iter != recDimuonVec.end(); ++iter) delete (*iter);
-    recDimuonVec.clear();
-}
-
-const SRecDimuon* SRecDimuonVector::at(const size_t index) const
-{
-    if(index >= size()) return nullptr;
-    return recDimuonVec[index];
-}
-
-SRecDimuon* SRecDimuonVector::at(const size_t index)
-{
-    if(index >= size()) return nullptr;
-    return recDimuonVec[index];
-}
-
-void SRecDimuonVector::push_back(const SRecDimuon* recDimuon)
-{
-    recDimuonVec.push_back(recDimuon->Clone());
-}
-
-size_t SRecDimuonVector::erase(const size_t index)
-{
-    if(index >= size()) return size();
-
-    delete recDimuonVec[index];
-    recDimuonVec.erase(recDimuonVec.begin() + index);
-    return recDimuonVec.size();
 }
