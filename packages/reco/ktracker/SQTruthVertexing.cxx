@@ -182,53 +182,24 @@ int SQTruthVertexing::MakeNodes(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-bool SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* pos, TVector3* mom)
+double SQTruthVertexing::swimTrackToVertex(SRecTrack* track, double z, TVector3* pos, TVector3* mom)
 {
-  //Basic constants
-  TVector3 pU(1., 0., 0.);
-  TVector3 pV(0., 1., 0.);
-  TVector3 pO(0., 0., z );
-  
-  TVectorD beamCenter(2);
-  beamCenter[0] = 0.; beamCenter[1] = 0.;
-  TMatrixDSym beamCov(2);
-  beamCov.Zero();
-  beamCov(0, 0) = 100.; beamCov(1, 1) = 100.;
+  SQGenFit::GFTrack gftrk(*track);
 
-  double chi2 = -1.;
-  try
+  TVector3 p, m;
+  double chi2 = gftrk.swimToVertex(z, &p, &m);
+  if(chi2 < 0.) return chi2;
+
+  if(pos == nullptr)
   {
-    SQGenFit::GFTrack gftrk(*track);
-
-    double len = gftrk.extrapolateToPlane(pO, pU, pV);
-    if(fabs(len) > 6000.) throw len;
-
-    if(pos == nullptr)
-    {
-      TVector3 pos, mom;
-
-      chi2 = gftrk.updatePropState(beamCenter, beamCov);
-      gftrk.getExtrapPosMom(pos, mom);
-
-      track->setChisqVertex(chi2);
-      track->setVertexPos(pos);
-      track->setVertexMom(mom);
-    }
-    else
-    {
-      chi2 = gftrk.updatePropState(beamCenter, beamCov);
-      gftrk.getExtrapPosMom(*pos, *mom);
-    }
+    track->setChisqVertex(chi2);
+    track->setVertexPos(p);
+    track->setVertexMom(m);
   }
-  catch(genfit::Exception& e)
+  else
   {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << track->getVertexPos().Z() << ": " << e.what() << std::endl;
-    return -1.;
-  }
-  catch(double len)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << track->getVertexPos().Z() << ": " << len << std::endl;
-    return -1.;
+    pos->SetXYZ(p.X(), p.Y(), p.Z());
+    mom->SetXYZ(m.X(), m.Y(), m.Z());
   }
 
   return chi2;

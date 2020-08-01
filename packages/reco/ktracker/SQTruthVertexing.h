@@ -55,7 +55,7 @@ private:
   int GetNodes(PHCompositeNode* topNode);
 
   bool buildRecDimuon(double z_vtx, SRecTrack* posTrack, SRecTrack* negTrack, SRecDimuon* dimuon);
-  bool swimTrackToVertex(SRecTrack* track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
+  double swimTrackToVertex(SRecTrack* track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
 
   TRandom1 rndm;
 

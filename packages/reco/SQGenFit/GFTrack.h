@@ -45,6 +45,8 @@ public:
   void getExtrapPosMomCov(TVector3& pos, TVector3& mom, TMatrixDSym& cov) { _propState->getPosMomCov(pos, mom, cov); }
   void getExtrapPosMom(TVector3& pos, TVector3& mom) { _propState->getPosMom(pos, mom); }
 
+  double swimToVertex(double z, TVector3* pos = nullptr, TVector3* mom = nullptr, TMatrixDSym* cov = nullptr);
+
   void checkConsistency()  { _track->checkConsistency(); }
 
   void postFitUpdate(bool updateMeasurements = true);
