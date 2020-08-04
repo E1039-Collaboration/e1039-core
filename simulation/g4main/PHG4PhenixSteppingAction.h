@@ -12,8 +12,7 @@ class PHG4PhenixSteppingAction : public G4UserSteppingAction
 {
 
   public:
-  PHG4PhenixSteppingAction( void )
-  {}
+  PHG4PhenixSteppingAction( void );
 
   virtual ~PHG4PhenixSteppingAction();
   
@@ -27,6 +26,8 @@ class PHG4PhenixSteppingAction : public G4UserSteppingAction
       }
   }
 
+  void set_energy_threshold(double t) { energy_threshold_ = t; }
+
   virtual void UserSteppingAction(const G4Step*);
 
   private:
@@ -34,6 +35,9 @@ class PHG4PhenixSteppingAction : public G4UserSteppingAction
   //! list of subsystem specific stepping actions
   typedef std::list<PHG4SteppingAction*> ActionList;
   ActionList actions_;
+
+  //! energy threshold
+  double energy_threshold_;
 
 };
 

@@ -48,10 +48,10 @@ public:
     //Accept a event
     bool acceptEvent(TriggerRoad& p_road, TriggerRoad& m_road);
     bool acceptEvent(int nHits, int detectorIDs[], int elementIDs[]);
-    bool acceptEvent(SRawEvent* rawEvent, int mode = USE_TRIGGER_HIT);
+    bool acceptEvent(SRawEvent* rawEvent, bool USE_TRIGGER_HIT, bool USE_HIT);
 
     //Trim a event's hodoscope hits
-    void trimEvent(SRawEvent* rawEvent, std::list<Hit>& hitlist, int mode = USE_TRIGGER_HIT);
+    void trimEvent(SRawEvent* rawEvent, std::list<Hit>& hitlist, bool USE_TRIGGER_HIT, bool USE_HIT);
 
     //Get the road list of +/-
     std::map<int, TriggerRoad>& getRoadsAll(int charge)      { return roads[(-charge+1)/2]; }

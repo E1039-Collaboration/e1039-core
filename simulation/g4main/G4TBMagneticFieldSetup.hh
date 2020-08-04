@@ -78,6 +78,8 @@ public:
 
   double get_magfield_at_000(const int i) const {return magfield_at_000[i];}
 
+  G4FieldManager* GetDummyFieldManager() { return fDummyFieldManager; }
+
 protected:
 
       // Find the global Field Manager
@@ -90,7 +92,7 @@ private:
 
   G4ChordFinder*          fChordFinder ;
 
- G4Mag_UsualEqRhs*   fEquation ;
+  G4Mag_UsualEqRhs*   fEquation ;
 
   G4MagneticField*        fEMfield;
  
@@ -104,6 +106,8 @@ private:
   G4double                fMinStep ;
  
   G4TBFieldMessenger*      fFieldMessenger;
+
+  G4FieldManager* fDummyFieldManager;
 
   double magfield_at_000[3];
 };

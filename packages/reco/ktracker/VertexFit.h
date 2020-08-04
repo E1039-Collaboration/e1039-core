@@ -33,7 +33,6 @@ Created: 2-8-2012
 
 class KalmanTrack;
 class KalmanFilter;
-//class GenFitExtrapolator;
 class PHField;
 class TGeoManager;
 class JobOptsSvc;
@@ -174,8 +173,6 @@ private:
     ///Flag to enable/disable optimization of final position
     bool optimize;
 
-
-    JobOptsSvc* p_jobOptsSvc;
     TGeoManager * _t_geo_manager;
 
     SRecEvent* _recEvent;

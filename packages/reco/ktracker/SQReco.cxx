@@ -75,7 +75,7 @@ SQReco::SQReco(const std::string& name):
   _geom_file_name(""),
   _t_geo_manager(nullptr)
 {
-  p_jobOptsSvc = JobOptsSvc::instance();
+  rc = recoConsts::instance();
   _eval_listIDs.clear();
 }
 
@@ -117,13 +117,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
   }
   else if(_evt_reducer_opt == "") //Meaning we initialize the event reducer by opts
   {
-    _evt_reducer_opt = "aoc";
-    if(p_jobOptsSvc->m_enableTriggerMask) _evt_reducer_opt = _evt_reducer_opt + "t";
-    if(p_jobOptsSvc->m_sagittaReducer)    _evt_reducer_opt = _evt_reducer_opt + "s";
-    if(p_jobOptsSvc->m_updateAlignment)   _evt_reducer_opt = _evt_reducer_opt + "e";
-    if(p_jobOptsSvc->m_hodomask)          _evt_reducer_opt = _evt_reducer_opt + "h";
-    if(p_jobOptsSvc->m_mergeHodo)         _evt_reducer_opt = _evt_reducer_opt + "m";
-    if(p_jobOptsSvc->m_realization)       _evt_reducer_opt = _evt_reducer_opt + "r";
+    _evt_reducer_opt = rc->get_CharFlag("EventReduceOpts");
 
     _eventReducer = new EventReducer(_evt_reducer_opt);
   }
@@ -157,7 +151,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
       }
       else if(_fitter_type == SQReco::DAFREF)
       {
-        _gfitter->init(_gfield, "Daf");
+        _gfitter->init(_gfield, "DafRef");
       }
 
       //TODO: common settings for sqfitter
@@ -179,7 +173,7 @@ int SQReco::InitField(PHCompositeNode* topNode)
     }
   }
 
-  std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile, recoConsts::instance()->get_DoubleFlag("FMAGSTR"), recoConsts::instance()->get_DoubleFlag("KMAGSTR"), 5.));
+  std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
   _phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
@@ -654,4 +648,12 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void SQReco::add_eval_list(int listID)
+{
+  if(std::find(_eval_listIDs.begin(), _eval_listIDs.end(), listID) == _eval_listIDs.end())
+  {
+    _eval_listIDs.push_back(listID);
+  }
 }

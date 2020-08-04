@@ -1,7 +1,7 @@
 /*
 KalmanTrack.h
 
-Seed and Track used in all Kalman filter based process, i.e. KalmanFinder and KalmanFitter
+Track used in all Kalman filter based process, i.e. KalmanFinder and KalmanFitter
 
 Author: Kun Liu, liuk@fnal.gov
 Created: 10-14-2012
@@ -24,54 +24,22 @@ Created: 10-14-2012
 #include "SRawEvent.h"
 #include "FastTracklet.h"
 
-///Seed structure to store the temporary prop. seeds information
-class Seed
-{
-public:
-    double axz, bxz;
-    double ayz, byz;
-
-    double charge;
-    double p;
-
-    double getExpPositionX(double z) { return axz*z + bxz; }
-    double getExpPositionY(double z) { return ayz*z + byz; }
-
-    void decideCharge();
-    void decideMomentum();
-    void decideMomentum_model();
-
-    double getMomentum(double& px, double& py, double& pz);
-
-    bool similarity(Seed& elem);
-    static void reduceSeedList(std::list<Seed>& _seedlist);
-
-    void print();
-};
-
 class KalmanTrack
 {
 public:
     ///Constructor, default one is for list::resize()
     KalmanTrack();
-    KalmanTrack(Seed _seed_input);
     //KalmanTrack(Tracklet& tracklet);
     KalmanTrack(SRecTrack& _trk, SRawEvent *_rawevt, SRecEvent *_recevt);
 
     //Convert from tracklet to KalmanTrack
     void setTracklet(Tracklet& tracklet, bool wildseedcov = true);
 
-    ///Get the seed associated
-    Seed getSeed() { return _seed; }
-
     ///Flip the sign of this track
     void flipCharge();
 
     ///Self check to see if it is null
     bool isValid();
-
-    ///Check if the seed goes to station 3+ or station 3-
-    int isInStation3();
 
     ///Propagate the track to a designated position
     bool propagateTo(int detectorID);
@@ -132,8 +100,6 @@ public:
     double getMomentumUpstream(double& px, double& py, double& pz);
     int getNHitsInStation(int stationID);
 
-    double getMuIDAngle();
-
     void getSagittaInSuperDetector(int detectorID, double& pos_exp, double& window);
 
     ///Get Nodes in both upstream and downstream which are closest to KMag
@@ -170,8 +136,6 @@ private:
 
     Node _node_next;
     TrkPar _trkpar_curr;
-
-    Seed _seed;
 };
 
 #endif

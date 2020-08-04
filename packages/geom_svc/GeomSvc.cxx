@@ -25,7 +25,6 @@ Created: 10-19-2011
 #include <TRotation.h>
 #include <TMatrixD.h>
 
-#include <jobopts_svc/JobOptsSvc.h>
 #include "GeomParamPlane.h"
 #include "GeomSvc.h"
 
@@ -240,6 +239,7 @@ void GeomSvc::close()
 void GeomSvc::init()
 {
     using namespace std;
+    rc = recoConsts::instance();
 
     //Initialize the detectorID --- detectorName convention
     typedef std::map<std::string, int>::value_type nameToID;
@@ -371,18 +371,18 @@ void GeomSvc::init()
         map_detectorName.insert(idToName(iter->second, iter->first));
     }
 
+    //----------------------- hard-coded part is over-----------------------
     if (use_dbsvc) initPlaneDbSvc();
     else           initPlaneDirect();
 
     /////Here starts the user-defined part
     //load alignment parameterss
     calibration_loaded = false;
-    JobOptsSvc* job_svc = JobOptsSvc::instance();
-    if(!job_svc->m_enableOnlineAlignment && (!job_svc->m_useIdealGeom))
+    if(!rc->get_BoolFlag("OnlineAlignment") && (!rc->get_BoolFlag("IdealGeom")))
     {
-        loadAlignment(job_svc->m_alignmentFileChamber, job_svc->m_alignmentFileHodo, job_svc->m_alignmentFileProp);
-        loadMilleAlignment(job_svc->m_alignmentFileMille);
-        loadCalibration(job_svc->m_calibrationsFile);
+        loadAlignment("NULL", rc->get_CharFlag("AlignmentHodo"), rc->get_CharFlag("AlignmentProp"));
+        loadMilleAlignment(rc->get_CharFlag("AlignmentMille"));
+        loadCalibration(rc->get_CharFlag("Calibration"));
     }
 
     initWireLUT();
@@ -396,12 +396,12 @@ void GeomSvc::init()
     zmin_kmag = 1064.26 - 120.*2.54;
     zmax_kmag = 1064.26 + 120.*2.54;
 
-//#ifdef _DEBUG_ON
+#ifdef _DEBUG_ON
     for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
     {
         cout << planes[i] << endl;
     }
-//#endif
+#endif
 }
 
 void GeomSvc::initPlaneDirect() {
@@ -409,8 +409,7 @@ void GeomSvc::initPlaneDirect() {
 
     ///Initialize the geometrical variables which should be from MySQL database
     //Connect server
-    JobOptsSvc* job_svc = JobOptsSvc::instance();
-    TSQLServer* con = TSQLServer::Connect(job_svc->GetInputMySQLURL().c_str(), "seaguest","qqbar2mu+mu-");
+    TSQLServer* con = TSQLServer::Connect(rc->get_CharFlag("MySQLURL").c_str(), "seaguest","qqbar2mu+mu-");
 
     //Make query to Planes table
     char query[300];
@@ -418,7 +417,7 @@ void GeomSvc::initPlaneDirect() {
                              "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,theta_y,theta_z from %s.Planes WHERE"
                              " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR "
                              "detectorName LIKE 'P____'";
-    sprintf(query, buf_planes, job_svc->m_geomVersion.c_str());
+    sprintf(query, buf_planes, rc->get_CharFlag("Geometry").c_str());
     TSQLResult* res = con->Query(query);
 
     unsigned int nRows = res->GetRowCount();
@@ -522,19 +521,19 @@ void GeomSvc::initPlaneDirect() {
             planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
         }
     }
-    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << job_svc->m_geomVersion << endl;
+    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << rc->get_CharFlag("Geometry") << endl;
 
     //load the initial value in the planeOffsets table
-    if(job_svc->m_enableOnlineAlignment)
+    if(rc->get_BoolFlag("OnlineAlignment"))
     {
-        loadMilleAlignment(job_svc->m_alignmentFileMille);    //final chance of overwrite resolution numbers in online mode
+        loadMilleAlignment(rc->get_CharFlag("AlignmentMille"));    //final chance of overwrite resolution numbers in online mode
         const char* buf_offsets = "SELECT detectorName,deltaX,deltaY,deltaZ,rotateAboutZ FROM %s.PlaneOffsets WHERE"
                                   " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR detectorName LIKE 'P____'";
-        sprintf(query, buf_offsets, job_svc->m_geomVersion.c_str());
+        sprintf(query, buf_offsets, rc->get_CharFlag("Geometry").c_str());
         res = con->Query(query);
 
         nRows = res->GetRowCount();
-        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << job_svc->m_geomVersion.c_str() << endl;
+        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << rc->get_CharFlag("Geometry") << endl;
         for(unsigned int i = 0; i < nRows; ++i)
         {
             TSQLRow* row = res->Next();
@@ -957,7 +956,7 @@ void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std:
             istringstream stringBuf(buf);
 
             stringBuf >> planes[i].deltaW >> planes[i].resolution;
-            if(planes[i].resolution < RESOLUTION_DC) planes[i].resolution = RESOLUTION_DC;
+            //if(planes[i].resolution < RESOLUTION_DC) planes[i].resolution = RESOLUTION_DC;
 
             planes[i].deltaX = planes[i].deltaW*planes[i].costheta;
             planes[i].deltaY = planes[i].deltaW*planes[i].sintheta;
@@ -1065,7 +1064,7 @@ void GeomSvc::loadMilleAlignment(const std::string& alignmentFile_mille)
 
         for(int i = 1; i <= nChamberPlanes; i+=2)
         {
-            planes[i].resolution = RESOLUTION_DC*0.5*(planes[i].resolution + planes[i+1].resolution);
+            planes[i].resolution = rc->get_DoubleFlag("RESOLUTION_FACTOR")*0.5*(planes[i].resolution + planes[i+1].resolution);
             planes[i+1].resolution = planes[i].resolution;
         }
     }

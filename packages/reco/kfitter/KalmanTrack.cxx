@@ -14,132 +14,6 @@ Created: 10-14-2012
 #include <geom_svc/GeomSvc.h>
 #include "KalmanTrack.h"
 
-double Seed::getMomentum(double& px, double& py, double& pz)
-{
-    pz = p/sqrt(1. + axz*axz + ayz*ayz);
-    px = pz*axz;
-    py = pz*ayz;
-
-    return p;
-}
-
-void Seed::decideCharge()
-{
-    double z_ref = 1347.36;
-    double x_ref = getExpPositionX(z_ref);
-
-    if(x_ref/z_ref > axz)
-    {
-        charge = 1.;
-    }
-    else
-    {
-        charge = -1.;
-    }
-}
-
-void Seed::decideMomentum()
-{
-    double z_ref = 1347.36;
-    double z_0 = 0.;
-    double z_bend_k = 1064.26;
-    double z_bend_f = 251.4;
-    double kick_f = -2.911;
-    double kick_k = -0.4;
-    double deltaE_kf = 8.12;
-    double deltaE_absorber = 1.81;
-    double c4 = deltaE_kf;
-    double c5 = deltaE_kf/2.;
-
-    double x_ref = axz*z_ref + bxz;
-
-    decideCharge();
-
-    double c1 = (z_0 - z_bend_f)*kick_f*charge;
-    double c2 = (z_0 - z_bend_k)*kick_k*charge;
-    double c3 = axz*(z_ref - z_0) - x_ref;
-    double b = c1/c3 + c2/c3 - c4 - c5;
-    double c = c4*c5 - c1*c5/c3 - c2*c4/c3;
-
-    double disc = b*b - 4.*c;
-    if(disc < 0)
-    {
-        decideMomentum_model();
-    }
-    else
-    {
-        p = (-b + sqrt(disc))/2.;
-    }
-
-    if(p < 0.)
-    {
-        decideMomentum_model();
-    }
-    else if(p < 15. || p > 90.)
-    {
-        decideMomentum_model();
-    }
-
-    p -= (deltaE_kf + deltaE_absorber);
-}
-
-void Seed::decideMomentum_model()
-{
-    double z_bend = 375.;
-    double x_bend = axz*z_bend + bxz;
-
-    double kick = fabs(x_bend/z_bend - axz);
-    p = 1.0/(0.00832161 + 0.184186*kick - 0.104132*kick*kick);
-}
-
-bool Seed::similarity(Seed& elem)
-{
-    if(charge*elem.charge < 0) return false;
-    if(fabs(p - elem.p) > .2*p) return false;
-
-    GeomSvc *p_geomSvc = GeomSvc::instance();
-    double z = p_geomSvc->getPlanePosition(nChamberPlanes+nHodoPlanes+1);
-    double dx = getExpPositionX(z) - elem.getExpPositionX(z);
-    double dy = getExpPositionY(z) - elem.getExpPositionY(z);
-    if(dx*dx + dy*dy > 100.) return false;
-
-    return true;
-}
-
-void Seed::reduceSeedList(std::list<Seed>& _seedlist)
-{
-    std::list<Seed> _targetlist;
-    _targetlist.clear();
-
-    while(!_seedlist.empty())
-    {
-        _targetlist.push_back(_seedlist.front());
-        _seedlist.pop_front();
-
-        for(std::list<Seed>::iterator iter = _seedlist.begin(); iter != _seedlist.end(); )
-        {
-            if(iter->similarity(_targetlist.back()))
-            {
-                iter = _seedlist.erase(iter);
-                continue;
-            }
-
-            ++iter;
-        }
-    }
-
-    _seedlist.assign(_targetlist.begin(), _targetlist.end());
-}
-
-void Seed::print()
-{
-    std::cout << "=========== Info. of this seed ===========" << std::endl;
-    std::cout << "X-Z seed:" << axz << "*z + " << bxz << std::endl;
-    std::cout << "Y-Z seed:" << ayz << "*z + " << byz << std::endl;
-    std::cout << "Momentum: " << p << std::endl;
-    std::cout << "Charge  : " << charge << std::endl;
-}
-
 ///Default constructor for KalmanTrack, wiill only be used when resizing the track candidate list
 KalmanTrack::KalmanTrack()
 {
@@ -148,33 +22,6 @@ KalmanTrack::KalmanTrack()
 
     _chisq = 0.;
     update();
-}
-
-KalmanTrack::KalmanTrack(Seed _seed_input)
-{
-    _seed = _seed_input;
-
-    _hit_index.clear();
-    _nodes.clear();
-
-    _chisq = 0.;
-    update();
-
-    GeomSvc *p_geomSvc = GeomSvc::instance();
-
-    _trkpar_curr._z = p_geomSvc->getPlanePosition(nChamberPlanes+nHodoPlanes+1);
-    _trkpar_curr._state_kf[0][0] = _seed.charge/_seed.p;
-    _trkpar_curr._state_kf[1][0] = _seed.axz;
-    _trkpar_curr._state_kf[2][0] = _seed.ayz;
-    _trkpar_curr._state_kf[3][0] = _seed.getExpPositionX(_trkpar_curr._z);
-    _trkpar_curr._state_kf[4][0] = _seed.getExpPositionY(_trkpar_curr._z);
-
-    _trkpar_curr._covar_kf.Zero();
-    _trkpar_curr._covar_kf[0][0] = 0.001;
-    _trkpar_curr._covar_kf[1][1] = 0.01;
-    _trkpar_curr._covar_kf[2][2] = 0.01;
-    _trkpar_curr._covar_kf[3][3] = 100.;
-    _trkpar_curr._covar_kf[4][4] = 100.;
 }
 
 KalmanTrack::KalmanTrack(SRecTrack& _trk, SRawEvent *_rawevt, SRecEvent *_recevt)
@@ -251,30 +98,9 @@ bool KalmanTrack::isValid()
 	//FIXME 20 for now; original _chisq < 150
     if(_chisq < 0 || _chisq/_hit_index.size() > 100) return false;
     if(_nodes.empty()) return false;
-    if(getMomentumUpstream() < 0.9/INVP_MAX || getMomentumUpstream() > 1.1/INVP_MIN) return false;
+    if(getMomentumUpstream() < 5. || getMomentumUpstream() > 120.) return false;
 
     return true;
-}
-
-int KalmanTrack::isInStation3()
-{
-    GeomSvc* p_geomSvc = GeomSvc::instance();
-
-    int detectorID_st3p = 18;
-    //int detectorID_st3m = 24;
-    double z_st3p = p_geomSvc->getPlanePosition(detectorID_st3p);
-    //double z_st3m = p_geomSvc->getPlanePosition(detectorID_st3m);
-
-    double x_st3p = _seed.getExpPositionX(z_st3p);
-    double y_st3p = _seed.getExpPositionY(z_st3p);
-    if(p_geomSvc->isInPlane(detectorID_st3p, x_st3p, y_st3p))
-    {
-        return 1;
-    }
-    else
-    {
-        return -1;
-    }
 }
 
 void KalmanTrack::updateMomentum()
@@ -881,20 +707,6 @@ int KalmanTrack::getMomentums(int level, double *px, double *py, double *pz)
     }
 
     return nHits;
-}
-
-double KalmanTrack::getMuIDAngle()
-{
-    double z_absorber = 2000.;
-    double z_proptube = 3000.;
-
-    double x_seed = _seed.getExpPositionX(z_proptube);
-    double y_seed = _seed.getExpPositionY(z_proptube);
-    double x_trk, y_trk;
-    getExpPositionFast(z_proptube, x_trk, y_trk);
-
-    double angle = sqrt((x_trk - x_seed)*(x_trk - x_seed) + (y_trk - y_seed)*(y_trk - y_seed))/(z_proptube - z_absorber);
-    return angle;
 }
 
 int KalmanTrack::getHitsIndex(int *index)
