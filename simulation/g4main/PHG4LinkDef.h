@@ -20,6 +20,5 @@
 #pragma link C++ class PHG4TruthSubsystem-!;
 #pragma link C++ class PHG4Utils-!;
 //#pragma link C++ class PHG4UIsession-!;
-//#pragma link C++ class ReadEICFiles-!;
 
 #endif /* __CINT__ */

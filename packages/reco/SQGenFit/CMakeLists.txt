@@ -62,7 +62,7 @@ if(BUILDTEST)
     message(STATUS "Adding tests to the compile list: ${test}")
 
     add_executable(${test} ${PROJECT_SOURCE_DIR}/test/${test}.cxx)
-    target_link_libraries(${test} ${PROJECT_BINARY_DIR}/libsqgenfit.so -lgenfit2 -lktracker -lktracker_interface -lphfield -lphfield_io -lGeom -lgeom_svc -ldb_svc -ljobopts_svc -lphool "${ROOT_LINK}")
+    target_link_libraries(${test} ${PROJECT_BINARY_DIR}/libsqgenfit.so -lgenfit2 -lktracker -lktracker_interface -lphfield -lphfield_io -lGeom -lgeom_svc -ldb_svc -lphool "${ROOT_LINK}")
     add_dependencies(${test} sqgenfit)
     install(TARGETS ${test} DESTINATION ${PROJECT_SOURCE_DIR}/test)
   endforeach(test)

@@ -32,6 +32,7 @@ class SQSpillMap;
 class SQEvent;
 class SQHitMap;
 class SQHitVector;
+class SQTrackVector;
 
 class TFile;
 class TTree;
@@ -55,9 +56,6 @@ public:
   void setInputTy(SQReco::INPUT_TYPE input_ty) { _input_type = input_ty; }
   void setFitterTy(SQReco::FITTER_TYPE fitter_ty) { _fitter_type = fitter_ty; }
 
-  const std::string& get_hit_container_choice() const { return _hit_container_type; }
-  void set_hit_container_choice(const std::string& hitContainerChoice) { _hit_container_type = hitContainerChoice; }
-
   const TString& get_eval_file_name() const { return _eval_file_name; }
   void set_eval_file_name(const TString& evalFileName) { _eval_file_name = evalFileName; }
 
@@ -76,8 +74,7 @@ public:
   const TString& get_evt_reducer_opt() const { return _evt_reducer_opt; }
   void set_evt_reducer_opt(const TString& opt) { _evt_reducer_opt = opt; }
 
-  bool fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter);
-  bool fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter);
+  void set_legacy_rec_container(const bool b = true) { _legacy_rec_container = b; } 
 
 private:
 
@@ -91,6 +88,11 @@ private:
 
   SRawEvent* BuildSRawEvent();
   int updateHitInfo(SRawEvent* sraw_event);
+
+  bool fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter);
+  bool fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter);
+
+  void fillRecTrack(SRecTrack& recTrack);
 
   SQReco::INPUT_TYPE  _input_type;
   SQReco::FITTER_TYPE _fitter_type;
@@ -117,14 +119,12 @@ private:
 
   recoConsts* rc;
 
-  std::string _hit_container_type;
   size_t _event;
 
   SQRun*      _run_header;
   SQSpillMap* _spill_map;
 
   SQEvent*     _event_header;
-  SQHitMap*    _hit_map;
   SQHitVector* _hit_vector;
   SQHitVector* _triggerhit_vector;
 
@@ -132,8 +132,10 @@ private:
   std::map<int, size_t> _m_hitID_idx;
   std::map<int, size_t> _m_trghitID_idx;
 
+  bool _legacy_rec_container;
   SRawEvent* _rawEvent;
   SRecEvent* _recEvent;
+  SQTrackVector* _recTrackVec;
 
   std::string  _geom_file_name;
   TGeoManager* _t_geo_manager;

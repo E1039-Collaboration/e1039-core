@@ -22,6 +22,8 @@ class GFTrack
 {
 public:
   GFTrack();
+  GFTrack(SRecTrack& recTrack);
+  GFTrack(Tracklet& tracklet);
   ~GFTrack();
 
   void setVerbosity(unsigned int v);
@@ -43,6 +45,8 @@ public:
   void getExtrapPosMomCov(TVector3& pos, TVector3& mom, TMatrixDSym& cov) { _propState->getPosMomCov(pos, mom, cov); }
   void getExtrapPosMom(TVector3& pos, TVector3& mom) { _propState->getPosMom(pos, mom); }
 
+  double swimToVertex(double z, TVector3* pos = nullptr, TVector3* mom = nullptr, TMatrixDSym* cov = nullptr);
+
   void checkConsistency()  { _track->checkConsistency(); }
 
   void postFitUpdate(bool updateMeasurements = true);
@@ -61,6 +65,9 @@ private:
   genfit::AbsTrackRep* _trkrep; 
   genfit::Track* _track;
   std::vector<GFMeasurement*> _measurements;
+
+  //container of the MSOP obtained from the SRecTrack
+  std::vector<genfit::MeasuredStateOnPlane> _fitstates;
 
   //Used for the propagation and hypothesis test
   std::unique_ptr<genfit::MeasuredStateOnPlane> _propState;

@@ -53,7 +53,7 @@ add_library(g4eval SHARED
   PHG4DSTReader_Dict.C
 )
 
-target_link_libraries(g4eval -lfun4all -lg4dst)
+target_link_libraries(g4eval -lfun4all)
 
 install(TARGETS g4eval DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
