@@ -83,8 +83,8 @@ void recoConsts::set_defaults()
 
   set_DoubleFlag("X_BEAM", 0.);
   set_DoubleFlag("Y_BEAM", 0.);
-  set_DoubleFlag("SIGX_BEAM", 10.);
-  set_DoubleFlag("SIGY_BEAM", 10.);
+  set_DoubleFlag("SIGX_BEAM", 2.);
+  set_DoubleFlag("SIGY_BEAM", 2.);
 
   set_CharFlag("EventReduceOpts", "aoc");
 

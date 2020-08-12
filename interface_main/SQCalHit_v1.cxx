@@ -16,7 +16,7 @@ ClassImp(SQCalHit_v1);
 SQCalHit_v1::SQCalHit_v1(): 
   _track_id(std::numeric_limits<int>::max()),
   _shower_id(std::numeric_limits<int>::max()),
-	_g4hit_id(std::numeric_limits<PHG4HitDefs_keytype>::max()),
+	_g4hit_id(std::numeric_limits<PHG4HitDefs::keytype>::max()),
   _edep(0.)
 {
   _truth_cells.clear();

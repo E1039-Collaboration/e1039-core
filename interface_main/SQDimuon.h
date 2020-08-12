@@ -16,6 +16,9 @@ class SQDimuon: public PHObject {
   virtual int  get_dimuon_id() const = 0;
   virtual void set_dimuon_id(const int a) = 0;
 
+  virtual int  get_rec_dimuon_id() const = 0;
+  virtual void set_rec_dimuon_id(const int a) = 0;
+
   virtual int  get_pdg_id() const = 0;
   virtual void set_pdg_id(const int a) = 0;
 
@@ -36,6 +39,13 @@ class SQDimuon: public PHObject {
 
   virtual TLorentzVector get_mom_neg() const = 0;
   virtual void           set_mom_neg(const TLorentzVector a) = 0;
+
+  virtual double get_mass() const = 0;
+  virtual double get_x1()   const = 0;
+  virtual double get_x2()   const = 0;
+  virtual double get_xf()   const = 0;
+
+  virtual double get_chisq() const = 0;
 
  protected:
   SQDimuon() {}

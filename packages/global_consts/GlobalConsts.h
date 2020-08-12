@@ -8,6 +8,11 @@
 #define nPropPlanes 8
 #define nDarkPhotonPlanes 8
 
+//--------------- Physics quantities -------------
+#define M_MU 0.1056583745
+#define M_P  0.93828
+#define E_BEAM 120.
+
 //-------------- Track finding exit code ---------------
 #define TFEXIT_SUCCESS 0;
 #define VFEXIT_SUCCESS 0;

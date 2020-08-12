@@ -15,6 +15,9 @@ class SQDimuon_v1 : public SQDimuon {
   int  get_dimuon_id() const { return _id; }
   void set_dimuon_id(const int a)   { _id = a; }
 
+  virtual int  get_rec_dimuon_id() const { return _rec_id; }
+  virtual void set_rec_dimuon_id(const int a) { _rec_id = a; }
+
   int  get_pdg_id() const { return _pdg_id; }
   void set_pdg_id(const int a)   { _pdg_id = a; }
 
@@ -36,8 +39,16 @@ class SQDimuon_v1 : public SQDimuon {
   TLorentzVector get_mom_neg() const          { return _mom_neg; }
   void           set_mom_neg(const TLorentzVector a) { _mom_neg = a; }
 
+  virtual double get_mass() const { return _mom.M(); }
+  virtual double get_x1() const;
+  virtual double get_x2() const;
+  virtual double get_xf() const;
+
+  virtual double get_chisq() const { return 0.; }
+
  protected:
   int _id;
+  int _rec_id;
   int _pdg_id;
   int _track_id_pos;
   int _track_id_neg;

@@ -12,6 +12,7 @@ Created: 01-21-2013
 #include <TLorentzVector.h>
 #include <TMatrixD.h>
 
+#include <GenFit/SharedPlanePtr.h>
 #include <phool/recoConsts.h>
 
 #include "SRecEvent.h"
@@ -122,6 +123,11 @@ SRecTrack::SRecTrack()
     fCovar.clear();
     fZ.clear();
     fChisqAtNode.clear();
+
+    for(Int_t i = 0; i < 3; ++i) fGFDetPlaneVec[i].clear();
+    fGFAuxInfo.clear();
+    fGFStateVec.clear();
+    fGFCov.clear();
 
     fChisqVertex = -99.;
     fVertexPos.SetXYZ(999., 999., 999.);
@@ -313,7 +319,7 @@ Double_t SRecTrack::getExpMomentumFast(Double_t z, Double_t& px, Double_t& py, D
 
 }
 
-Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz)
+Double_t SRecTrack::getMomentum(const TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz) const
 {
     Double_t p = 1./fabs(state[0][0]);
     pz = p/sqrt(1. + state[1][0]*state[1][0] + state[2][0]*state[2][0]);
@@ -323,7 +329,7 @@ Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Dou
     return p;
 }
 
-Double_t SRecTrack::getPosition(TMatrixD& state, Double_t& x, Double_t& y)
+Double_t SRecTrack::getPosition(const TMatrixD& state, Double_t& x, Double_t& y) const
 {
     x = state[3][0];
     y = state[4][0];
@@ -340,6 +346,18 @@ TLorentzVector SRecTrack::getMomentumVertex()
     E = sqrt(px*px + py*py + pz*pz + mmu*mmu);
 
     return TLorentzVector(px, py, pz, E);
+}
+
+void SRecTrack::insertGFState(const genfit::MeasuredStateOnPlane& msop)
+{
+    fGFStateVec.push_back(msop.getState());
+    fGFCov.push_back(msop.getCov());
+    fGFAuxInfo.push_back(msop.getAuxInfo());
+
+    const genfit::SharedPlanePtr& plane = msop.getPlane();
+    fGFDetPlaneVec[0].push_back(plane->getO());
+    fGFDetPlaneVec[1].push_back(plane->getU());
+    fGFDetPlaneVec[2].push_back(plane->getV());
 }
 
 void SRecTrack::adjustKMag(double kmagStr)

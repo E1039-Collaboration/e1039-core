@@ -9,7 +9,7 @@
 #define _H_SQHit_H_
 
 #include <phool/PHObject.h>
-//#include <g4main/PHG4HitDefs.h>
+#include "g4main/PHG4HitDefs.h"
 
 #include <iostream>
 #include <limits>
@@ -19,9 +19,6 @@
 class SQHit : public PHObject {
 
 public:
-  
-  //FIXME temprory solution
-  typedef unsigned long long PHG4HitDefs_keytype;
   typedef std::map<short, float> CellType;    //!< key -> plateID, float -> edep
 
   SQHit() {}
@@ -65,11 +62,8 @@ public:
   virtual int          get_track_id() const                             {return std::numeric_limits<int>::max();}
   virtual void         set_track_id(const int a)                        {}
 
-  virtual int          get_shower_id() const                            {return std::numeric_limits<int>::max();}
-  virtual void         set_shower_id(const int a)                       {}
-
-  virtual PHG4HitDefs_keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs_keytype>::max();}
-  virtual void                         set_g4hit_id(const PHG4HitDefs_keytype a)                        {}
+  virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs::keytype>::max();}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)        {}
 
   virtual float        get_truth_x() const                              {return std::numeric_limits<float>::max();}
   virtual void         set_truth_x(const float a)                       {}

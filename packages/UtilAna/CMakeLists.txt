@@ -28,9 +28,10 @@ execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PREFIX  OUTPUT
 execute_process(COMMAND root-config --cflags OUTPUT_VARIABLE ROOT_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ${ROOT_CFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${ROOT_CFLAGS}")
 
 add_library(UtilAna SHARED ${sources} UtilAna_Dict.cc)
+include_directories("${PROJECT_SOURCE_DIR}/../../simulation")
 target_link_libraries(UtilAna -linterface_main -lgeom_svc)
 
 install(TARGETS UtilAna DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

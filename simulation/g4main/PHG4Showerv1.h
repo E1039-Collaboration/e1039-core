@@ -117,7 +117,7 @@ private:
   // these containers are cleared during dst reduction, but are available in full dsts
   std::set<int> _g4particle_ids; //< contained secondary particle ids
   std::set<int> _g4vertex_ids;   //< contained secondary vertex ids
-  std::map<int,std::set<unsigned long long> > _g4hit_ids; //< contained hit ids
+  std::map<int,std::set<PHG4HitDefs::keytype> > _g4hit_ids; //< contained hit ids
   
   ClassDef(PHG4Showerv1, 1);
 };

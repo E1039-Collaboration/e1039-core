@@ -1,6 +1,9 @@
 #ifndef _TRUTH_NODE_MAKER__H_
 #define _TRUTH_NODE_MAKER__H_
 #include <fun4all/SubsysReco.h>
+#include <map>
+#include <string>
+
 class TVector3;
 class TLorentzVector;
 namespace HepMC { 
@@ -13,6 +16,10 @@ class SQMCEvent;
 class SQTrack;
 class SQTrackVector;
 class SQDimuonVector;
+class SQHitVector;
+class SRecEvent;
+class SQHit;
+class GeomSvc;
 
 /// An SubsysReco module to create a set of SQ nodes for the simulation true info.
 /**
@@ -31,15 +38,26 @@ class SQDimuonVector;
  * Analyzer should use the (true) invariant mass of muon pair to identify its parent particle type.
  */
 class TruthNodeMaker: public SubsysReco {
+  // input nodes
   PHHepMCGenEventMap* genevtmap;
   PHG4TruthInfoContainer* g4true;
-  PHG4HitContainer *g4hc_d1x;
-  PHG4HitContainer *g4hc_d3px;
-  PHG4HitContainer *g4hc_d3mx;
+  SQHitVector*      m_vec_hit;
+  SRecEvent*        m_rec_evt;
+  SQTrackVector*    m_vec_rec_trk;
+  std::map<int, PHG4HitContainer*> m_g4hc;
 
+  // output nodes
   SQMCEvent*      m_evt;
   SQTrackVector*  m_vec_trk;
   SQDimuonVector* m_vec_dim;
+
+  // rec input container type
+  bool m_legacy_rec_container;
+  bool m_do_truthtrk_tagging;
+  bool m_do_evt_header;
+
+  // true - rec mathcing nhits threshold
+  double m_matching_threshold;
 
  public:
   TruthNodeMaker();
@@ -49,10 +67,15 @@ class TruthNodeMaker: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
+  void set_legacy_rec_container(bool b = true) { m_legacy_rec_container = b; }
+  void set_matching_threshold(double threshold) { m_matching_threshold = threshold; }
+
  private:
   int  GetNodes(PHCompositeNode *topNode);
   int MakeNodes(PHCompositeNode *topNode);
-  bool FindHitAtStation(const int trk_id, const PHG4HitContainer* g4hc, TVector3* pos, TLorentzVector* mom);
+
+  bool FindHitAtStation(int target_detIDs[], int trkid, const std::vector<SQHit*>& hitvec, TVector3& pos, TLorentzVector& mom);
+  int  FindCommonHitIDs(std::vector<int>& hitidvec1, std::vector<int>& hitidvec2);
 };
 
 #endif /* _TRUTH_NODE_MAKER__H_ */

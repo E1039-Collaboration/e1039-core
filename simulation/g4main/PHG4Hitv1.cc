@@ -10,7 +10,7 @@ using namespace std;
 ClassImp(PHG4Hitv1)
 
 PHG4Hitv1::PHG4Hitv1():
- hitid(ULONG_LONG_MAX),
+ hitid(UINT_MAX),
  trackid(INT_MIN),
  edep(NAN)
 {
@@ -32,7 +32,7 @@ PHG4Hitv1::PHG4Hitv1(PHG4Hit const &g4hit)
 void
 PHG4Hitv1::Reset()
 {
-  hitid = ULONG_LONG_MAX;
+  hitid = UINT_MAX;
   trackid = INT_MIN;
   edep = NAN;
   for (int i = 0; i<2;i++)
