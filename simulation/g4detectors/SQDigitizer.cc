@@ -1,7 +1,7 @@
 #include "SQDigitizer.h"
 
 #include <interface_main/SQMCHit_v1.h>
-#include <interface_main/SQCalHit_v1.h>
+#include <interface_main/SQCalMCHit_v1.h>
 #include <interface_main/SQHitVector_v1.h>
 #include <g4main/PHG4Hitv1.h>
 #include <g4main/PHG4HitContainer.h>
@@ -255,7 +255,7 @@ void SQDigitizer::digitizeEMCal(const std::string& detName)
     int towerID  = g4hit.get_scint_id();
     if(digiHits.find(towerID) == digiHits.end())
     {
-      SQCalHit_v1 digiHit;
+      SQCalMCHit_v1 digiHit;
       digiHit.set_detector_id(detID);
       digiHit.set_element_id(towerID);
       digiHit.set_shower_id(g4hit.get_shower_id());

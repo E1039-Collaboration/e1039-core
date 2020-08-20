@@ -19,7 +19,7 @@
 class SQHit : public PHObject {
 
 public:
-  typedef std::map<short, float> CellType;    //!< key -> plateID, float -> edep
+  typedef std::map<short, float> CellMap;    //!< key -> plateID, float -> edep
 
   SQHit() {}
   virtual ~SQHit() {}
@@ -44,6 +44,9 @@ public:
   virtual short        get_element_id() const                           {return std::numeric_limits<short>::max();}
   virtual void         set_element_id(const short a)                    {}
 
+  virtual short        get_tower_id() const                             {return std::numeric_limits<short>::max();}
+  virtual void         set_tower_id(const short a)                      {}
+
   virtual short        get_level() const                                {return std::numeric_limits<short>::max();}
   virtual void         set_level(const short a)                         {}
 
@@ -63,7 +66,7 @@ public:
   virtual void         set_track_id(const int a)                        {}
 
   virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return std::numeric_limits<PHG4HitDefs::keytype>::max();}
-  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)        {}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)       {}
 
   virtual float        get_truth_x() const                              {return std::numeric_limits<float>::max();}
   virtual void         set_truth_x(const float a)                       {}
@@ -92,10 +95,10 @@ public:
   virtual bool         is_trigger_mask() const {return false;}
   virtual void         set_trigger_mask(const bool a) {}
 
-  virtual unsigned int get_n_cells() const      { return std::numeric_limits<int>::max(); }
-  virtual CellType     get_cells()              { CellType none; return none; } 
-  virtual float        get_cell(unsigned int i) { return std::numeric_limits<float>::max(); }
-  virtual void         add_cell(unsigned int i, float a)  {}
+  virtual unsigned int  get_n_cells() const                { return std::numeric_limits<int>::max(); }
+  virtual CellMap       get_cells()   const                { CellMap none; return none; } 
+  virtual float         get_cell(unsigned int i) const     { return std::numeric_limits<float>::max(); }
+  virtual void          add_cell(unsigned int i, float a)  {}
 
   enum HitQuality
   {
