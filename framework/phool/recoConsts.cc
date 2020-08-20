@@ -58,7 +58,7 @@ void recoConsts::set_defaults()
   set_CharFlag("AlignmentProp", "$E1039_RESOURCE/alignment/run6/alignment_prop.txt");
   set_CharFlag("Calibration", "$E1039_RESOURCE/alignment/run6/calibration.txt");
 
-  set_CharFlag("MySQLURL", "mysql://e906-db1.fnal.gov");
+  set_CharFlag("MySQLURL", "mysql://e906-db1.fnal.gov:3306");
   set_CharFlag("Geometry", "user_e1039_geom_plane.param_G9_run5_2");
 
   set_CharFlag("TRIGGER_Repo", "$TRIGGER_ROOT");
