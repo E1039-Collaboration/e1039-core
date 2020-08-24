@@ -404,6 +404,12 @@ PHG4Hitv1::identify(ostream& os) const
        << ", y1: " << get_y(1)
        << ", z1: " << get_z(1)
        << ", t1: " << get_t(1) << endl;
+  cout << "px0: " << get_px(0)
+       << ", py0: " << get_py(0)
+       << ", pz0: " << get_pz(0) << endl;
+  cout << "px1: " << get_px(1)
+       << ", py1: " << get_py(1)
+       << ", pz1: " << get_pz(1) << endl;
   cout << "trackid: " << trackid << ", showerid: " << showerid
        << ", edep: " << edep << endl;
   for (prop_map_t::const_iterator i = prop_map.begin(); i!= prop_map.end(); ++i)

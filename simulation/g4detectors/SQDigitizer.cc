@@ -1,6 +1,7 @@
 #include "SQDigitizer.h"
 
 #include <interface_main/SQMCHit_v1.h>
+#include <interface_main/SQCalMCHit_v1.h>
 #include <interface_main/SQHitVector_v1.h>
 #include <g4main/PHG4Hitv1.h>
 #include <g4main/PHG4HitContainer.h>
@@ -34,8 +35,9 @@
 #ifndef __CINT__
 int SQDigitizer::Init(PHCompositeNode *topNode)
 {
-	p_geomSvc = GeomSvc::instance();
-  detIDByName.clear();
+  if(Verbosity() > 2) std::cout << "SQDigitizer: Init " << detIDByName.size() << std::endl;
+
+  p_geomSvc = GeomSvc::instance();
   for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
     if(!enableDC1 && (i >= 7 && i <= 12)) continue;
@@ -45,30 +47,7 @@ int SQDigitizer::Init(PHCompositeNode *topNode)
     detIDByName[detName] = i;
   }
 
-  /*
   //TODO: Load the detector realization setup
-  const char* detectorEffResol = "";
-  std::ifstream fin(detectorEffResol);
-  if(fin) 
-  {
-    std::string line;
-    while(getline(fin, line))
-    {
-      std::string detectorName;
-      int elementID;
-      double eff, res;
-
-      std::stringstream ss(line);
-      ss >> detectorName >> elementID >> eff >> res;
-
-      if(eff >= 0. && eff <= 1. && res >= 0.)
-      {
-        digiPlanes[map_detectorID[detectorName]].efficiency[elementID] = eff;
-        digiPlanes[map_detectorID[detectorName]].resolution[elementID] = res;
-      }
-    }
-  }
-  */
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -80,7 +59,8 @@ SQDigitizer::SQDigitizer(const std::string& name, const int verbose):
   enableDC1(false),
   enableDPHodo(true)
 {
-	Verbosity(0);
+  detIDByName.clear();
+  Verbosity(0);
 }
 
 SQDigitizer::~SQDigitizer() 
@@ -88,7 +68,7 @@ SQDigitizer::~SQDigitizer()
 
 int SQDigitizer::InitRun(PHCompositeNode* topNode) 
 {
-  if(Verbosity() > 2) std::cout << "SQDigitizer: InitRun" << std::endl;
+  if(Verbosity() > 2) std::cout << "SQDigitizer: InitRun " << detIDByName.size() << std::endl;
   
   PHNodeIterator iter(topNode);
 
@@ -116,16 +96,28 @@ int SQDigitizer::InitRun(PHCompositeNode* topNode)
     PHG4HitContainer* hits = findNode::getClass<PHG4HitContainer>(topNode, g4hitNodeName.c_str());
     if(!hits)
     {
-      std::cerr << Name() << ": Could not locate g4 hit node " << g4hitNodeName << std::endl;
-      return Fun4AllReturnCodes::ABORTRUN;
+      if(Verbosity() > 2) std::cout << Name() << ": Could not locate g4 hit node " << g4hitNodeName << std::endl;
+      //return Fun4AllReturnCodes::ABORTRUN;
     }
-    hitContainerByName[detName] = hits;
+    else
+    {
+      hitContainerByName[detName] = hits;
+    }
+  }
+
+  // Exit if there is nothing to work with
+  if(hitContainerByName.empty())
+  {
+    std::cerr << Name() << ": no g4hit node foud, abort " << std::endl;
+    return Fun4AllReturnCodes::ABORTRUN;
   }
 
   //Book output SQHits
   digits = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if(!digits)
   {
+    if(Verbosity() > 2) std::cout << Name() << ": booking output node SQHitVector" << std::endl;
+
     digits = new SQHitVector_v1();
     PHIODataNode<PHObject>* newNode = new PHIODataNode<PHObject>(digits, "SQHitVector", "PHObject");
     dstNode->addNode(newNode);
@@ -250,7 +242,52 @@ void SQDigitizer::digitizePlane(const std::string& detName)
 }
 
 void SQDigitizer::digitizeEMCal(const std::string& detName)
-{}
+{
+  PHG4HitContainer* g4hits = hitContainerByName[detName];
+  if(g4hits->size() < 1) return;
+
+  int detID = detIDByName[detName];
+  std::map<int, SQCalHit_v1> digiHits;  //key -> towerID, val -> calHit
+  for(PHG4HitContainer::ConstIterator it = g4hits->getHits().first; it != g4hits->getHits().second; ++it)
+  {
+    const PHG4Hit& g4hit = *(it->second);
+    
+    int towerID  = g4hit.get_scint_id();
+    if(digiHits.find(towerID) == digiHits.end())
+    {
+      SQCalMCHit_v1 digiHit;
+      digiHit.set_detector_id(detID);
+      digiHit.set_element_id(towerID);
+      digiHit.set_shower_id(g4hit.get_shower_id());
+      digiHit.set_track_id(g4hit.get_trkid());
+      digiHit.set_g4hit_id(g4hit.get_hit_id());
+
+      digiHit.set_in_time(1);
+      digiHit.set_hodo_mask(0);
+      digiHit.set_tdc_time(0.);
+      digiHit.set_drift_distance(0.);
+      digiHit.set_pos(0.);
+
+      digiHit.set_truth_x(g4hit.get_x(0));
+      digiHit.set_truth_y(g4hit.get_y(0));
+      digiHit.set_truth_z(g4hit.get_z(0));
+      digiHit.set_truth_px(g4hit.get_px(0));
+      digiHit.set_truth_py(g4hit.get_py(0));
+      digiHit.set_truth_pz(g4hit.get_pz(0));
+
+      digiHits[towerID] = digiHit;
+    }
+
+    digiHits[towerID].add_cell(g4hit.get_index_l(), g4hit.get_edep());
+  }
+
+  for(auto iter = digiHits.begin(); iter != digiHits.end(); ++iter)
+  {
+    //iter->second.identify();
+    iter->second.set_hit_id(digits->size());
+    digits->push_back(&(iter->second));
+  }
+}
 
 bool SQDigitizer::realize(SQHit& dHit)
 {
