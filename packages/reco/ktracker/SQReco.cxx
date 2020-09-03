@@ -435,15 +435,24 @@ int SQReco::process_event(PHCompositeNode* topNode)
   LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
 
   //add additional eval information if applicable
-  for(unsigned int i = 0; i < _eval_listIDs.size(); ++i)
+  if(is_eval_enabled() || is_eval_dst_enabled())
   {
-    std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
-    for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
+    for(unsigned int i = 0; i < _eval_listIDs.size(); ++i)
     {
-      new((*_tracklets)[nTracklets]) Tracklet(*iter);
-      ++nTracklets;
+      std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
+      for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
+      {
+        if(is_eval_enabled())
+        {
+          new((*_tracklets)[nTracklets]) Tracklet(*iter);
+          ++nTracklets;
+        }
+
+        if(is_eval_dst_enabled()) _tracklet_vector->push_back(&(*iter));
+      }
     }
   }
+  
   if(is_eval_enabled() && nTracklets > 0) _eval_tree->Fill();
 
   ++_event;
