@@ -122,8 +122,6 @@ void Fun4AllSRawEventInputManager::enable_E1039_translation()
 
 void Fun4AllSRawEventInputManager::E906ToE1039()
 {
-  if(!_enable_e1039_translation) return;
-
   run_header->set_run_id(_srawEvent->getRunID());
 
   SQSpill* spill = spill_map->get(_srawEvent->getSpillID());
@@ -133,7 +131,7 @@ void Fun4AllSRawEventInputManager::E906ToE1039()
     spill->set_run_id(_srawEvent->getRunID());
 
     spill_map->insert(spill);
-    run_header->set_run_id(run_header->get_run_id()+1);
+    run_header->set_n_spill(spill_map->size());
   }
 
   event_header->set_run_id(_srawEvent->getRunID());
