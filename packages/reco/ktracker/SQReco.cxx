@@ -15,6 +15,7 @@
 #include <interface_main/SQRun_v1.h>
 #include <interface_main/SQSpill_v1.h>
 #include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQTrackVector_v1.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <fun4all/PHTFileServer.h>
@@ -62,20 +63,20 @@ SQReco::SQReco(const std::string& name):
   _gfitter(nullptr),
   _phfield(nullptr),
   _gfield(nullptr),
-  _hit_container_type("Vector"),
   _event(0),
   _run_header(nullptr),
   _spill_map(nullptr),
   _event_header(nullptr),
-  _hit_map(nullptr),
   _hit_vector(nullptr),
   _triggerhit_vector(nullptr),
+  _legacy_rec_container(true),
   _rawEvent(nullptr),
   _recEvent(nullptr),
+  _recTrackVec(nullptr),
   _geom_file_name(""),
   _t_geo_manager(nullptr)
 {
-  p_jobOptsSvc = JobOptsSvc::instance();
+  rc = recoConsts::instance();
   _eval_listIDs.clear();
 }
 
@@ -117,13 +118,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
   }
   else if(_evt_reducer_opt == "") //Meaning we initialize the event reducer by opts
   {
-    _evt_reducer_opt = "aoc";
-    if(p_jobOptsSvc->m_enableTriggerMask) _evt_reducer_opt = _evt_reducer_opt + "t";
-    if(p_jobOptsSvc->m_sagittaReducer)    _evt_reducer_opt = _evt_reducer_opt + "s";
-    if(p_jobOptsSvc->m_updateAlignment)   _evt_reducer_opt = _evt_reducer_opt + "e";
-    if(p_jobOptsSvc->m_hodomask)          _evt_reducer_opt = _evt_reducer_opt + "h";
-    if(p_jobOptsSvc->m_mergeHodo)         _evt_reducer_opt = _evt_reducer_opt + "m";
-    if(p_jobOptsSvc->m_realization)       _evt_reducer_opt = _evt_reducer_opt + "r";
+    _evt_reducer_opt = rc->get_CharFlag("EventReduceOpts");
 
     _eventReducer = new EventReducer(_evt_reducer_opt);
   }
@@ -157,7 +152,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
       }
       else if(_fitter_type == SQReco::DAFREF)
       {
-        _gfitter->init(_gfield, "Daf");
+        _gfitter->init(_gfield, "DafRef");
       }
 
       //TODO: common settings for sqfitter
@@ -179,7 +174,7 @@ int SQReco::InitField(PHCompositeNode* topNode)
     }
   }
 
-  std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile, recoConsts::instance()->get_DoubleFlag("FMAGSTR"), recoConsts::instance()->get_DoubleFlag("KMAGSTR"), 5.));
+  std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
   _phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
@@ -377,7 +372,6 @@ int SQReco::process_event(PHCompositeNode* topNode)
     up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
     _rawEvent = up_raw_event.get();
   }
-  _recEvent->setRawEvent(_rawEvent);
 
   if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
   {
@@ -398,7 +392,11 @@ int SQReco::process_event(PHCompositeNode* topNode)
   }
 
   int finderstatus = _fastfinder->setRawEvent(_rawEvent);
-  _recEvent->setRecStatus(finderstatus);
+  if(_legacy_rec_container) 
+  {
+    _recEvent->setRawEvent(_rawEvent);
+    _recEvent->setRecStatus(finderstatus);
+  }
   if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) _fastfinder->printTimers();
 
   int nTracklets = 0;
@@ -422,7 +420,8 @@ int SQReco::process_event(PHCompositeNode* topNode)
     {
       SRecTrack recTrack = iter->getSRecTrack(_enable_KF && (_fitter_type == SQReco::LEGACY));
       recTrack.setKalmanStatus(-1);
-      _recEvent->insertTrack(recTrack);
+      
+      fillRecTrack(recTrack);
     }
     else
     {
@@ -436,15 +435,24 @@ int SQReco::process_event(PHCompositeNode* topNode)
   LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
 
   //add additional eval information if applicable
-  for(unsigned int i = 0; i < _eval_listIDs.size(); ++i)
+  if(is_eval_enabled() || is_eval_dst_enabled())
   {
-    std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
-    for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
+    for(unsigned int i = 0; i < _eval_listIDs.size(); ++i)
     {
-      new((*_tracklets)[nTracklets]) Tracklet(*iter);
-      ++nTracklets;
+      std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
+      for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
+      {
+        if(is_eval_enabled())
+        {
+          new((*_tracklets)[nTracklets]) Tracklet(*iter);
+          ++nTracklets;
+        }
+
+        if(is_eval_dst_enabled()) _tracklet_vector->push_back(&(*iter));
+      }
     }
   }
+  
   if(is_eval_enabled() && nTracklets > 0) _eval_tree->Fill();
 
   ++_event;
@@ -499,7 +507,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
   strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
   strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
 
-  _recEvent->insertTrack(strack);
+  fillRecTrack(strack);
   return true;
 }
 
@@ -533,7 +541,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
   strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
   strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
 
-  _recEvent->insertTrack(strack);
+  fillRecTrack(strack);
   return true;
 }
 
@@ -557,6 +565,14 @@ int SQReco::ResetEvalVars()
   return 0;
 }
 
+void SQReco::fillRecTrack(SRecTrack& recTrack)
+{
+  if(_legacy_rec_container)
+    _recEvent->insertTrack(recTrack);
+  else
+    _recTrackVec->push_back(&recTrack);
+}
+
 int SQReco::MakeNodes(PHCompositeNode* topNode) 
 {
   PHNodeIterator iter(topNode);
@@ -568,10 +584,20 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
     topNode->addNode(eventNode);
   }
 
-  _recEvent = new SRecEvent();
-  PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
-  eventNode->addNode(recEventNode);
-  if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+  if(_legacy_rec_container)
+  {
+    _recEvent = new SRecEvent();
+    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
+    eventNode->addNode(recEventNode);
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+  }
+  else
+  {
+    _recTrackVec = new SQTrackVector_v1();
+    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject");
+    eventNode->addNode(recEventNode);
+    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
+  }
 
   if(_enable_eval_dst)
   {
@@ -610,31 +636,18 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    if(_hit_container_type.find("Map") != std::string::npos) 
+    _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+    if(!_hit_vector) 
     {
-      _hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
-      if(!_hit_map) 
-      {
-        LogDebug("!_hit_map");
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
+      LogDebug("!_hit_vector");
+      return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    if(_hit_container_type.find("Vector") != std::string::npos) 
+    _triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+    if(!_triggerhit_vector) 
     {
-      _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-      if(!_hit_vector) 
-      {
-        LogDebug("!_hit_vector");
-        return Fun4AllReturnCodes::ABORTEVENT;
-      }
-
-      _triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-      if(!_triggerhit_vector) 
-      {
-        if(Verbosity() > 2) LogDebug("!_triggerhit_vector");
-        //return Fun4AllReturnCodes::ABORTEVENT;
-      }
+      if(Verbosity() > 2) LogDebug("!_triggerhit_vector");
+      //return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
   else
@@ -646,12 +659,13 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
     }
   }
 
-  _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
-  if(!_recEvent) 
-  {
-    if(Verbosity() > 2) LogDebug("!_recEvent");
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
-
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void SQReco::add_eval_list(int listID)
+{
+  if(std::find(_eval_listIDs.begin(), _eval_listIDs.end(), listID) == _eval_listIDs.end())
+  {
+    _eval_listIDs.push_back(listID);
+  }
 }

@@ -31,7 +31,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ${ROOT_CFLAGS}")
 
 add_library(g4dst SHARED  ${sources} g4dst_Dict.cc)
-target_link_libraries(g4dst  -lfun4all -linterface_main -lphg4hit -lPHPythia8 -lg4detectors)
+target_link_libraries(g4dst -lfun4all -linterface_main -lphg4hit -lPHPythia8 -lg4detectors -lktracker_interface)
 
 install(TARGETS g4dst         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)

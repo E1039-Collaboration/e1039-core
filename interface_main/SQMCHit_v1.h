@@ -31,8 +31,8 @@ public:
   virtual int          get_track_id() const                             {return _track_id;}
   virtual void         set_track_id(const int a)                        {_track_id = a;}
 
-  virtual PHG4HitDefs_keytype          get_g4hit_id() const                             {return _g4hit_id;}
-  virtual void                          set_g4hit_id(const PHG4HitDefs_keytype a)                        {_g4hit_id = a;}
+  virtual PHG4HitDefs::keytype          get_g4hit_id() const                             {return _g4hit_id;}
+  virtual void                          set_g4hit_id(const PHG4HitDefs::keytype a)                        {_g4hit_id = a;}
 
   virtual float        get_truth_x() const                              {return _truth_x;}
   virtual void         set_truth_x(const float a)                       {_truth_x = a;}
@@ -55,7 +55,7 @@ public:
 private:
 
   int _track_id;  ///< truth track id
-  PHG4HitDefs_keytype _g4hit_id;  ///< truth hit id
+  PHG4HitDefs::keytype _g4hit_id;  ///< truth hit id
 
   float _truth_x;
   float _truth_y;

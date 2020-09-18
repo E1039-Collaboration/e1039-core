@@ -22,7 +22,6 @@ Created: 2-8-2012
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHFieldUtility.h>
 #include <phgeom/PHGeomUtility.h>
-#include <jobopts_svc/JobOptsSvc.h>
 
 #include <TMatrixD.h>
 
@@ -33,29 +32,73 @@ Created: 2-8-2012
 
 using namespace std;
 
-//<TODO improve this part
-//@{
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
 
-namespace {
-  //static flag of kmag strength
-  static double FMAGSTR = 1.0;
-  static double KMAGSTR = 1.0;
+	//static flag of kmag strength
+	static double FMAGSTR;
+	static double KMAGSTR;
+
+    //Beam position and shape
+    static double X_BEAM;
+    static double Y_BEAM;
+    static double SIGX_BEAM;
+    static double SIGY_BEAM;
+
+    //Simple swimming settings 
+    static int NSTEPS_TARGET;
+    static int NSTEPS_SHIELDING;
+    static int NSTEPS_FMAG;
+
+    //Geometric constants
+    static double Z_TARGET;
+    static double Z_DUMP;
+    static double Z_UPSTREAM;
+    static double Z_DOWNSTREAM;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+
+            recoConsts* rc = recoConsts::instance();
+            FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
+            
+            X_BEAM = rc->get_DoubleFlag("X_BEAM");
+            Y_BEAM = rc->get_DoubleFlag("Y_BEAM");
+            SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
+            SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+
+            NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
+
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+            Z_DOWNSTREAM = rc->get_DoubleFlag("Z_DOWNSTREAM");
+        }
+    }
 }
-//@}
 
 VertexFit::VertexFit(const std::string& name) :
     SubsysReco(name)
 {
-  p_jobOptsSvc = JobOptsSvc::instance();
-
+  initGlobalVariables();
+  
   ///In construction, initialize the projector for the vertex node
   TMatrixD m(2, 1), cov(2, 2), proj(2, 5);
-  m[0][0] = X_VTX;
-  m[1][0] = Y_VTX;
+  m[0][0] = X_BEAM;
+  m[1][0] = Y_BEAM;
 
   cov.Zero();
-  cov[0][0] = BEAM_SPOT_X*BEAM_SPOT_X;
-  cov[1][1] = BEAM_SPOT_Y*BEAM_SPOT_Y;
+  cov[0][0] = SIGX_BEAM*SIGX_BEAM;
+  cov[1][1] = SIGY_BEAM*SIGY_BEAM;
 
   proj.Zero();
   proj[0][3] = 1.;
@@ -186,7 +229,7 @@ int VertexFit::InitField(PHCompositeNode *topNode)
   if(!phfield) {
     if (verbosity > 1) cout << "VertexFit::InitField - create magnetic field setup" << endl;
     unique_ptr<PHFieldConfig> default_field_cfg(nullptr);
-    default_field_cfg.reset(new PHFieldConfig_v3(p_jobOptsSvc->m_fMagFile, p_jobOptsSvc->m_kMagFile));
+    default_field_cfg.reset(new PHFieldConfig_v3(recoConsts::instance()->get_CharFlag("fMagFile"), recoConsts::instance()->get_CharFlag("kMagFile"), recoConsts::instance()->get_DoubleFlag("FMAGSTR"), recoConsts::instance()->get_DoubleFlag("KMAGSTR"), 5.));
     phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
   }
 
@@ -362,10 +405,10 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
 double VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
 {
     //Swim both tracks all the way down, and store the numbers
-    TVector3 pos1[NSLICES_FMAG + NSTEPS_TARGET + 1];
-    TVector3 pos2[NSLICES_FMAG + NSTEPS_TARGET + 1];
-    TVector3 mom1[NSLICES_FMAG + NSTEPS_TARGET + 1];
-    TVector3 mom2[NSLICES_FMAG + NSTEPS_TARGET + 1];
+    TVector3 pos1[NSTEPS_FMAG + NSTEPS_TARGET + 1];
+    TVector3 pos2[NSTEPS_FMAG + NSTEPS_TARGET + 1];
+    TVector3 mom1[NSTEPS_FMAG + NSTEPS_TARGET + 1];
+    TVector3 mom2[NSTEPS_FMAG + NSTEPS_TARGET + 1];
     track1.swimToVertex(pos1, mom1);
     track2.swimToVertex(pos2, mom2);
 
@@ -373,7 +416,7 @@ double VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
     double dist_min = 1E6;
     int charge1 = track1.getCharge();
     int charge2 = track2.getCharge();
-    for(int iStep = 0; iStep < NSLICES_FMAG + NSTEPS_TARGET + 1; ++iStep)
+    for(int iStep = 0; iStep < NSTEPS_FMAG + NSTEPS_TARGET + 1; ++iStep)
     {
         double dist = (pos1[iStep] - pos2[iStep]).Perp();
         if(dist < dist_min && FMAGSTR*charge1*mom1[iStep].Px() > 0 && FMAGSTR*charge2*mom2[iStep].Px() > 0)
@@ -407,13 +450,13 @@ void VertexFit::init()
 void VertexFit::setStartingVertex(double z_start, double sigz_start)
 {
     ///Initialize the starting vertex with a guess and large error
-    _vtxpar_curr._r[0][0] = X_VTX;
-    _vtxpar_curr._r[1][0] = Y_VTX;
+    _vtxpar_curr._r[0][0] = X_BEAM;
+    _vtxpar_curr._r[1][0] = Y_BEAM;
     _vtxpar_curr._r[2][0] = z_start;
 
     _vtxpar_curr._cov.Zero();
-    _vtxpar_curr._cov[0][0] = BEAM_SPOT_X*BEAM_SPOT_X;
-    _vtxpar_curr._cov[1][1] = BEAM_SPOT_Y*BEAM_SPOT_Y;
+    _vtxpar_curr._cov[0][0] = SIGX_BEAM*SIGX_BEAM;
+    _vtxpar_curr._cov[1][1] = SIGY_BEAM*SIGY_BEAM;
     _vtxpar_curr._cov[2][2] = sigz_start*sigz_start;
 
     _chisq_vertex = 0.;

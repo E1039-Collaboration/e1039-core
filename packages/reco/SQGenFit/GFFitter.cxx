@@ -11,13 +11,8 @@
 
 namespace SQGenFit
 {
-GFFitter::GFFitter()
-{
-  _verbosity = 0;
-
-  _kmfitter = nullptr;
-  _display = nullptr;
-}
+GFFitter::GFFitter(): _verbosity(0), _kmfitter(nullptr), _display(nullptr)
+{}
 
 GFFitter::~GFFitter()
 {

@@ -19,8 +19,20 @@ EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), 
     if(options.Contains("r")) realization = true;
     if(options.Contains("n")) difnim = true;
 
-    p_jobOptsSvc = JobOptsSvc::instance();
-    timeOffset = p_jobOptsSvc->m_timingOffset;
+    rc = recoConsts::instance();
+    timeOffset = rc->get_DoubleFlag("TDCTimeOffset");
+    SAGITTA_TARGET_CENTER = rc->get_DoubleFlag("SAGITTA_TARGET_CENTER");
+    SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_TARGET_WIDTH");
+    SAGITTA_DUMP_CENTER = rc->get_DoubleFlag("SAGITTA_DUMP_CENTER");
+    SAGITTA_TARGET_WIDTH = rc->get_DoubleFlag("SAGITTA_DUMP_WIDTH");
+    Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+    Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+
+    TX_MAX = rc->get_DoubleFlag("TX_MAX");
+    TY_MAX = rc->get_DoubleFlag("TY_MAX");
+    USE_V1495_HIT = rc->get_BoolFlag("USE_V1495_HIT");
+    USE_TWTDC_HIT = rc->get_BoolFlag("USE_TWTDC_HIT");
+    
     chamEff    = 0.94;
     chamResol  = 0.04;
 
@@ -67,7 +79,7 @@ int EventReducer::reduceEvent(SRawEvent* rawEvent)
 
     //temporarily disable trigger road masking if this event is not fired by any MATRIX triggers
     bool triggermask_local = triggermask;
-    if(!(p_jobOptsSvc->m_mcMode || rawEvent->isFPGATriggered()))
+    if(!(rc->get_BoolFlag("MC_MODE") || rawEvent->isFPGATriggered()))
     {
         triggermask_local = false;
     }
@@ -120,7 +132,7 @@ int EventReducer::reduceEvent(SRawEvent* rawEvent)
     }
 
     // manully create the X-hodo hits by the trigger roads
-    if(triggermask_local) p_triggerAna->trimEvent(rawEvent, hodohitlist, mergehodo ? (USE_HIT | USE_TRIGGER_HIT) : USE_TRIGGER_HIT);
+    if(triggermask_local) p_triggerAna->trimEvent(rawEvent, hodohitlist, mergehodo || USE_V1495_HIT, mergehodo || USE_TWTDC_HIT);
 
     //apply hodoscope mask
     hodohitlist.sort();
@@ -202,8 +214,8 @@ void EventReducer::sagittaReducer()
                 double z1 = p_geomSvc->getPlanePosition(hitTemp[k].detectorID);
                 double pos_exp_target = SAGITTA_TARGET_CENTER*s2_target + slope_target*(z1 - Z_TARGET);
                 double pos_exp_dump = SAGITTA_DUMP_CENTER*s2_dump + slope_dump*(z1 - Z_DUMP);
-                double win_target = fabs(s2_target*SAGITTA_TARGET_WIN);
-                double win_dump = fabs(s2_dump*SAGITTA_DUMP_WIN);
+                double win_target = fabs(s2_target*SAGITTA_TARGET_WIDTH);
+                double win_dump = fabs(s2_dump*SAGITTA_DUMP_WIDTH);
 
                 double p_min = std::min(pos_exp_target - win_target, pos_exp_dump - win_dump);
                 double p_max = std::max(pos_exp_target + win_target, pos_exp_dump + win_dump);

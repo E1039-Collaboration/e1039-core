@@ -17,6 +17,8 @@ Created: 01-21-2013
 #include <GlobalConsts.h>
 
 #include <phool/PHObject.h>
+#include <interface_main/SQTrack.h>
+#include <interface_main/SQDimuon.h>
 
 #include <iostream>
 #include <vector>
@@ -25,6 +27,7 @@ Created: 01-21-2013
 #include <algorithm>
 #include <map>
 #include <cmath>
+#include <stdexcept>
 
 #include <TObject.h>
 #include <TROOT.h>
@@ -32,19 +35,66 @@ Created: 01-21-2013
 #include <TVector3.h>
 #include <TLorentzVector.h>
 
+#include <GenFit/MeasuredStateOnPlane.h>
+
 #include "SRawEvent.h"
 
-class SRecTrack: public PHObject
+class SRecTrack: public SQTrack
 {
 public:
     SRecTrack();
 
     /// PHObject virtual overloads
-    void         identify(std::ostream& os = std::cout) const {print(os);}
-    void         Reset() {*this = SRecTrack();}
+    void         identify(std::ostream& os = std::cout) const { print(os); }
+    void         Reset() { *this = SRecTrack(); }
     int          isValid() const;
-    SRecTrack*        Clone() const {return (new SRecTrack(*this));}
+    SRecTrack*   Clone() const  {return (new SRecTrack(*this)); }
 
+    /// SQTrack virtual overloads
+    virtual int  get_track_id() const      { return 0; }
+    virtual void set_track_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_rec_track_id() const      { return 0; }
+    virtual void set_rec_track_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_charge() const      { return getCharge(); }
+    virtual void set_charge(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_num_hits() const      { return getNHits(); }
+    virtual void set_num_hits(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TVector3 get_pos_vtx() const           { return fVertexPos; }
+    virtual void     set_pos_vtx(const TVector3 a) { fVertexPos = a;    } 
+
+    virtual TVector3 get_pos_st1() const           { return getPositionVecSt1(); }
+    virtual void     set_pos_st1(const TVector3 a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TVector3 get_pos_st3() const           { return getPositionVecSt3(); }
+    virtual void     set_pos_st3(const TVector3 a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_vtx() const                 { return getlvec(fVertexMom); }
+    virtual void           set_mom_vtx(const TLorentzVector a) { fVertexMom = a.Vect(); }
+
+    virtual TLorentzVector get_mom_st1() const                 { return getlvec(getMomentumVecSt1()); }
+    virtual void           set_mom_st1(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_st3() const                 { return getlvec(getMomentumVecSt3()); }
+    virtual void           set_mom_st3(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual double get_chisq() const          { return fChisq; }
+    virtual double get_chisq_target() const   { return fChisqVertex; }
+    virtual double get_chisq_dump() const     { return fChisqDump; } 
+    virtual double get_chsiq_upstream() const { return fChisqUpstream; } 
+
+    virtual TVector3 get_pos_target() const   { return fTargetPos; }
+    virtual TVector3 get_pos_dump() const     { return fDumpPos; }
+
+    virtual TLorentzVector get_mom_target() const { return getlvec(fTargetMom); }
+    virtual TLorentzVector get_mom_dump() const   { return getlvec(fDumpMom); }
+
+    virtual int get_hit_id(const int i) const { return fHitIndex[i]; }
+
+    inline TLorentzVector getlvec(const TVector3& vec) const { TLorentzVector lvec; lvec.SetVectM(vec, M_MU); return lvec; }
 
     ///Gets
     Int_t getCharge() const { return (fState[0])[0][0] > 0 ? 1 : -1; }
@@ -60,30 +110,37 @@ public:
     Double_t getZ(Int_t i) { return fZ[i]; }
     Double_t getChisqAtNode(Int_t i) { return fChisqAtNode[i]; }
 
+    TVector3 getGFPlaneO(Int_t i)  { return fGFDetPlaneVec[0][i]; }
+    TVector3 getGFPlaneU(Int_t i)  { return fGFDetPlaneVec[1][i]; }
+    TVector3 getGFPlaneV(Int_t i)  { return fGFDetPlaneVec[2][i]; }
+    TVectorD getGFAuxInfo(Int_t i) { return fGFAuxInfo[i]; }
+    TVectorD getGFState(Int_t i)   { return fGFStateVec[i]; }
+    TMatrixDSym getGFCov(Int_t i)  { return fGFCov[i]; }
+
     Int_t getNearestNode(Double_t z);
     void getExpPositionFast(Double_t z, Double_t& x, Double_t& y, Int_t iNode = -1);
     void getExpPosErrorFast(Double_t z, Double_t& dx, Double_t& dy, Int_t iNode = -1);
     Double_t getExpMomentumFast(Double_t z, Double_t& px, Double_t& py, Double_t& pz, Int_t iNode = -1);
     Double_t getExpMomentumFast(Double_t z, Int_t iNode = -1);
 
-    Double_t getMomentumSt1(Double_t& px, Double_t& py, Double_t& pz) { return getMomentum(fState.front(), px, py, pz); }
-    Double_t getMomentumSt1() { Double_t px, py, pz; return getMomentumSt1(px, py, pz); }
-    TVector3 getMomentumVecSt1() { Double_t px, py, pz; getMomentumSt1(px, py, pz); return TVector3(px, py, pz); }
+    Double_t getMomentumSt1(Double_t& px, Double_t& py, Double_t& pz) const { return getMomentum(fState.front(), px, py, pz); }
+    Double_t getMomentumSt1() const { Double_t px, py, pz; return getMomentumSt1(px, py, pz); }
+    TVector3 getMomentumVecSt1() const { Double_t px, py, pz; getMomentumSt1(px, py, pz); return TVector3(px, py, pz); }
 
-    Double_t getMomentumSt3(Double_t& px, Double_t& py, Double_t& pz) { return getMomentum(fState.back(), px, py, pz); }
-    Double_t getMomentumSt3() { Double_t px, py, pz; return getMomentumSt3(px, py, pz); }
-    TVector3 getMomentumVecSt3() { Double_t px, py, pz; getMomentumSt3(px, py, pz); return TVector3(px, py, pz); }
+    Double_t getMomentumSt3(Double_t& px, Double_t& py, Double_t& pz) const { return getMomentum(fState.back(), px, py, pz); }
+    Double_t getMomentumSt3() const { Double_t px, py, pz; return getMomentumSt3(px, py, pz); }
+    TVector3 getMomentumVecSt3() const { Double_t px, py, pz; getMomentumSt3(px, py, pz); return TVector3(px, py, pz); }
 
-    Double_t getPositionSt1(Double_t& x, Double_t& y) { return getPosition(fState.front(), x, y); }
-    Double_t getPositionSt1() { Double_t x, y; return getPositionSt1(x, y); }
-    TVector3 getPositionVecSt1() { Double_t x, y; getPositionSt1(x, y); return TVector3(x, y, fZ.front()); }
+    Double_t getPositionSt1(Double_t& x, Double_t& y) const { return getPosition(fState.front(), x, y); }
+    Double_t getPositionSt1() const { Double_t x, y; return getPositionSt1(x, y); }
+    TVector3 getPositionVecSt1() const { Double_t x, y; getPositionSt1(x, y); return TVector3(x, y, fZ.front()); }
 
-    Double_t getPositionSt3(Double_t& x, Double_t& y) { return getPosition(fState.back(), x, y); }
-    Double_t getPositionSt3() { Double_t x, y; return getPositionSt3(x, y); }
-    TVector3 getPositionVecSt3() { Double_t x, y; getPositionSt3(x, y); return TVector3(x, y, fZ.back()); }
+    Double_t getPositionSt3(Double_t& x, Double_t& y) const { return getPosition(fState.back(), x, y); }
+    Double_t getPositionSt3() const { Double_t x, y; return getPositionSt3(x, y); }
+    TVector3 getPositionVecSt3() const { Double_t x, y; getPositionSt3(x, y); return TVector3(x, y, fZ.back()); }
 
-    Double_t getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz);
-    Double_t getPosition(TMatrixD& state, Double_t& x, Double_t& y);
+    Double_t getMomentum(const TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz) const;
+    Double_t getPosition(const TMatrixD& state, Double_t& x, Double_t& y) const;
 
     ///Fit status
     Bool_t isKalmanFitted() { return fKalmanStatus > 0; }
@@ -99,6 +156,7 @@ public:
     void insertCovariance(TMatrixD covar) { fCovar.push_back(covar); }
     void insertZ(Double_t z) { fZ.push_back(z); }
     void insertChisq(Double_t chisq) { fChisqAtNode.push_back(chisq); }
+    void insertGFState(const genfit::MeasuredStateOnPlane& msop);
 
     ///Fast-adjust of kmag
     void adjustKMag(double kmagStr);
@@ -228,18 +286,59 @@ private:
     Double_t fChisqDump;
     Double_t fChisqUpstream;
 
-    ClassDef(SRecTrack, 10)
+    //GenFit track info - only available if the track comes from GF fitter
+    std::vector<TVector3> fGFDetPlaneVec[3];
+    std::vector<TVectorD> fGFAuxInfo;
+    std::vector<TVectorD> fGFStateVec;
+    std::vector<TMatrixDSym> fGFCov;
+
+    ClassDef(SRecTrack, 11)
 };
 
-class SRecDimuon: public PHObject
+class SRecDimuon: public SQDimuon
 {
 public:
 
     /// PHObject virtual overloads
-    void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl;}
-    void         Reset() {*this = SRecDimuon();}
+    void         identify(std::ostream& os = std::cout) const { os << "SRecDimuon: TODO: NOT IMPLEMENTED!" << std::endl; }
+    void         Reset() { *this = SRecDimuon(); }
     int          isValid() const;
-    SRecDimuon*        Clone() const {return (new SRecDimuon(*this));}
+    SRecDimuon*  Clone() const { return (new SRecDimuon(*this)); }
+
+    //SQDimuon virtual functions
+    virtual int  get_dimuon_id() const      { return 0; }
+    virtual void set_dimuon_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_rec_dimuon_id() const      { return 0; }
+    virtual void set_rec_dimuon_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_pdg_id() const      { return 0; }
+    virtual void set_pdg_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual int  get_track_id_pos() const      { return trackID_pos; }
+    virtual void set_track_id_pos(const int a) { trackID_pos = a; }
+
+    virtual int  get_track_id_neg() const      { return trackID_neg; }
+    virtual void set_track_id_neg(const int a) { trackID_neg = a; }
+
+    virtual TVector3 get_pos() const           { return vtx; }
+    virtual void     set_pos(const TVector3 a) { vtx = a; }
+
+    virtual TLorentzVector get_mom() const                 { return p_pos + p_neg; }
+    virtual void           set_mom(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
+
+    virtual TLorentzVector get_mom_pos() const                 { return p_pos; }
+    virtual void           set_mom_pos(const TLorentzVector a) { p_pos = a; }
+
+    virtual TLorentzVector get_mom_neg() const                 { return p_neg; }
+    virtual void           set_mom_neg(const TLorentzVector a) { p_neg = a; }
+
+    virtual double get_mass() const { return mass; }
+    virtual double get_x1()   const { return x1; }
+    virtual double get_x2()   const { return x2; }
+    virtual double get_xf()   const { return xF; }
+
+    virtual double get_chisq() const { return chisq_kf; }
 
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
@@ -316,7 +415,7 @@ public:
     }
     void         Reset() {*this = SRecEvent();}
     int          isValid() const {return true;}
-    SRecEvent*        Clone() const {return (new SRecEvent(*this));}
+    SRecEvent*   Clone() const {return (new SRecEvent(*this));}
 
     ///Set/Get event info
     void setEventInfo(SRawEvent* rawEvent);
@@ -353,7 +452,7 @@ public:
 
     ///Get dimuons
     Int_t getNDimuons() { return fDimuons.size(); }
-    SRecDimuon getDimuon(Int_t i) { return fDimuons[i]; }
+    SRecDimuon& getDimuon(Int_t i) { return fDimuons[i]; }
 
     ///Insert tracks
     void insertTrack(SRecTrack trk) { fAllTracks.push_back(trk); }

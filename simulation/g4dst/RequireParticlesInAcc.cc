@@ -9,8 +9,9 @@
 #include "RequireParticlesInAcc.h"
 using namespace std;
 
-RequireParticlesInAcc::RequireParticlesInAcc()
-  : m_npl_per_par(4)
+RequireParticlesInAcc::RequireParticlesInAcc(const string& name)
+  : SubsysReco(name)
+  , m_npl_per_par(4)
   , m_npar_per_evt(2)
 {
   ;

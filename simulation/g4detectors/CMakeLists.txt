@@ -152,14 +152,14 @@ add_library(g4detectors SHARED
   ${PROJECT_SOURCE_DIR}/PHG4CollimatorSubsystem.cc
   PHG4CollimatorSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/PHG4CollimatorSteppingAction.cc
-  ${PROJECT_SOURCE_DIR}/PHG4E1039InsensDetector.cc
-  ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSubsystem.cc
-  PHG4E1039InsensSubsystem_Dict.cc
-  ${PROJECT_SOURCE_DIR}/PHG4E1039InsensSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/SQG4DipoleMagnetDetector.cc
   ${PROJECT_SOURCE_DIR}/SQG4DipoleMagnetSubsystem.cc
   SQG4DipoleMagnetSubsystem_Dict.cc
   ${PROJECT_SOURCE_DIR}/SQG4DipoleMagnetSteppingAction.cc
+  ${PROJECT_SOURCE_DIR}/PHG4EMCalDetector.cc
+  ${PROJECT_SOURCE_DIR}/PHG4EMCalSubsystem.cc
+  PHG4EMCalSubsystem_Dict.cc
+  ${PROJECT_SOURCE_DIR}/PHG4EMCalSteppingAction.cc
   ${PROJECT_SOURCE_DIR}/PHG4SquareTubeDetector.cc
   ${PROJECT_SOURCE_DIR}/PHG4SquareTubeSubsystem.cc
   PHG4SquareTubeSubsystem_Dict.cc
@@ -215,8 +215,8 @@ file(GLOB dist_headers
   PHG4TargetCoilV2Subsystem.h
   PHG4BNLTargetCoilSubsystem.h
   PHG4CollimatorSubsystem.h
-  PHG4E1039InsensSubsystem.h
   SQG4DipoleMagnetSubsystem.h
+  PHG4EMcalSubsystem.h
   PHG4SquareTubeSubsystem.h
   PHG4DetectorSubsystem.h
   PHG4DetectorGroupSubsystem.h

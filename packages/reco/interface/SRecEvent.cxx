@@ -12,15 +12,107 @@ Created: 01-21-2013
 #include <TLorentzVector.h>
 #include <TMatrixD.h>
 
+#include <GenFit/SharedPlanePtr.h>
+#include <phool/recoConsts.h>
+
 #include "SRecEvent.h"
 #include "KalmanUtil.h"
 #include "KalmanFilter.h"
 
-#include <phool/recoConsts.h>
-
 ClassImp(SRecTrack)
 ClassImp(SRecDimuon)
 ClassImp(SRecEvent)
+
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
+
+	//static flag of kmag on/off
+	static bool KMAG_ON;
+
+	//static flag of kmag strength
+	static double FMAGSTR;
+	static double KMAGSTR;
+
+	static double PT_KICK_FMAG;
+	static double PT_KICK_KMAG;
+
+    //Geometric positions
+    static double FMAG_LENGTH;
+    static double Z_TARGET;
+    static double Z_DUMP;
+    static double Z_UPSTREAM;
+    static double Z_DOWNSTREAM;
+    static double FMAG_HOLE_LENGTH;
+    static double FMAG_HOLE_RADIUS;
+
+    //Beam position and shape
+    static double X_BEAM;
+    static double Y_BEAM;
+    static double SIGX_BEAM;
+    static double SIGY_BEAM;
+
+    //Simple swimming settings 
+    static int NSTEPS_TARGET;
+    static int NSTEPS_SHIELDING;
+    static int NSTEPS_FMAG;
+
+    static double DEDX_UNIT_0;
+    static double DEDX_UNIT_1;
+    static double DEDX_UNIT_2;
+    static double DEDX_UNIT_3;
+    static double DEDX_UNIT_4;
+    static double PTKICK_UNIT;
+
+    static double STEP_TARGET;
+    static double STEP_SHIELDING;
+    static double STEP_FMAG;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+
+            recoConsts* rc = recoConsts::instance();
+            KMAG_ON = rc->get_BoolFlag("KMAG_ON");
+            FMAGSTR = rc->get_DoubleFlag("FMAGSTR");
+            KMAGSTR = rc->get_DoubleFlag("KMAGSTR");
+            PT_KICK_FMAG = rc->get_DoubleFlag("PT_KICK_FMAG")*FMAGSTR;
+            PT_KICK_KMAG = rc->get_DoubleFlag("PT_KICK_KMAG")*KMAGSTR;
+            
+            X_BEAM = rc->get_DoubleFlag("X_BEAM");
+            Y_BEAM = rc->get_DoubleFlag("Y_BEAM");
+            SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
+            SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+
+            FMAG_LENGTH = rc->get_DoubleFlag("FMAG_LENGTH");
+            Z_TARGET = rc->get_DoubleFlag("Z_TARGET");
+            Z_DUMP = rc->get_DoubleFlag("Z_DUMP");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+            Z_DOWNSTREAM = rc->get_DoubleFlag("Z_DOWNSTREAM");
+            FMAG_HOLE_RADIUS = rc->get_DoubleFlag("FMAG_HOLE_RADIUS");
+            FMAG_HOLE_LENGTH = rc->get_DoubleFlag("FMAG_HOLE_LENGTH");
+
+            NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
+
+            DEDX_UNIT_0 = rc->get_DoubleFlag("DEDX_FE_P0")/FMAG_LENGTH;
+            DEDX_UNIT_1 = rc->get_DoubleFlag("DEDX_FE_P1")/FMAG_LENGTH;
+            DEDX_UNIT_2 = rc->get_DoubleFlag("DEDX_FE_P2")/FMAG_LENGTH;
+            DEDX_UNIT_3 = rc->get_DoubleFlag("DEDX_FE_P3")/FMAG_LENGTH;
+            DEDX_UNIT_4 = rc->get_DoubleFlag("DEDX_FE_P4")/FMAG_LENGTH;
+            PTKICK_UNIT = PT_KICK_FMAG/FMAG_LENGTH;
+
+            STEP_TARGET = fabs(Z_UPSTREAM)/NSTEPS_TARGET;
+            STEP_SHIELDING = 0.;
+            STEP_FMAG = FMAG_LENGTH/NSTEPS_FMAG/2.;
+        }
+    }
+}
 
 SRecTrack::SRecTrack()
 {
@@ -32,6 +124,11 @@ SRecTrack::SRecTrack()
     fZ.clear();
     fChisqAtNode.clear();
 
+    for(Int_t i = 0; i < 3; ++i) fGFDetPlaneVec[i].clear();
+    fGFAuxInfo.clear();
+    fGFStateVec.clear();
+    fGFCov.clear();
+
     fChisqVertex = -99.;
     fVertexPos.SetXYZ(999., 999., 999.);
     fStateVertex.ResizeTo(5, 1);
@@ -40,6 +137,8 @@ SRecTrack::SRecTrack()
     fChisqTarget = -99.;
     fChisqDump = -99.;
     fChisqUpstream = -99.;
+
+    initGlobalVariables();
 }
 
 bool SRecTrack::operator<(const SRecTrack& elem) const
@@ -62,7 +161,9 @@ Int_t SRecTrack::getNHitsInStation(Int_t stationID)
 }
 
 Double_t SRecTrack::getProb() const
-{ return KMAG_ON == 1 ? TMath::Prob(fChisq, getNHits() - 5) : TMath::Prob(fChisq, getNHits() - 4); }
+{ 
+    return KMAG_ON == 1 ? TMath::Prob(fChisq, getNHits() - 5) : TMath::Prob(fChisq, getNHits() - 4); 
+}
 
 void SRecTrack::setZVertex(Double_t z, bool update)
 {
@@ -70,12 +171,12 @@ void SRecTrack::setZVertex(Double_t z, bool update)
     _node_vertex.setZ(z);
 
     TMatrixD m(2, 1), cov(2, 2),  proj(2, 5);
-    m[0][0] = X_VTX;
-    m[1][0] = Y_VTX;
+    m[0][0] = X_BEAM;
+    m[1][0] = Y_BEAM;
 
     cov.Zero();
-    cov[0][0] = BEAM_SPOT_X*BEAM_SPOT_X;
-    cov[1][1] = BEAM_SPOT_Y*BEAM_SPOT_Y;
+    cov[0][0] = SIGX_BEAM*SIGX_BEAM;
+    cov[1][1] = SIGY_BEAM*SIGY_BEAM;
 
     proj.Zero();
     proj[0][3] = 1.;
@@ -140,7 +241,7 @@ void SRecTrack::setVertexFast(TVector3 mom, TVector3 pos)
 bool SRecTrack::isVertexValid() const
 {
     if(fChisqVertex > 50.) return false;
-    if(fVertexPos.Z() < -500. || fVertexPos.Z() > 300.) return false;
+    if(fVertexPos.Z() < Z_UPSTREAM || fVertexPos.Z() > Z_DOWNSTREAM) return false;
 
     return true;
 }
@@ -218,7 +319,7 @@ Double_t SRecTrack::getExpMomentumFast(Double_t z, Double_t& px, Double_t& py, D
 
 }
 
-Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz)
+Double_t SRecTrack::getMomentum(const TMatrixD& state, Double_t& px, Double_t& py, Double_t& pz) const
 {
     Double_t p = 1./fabs(state[0][0]);
     pz = p/sqrt(1. + state[1][0]*state[1][0] + state[2][0]*state[2][0]);
@@ -228,7 +329,7 @@ Double_t SRecTrack::getMomentum(TMatrixD& state, Double_t& px, Double_t& py, Dou
     return p;
 }
 
-Double_t SRecTrack::getPosition(TMatrixD& state, Double_t& x, Double_t& y)
+Double_t SRecTrack::getPosition(const TMatrixD& state, Double_t& x, Double_t& y) const
 {
     x = state[3][0];
     y = state[4][0];
@@ -245,6 +346,18 @@ TLorentzVector SRecTrack::getMomentumVertex()
     E = sqrt(px*px + py*py + pz*pz + mmu*mmu);
 
     return TLorentzVector(px, py, pz, E);
+}
+
+void SRecTrack::insertGFState(const genfit::MeasuredStateOnPlane& msop)
+{
+    fGFStateVec.push_back(msop.getState());
+    fGFCov.push_back(msop.getCov());
+    fGFAuxInfo.push_back(msop.getAuxInfo());
+
+    const genfit::SharedPlanePtr& plane = msop.getPlane();
+    fGFDetPlaneVec[0].push_back(plane->getO());
+    fGFDetPlaneVec[1].push_back(plane->getU());
+    fGFDetPlaneVec[2].push_back(plane->getV());
 }
 
 void SRecTrack::adjustKMag(double kmagStr)
@@ -293,26 +406,14 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
     bool cleanupMom = false;
     if(pos == nullptr)
     {
-        pos = new TVector3[NSLICES_FMAG + NSTEPS_TARGET + 1];
+        pos = new TVector3[NSTEPS_FMAG + NSTEPS_TARGET + 1];
         cleanupPos = true;
     }
     if(mom == nullptr)
     {
-        mom = new TVector3[NSLICES_FMAG + NSTEPS_TARGET + 1];
+        mom = new TVector3[NSTEPS_FMAG + NSTEPS_TARGET + 1];
         cleanupMom = true;
     }
-
-    //E-loss and pT-kick per length, note the eloss is done in half-slices
-    double eloss_unit_0 = ELOSS_FMAG_P0/FMAG_LENGTH;
-    double eloss_unit_1 = ELOSS_FMAG_P1/FMAG_LENGTH;
-    double eloss_unit_2 = ELOSS_FMAG_P2/FMAG_LENGTH;
-    double eloss_unit_3 = ELOSS_FMAG_P3/FMAG_LENGTH;
-    double eloss_unit_4 = ELOSS_FMAG_P4/FMAG_LENGTH;
-    double ptkick_unit = 2.909*recoConsts::instance()->get_DoubleFlag("FMAGSTR")/FMAG_LENGTH;
-
-    //Step size in FMAG/target area
-    double step_fmag = FMAG_LENGTH/NSLICES_FMAG/2.;   //note that in FMag, each step is devided into two slices
-    double step_target = fabs(Z_UPSTREAM)/NSTEPS_TARGET;
 
     //track slope/location in upstream
     double tx = fState.front()[1][0];
@@ -330,34 +431,34 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
 
     //Now make the swim
     int iStep = 1;
-    for(; iStep <= NSLICES_FMAG; ++iStep)
+    for(; iStep <= NSTEPS_FMAG; ++iStep)
     {
         //Make pT kick at the center of slice, add energy loss at both first and last half-slice
         //Note that ty is the global class data member, which does not change during the entire swimming
         double tx_i = mom[iStep-1].Px()/mom[iStep-1].Pz();
-        double tx_f = tx_i + 2.*charge*ptkick_unit*step_fmag/sqrt(mom[iStep-1].Px()*mom[iStep-1].Px() + mom[iStep-1].Pz()*mom[iStep-1].Pz());
+        double tx_f = tx_i + 2.*charge*PTKICK_UNIT*STEP_FMAG/sqrt(mom[iStep-1].Px()*mom[iStep-1].Px() + mom[iStep-1].Pz()*mom[iStep-1].Pz());
 
-        TVector3 trajVec1(tx_i*step_fmag, ty*step_fmag, step_fmag);
+        TVector3 trajVec1(tx_i*STEP_FMAG, ty*STEP_FMAG, STEP_FMAG);
         TVector3 pos_b = pos[iStep-1] - trajVec1;
 
         double p_tot_i = mom[iStep-1].Mag();
         double p_tot_b;
         if(pos_b[2] > FMAG_HOLE_LENGTH || pos_b.Perp() > FMAG_HOLE_RADIUS)
         {
-            p_tot_b = p_tot_i + (eloss_unit_0 + p_tot_i*eloss_unit_1 + p_tot_i*p_tot_i*eloss_unit_2 + p_tot_i*p_tot_i*p_tot_i*eloss_unit_3 + p_tot_i*p_tot_i*p_tot_i*p_tot_i*eloss_unit_4)*trajVec1.Mag();
+            p_tot_b = p_tot_i + (DEDX_UNIT_0 + p_tot_i*DEDX_UNIT_1 + p_tot_i*p_tot_i*DEDX_UNIT_2 + p_tot_i*p_tot_i*p_tot_i*DEDX_UNIT_3 + p_tot_i*p_tot_i*p_tot_i*p_tot_i*DEDX_UNIT_4)*trajVec1.Mag();
         }
         else
         {
             p_tot_b = p_tot_i;
         }
 
-        TVector3 trajVec2(tx_f*step_fmag, ty*step_fmag, step_fmag);
+        TVector3 trajVec2(tx_f*STEP_FMAG, ty*STEP_FMAG, STEP_FMAG);
         pos[iStep] = pos_b - trajVec2;
 
         double p_tot_f;
         if(pos[iStep][2] > FMAG_HOLE_LENGTH || pos[iStep].Perp() > FMAG_HOLE_RADIUS)
         {
-            p_tot_f = p_tot_b + (eloss_unit_0 + p_tot_b*eloss_unit_1 + p_tot_b*p_tot_b*eloss_unit_2 + p_tot_b*p_tot_b*p_tot_b*eloss_unit_3 + p_tot_b*p_tot_b*p_tot_b*p_tot_b*eloss_unit_4)*trajVec2.Mag();
+            p_tot_f = p_tot_b + (DEDX_UNIT_0 + p_tot_b*DEDX_UNIT_1 + p_tot_b*p_tot_b*DEDX_UNIT_2 + p_tot_b*p_tot_b*p_tot_b*DEDX_UNIT_3 + p_tot_b*p_tot_b*p_tot_b*p_tot_b*DEDX_UNIT_4)*trajVec2.Mag();
         }
         else
         {
@@ -370,7 +471,7 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
         pos[iStep] = pos[iStep-1] - trajVec1 - trajVec2;
 
         //Save the dump position when applicable
-        if(fabs(pos_b.Z() - Z_DUMP) < step_fmag)
+        if(fabs(pos_b.Z() - Z_DUMP) < STEP_FMAG)
         {
             double dz = Z_DUMP - pos_b.Z();
             if(dz < 0)
@@ -394,11 +495,11 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
 #endif
     }
 
-    for(; iStep < NSLICES_FMAG+NSTEPS_TARGET+1; ++iStep)
+    for(; iStep < NSTEPS_FMAG+NSTEPS_TARGET+1; ++iStep)
     {
         //Simple straight line flight
         double tx_i = mom[iStep-1].Px()/mom[iStep-1].Pz();
-        TVector3 trajVec(tx_i*step_target, ty*step_target, step_target);
+        TVector3 trajVec(tx_i*STEP_TARGET, ty*STEP_TARGET, STEP_TARGET);
 
         mom[iStep] = mom[iStep-1];
         pos[iStep] = pos[iStep-1] - trajVec;
@@ -417,28 +518,28 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
     double dca_xmin = 1E9;
     double dca_ymin = 1E9;
 
-    iStep = NSLICES_FMAG+NSTEPS_TARGET;   // set the default point to the most upstream
+    iStep = NSTEPS_FMAG+NSTEPS_TARGET;   // set the default point to the most upstream
     int iStep_x = iStep;                  // the point when track cross beam line in X and in Y
     int iStep_y = iStep;                  // both intialized with the most upstream position
-    for(int i = 0; i < NSLICES_FMAG+NSTEPS_TARGET+1; ++i)
+    for(int i = 0; i < NSTEPS_FMAG+NSTEPS_TARGET+1; ++i)
     {
-        if(recoConsts::instance()->get_DoubleFlag("FMAGSTR")*charge*mom[i].Px() < 0.) continue;    // this is the upstream accidental cross, ignore
+        if(FMAGSTR*charge*mom[i].Px() < 0.) continue;    // this is the upstream accidental cross, ignore
 
-        double dca = (pos[i] - TVector3(X_VTX, Y_VTX, pos[i].Z())).Perp();
+        double dca = (pos[i] - TVector3(X_BEAM, Y_BEAM, pos[i].Z())).Perp();
         if(dca < dca_min)
         {
             dca_min = dca;
             iStep = i;
         }
 
-        double dca_x = fabs(pos[i].X() - X_VTX);
+        double dca_x = fabs(pos[i].X() - X_BEAM);
         if(dca_x < dca_xmin)
         {
             dca_xmin = dca_x;
             iStep_x = i;
         }
 
-        double dca_y = fabs(pos[i].Y() - Y_VTX);
+        double dca_y = fabs(pos[i].Y() - Y_BEAM);
         if(dca_y < dca_ymin)
         {
             dca_ymin = dca_y;
@@ -447,10 +548,10 @@ void SRecTrack::swimToVertex(TVector3* pos, TVector3* mom, bool hyptest)
     }
 
     setVertexFast(mom[iStep], pos[iStep]);
-    setDumpFacePos(pos[NSLICES_FMAG]);
-    setDumpFaceMom(mom[NSLICES_FMAG]);
+    setDumpFacePos(pos[NSTEPS_FMAG]);
+    setDumpFaceMom(mom[NSTEPS_FMAG]);
     setTargetPos(fDumpFacePos + TVector3(fDumpFaceMom.Px()/fDumpFaceMom.Pz()*Z_TARGET, fDumpFaceMom.Py()/fDumpFaceMom.Pz()*Z_TARGET, Z_TARGET));
-    setTargetMom(mom[NSLICES_FMAG]);
+    setTargetMom(mom[NSTEPS_FMAG]);
 
     double dz_x = -pos[iStep_x].X()/mom[iStep_x].Px()*mom[iStep_x].Pz();
     setXVertexPos(pos[iStep_x] + TVector3(mom[iStep_x].Px()/mom[iStep_x].Pz()*dz_x, mom[iStep_x].Py()/mom[iStep_x].Pz()*dz_x, dz_x));
@@ -522,7 +623,7 @@ int SRecDimuon::isValid() const
     if(chisq_kf > 15. || chisq_kf < 0.) return false;
 
     //Kinematic cuts
-    if(recoConsts::instance()->get_DoubleFlag("FMAGSTR")*(p_pos.Px() - p_neg.Px()) < 0.) return false;
+    if(FMAGSTR*(p_pos.Px() - p_neg.Px()) < 0.) return false;
     if(fabs(xF) > 1.) return false;
     if(x1 < 0. || x1 > 1.) return false;
     if(x2 < 0. || x2 > 1.) return false;
@@ -544,8 +645,8 @@ int SRecDimuon::isValid() const
 bool SRecDimuon::isTarget()
 {
     //single muon vertex
-    if(vtx_pos.Z() > 0. || vtx_pos.Z() < -300.) return false;
-    if(vtx_neg.Z() > 0. || vtx_neg.Z() < -300.) return false;
+    if(vtx_pos.Z() > -100. || vtx_pos.Z() < -500.) return false;
+    if(vtx_neg.Z() > -100. || vtx_neg.Z() < -500.) return false;
 
     //Track projection comparison
     double pzp = p_pos.Pz();

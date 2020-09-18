@@ -1,6 +1,7 @@
 #include "GenFitExtrapolator.h"
 #include "GFField.h"
 
+#include <phool/recoConsts.h>
 #include <phfield/PHFieldUtility.h>
 #include <phfield/PHFieldConfig_v3.h>
 #include <phfield/PHField.h>
@@ -24,6 +25,37 @@
 
 //#define _DEBUG_ON
 
+namespace 
+{
+    //static flag to indicate the initialized has been done
+    static bool inited = false;
+
+    //Simple swimming settings 
+    static int NSTEPS_TARGET = 100;
+    static int NSTEPS_SHIELDING = 50;
+    static int NSTEPS_FMAG = 100;
+
+    static double FMAG_LENGTH;
+    static double Z_UPSTREAM;
+
+    //initialize global variables
+    void initGlobalVariables()
+    {
+        if(!inited) 
+        {
+            inited = true;
+            recoConsts* rc = recoConsts::instance();
+           
+            NSTEPS_TARGET = rc->get_IntFlag("NSTEPS_TARGET");
+            NSTEPS_SHIELDING = rc->get_IntFlag("NSTEPS_SHIELDING");
+            NSTEPS_FMAG = rc->get_IntFlag("NSTEPS_FMAG");
+
+            FMAG_LENGTH = rc->get_DoubleFlag("FMAG_LENGTH");
+            Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+        }
+    }
+}
+
 static const double c_light   = 2.99792458e+8 * m/s;
 
 using namespace std;
@@ -33,6 +65,7 @@ GenFitExtrapolator::GenFitExtrapolator():
 	pos_f(TVector3()), mom_f(TVector3()), cov_f(TMatrixDSym(5)),
 	jac_sd2sc(TMatrixD(5,5)), jac_sc2sd(TMatrixD(5,5))
 {
+    initGlobalVariables();
 }
 
 GenFitExtrapolator::~GenFitExtrapolator()
@@ -50,27 +83,27 @@ bool GenFitExtrapolator::init(const PHField* field, const TGeoManager *geom)
 
 #ifdef _DEBUG_ON
 	double z_test = 1000;
-  LogInfo("");
-  {
-		double p[4] = {0, 0, z_test*cm, 0};
-		double B[3] = {0, 0, 0};
-		field->GetFieldValue(p, B);
-		cout << "PHField (CLHEP) at Z = " << z_test << endl;
-		cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
-  }
-  {
-		genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
-		TVector3 H = f->get(TVector3(0,0,z_test));
-		H *= kilogauss/tesla;
-		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
-		H.Print();
+    LogInfo("");
+    {
+        double p[4] = {0, 0, z_test*cm, 0};
+        double B[3] = {0, 0, 0};
+        field->GetFieldValue(p, B);
+        cout << "PHField (CLHEP) at Z = " << z_test << endl;
+        cout << B[0] << ", " << B[1] << ", " << B[2] << endl;
+    }
+    {
+        genfit::AbsBField *f = genfit::FieldManager::getInstance()->getField();
+        TVector3 H = f->get(TVector3(0,0,z_test));
+        H *= kilogauss/tesla;
+        cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
+        H.Print();
 
-		z_test = 250;
-		H = f->get(TVector3(0,0,z_test));
-		H *= kilogauss/tesla;
-		cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
-		H.Print();
-  }
+        z_test = 250;
+        H = f->get(TVector3(0,0,z_test));
+        H *= kilogauss/tesla;
+        cout << "genfit::AbsBField (tesla) at Z = " << z_test << endl;
+        H.Print();
+    }
 #endif
 
   _tgeo_manager->Export("GenFitExtrapolatorGeom.root");
@@ -259,12 +292,12 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 double GenFitExtrapolator::extrapolateToIP() {
 
   //Store the steps on each point
-  TVector3 mom[NSLICES_FMAG + NSTEPS_TARGET + 1];
-  TVector3 pos[NSLICES_FMAG + NSTEPS_TARGET + 1];
+  TVector3 mom[NSTEPS_FMAG + NSTEPS_TARGET + 1];
+  TVector3 pos[NSTEPS_FMAG + NSTEPS_TARGET + 1];
 
   //Step size in FMAG/target area, unit is cm.
   //FIXME Units
-  double step_fmag   = FMAG_LENGTH/NSLICES_FMAG;//*cm;
+  double step_fmag   = FMAG_LENGTH/NSTEPS_FMAG;//*cm;
   double step_target = fabs(Z_UPSTREAM)/NSTEPS_TARGET;//*cm;
 
   //Start from FMAG face downstream
@@ -274,7 +307,7 @@ double GenFitExtrapolator::extrapolateToIP() {
 
   //Now make the real swimming
   int iStep = 1;
-  for(; iStep <= NSLICES_FMAG; ++iStep)
+  for(; iStep <= NSTEPS_FMAG; ++iStep)
   {
       pos_i = pos[iStep-1];
       mom_i = mom[iStep-1];
@@ -285,7 +318,7 @@ double GenFitExtrapolator::extrapolateToIP() {
       mom[iStep] = mom_f;
   }
 
-  for(; iStep < NSLICES_FMAG+NSTEPS_TARGET+1; ++iStep)
+  for(; iStep < NSTEPS_FMAG+NSTEPS_TARGET+1; ++iStep)
   {
       pos_i = pos[iStep-1];
       mom_i = mom[iStep-1];
@@ -298,7 +331,7 @@ double GenFitExtrapolator::extrapolateToIP() {
 
   //Find the one step with minimum DCA
   double dca_min = 1E6;
-  for(int i = 0; i < NSLICES_FMAG+NSTEPS_TARGET+1; ++i)
+  for(int i = 0; i < NSTEPS_FMAG+NSTEPS_TARGET+1; ++i)
   {
       double dca = sqrt(pos[i][0]*pos[i][0] + pos[i][1]*pos[i][1]);
       if(dca < dca_min)

@@ -13,11 +13,12 @@ foreach(LinkDefh ${LinkDefhs})
 	string(REPLACE ".C" "_rdict.pcm" DictPcm ${DictC})
 	list(APPEND dicts ${DictC})
 	list(APPEND pcms  ${DictPcm})
-	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}  -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} ${Dicth} ${LinkDefh})
+	add_custom_command(OUTPUT ${DictC} COMMAND rootcint ARGS -f ${DictC}  -noIncludePaths -inlineInputHeader -c -p -I${PROJECT_SOURCE_DIR} -I${PROJECT_SOURCE_DIR}/../simulation ${Dicth} ${LinkDefh})
 endforeach(LinkDefh)
 
 # source code
 include_directories("$ENV{MY_INSTALL}/include/" "$ENV{OFFLINE_MAIN}/include/" "${PROJECT_SOURCE_DIR}/")
+include_directories("${PROJECT_SOURCE_DIR}/../simulation")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 

@@ -101,6 +101,11 @@ class PHG4Reco : public SubsysReco
     force_decay_type_ = force_decay_type;
   }
 
+  //! speed-up options setters
+  void set_optical_photon(bool b) { optical_photon_ = b; }
+  void set_energy_threshold(double t) { energy_threshold_ = t; }
+  void set_zero_field_line(double z) { zero_field_line_ = z; }
+
   //! Save geometry from Geant4 to DST
   void save_DST_geometry(bool b) { save_DST_geometry_ = b; }
   void SetWorldSizeX(const double sx) { WorldSize[0] = sx; }
@@ -185,6 +190,11 @@ class PHG4Reco : public SubsysReco
 
   //! module timer.
   PHTimeServer::timer _timer;
+
+  //! speed up options
+  bool   optical_photon_;        //< enable process for the optical photon, default disabled
+  double energy_threshold_;      //< kill low-energy tracks fast, set to 0. to disable
+  double zero_field_line_;       //< z position after which the field manager will be set to nullptr, set to numbers larger than the world size to disable
 };
 
 #endif

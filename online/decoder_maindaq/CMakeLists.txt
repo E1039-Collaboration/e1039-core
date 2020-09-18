@@ -31,6 +31,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -O2 -std=c++0x -I$ENV{MY_INSTAL
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}                -DBIT64    -I$ENV{MY_INSTALL}/include/ -I$ENV{OFFLINE_MAIN}/include/")
 
 add_library(decoder_maindaq SHARED ${sources} ${dicts})
+include_directories("${PROJECT_SOURCE_DIR}/../../simulation")
 target_link_libraries(decoder_maindaq -linterface_main -lfun4all -lphool -lgeom_svc -lUtilAna)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
