@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 
-
 class PHCompositeNode;
 class SyncObject;
 
@@ -14,9 +13,14 @@ class TFile;
 class TTree;
 class SRawEvent;
 
+class SQRun;
+class SQSpillMap;
+class SQEvent;
+class SQHitVector;
+
 class Fun4AllSRawEventInputManager : public Fun4AllInputManager
 {
- public:
+public:
   Fun4AllSRawEventInputManager(const std::string &name = "DUMMY", const std::string &topnodename = "TOP");
   virtual ~Fun4AllSRawEventInputManager();
   int fileopen(const std::string &filenam);
@@ -29,6 +33,8 @@ class Fun4AllSRawEventInputManager : public Fun4AllInputManager
   int PushBackEvents(const int i);
   int GetSyncObject(SyncObject **mastersync);
   int SyncIt(const SyncObject *mastersync);
+
+  void enable_E1039_translation();
 
 	const std::string& get_branch_name() const {
 		return _branch_name;
@@ -46,8 +52,10 @@ class Fun4AllSRawEventInputManager : public Fun4AllInputManager
 		_tree_name = treeName;
 	}
 
- protected:
+protected:
   int OpenNextFile();
+  void E906ToE1039();
+
   int segment;
   int isopen;
   int events_total;
@@ -61,7 +69,15 @@ class Fun4AllSRawEventInputManager : public Fun4AllInputManager
 
   TFile* _fin;
   TTree* _tin;
-  SRawEvent* _b_srawEvent;
+  SRawEvent* _srawEvent;  //! sraw event pointer on the DST node as well as the TTree, is this gonna be faster?
+
+  //optionally translate the data to E1039 convention
+  bool _enable_e1039_translation;
+  SQRun*       run_header;
+  SQSpillMap*  spill_map;
+  SQEvent*     event_header;
+  SQHitVector* hit_vec;
+  SQHitVector* trig_hit_vec;
 };
 
 #endif /* __Fun4AllSRawEventInputManager_H_ */

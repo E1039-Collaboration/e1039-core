@@ -2,16 +2,15 @@
 
 #include "SRawEvent.h"
 
-//#include <event/EVIO_Event.h>
-//#include <interface_main/SQHit_v1.h>
-//#include <interface_main/SQHitVector_v1.h>
-//#include <interface_main/SQEvent_v1.h>
-//#include <interface_main/SQRun_v1.h>
-//#include <interface_main/SQSpill_v2.h>
-//#include <interface_main/SQSpillMap_v1.h>
-//#include <interface_main/SQStringMap.h>
-//#include <interface_main/SQScaler_v1.h>
-//#include <interface_main/SQSlowCont_v1.h>
+#include <interface_main/SQHit_v1.h>
+#include <interface_main/SQHitVector_v1.h>
+#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQRun_v1.h>
+#include <interface_main/SQSpill_v2.h>
+#include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQStringMap.h>
+#include <interface_main/SQScaler_v1.h>
+#include <interface_main/SQSlowCont_v1.h>
  
 #include <fun4all/Fun4AllServer.h>
 #include <fun4all/Fun4AllSyncManager.h>
@@ -38,17 +37,23 @@
 
 using namespace std;
 
-Fun4AllSRawEventInputManager::Fun4AllSRawEventInputManager(const string &name, const string &topnodename) :
- Fun4AllInputManager(name, ""),
- segment(-999),
- isopen(0),
- events_total(0),
- events_thisfile(0),
- topNodeName(topnodename),
- _tree_name("save"),
- _branch_name("rawEvent")
+Fun4AllSRawEventInputManager::Fun4AllSRawEventInputManager(const string& name, const string& topnodename):
+  Fun4AllInputManager(name, ""),
+  segment(-999),
+  isopen(0),
+  events_total(0),
+  events_thisfile(0),
+  topNodeName(topnodename),
+  _tree_name("save"),
+  _branch_name("rawEvent"),
+  _enable_e1039_translation(false),
+  run_header(nullptr),
+  spill_map(nullptr),
+  event_header(nullptr),
+  hit_vec(nullptr),
+  trig_hit_vec(nullptr)
 {
-  Fun4AllServer *se = Fun4AllServer::instance();
+  Fun4AllServer* se = Fun4AllServer::instance();
   topNode = se->topNode(topNodeName.c_str());
   PHNodeIterator iter(topNode);
 
@@ -57,27 +62,121 @@ Fun4AllSRawEventInputManager::Fun4AllSRawEventInputManager(const string &name, c
     runNode = new PHCompositeNode("RUN");
     topNode->addNode(runNode);
   }
-  
+
   PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
   if (!eventNode) {
     eventNode = new PHCompositeNode("DST");
     topNode->addNode(eventNode);
   }
-  
-	PHIODataNode<PHObject>* rawEventNode = new PHIODataNode<PHObject>(new SRawEvent(),"SRawEvent", "PHObject");
-	eventNode->addNode(rawEventNode);
-  
+
+  _srawEvent = new SRawEvent();
+  PHIODataNode<PHObject>* rawEventNode = new PHIODataNode<PHObject>(_srawEvent, "SRawEvent", "PHObject");
+  eventNode->addNode(rawEventNode);
+
   syncobject = new SyncObjectv2();
-  return ;
 }
 
 Fun4AllSRawEventInputManager::~Fun4AllSRawEventInputManager()
 {
-  if (isopen)
-    {
-      fileclose();
-    }
+  if(isopen)
+  {
+    fileclose();
+  }
   delete syncobject;
+}
+
+void Fun4AllSRawEventInputManager::enable_E1039_translation()
+{
+  if(!_enable_e1039_translation)
+  {
+    _enable_e1039_translation = true;
+
+    Fun4AllServer* se = Fun4AllServer::instance();
+    topNode = se->topNode(topNodeName.c_str());
+
+    PHNodeIterator iter(topNode);
+    PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+    PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+
+    run_header = new SQRun_v1();
+    PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(run_header, "SQRun", "PHObject");
+    runNode->addNode(runHeaderNode);
+  
+    spill_map = new SQSpillMap_v1();
+    PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(spill_map, "SQSpillMap", "PHObject");
+    runNode->addNode(spillNode);
+
+    event_header = new SQEvent_v1();
+    PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(event_header, "SQEvent", "PHObject");
+    eventNode->addNode(eventHeaderNode);
+
+    hit_vec = new SQHitVector_v1();
+    PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(hit_vec, "SQHitVector", "PHObject");
+    eventNode->addNode(hitNode);
+
+    trig_hit_vec = new SQHitVector_v1();
+    PHIODataNode<PHObject>* triggerhitNode = new PHIODataNode<PHObject>(trig_hit_vec, "SQTriggerHitVector", "PHObject");
+    eventNode->addNode(triggerhitNode);
+  }
+}
+
+void Fun4AllSRawEventInputManager::E906ToE1039()
+{
+  run_header->set_run_id(_srawEvent->getRunID());
+
+  SQSpill* spill = spill_map->get(_srawEvent->getSpillID());
+  if(!spill) {
+    spill = new SQSpill_v2();
+    spill->set_spill_id(_srawEvent->getSpillID());
+    spill->set_run_id(_srawEvent->getRunID());
+
+    spill_map->insert(spill);
+    run_header->set_n_spill(spill_map->size());
+  }
+
+  event_header->set_run_id(_srawEvent->getRunID());
+  event_header->set_spill_id(_srawEvent->getSpillID());
+  event_header->set_event_id(_srawEvent->getEventID());
+  event_header->set_data_quality(0);
+  event_header->set_trigger(SQEvent::MATRIX1, _srawEvent->isTriggeredBy(SRawEvent::MATRIX1));
+  event_header->set_trigger(SQEvent::MATRIX2, _srawEvent->isTriggeredBy(SRawEvent::MATRIX2));
+  event_header->set_trigger(SQEvent::MATRIX3, _srawEvent->isTriggeredBy(SRawEvent::MATRIX3));
+  event_header->set_trigger(SQEvent::MATRIX4, _srawEvent->isTriggeredBy(SRawEvent::MATRIX4));
+  event_header->set_trigger(SQEvent::MATRIX5, _srawEvent->isTriggeredBy(SRawEvent::MATRIX5));
+  event_header->set_trigger(SQEvent::NIM1, _srawEvent->isTriggeredBy(SRawEvent::NIM1));
+  event_header->set_trigger(SQEvent::NIM2, _srawEvent->isTriggeredBy(SRawEvent::NIM2));
+  event_header->set_trigger(SQEvent::NIM3, _srawEvent->isTriggeredBy(SRawEvent::NIM3));
+  event_header->set_trigger(SQEvent::NIM4, _srawEvent->isTriggeredBy(SRawEvent::NIM4));
+  event_header->set_trigger(SQEvent::NIM5, _srawEvent->isTriggeredBy(SRawEvent::NIM5));
+  event_header->set_qie_turn_id(_srawEvent->getTurnID());
+  event_header->set_qie_rf_id(_srawEvent->getRFID());
+  for(int i = -16; i < 16; ++i) event_header->set_qie_rf_intensity(i, _srawEvent->getIntensity(i));
+
+  vector<Hit>& hits = _srawEvent->getAllHits();
+  for(auto it = hits.begin(); it != hits.end(); ++it) {
+    SQHit* hit = new SQHit_v1();
+    hit->set_hit_id(it->index);
+    hit->set_detector_id(it->detectorID);
+    hit->set_element_id(it->elementID);
+    hit->set_tdc_time(it->tdcTime);
+    hit->set_in_time(it->isInTime());
+
+    hit_vec->push_back(hit);
+    delete hit;
+  }
+
+  vector<Hit>& trhits = _srawEvent->getTriggerHits();
+  for(auto it = hits.begin(); it != hits.end(); ++it) {
+    SQHit* hit = new SQHit_v1();
+    hit->set_hit_id(it->index);
+    hit->set_detector_id(it->detectorID);
+    hit->set_element_id(it->elementID);
+    hit->set_tdc_time(it->tdcTime);
+    hit->set_in_time(it->isInTime());
+    
+    trig_hit_vec->push_back(hit);
+    delete hit;
+  }
 }
 
 int Fun4AllSRawEventInputManager::fileopen(const string &filenam)
@@ -110,8 +209,7 @@ int Fun4AllSRawEventInputManager::fileopen(const string &filenam)
     return -1;
   }
 
-  _b_srawEvent = new SRawEvent();
-  _tin->SetBranchAddress(_branch_name.c_str(), &_b_srawEvent);
+  _tin->SetBranchAddress(_branch_name.c_str(), &_srawEvent);
 
   //TODO check branch status
 
@@ -128,9 +226,7 @@ int Fun4AllSRawEventInputManager::run(const int nevents)
   //cout << "Fun4AllSRawEventInputManager::run(): " << nevents << endl;
   readagain:
   if (!isopen) {
-		if (filelist.empty())
-
-		{
+		if (filelist.empty()) {
 			if (verbosity > 0) {
 				cout << Name() << ": No Input file open" << endl;
 			}
@@ -145,13 +241,6 @@ int Fun4AllSRawEventInputManager::run(const int nevents)
 	if (verbosity > 3) {
 		cout << "Getting Event from " << Name() << endl;
 	}
-  //  cout << "running event " << nevents << endl;
-  //PHNodeIterator iter(topNode);
-
-  SRawEvent* rawEvent = findNode::getClass<SRawEvent>(topNode, "SRawEvent");
-  if (!rawEvent) {
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
 
 	if (events_thisfile>=_tin->GetEntries()) {
 		fileclose();
@@ -159,30 +248,34 @@ int Fun4AllSRawEventInputManager::run(const int nevents)
 	}
   
 	_tin->GetEntry(events_thisfile);
-	rawEvent->DeepClone(_b_srawEvent);
 	events_thisfile++;
 	events_total++;
 
 	if (verbosity > Fun4AllBase::VERBOSITY_A_LOT) {
-		rawEvent->identify();
+		_srawEvent->identify();
 	}
 
-  SetRunNumber                (rawEvent->getRunID());
+  SetRunNumber                (_srawEvent->getRunID());
   mySyncManager->PrdfEvents   (events_thisfile);
-  mySyncManager->SegmentNumber(rawEvent->getSpillID());
-  mySyncManager->CurrentEvent (rawEvent->getEventID());
+  mySyncManager->SegmentNumber(_srawEvent->getSpillID());
+  mySyncManager->CurrentEvent (_srawEvent->getEventID());
 
-  syncobject->RunNumber       (rawEvent->getRunID());
+  syncobject->RunNumber       (_srawEvent->getRunID());
   syncobject->EventCounter    (events_thisfile);
-  syncobject->SegmentNumber   (rawEvent->getSpillID());
-  syncobject->EventNumber     (rawEvent->getEventID());
+  syncobject->SegmentNumber   (_srawEvent->getSpillID());
+  syncobject->EventNumber     (_srawEvent->getEventID());
+
+  //translate to E1039 data format if enabled
+  if (_enable_e1039_translation) {
+    E906ToE1039();
+  }
 
   // check if the local SubsysReco discards this event
-  if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
-    {
-      ResetEvent();
-      goto readagain;
-    }
+  if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK) {
+    ResetEvent();
+    goto readagain;
+  }
+
   return 0;
 }
 
