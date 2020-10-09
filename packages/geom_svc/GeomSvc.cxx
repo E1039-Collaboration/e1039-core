@@ -206,7 +206,7 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
 }
 
 GeomSvc* GeomSvc::p_geometrySvc = NULL;
-bool     GeomSvc::use_dbsvc = false;
+bool     GeomSvc::use_dbsvc = true;
 
 GeomSvc* GeomSvc::instance()
 {
@@ -892,6 +892,18 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
     //        detectorName.replace(5, detectorName.length(), "");
     //    }
     //}
+}
+
+int GeomSvc::getHodoStation(const int detectorID) const
+{
+  return getHodoStation(getDetectorName(detectorID));
+}
+
+int GeomSvc::getHodoStation(const std::string detectorName) const
+{
+  if (detectorName.size() == 0 || detectorName[0] != 'H') return 0;
+  int num = detectorName[1] - '0';
+  return 1 <= num && num <= 4  ?  num  :  0;
 }
 
 double GeomSvc::getDriftDistance(int detectorID, double tdcTime)

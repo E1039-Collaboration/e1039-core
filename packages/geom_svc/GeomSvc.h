@@ -221,6 +221,8 @@ public:
     double getPlaneWOffset(int detectorID, int moduleID) { return planes[detectorID].deltaW_module[moduleID]; }
 
     int getPlaneType(int detectorID) const { return planes[detectorID].planeType; }
+    int getHodoStation(const int detectorID) const; //< Return a station number (1-4) for hodo planes or "0" for others.
+    int getHodoStation(const std::string detectorName) const; //< Return a station number (1-4) for hodo planes or "0" for others.
 
     double getKMAGCenter()     { return (zmin_kmag + zmax_kmag)/2.; }
     double getKMAGUpstream()   { return zmin_kmag; }
