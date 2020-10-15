@@ -193,7 +193,7 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
   bool nim1_on = HYL or HYR;
   bool nim2_on = HXT or HXB;
   _event_header->set_trigger(SQEvent::NIM1, nim1_on);
-  _event_header->set_trigger(SQEvent::NIM2, nim1_on);
+  _event_header->set_trigger(SQEvent::NIM2, nim2_on);
 
   //For FPGA trigger, build the internal hit pattern first
   data.clear();
