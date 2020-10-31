@@ -190,8 +190,8 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
              nhit_det[ geomSvc->getDetectorID("H2R"  ) ] > 0 &&
              nhit_det[ geomSvc->getDetectorID("H4Y1R") ] > 0 &&
              nhit_det[ geomSvc->getDetectorID("H4Y2R") ] > 0   ;
-  bool nim1_on = HYL or HYR;
-  bool nim2_on = HXT or HXB;
+  bool nim1_on = HYL && HYR;
+  bool nim2_on = HXT && HXB;
   _event_header->set_trigger(SQEvent::NIM1, nim1_on);
   _event_header->set_trigger(SQEvent::NIM2, nim2_on);
 
