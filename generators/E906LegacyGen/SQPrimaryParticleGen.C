@@ -28,6 +28,9 @@ from Kun to E1039 experiment in Fun4All framework
 #include <g4main/PHG4TruthInfoContainer.h>
 #include <gsl/gsl_randist.h>
 #include <Geant4/G4ParticleTable.hh>
+#include <interface_main/SQMCEvent_v1.h>
+#include <interface_main/SQDimuon_v1.h>
+#include <interface_main/SQDimuonVector_v1.h>
 
 #include "SQPrimaryParticleGen.h"
 #include "SQMCDimuon.h"
@@ -167,6 +170,18 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
     PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
     dstNode->addNode(newNode);
 
+    m_mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
+    if (! m_mcevt) {
+      m_mcevt = new SQMCEvent_v1();
+      dstNode->addNode(new PHIODataNode<PHObject>(m_mcevt, "SQMCEvent", "PHObject"));
+    }
+
+    m_vec_dim = findNode::getClass<SQDimuonVector>(topNode, "SQTruthDimuonVector");
+    if (! m_vec_dim) {
+      m_vec_dim = new SQDimuonVector_v1();
+      dstNode->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTruthDimuonVector", "PHObject"));
+    }
+
     // Node for storing truth info of Dimuon
     dimuon_info = new SQDimuonTruthInfoContainer();
     PHIODataNode<PHObject> *dimuonNode = new PHIODataNode<PHObject>(dimuon_info, "DimuonInfo", "PHObject");
@@ -208,42 +223,14 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   
   SQMCDimuon dimuon ;
   drellyanMode = true;
-  int vtxindex = -1;
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
 
   if(!generateDimuon(mass, xF, dimuon, true)) return Fun4AllReturnCodes::ABORTEVENT; // return
  
-  vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
- 
-  PHG4Particle *particle_muNeg = new PHG4Particlev2();
+  InsertMuonPair(vtx, dimuon);
 
-  particle_muNeg->set_track_id(12);
-  particle_muNeg->set_vtx_id(vtxindex);
-  particle_muNeg->set_name("mu-");
-  particle_muNeg->set_pid(13);
-  particle_muNeg->set_px(dimuon.fNegMomentum.Px());
-  particle_muNeg->set_py(dimuon.fNegMomentum.Py());
-  particle_muNeg->set_pz(dimuon.fNegMomentum.Pz());
-  particle_muNeg->set_e(dimuon.fPosMomentum.E());
-  ineve->AddParticle(vtxindex, particle_muNeg);
-
-  PHG4Particle *particle_muplus = new PHG4Particlev2();
-
-  particle_muplus->set_track_id(2);
-  particle_muplus->set_vtx_id(vtxindex);
-  particle_muplus->set_name("mu+");
-  particle_muplus->set_pid(-13);
-  particle_muplus->set_px(dimuon.fPosMomentum.Px());
-  particle_muplus->set_py(dimuon.fPosMomentum.Py());
-  particle_muplus->set_pz(dimuon.fPosMomentum.Pz());
-  particle_muplus->set_e(dimuon.fPosMomentum.E());
-  particle_muplus->set_e(dimuon.fPosMomentum.E());
-  ineve->AddParticle(vtxindex, particle_muplus);
-
-
- 
   // Calculate the cross section
   //@cross_section
   // PDF-related cross-section
@@ -299,15 +286,7 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   double xsec = xsec_pdf*xsec_kfactor*xsec_phsp*xsec_limit*luminosity;
   //@cross_section
 
-
-  //==== Store in dimuon truth container
-  dimuon_info->set_Dimuon_xs(xsec);
-  dimuon_info->set_Dimuon_m(dimuon.fMass);
-  dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
-  dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-  dimuon_info->set_Dimuon_pt(dimuon.fpT);
-  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
-
+  InsertEventInfo(xsec, vtx, dimuon);
 }
 
 //====================generateJPsi===================================================
@@ -315,41 +294,14 @@ int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, co
 {
  
   SQMCDimuon dimuon ;
-  int vtxindex = -1;
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
 
   if(!generateDimuon(DPGEN::mjpsi, xF, dimuon)) return Fun4AllReturnCodes::ABORTEVENT; 
+
+  InsertMuonPair(vtx, dimuon);
   
-  vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
- 
- PHG4Particle *particle_muNeg = new PHG4Particlev2();
-
-  particle_muNeg->set_track_id(12);
-  particle_muNeg->set_vtx_id(vtxindex);
-  particle_muNeg->set_name("mu-");
-  particle_muNeg->set_pid(13);
-  particle_muNeg->set_px(dimuon.fNegMomentum.Px());
-  particle_muNeg->set_py(dimuon.fNegMomentum.Py());
-  particle_muNeg->set_pz(dimuon.fNegMomentum.Pz());
-  particle_muNeg->set_e(dimuon.fPosMomentum.E());
-  ineve->AddParticle(vtxindex, particle_muNeg);
-
-  PHG4Particle *particle_muplus = new PHG4Particlev2();
-  vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
-  particle_muplus->set_track_id(2);
-  particle_muplus->set_vtx_id(vtxindex);
-  particle_muplus->set_name("mu+");
-  particle_muplus->set_pid(-13);
-  particle_muplus->set_px(dimuon.fPosMomentum.Px());
-  particle_muplus->set_py(dimuon.fPosMomentum.Py());
-  particle_muplus->set_pz(dimuon.fPosMomentum.Pz());
-  particle_muplus->set_e(dimuon.fPosMomentum.E());
-  particle_muplus->set_e(dimuon.fPosMomentum.E()); 
-  ineve->AddParticle(vtxindex, particle_muplus);
-
- 
   // Calculate the cross section for J/Psi
   //@cross_section{
   //xf distribution
@@ -361,53 +313,21 @@ int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, co
   double xsec = DPGEN::brjpsi*xsec_xf*xsec_limit*luminosity;
   //@cross_section}
 
-  //==== Store in dimuon truth container
-  dimuon_info->set_Dimuon_xs(xsec);
-  dimuon_info->set_Dimuon_m(dimuon.fMass);
-  dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
-  dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-  dimuon_info->set_Dimuon_pt(dimuon.fpT);
-  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
+  InsertEventInfo(xsec, vtx, dimuon);
 }
+
 //======================Psi-prime====================
 int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
 {
  
   SQMCDimuon dimuon ;
-  int vtxindex = -1;
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
 
   if(!generateDimuon(DPGEN::mpsip, xF, dimuon)) return Fun4AllReturnCodes::ABORTEVENT; // return; //1;//return 0; 
-  
-  vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
- 
- PHG4Particle *particle_muNeg = new PHG4Particlev2();
 
-  particle_muNeg->set_track_id(12);
-  particle_muNeg->set_vtx_id(vtxindex);
-  particle_muNeg->set_name("mu-");
-  particle_muNeg->set_pid(13);
-  particle_muNeg->set_px(dimuon.fNegMomentum.Px());
-  particle_muNeg->set_py(dimuon.fNegMomentum.Py());
-  particle_muNeg->set_pz(dimuon.fNegMomentum.Pz());
-  particle_muNeg->set_e(dimuon.fPosMomentum.E());
-  ineve->AddParticle(vtxindex, particle_muNeg);
-
-  PHG4Particle *particle_muplus = new PHG4Particlev2();
-  vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
-  particle_muplus->set_track_id(2);
-  particle_muplus->set_vtx_id(vtxindex);
-  particle_muplus->set_name("mu+");
-  particle_muplus->set_pid(-13);
-  particle_muplus->set_px(dimuon.fPosMomentum.Px());
-  particle_muplus->set_py(dimuon.fPosMomentum.Py());
-  particle_muplus->set_pz(dimuon.fPosMomentum.Pz());
-  particle_muplus->set_e(dimuon.fPosMomentum.E());
-  particle_muplus->set_e(dimuon.fPosMomentum.E());
- 
-  ineve->AddParticle(vtxindex, particle_muplus);
+  InsertMuonPair(vtx, dimuon);  
  
   // Calculate the cross section for J/Psi
   //@cross_section{
@@ -420,14 +340,7 @@ int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, co
   double xsec = DPGEN::psipscale*DPGEN::brjpsi*xsec_xf*xsec_limit*luminosity;
   //@}
 
-
-  //==== Store in dimuon truth container
-  dimuon_info->set_Dimuon_xs(xsec);
-  dimuon_info->set_Dimuon_m(dimuon.fMass);
-  dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
-  dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-  dimuon_info->set_Dimuon_pt(dimuon.fpT);
-  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
+  InsertEventInfo(xsec, vtx, dimuon);
 }
 
 
@@ -537,3 +450,66 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF, SQMCDimuon& di
 
     return true;
 }
+
+/// Insert PHG4Particles objects of mu+ and mu- into "ineve".
+/**
+ *  Note that "ineve->AddVtx()" was called twice in generateJPsi() and generatePsip() 
+ *  in the past versions since 2020-11-05.  But it seems not proper because a muon pair
+ *   should share one vertex.
+ */
+void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx, SQMCDimuon& dimuon)
+{
+  int vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
+
+  PHG4Particle *particle_muNeg = new PHG4Particlev2();
+  particle_muNeg->set_track_id(12);
+  particle_muNeg->set_vtx_id(vtxindex);
+  particle_muNeg->set_name("mu-");
+  particle_muNeg->set_pid(13);
+  particle_muNeg->set_px(dimuon.fNegMomentum.Px());
+  particle_muNeg->set_py(dimuon.fNegMomentum.Py());
+  particle_muNeg->set_pz(dimuon.fNegMomentum.Pz());
+  particle_muNeg->set_e (dimuon.fPosMomentum.E ());
+  ineve->AddParticle(vtxindex, particle_muNeg);
+
+  PHG4Particle *particle_muplus = new PHG4Particlev2();
+  particle_muplus->set_track_id(2);
+  particle_muplus->set_vtx_id(vtxindex);
+  particle_muplus->set_name("mu+");
+  particle_muplus->set_pid(-13);
+  particle_muplus->set_px(dimuon.fPosMomentum.Px());
+  particle_muplus->set_py(dimuon.fPosMomentum.Py());
+  particle_muplus->set_pz(dimuon.fPosMomentum.Pz());
+  particle_muplus->set_e (dimuon.fPosMomentum.E ());
+  ineve->AddParticle(vtxindex, particle_muplus);
+}
+
+/// Insert the event info into SQ interface objects.
+/**
+ * This function could be merged to InsertMuonPair().
+ */
+void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuon& dimuon)
+{
+  m_mcevt->set_cross_section(xsec);
+  m_mcevt->set_weight       (xsec);
+
+  m_vec_dim->clear();
+  SQDimuon_v1 dim;
+  dim.set_dimuon_id(1); // todo: unique ID has to be set.
+  dim.set_pos         (vtx);
+  dim.set_mom         (dimuon.fPosMomentum + dimuon.fNegMomentum);
+  dim.set_mom_pos     (dimuon.fPosMomentum);
+  dim.set_mom_neg     (dimuon.fNegMomentum);
+  dim.set_track_id_pos( 2); // defined above
+  dim.set_track_id_neg(12); // defined above
+  m_vec_dim->push_back(&dim);
+
+  //==== Store in dimuon truth container
+  dimuon_info->set_Dimuon_xs(xsec);
+  dimuon_info->set_Dimuon_m(dimuon.fMass);
+  dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
+  dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
+  dimuon_info->set_Dimuon_pt(dimuon.fpT);
+  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
+}
+

@@ -23,6 +23,8 @@ class PHG4ParticleGeneratorBase;
 class PHG4InEvent;
 class PHG4Particle;
 
+class SQMCEvent;
+class SQDimuonVector;
 class SQMCDimuon;
 class SQPrimaryVertexGen;
 class SQDimuonTruthInfoContainer;
@@ -88,7 +90,9 @@ public:
  private:
 
     SQPrimaryVertexGen* _vertexGen;
-    PHG4InEvent *ineve ;
+    PHG4InEvent *ineve;
+    SQMCEvent* m_mcevt;
+    SQDimuonVector* m_vec_dim;
     SQDimuonTruthInfoContainer * dimuon_info;
   
 
@@ -119,6 +123,9 @@ public:
     double cosThetaMax = 1. ;
     double zOffsetMin = -1.;
     double zOffsetMax = 1.;
+
+    void InsertMuonPair(TVector3& vtx, SQMCDimuon& dimuon);
+    void InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuon& dimuon);
 };
 
 //========
