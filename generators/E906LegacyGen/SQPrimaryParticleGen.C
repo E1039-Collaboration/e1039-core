@@ -191,8 +191,6 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
   return 0;
 }
 
-
-
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
 
@@ -253,7 +251,7 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   double c2 = pdf->xfxQ(4, dimuon.fx2, dimuon.fMass)/dimuon.fx2;
  
   double xsec_pdf = 4./9.*(u1*(zOverA*ubar2 + nOverA*dbar2) + ubar1*(zOverA*u2 + nOverA*d2) + 2*c1*c2) +
-                  1./9.*(d1*(zOverA*dbar2 + nOverA*ubar2) + dbar1*(zOverA*d2 + nOverA*u2) + 2*s1*s2);
+                    1./9.*(d1*(zOverA*dbar2 + nOverA*ubar2) + dbar1*(zOverA*d2 + nOverA*u2) + 2*s1*s2);
   //@}
 
   //KFactor related 
@@ -280,7 +278,6 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   double xsec_limit = (massMax - massMin)*(xfMax - xfMin)*(cosThetaMax*cosThetaMax*cosThetaMax/3. 
 							   +cosThetaMax - cosThetaMin*cosThetaMin*cosThetaMin/3. 
 							   - cosThetaMin)*4./3.;
-  
   
   //Total cross-section
   double xsec = xsec_pdf*xsec_kfactor*xsec_phsp*xsec_limit*luminosity;
@@ -490,18 +487,20 @@ void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx, SQMCDimuon& dimuon)
  */
 void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuon& dimuon)
 {
+  static int dim_id = 0;
+
   m_mcevt->set_cross_section(xsec);
   m_mcevt->set_weight       (xsec);
 
   m_vec_dim->clear();
   SQDimuon_v1 dim;
-  dim.set_dimuon_id(1); // todo: unique ID has to be set.
+  dim.set_dimuon_id   (++dim_id);
   dim.set_pos         (vtx);
   dim.set_mom         (dimuon.fPosMomentum + dimuon.fNegMomentum);
   dim.set_mom_pos     (dimuon.fPosMomentum);
   dim.set_mom_neg     (dimuon.fNegMomentum);
-  dim.set_track_id_pos( 2); // defined above
-  dim.set_track_id_neg(12); // defined above
+  dim.set_track_id_pos( 2); // Given in InsertMuonPair().
+  dim.set_track_id_neg(12); // Given in InsertMuonPair().
   m_vec_dim->push_back(&dim);
 
   //==== Store in dimuon truth container
@@ -512,4 +511,3 @@ void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuo
   dimuon_info->set_Dimuon_pt(dimuon.fpT);
   dimuon_info->set_Dimuon_xF(dimuon.fxF); 
 }
-

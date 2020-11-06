@@ -22,18 +22,12 @@ SQBeamlineObject::SQBeamlineObject(const TGeoMaterial* pMaterial)
 
   TGeoMixture* pMaterialmix;
   pMaterialmix = (TGeoMixture*)pMaterial;
-
-  Z = 0.; A = 0.; N = 0.;
-  
   //pMaterial->Print("");
   //pMaterialmix->Print(" ");  
  
   Z=pMaterial->GetZ();
   A=pMaterial->GetA();
   N=A-Z;
-  
-  protonPerc = Z/A;  //N here for now stands for total nucleons
- 
 }
 
 bool SQBeamlineObject::operator < (const SQBeamlineObject& obj) const
