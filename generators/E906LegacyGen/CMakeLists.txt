@@ -18,16 +18,6 @@ add_custom_command (
   ${PROJECT_SOURCE_DIR}/SQPrimaryGenLinkDef.h
 	)
 
-add_custom_command (
-  OUTPUT SQMCDimuon_Dict.C   
-  COMMAND rootcint
-  ARGS -f SQMCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
-  -I${PROJECT_SOURCE_DIR}/
-  ${PROJECT_SOURCE_DIR}/SQMCDimuon.h 
-  ${PROJECT_SOURCE_DIR}/SQMCDimuonLinkDef.h
-  )
-
-
 # ROOT
 find_program(ROOTCONF "root-config")
 if(ROOTCONF)
@@ -73,8 +63,6 @@ add_library(SQPrimaryGen SHARED
   SQPrimaryVertexGen.C
   SQBeamlineObject.C
   SQPrimaryGen_Dict.C	
-  SQMCDimuon.C
-  SQMCDimuon_Dict.C	
 )
 
 target_link_libraries(SQPrimaryGen -L./
@@ -83,6 +71,7 @@ target_link_libraries(SQPrimaryGen -L./
   -lphool
   -lSubsysReco
   -lfun4all
+  -lUtilAna
   -lboost_iostreams
   -lphhepmc
   -lHepMC
@@ -100,7 +89,6 @@ file(GLOB dist_headers
   SQPrimaryParticleGen.h
   SQPrimaryVertexGen.h
   SQBeamlineObject.h
-  SQMCDimuon.h
 )
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 

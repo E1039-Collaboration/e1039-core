@@ -24,8 +24,8 @@ class PHG4InEvent;
 class PHG4Particle;
 
 class SQMCEvent;
+class SQDimuon;
 class SQDimuonVector;
-class SQMCDimuon;
 class SQPrimaryVertexGen;
 
 //==========
@@ -53,7 +53,7 @@ public:
     //@}
 
     //!Dimuon phase space generator
-     bool generateDimuon(double mass, double xF, SQMCDimuon& dimuon, bool angular = false);
+     bool generateDimuon(double mass, double xF, bool angular = false);
 
      //! Run-accumulated variables
     //@{
@@ -90,8 +90,10 @@ public:
 
     SQPrimaryVertexGen* _vertexGen;
     PHG4InEvent *ineve;
-    SQMCEvent* m_mcevt;
-    SQDimuonVector* m_vec_dim;
+    SQMCEvent* _mcevt; //< An output node
+    SQDimuonVector* _vec_dim; //< An output node
+
+    SQDimuon* _dim_gen; //< To hold the kinematics of a dimuon generated
 
     //Pythia generator
     Pythia8::Pythia ppGen;    //!< Pythia pp generator
@@ -121,8 +123,8 @@ public:
     double zOffsetMin = -1.;
     double zOffsetMax = 1.;
 
-    void InsertMuonPair(TVector3& vtx, SQMCDimuon& dimuon);
-    void InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuon& dimuon);
+    void InsertMuonPair(TVector3& vtx);
+    void InsertEventInfo(double xsec, TVector3& vtx);
 };
 
 //========

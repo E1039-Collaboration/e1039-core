@@ -13,8 +13,6 @@ E906 legacy generators for comparison and fast DY simulation
 ```
   -SQPrimaryParticleGen.C
   -SQPrimaryParticleGen.h
-  -SQMCDimuon.C
-  -SQMCDimuon.h
 ```
 ## Stores dimuon truth information in a node
   ```
