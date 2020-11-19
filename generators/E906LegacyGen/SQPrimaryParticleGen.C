@@ -35,7 +35,6 @@ from Kun to E1039 experiment in Fun4All framework
 #include "SQPrimaryParticleGen.h"
 #include "SQMCDimuon.h"
 #include "SQPrimaryVertexGen.h"
-#include "SQDimuonTruthInfoContainer.h"
 #include <iostream>
 
  namespace DPGEN
@@ -82,7 +81,6 @@ SQPrimaryParticleGen::SQPrimaryParticleGen():
   _CustomDimuon(false),
   _DrellYanGen(false),
   drellyanMode(false),
-  dimuon_info(NULL),
   _JPsiGen(false),
   _PsipGen(false),
   ineve(NULL)
@@ -181,11 +179,6 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
       m_vec_dim = new SQDimuonVector_v1();
       dstNode->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTruthDimuonVector", "PHObject"));
     }
-
-    // Node for storing truth info of Dimuon
-    dimuon_info = new SQDimuonTruthInfoContainer();
-    PHIODataNode<PHObject> *dimuonNode = new PHIODataNode<PHObject>(dimuon_info, "DimuonInfo", "PHObject");
-    dstNode->addNode(dimuonNode);
   }
   
   return 0;
@@ -502,12 +495,4 @@ void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx, SQMCDimuo
   dim.set_track_id_pos( 2); // Given in InsertMuonPair().
   dim.set_track_id_neg(12); // Given in InsertMuonPair().
   m_vec_dim->push_back(&dim);
-
-  //==== Store in dimuon truth container
-  dimuon_info->set_Dimuon_xs(xsec);
-  dimuon_info->set_Dimuon_m(dimuon.fMass);
-  dimuon_info->set_Dimuon_cosThetaCS(dimuon.fCosTh);
-  dimuon_info->set_Dimuon_phiCS(dimuon.fPhi);
-  dimuon_info->set_Dimuon_pt(dimuon.fpT);
-  dimuon_info->set_Dimuon_xF(dimuon.fxF); 
 }

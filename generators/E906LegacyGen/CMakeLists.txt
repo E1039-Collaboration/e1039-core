@@ -24,7 +24,6 @@ add_custom_command (
   ARGS -f SQMCDimuon_Dict.C -noIncludePaths -inlineInputHeader -c -p
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQMCDimuon.h 
-  ${PROJECT_SOURCE_DIR}/SQDimuonTruthInfoContainer.h
   ${PROJECT_SOURCE_DIR}/SQMCDimuonLinkDef.h
   )
 
@@ -75,7 +74,6 @@ add_library(SQPrimaryGen SHARED
   SQBeamlineObject.C
   SQPrimaryGen_Dict.C	
   SQMCDimuon.C
-  SQDimuonTruthInfoContainer.C
   SQMCDimuon_Dict.C	
 )
 
@@ -103,7 +101,6 @@ file(GLOB dist_headers
   SQPrimaryVertexGen.h
   SQBeamlineObject.h
   SQMCDimuon.h
-  SQDimuonTruthInfoContainer.h
 )
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 

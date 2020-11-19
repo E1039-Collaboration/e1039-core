@@ -27,7 +27,6 @@ class SQMCEvent;
 class SQDimuonVector;
 class SQMCDimuon;
 class SQPrimaryVertexGen;
-class SQDimuonTruthInfoContainer;
 
 //==========
 class SQPrimaryParticleGen: public PHG4ParticleGeneratorBase
@@ -93,8 +92,6 @@ public:
     PHG4InEvent *ineve;
     SQMCEvent* m_mcevt;
     SQDimuonVector* m_vec_dim;
-    SQDimuonTruthInfoContainer * dimuon_info;
-  
 
     //Pythia generator
     Pythia8::Pythia ppGen;    //!< Pythia pp generator
