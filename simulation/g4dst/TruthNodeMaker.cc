@@ -6,6 +6,7 @@
 #include <g4main/PHG4Hit.h>
 #include <g4main/PHG4Particle.h>
 #include <g4main/PHG4VtxPoint.h>
+#include <interface_main/SQEvent_v1.h>
 #include <interface_main/SQMCEvent_v1.h>
 #include <interface_main/SQTrack_v1.h>
 #include <interface_main/SQDimuon_v1.h>
@@ -31,6 +32,7 @@ TruthNodeMaker::TruthNodeMaker()
   , m_rec_evt(nullptr)
   , m_vec_rec_trk(nullptr)
   , m_evt(nullptr)
+  , m_mcevt(nullptr)
   , m_vec_trk(nullptr)
   , m_vec_dim(nullptr)
   , m_legacy_rec_container(true)
@@ -46,6 +48,7 @@ TruthNodeMaker::TruthNodeMaker()
 TruthNodeMaker::~TruthNodeMaker()
 {
   if (! m_evt    ) delete m_evt;
+  if (! m_mcevt  ) delete m_mcevt;
   if (! m_vec_trk) delete m_vec_trk;
   if (! m_vec_dim) delete m_vec_dim;
 }
@@ -83,7 +86,10 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
         cout << "No HepMC::GenEvent object." << endl;
         //return Fun4AllReturnCodes::ABORTEVENT;
       }
-      m_evt->set_process_id(evt->signal_process_id());
+      m_evt->set_run_id  (0);
+      m_evt->set_spill_id(0);
+      m_evt->set_event_id(evt->event_number());
+      m_mcevt->set_process_id(evt->signal_process_id());
 
       //HepMC::GenVertex* vtx = evt->signal_process_vertex(); // Return 0 as of 2019-11-19.
       HepMC::GenEvent::particle_const_iterator it = evt->particles_begin();
@@ -94,8 +100,8 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
         const HepMC::FourVector * mom = &par->momentum();
         TLorentzVector lvec;
         lvec.SetPxPyPzE(mom->px(), mom->py(), mom->pz(), mom->e());
-        m_evt->set_particle_id(iii, par->pdg_id());
-        m_evt->set_particle_momentum(iii, lvec);
+        m_mcevt->set_particle_id(iii, par->pdg_id());
+        m_mcevt->set_particle_momentum(iii, lvec);
       }
     }
   }
@@ -320,13 +326,29 @@ int TruthNodeMaker::MakeNodes(PHCompositeNode* topNode)
     return Fun4AllReturnCodes::ABORTEVENT;
   }
 
-  m_evt     = new SQMCEvent_v1();
-  m_vec_trk = new SQTrackVector_v1();
-  m_vec_dim = new SQDimuonVector_v1();
+  m_evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (! m_evt) {
+    m_evt = new SQEvent_v1();
+    node_dst->addNode(new PHIODataNode<PHObject>(m_evt, "SQEvent", "PHObject"));
+  }
 
-  node_dst->addNode(new PHIODataNode<PHObject>(m_evt    , "SQMCEvent"          , "PHObject"));
-  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_trk, "SQTruthTrackVector" , "PHObject"));
-  node_dst->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTruthDimuonVector", "PHObject"));
+  m_mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
+  if (! m_mcevt) {
+    m_mcevt = new SQMCEvent_v1();
+    node_dst->addNode(new PHIODataNode<PHObject>(m_mcevt, "SQMCEvent", "PHObject"));
+  }
+
+  m_vec_trk = findNode::getClass<SQTrackVector>(topNode, "SQTruthTrackVector");
+  if (! m_vec_trk) {
+    m_vec_trk = new SQTrackVector_v1();
+    node_dst->addNode(new PHIODataNode<PHObject>(m_vec_trk, "SQTruthTrackVector", "PHObject"));
+  }
+
+  m_vec_dim = findNode::getClass<SQDimuonVector>(topNode, "SQTruthDimuonVector");
+  if (! m_vec_dim) {
+    m_vec_dim = new SQDimuonVector_v1();
+    node_dst->addNode(new PHIODataNode<PHObject>(m_vec_dim, "SQTruthDimuonVector", "PHObject"));
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

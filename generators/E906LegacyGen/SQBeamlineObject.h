@@ -41,7 +41,6 @@ public:
     double nucIntLen;        //! nuclear interaction length in cm
     double density;          //! density in g/cm3
     double Z, A, N;          //! number of protons, nucleons, neutrons
-    double protonPerc;       //! percentage of protons = Z/A;
 
     //intialized by its neighbours
     double attenuationSelf;  //! beam attenuation percentage by itself
@@ -49,7 +48,7 @@ public:
     double prob;             //! probability of having collision
     double accumulatedProb;  //! sum of all the previous/upstream probs
 
-  
+    double protonPerc() { return Z/A; } //! percentage of protons = Z/A;
 };
 
 

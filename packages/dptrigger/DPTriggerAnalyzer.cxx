@@ -101,6 +101,8 @@ std::ostream& operator << (std::ostream& os, const DPTriggerRoad& road)
 DPTriggerAnalyzer::DPTriggerAnalyzer(const std::string& name) :
   SubsysReco(name),
   _road_set_file_name("trigger_67.txt"),
+  _mode_nim1(NIM_AND),
+  _mode_nim2(NIM_AND),
   _run_header(nullptr),
   _event_header(nullptr),
   _hit_vector(nullptr)
@@ -111,6 +113,12 @@ DPTriggerAnalyzer::~DPTriggerAnalyzer()
 {
   deleteMatrix(matrix[0]);
   deleteMatrix(matrix[1]);
+}
+
+void DPTriggerAnalyzer::set_nim_mode(const NimMode nim1, const NimMode nim2)
+{
+  _mode_nim1 = nim1;
+  _mode_nim2 = nim2;
 }
 
 /**
@@ -190,8 +198,8 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
              nhit_det[ geomSvc->getDetectorID("H2R"  ) ] > 0 &&
              nhit_det[ geomSvc->getDetectorID("H4Y1R") ] > 0 &&
              nhit_det[ geomSvc->getDetectorID("H4Y2R") ] > 0   ;
-  bool nim1_on = HYL or HYR;
-  bool nim2_on = HXT or HXB;
+  bool nim1_on = _mode_nim1 == NIM_AND  ?  HYL && HYR  :  HYL || HYR;
+  bool nim2_on = _mode_nim2 == NIM_AND  ?  HXT && HXB  :  HXT || HXB;
   _event_header->set_trigger(SQEvent::NIM1, nim1_on);
   _event_header->set_trigger(SQEvent::NIM2, nim2_on);
 

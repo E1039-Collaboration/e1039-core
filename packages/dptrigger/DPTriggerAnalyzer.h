@@ -85,6 +85,7 @@ public:
     class MatrixNode;
 
 public:
+    typedef enum { NIM_AND, NIM_OR } NimMode;
     DPTriggerAnalyzer(const std::string &name = "DPTriggerAnalyzer");
     virtual ~DPTriggerAnalyzer();
 
@@ -100,6 +101,8 @@ public:
     void set_road_set_file_name(const std::string& roadSetFileName) {
       _road_set_file_name = roadSetFileName;
     }
+
+    void set_nim_mode(const NimMode nim1, const NimMode nim2);
     
     //!Build the trigger matrix by the input roads list
     void buildTriggerMatrix();
@@ -126,6 +129,8 @@ private:
 
     //! road set input file name
     std::string _road_set_file_name;
+    NimMode _mode_nim1;
+    NimMode _mode_nim2;
 
     //!Internal hit pattern structure
     typedef std::vector<std::set<int> > TrHitPattern;
