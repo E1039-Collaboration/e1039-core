@@ -1,13 +1,5 @@
 #ifndef DPTriggerAnalyzer_H
 #define DPTriggerAnalyzer_H
-
-// ROOT
-#include <TString.h>
-
-// Fun4All includes
-#include <fun4all/SubsysReco.h>
-
-// STL includes
 #include <vector>
 #include <string>
 #include <iostream>
@@ -15,25 +7,13 @@
 #include <list>
 #include <map>
 #include <string>
-
-class PHG4Hit;
+#include <TString.h>
+#include <fun4all/SubsysReco.h>
 class SQRun;
-class SQSpillMap;
 class SQEvent;
-class SQHit;
-class SQHitMap;
 class SQHitVector;
-class PHG4HitContainer;
-class SRecEvent;
-
-class GeomSvc;
-
 
 #define NTRPLANES 4
-#define NMAXHODOS 16
-#define NMAXMTRKS 1000
-#define NMAXMHITS 1000000
-
 
 class DPTriggerRoad
 {
@@ -105,47 +85,30 @@ public:
     class MatrixNode;
 
 public:
+    typedef enum { NIM_AND, NIM_OR } NimMode;
     DPTriggerAnalyzer(const std::string &name = "DPTriggerAnalyzer");
     virtual ~DPTriggerAnalyzer();
 
-#ifndef __CINT__
     int Init(PHCompositeNode *topNode);
-#endif
-    
-    //! module initialization
     int InitRun(PHCompositeNode *topNode);
-    
-    //! event processing
     int process_event(PHCompositeNode *topNode);
-
     int End(PHCompositeNode *topNode);
 
-    int ResetEvalVars();
-
-  	const std::string& get_road_set_file_name() const {
-  		return _road_set_file_name;
-  	}
-
-  	void set_road_set_file_name(const std::string& roadSetFileName) {
-  		_road_set_file_name = roadSetFileName;
-  	}
-
-    const std::string& get_hit_container_choice() const {
-      return _hit_container_type;
+    const std::string& get_road_set_file_name() const {
+      return _road_set_file_name;
     }
     
-    void set_hit_container_choice(const std::string& hitContainerChoice) {
-      _hit_container_type = hitContainerChoice;
+    void set_road_set_file_name(const std::string& roadSetFileName) {
+      _road_set_file_name = roadSetFileName;
     }
 
+    void set_nim_mode(const NimMode nim1, const NimMode nim2);
+    
     //!Build the trigger matrix by the input roads list
     void buildTriggerMatrix();
 
     //!Test the trigger pattern
     //void analyzeTrigger(DPMCRawEvent* rawEvent);
-
-    //!create the trigger stations hit pattern, return false if one or more plane is missing
-    bool buildHitPattern(int nTrHits, int uniqueTrIDs[]);
 
     //!search for possible roads
     void searchMatrix(MatrixNode* node, int level, int index);
@@ -162,15 +125,12 @@ public:
 
 private:
 
-    int MakeNodes(PHCompositeNode *topNode);
     int GetNodes(PHCompositeNode *topNode);
 
     //! road set input file name
     std::string _road_set_file_name;
-
-    std::string _hit_container_type;
-
-    size_t _event;
+    NimMode _mode_nim1;
+    NimMode _mode_nim2;
 
     //!Internal hit pattern structure
     typedef std::vector<std::set<int> > TrHitPattern;
@@ -192,53 +152,8 @@ private:
     bool NIMONLY;
 
     SQRun* _run_header;
-    SQSpillMap* _spill_map;
     SQEvent* _event_header;
-    SQHitMap* _hit_map;
     SQHitVector* _hit_vector;
-    SRecEvent* _recEvent;
-
-    int run_id;
-    int spill_id;
-    int event_id;
-    float target_pos;
-
-    int Nhits_YNIM_1XT;
-    int Nhits_YNIM_2XT;
-    int Nhits_YNIM_3XT;
-    int Nhits_YNIM_4XT;
-    int Nhits_YNIM_1XB;
-    int Nhits_YNIM_2XB;
-    int Nhits_YNIM_3XB;
-    int Nhits_YNIM_4XB;
-    int Nhits_YNIM_1YL;
-    int Nhits_YNIM_2YL;
-    int Nhits_YNIM_4Y1L;
-    int Nhits_YNIM_4Y2L;
-    int Nhits_YNIM_1YR;
-    int Nhits_YNIM_2YR;
-    int Nhits_YNIM_4Y1R;
-    int Nhits_YNIM_4Y2R;
-
-    int n_FPGA_hits;
-    int nPlusTop;
-    int nPlusBot;
-    int nMinusTop;
-    int nMinusBot;
-    int nHiPxPlusTop;
-    int nHiPxPlusBot;
-    int nHiPxMinusTop;
-    int nHiPxMinusBot;
-
-    bool HXT;
-    bool HXB;
-    bool HYL;
-    bool HYR; 
-
-    int uniqueIDs[NMAXMHITS];
-
-    //!pointer to the digitizer, or geometry for that matter
-    GeomSvc *p_geomSvc;
 };
 
 class DPTriggerAnalyzer::MatrixNode

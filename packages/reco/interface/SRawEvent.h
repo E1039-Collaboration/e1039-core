@@ -273,43 +273,4 @@ private:
     ClassDef(SRawEvent, 9)
 };
 
-class SRawMCEvent: public SRawEvent
-{
-public:
-    //sigWeight
-    Double_t weight;
-
-    //Dimuon info
-    Double_t mass;
-    Double_t xF;
-    Double_t pT;
-    Double_t x1;
-    Double_t x2;
-    Double_t costh;
-    TVector3 vtx;
-
-    //Track info, 0 for mu+, 1 for mu-
-    Int_t nHits[2];
-    TVector3 p_vertex[2];
-    TVector3 p_station1[2];
-    TVector3 v_station1[2];
-    TVector3 p_station2[2];
-    TVector3 v_station2[2];
-    TVector3 p_station3[2];
-    TVector3 v_station3[2];
-    TVector3 p_station4[2];
-    TVector3 v_station4[2];
-
-    TVector3 p_stationH1[2];
-    TVector3 v_stationH1[2];
-    TVector3 p_stationH2[2];
-    TVector3 v_stationH2[2];
-    TVector3 p_stationH3[2];
-    TVector3 v_stationH3[2];
-    TVector3 p_stationH4[2];
-    TVector3 v_stationH4[2];
-
-    ClassDef(SRawMCEvent, 3)
-};
-
 #endif

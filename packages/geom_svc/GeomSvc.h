@@ -29,7 +29,8 @@ and then prop. tubes
 #include <TMatrixD.h>
 #include <TSpline.h>
 
-#include "GlobalConsts.h"
+#include <GlobalConsts.h>
+#include <phool/recoConsts.h>
 
 class Plane
 {
@@ -80,8 +81,10 @@ public:
     double z0;
     double x1;     //x1, y1 define the lower/left edge of detector
     double y1;
+    double z1;     //z1 is the upstream z position of the detector
     double x2;     //x2, y2 define the upper/right edge of detector
     double y2;
+    double z2;     //z2 is the downstream z position of the detector
     double thetaX;
     double thetaY;
     double thetaZ;
@@ -118,6 +121,9 @@ public:
     double tmin;
     double tmax;
     TSpline3* rtprofile;
+
+    //Vector to contain the wire positions
+    std::vector<double> elementPos;
 };
 
 class GeomSvc
@@ -183,12 +189,6 @@ public:
     {
     	return map_detectorName.find(detectorID)!=map_detectorName.end() ? map_detectorName.at(detectorID) : "";
     }
-    std::string getDetectorGroupName(const std::string & detectorName) const
-    {
-    	return map_dname_group.find(detectorName)!=map_dname_group.end() ? map_dname_group.at(detectorName) : "";
-    }
-
-    std::vector<std::string> getDefaultSimList() {return vector_default_sim_group;}
 
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
@@ -196,14 +196,14 @@ public:
     Plane getPlane(int detectorID) const { return planes[detectorID]; }
     double getPlanePosition(int detectorID) const { return planes[detectorID].zc; }
     double getPlaneSpacing(int detectorID) const  { return planes[detectorID].spacing; }
+    double getPlaneOverlap(int detectorID) const  { return planes[detectorID].overlap; }
     double getCellWidth(int detectorID)     { return planes[detectorID].cellWidth; }
     double getCostheta(int detectorID) const  { return planes[detectorID].costheta; }
     double getSintheta(int detectorID) const  { return planes[detectorID].sintheta; }
     double getTantheta(int detectorID) const  { return planes[detectorID].tantheta; }
     double getPlaneScaleX(int detectorID)   { return planes[detectorID].x2 - planes[detectorID].x1; }
     double getPlaneScaleY(int detectorID)   { return planes[detectorID].y2 - planes[detectorID].y1; }
-    double getPlaneScaleZ(int detectorID)   { return map_detid_scale_z[detectorID]; }
-    std::string getPlaneMaterial(int detectorID)   { return map_detid_material[detectorID]; }
+    double getPlaneScaleZ(int detectorID)   { return planes[detectorID].z2 - planes[detectorID].z1; }
     int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
     int getPlaneNElements(int detectorID)   { return planes[detectorID].nElements; }
     double getPlaneResolution(int detectorID) const { return planes[detectorID].resolution; }
@@ -221,6 +221,8 @@ public:
     double getPlaneWOffset(int detectorID, int moduleID) { return planes[detectorID].deltaW_module[moduleID]; }
 
     int getPlaneType(int detectorID) const { return planes[detectorID].planeType; }
+    int getHodoStation(const int detectorID) const; //< Return a station number (1-4) for hodo planes or "0" for others.
+    int getHodoStation(const std::string detectorName) const; //< Return a station number (1-4) for hodo planes or "0" for others.
 
     double getKMAGCenter()     { return (zmin_kmag + zmax_kmag)/2.; }
     double getKMAGUpstream()   { return zmin_kmag; }
@@ -257,6 +259,42 @@ public:
     bool isInElement(int detectorID, int elementID, double x, double y, double tolr = 0.);
     bool isInKMAG(double x, double y);
 
+    ///Getter/setters for a set of fixed parameters - should not be changed unless absolutely necessary
+    double Z_KMAG_BEND() const         { return rc->get_DoubleFlag("Z_KMAG_BEND"); }
+    void   Z_KMAG_BEND(const double v) { rc->set_DoubleFlag("Z_KMAG_BEND", v);     }
+    double Z_FMAG_BEND() const         { return rc->get_DoubleFlag("Z_FMAG_BEND"); }
+    void   Z_FMAG_BEND(const double v) { rc->set_DoubleFlag("Z_FMAG_BEND", v);     }
+    double Z_KFMAG_BEND() const         { return rc->get_DoubleFlag("Z_KFMAG_BEND"); }
+    void   Z_KFMAG_BEND(const double v) { rc->set_DoubleFlag("Z_KFMAG_BEND", v);     }
+    double ELOSS_KFMAG() const         { return rc->get_DoubleFlag("ELOSS_KFMAG"); }
+    void   ELOSS_KFMAG(const double v) { rc->set_DoubleFlag("ELOSS_KFMAG", v);     }
+    double ELOSS_ABSORBER() const         { return rc->get_DoubleFlag("ELOSS_ABSORBER"); }
+    void   ELOSS_ABSORBER(const double v) { rc->set_DoubleFlag("ELOSS_ABSORBER", v);     }
+    double Z_ST2() const         { return rc->get_DoubleFlag("Z_ST2"); }
+    void   Z_ST2(const double v) { rc->set_DoubleFlag("Z_ST2", v);     }
+    double Z_ABSORBER() const         { return rc->get_DoubleFlag("Z_ABSORBER"); }
+    void   Z_ABSORBER(const double v) { rc->set_DoubleFlag("Z_ABSORBER", v);     }
+    double Z_REF() const         { return rc->get_DoubleFlag("Z_REF"); }
+    void   Z_REF(const double v) { rc->set_DoubleFlag("Z_REF", v);     }
+    double Z_TARGET() const         { return rc->get_DoubleFlag("Z_TARGET"); }
+    void   Z_TARGET(const double v) { rc->set_DoubleFlag("Z_TARGET", v);     }
+    double Z_DUMP() const         { return rc->get_DoubleFlag("Z_DUMP"); }
+    void   Z_DUMP(const double v) { rc->set_DoubleFlag("Z_DUMP", v);     }
+    double Z_ST1() const         { return rc->get_DoubleFlag("Z_ST1"); }
+    void   Z_ST1(const double v) { rc->set_DoubleFlag("Z_ST1", v);     }
+    double Z_ST3() const         { return rc->get_DoubleFlag("Z_ST3"); }
+    void   Z_ST3(const double v) { rc->set_DoubleFlag("Z_ST3", v);     }
+    double FMAG_HOLE_LENGTH() const         { return rc->get_DoubleFlag("FMAG_HOLE_LENGTH"); }
+    void   FMAG_HOLE_LENGTH(const double v) { rc->set_DoubleFlag("FMAG_HOLE_LENGTH", v);     }
+    double FMAG_HOLE_RADIUS() const         { return rc->get_DoubleFlag("FMAG_HOLE_RADIUS"); }
+    void   FMAG_HOLE_RADIUS(const double v) { rc->set_DoubleFlag("FMAG_HOLE_RADIUS", v);     }
+    double FMAG_LENGTH() const         { return rc->get_DoubleFlag("FMAG_LENGTH"); }
+    void   FMAG_LENGTH(const double v) { rc->set_DoubleFlag("FMAG_LENGTH", v);     }
+    double Z_UPSTREAM() const         { return rc->get_DoubleFlag("Z_UPSTREAM"); }
+    void   Z_UPSTREAM(const double v) { rc->set_DoubleFlag("Z_UPSTREAM", v);     }
+    double Z_DOWNSTREAM() const         { return rc->get_DoubleFlag("Z_DOWNSTREAM"); }
+    void   Z_DOWNSTREAM(const double v) { rc->set_DoubleFlag("Z_DOWNSTREAM", v);     }
+
     ///Debugging print of the content
     void printAlignPar();
     void printTable();
@@ -282,20 +320,8 @@ private:
     std::map<std::string, int> map_detectorID;
     std::map<int, std::string> map_detectorName;
 
-    //! detectorName -> detecotr group name (used in simulation)
-    std::map<std::string, std::string> map_dname_group;
-
-    //! detectorID -> detector thickness
-    std::map<int, double> map_detid_scale_z;
-
-    //! detectorID -> detector material
-    std::map<int, std::string> map_detid_material;
-
     //! detectorID -> trigger level
     std::map<int, int> map_detid_triggerlv;
-
-    //! default groups to put into simulation
-    std::vector<std::string> vector_default_sim_group;
 
     //Mapping to wire position
     std::map<std::pair<int, int>, double> map_wirePosition;
@@ -303,6 +329,9 @@ private:
     //Mapping to wire end position - wire actually includes all detectors
     std::map<std::pair<int, int>, TVectorD> map_endPoint1;  
     std::map<std::pair<int, int>, TVectorD> map_endPoint2;
+
+    //Pointer to the reco constants
+    recoConsts* rc;
 
     //singleton pointor
     static GeomSvc* p_geometrySvc;

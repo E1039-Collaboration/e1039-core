@@ -10,6 +10,7 @@ class PHG4Detector;
 class PHG4EventAction;
 class PHG4SteppingAction;
 class PHG4TrackingAction;
+class PHParameters;
 
 class PHG4Subsystem: public SubsysReco
 {
@@ -18,7 +19,7 @@ class PHG4Subsystem: public SubsysReco
 
   //! constructor
   PHG4Subsystem( const std::string &name = "Generic Subsystem" ): SubsysReco(name),
-overlapcheck(false)
+overlapcheck(false), params(nullptr)
   {}
 
   //! destructor
@@ -48,8 +49,12 @@ overlapcheck(false)
 
   bool CheckOverlap() const {return overlapcheck;}
 
+  PHParameters* GetParams() { return params; }
+
  protected:
   bool overlapcheck;
+  PHParameters* params;
+
 
 };
 

@@ -39,12 +39,17 @@ class PHFlag
   virtual int get_IntFlag(const std::string &name, const int defaultval);
   virtual void set_IntFlag(const std::string &name, const int flag);
 
+  virtual bool get_BoolFlag(const std::string &name) const;
+  virtual bool get_BoolFlag(const std::string &name, const bool defaultval);
+  virtual void set_BoolFlag(const std::string &name, const bool flag);
+
   virtual void Print() const;
   virtual void PrintDoubleFlags() const;
   virtual void PrintIntFlags() const;
   virtual void PrintFloatFlags() const;
   virtual void PrintCharFlags() const;
-  virtual void ReadFromFile(const std::string &name);
+  virtual void PrintBoolFlags() const;
+  virtual void ReadFromFile(const std::string& name, bool verbose = false);
   virtual void WriteToFile(const std::string &name);
 
   virtual int FlagExist(const std::string &name) const;
@@ -53,6 +58,7 @@ class PHFlag
   virtual const std::map<std::string, float> *FloatMap() const {return &floatflag;}
   virtual const std::map<std::string, double> *DoubleMap() const {return &doubleflag;}
   virtual const std::map<std::string, std::string> *CharMap() const {return &charflag;}
+  virtual const std::map<std::string, bool> *BoolMap() const {return &boolflag;}
 
  protected:
 
@@ -60,6 +66,7 @@ class PHFlag
   std::map<std::string, double> doubleflag;
   std::map<std::string, float> floatflag;
   std::map<std::string, std::string> charflag;
+  std::map<std::string, bool> boolflag;
 
 };
 

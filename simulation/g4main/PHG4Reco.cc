@@ -31,6 +31,7 @@
 #include <phool/getClass.h>
 #include <phool/recoConsts.h>
 
+#include <phparameter/PHParameters.h>
 
 #include <TThread.h>
 
@@ -116,7 +117,7 @@ void g4guithread(void *ptr);
 //_________________________________________________________________
 PHG4Reco::PHG4Reco(const string &name)
   : SubsysReco(name)
-  , magfield(1.4)
+  , magfield(0.)
   , magfield_rescale(1.0)
   , field_(nullptr)
   , runManager_(nullptr)
@@ -141,6 +142,9 @@ PHG4Reco::PHG4Reco(const string &name)
   , active_force_decay_(false)
   , force_decay_type_(kAll)
   , save_DST_geometry_(true)
+  , optical_photon_(false)
+  , energy_threshold_(0.0005)
+  , zero_field_line_(99999.)
   , _timer(PHTimeServer::get()->insert_new(name))
 {
   for (int i = 0; i < 3; i++)
@@ -360,15 +364,41 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
   detector_->SetWorldSizeZ(WorldSize[2] * cm);
   detector_->SetWorldShape(worldshape);
   detector_->SetWorldMaterial(worldmaterial);
-
+  detector_->SetZeroFieldStartZ(zero_field_line_*cm);
+  detector_->SetZeroFieldManager(field_->GetDummyFieldManager());
+  
   rc->set_FloatFlag("WorldSizex", WorldSize[0]);
   rc->set_FloatFlag("WorldSizey", WorldSize[1]);
   rc->set_FloatFlag("WorldSizez", WorldSize[2]);
 
+  double z_offset = 0.;
+  if(fabs(zero_field_line_) < 0.5*WorldSize[2])
+  {
+    z_offset = 0.5*(zero_field_line_ + 0.5*WorldSize[2]);  //unit cm
+    cout << "Will update the z-positions of the downstream volumes by zOffset = " << z_offset << "cm." << endl;
+  }
+
   //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
   for (PHG4Subsystem *g4sub : subsystems_)
   {
-    detector_->AddDetector(g4sub->GetDetector());
+    //re-calculate the place_z for some of the volumes in the non-field-zone
+    if(fabs(zero_field_line_) < 0.5*WorldSize[2] && g4sub->GetParams() != nullptr) //only true for class inherited from PHG4DetectorSubsystem
+    {
+      double z_in_world = g4sub->GetParams()->get_double_param("place_z");
+      if(z_in_world > zero_field_line_)
+      {
+        g4sub->GetParams()->set_double_param("place_z", z_in_world - z_offset);
+        detector_->AddDetector(g4sub->GetDetector(), 1);
+      }
+      else
+      {
+        detector_->AddDetector(g4sub->GetDetector(), 0);
+      }
+    }
+    else
+    {
+      detector_->AddDetector(g4sub->GetDetector(), 0);
+    }
   }
   runManager_->SetUserInitialization(detector_);
 
@@ -389,6 +419,7 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
 
   // create main stepping action, add subsystems and register to GEANT
   steppingAction_ = new PHG4PhenixSteppingAction();
+  steppingAction_->set_energy_threshold(energy_threshold_);
   //BOOST_FOREACH (PHG4Subsystem *g4sub, subsystems_)
   for (PHG4Subsystem *g4sub : subsystems_)
   {
@@ -426,68 +457,71 @@ int PHG4Reco::InitRun(PHCompositeNode *topNode)
 
   // initialize
   runManager_->Initialize();
-
-  // add cerenkov and optical photon processes
-  // cout << endl << "Ignore the next message - we implemented this correctly" << endl;
-  G4Cerenkov *theCerenkovProcess = new G4Cerenkov("Cerenkov");
-  // cout << "End of bogus warning message" << endl << endl;
-  // G4Scintillation* theScintillationProcess      = new G4Scintillation("Scintillation");
-
-  /*
-    if (verbosity > 0)
-    {
-    // This segfaults
-    theCerenkovProcess->DumpPhysicsTable();
-    }
-  */
-  theCerenkovProcess->SetMaxNumPhotonsPerStep(100);
-  theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
-  theCerenkovProcess->SetTrackSecondariesFirst(true);
-
-  // theScintillationProcess->SetScintillationYieldFactor(1.);
-  // theScintillationProcess->SetTrackSecondariesFirst(true);
-
-  // Use Birks Correction in the Scintillation process
-
-  // G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
-  // theScintillationProcess->AddSaturation(emSaturation);
-
-  G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleTable::G4PTblDicIterator *_theParticleIterator;
-  _theParticleIterator = theParticleTable->GetIterator();
-  _theParticleIterator->reset();
-  while ((*_theParticleIterator)())
+  
+  if(optical_photon_)
   {
-    G4ParticleDefinition *particle = _theParticleIterator->value();
-    G4String particleName = particle->GetParticleName();
-    G4ProcessManager *pmanager = particle->GetProcessManager();
-    if (theCerenkovProcess->IsApplicable(*particle))
-    {
-      pmanager->AddProcess(theCerenkovProcess);
-      pmanager->SetProcessOrdering(theCerenkovProcess, idxPostStep);
-    }
-    // if (theScintillationProcess->IsApplicable(*particle))
-    // {
-    //   pmanager->AddProcess(theScintillationProcess);
-    //   pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
-    //   pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
-    // }
-  }
-  G4ProcessManager *pmanager = G4OpticalPhoton::OpticalPhoton()->GetProcessManager();
-  // G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
-  pmanager->AddDiscreteProcess(new G4OpAbsorption());
-  pmanager->AddDiscreteProcess(new G4OpRayleigh());
-  pmanager->AddDiscreteProcess(new G4OpMieHG());
-  pmanager->AddDiscreteProcess(new G4OpBoundaryProcess());
-  pmanager->AddDiscreteProcess(new G4OpWLS());
-  pmanager->AddDiscreteProcess(new G4PhotoElectricEffect());
-  // pmanager->DumpInfo();
+    // add cerenkov and optical photon processes
+    // cout << endl << "Ignore the next message - we implemented this correctly" << endl;
+    G4Cerenkov *theCerenkovProcess = new G4Cerenkov("Cerenkov");
+    // cout << "End of bogus warning message" << endl << endl;
+    // G4Scintillation* theScintillationProcess      = new G4Scintillation("Scintillation");
 
-  // needs large amount of memory which kills central hijing events
-  // store generated trajectories
-  //if( G4TrackingManager* trackingManager = G4EventManager::GetEventManager()->GetTrackingManager() ){
-  //  trackingManager->SetStoreTrajectory( true );
-  //}
+
+    // if (verbosity > 0)
+    // {
+    //   // This segfaults
+    //   theCerenkovProcess->DumpPhysicsTable();
+    // }
+
+    theCerenkovProcess->SetMaxNumPhotonsPerStep(100);
+    theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
+    theCerenkovProcess->SetTrackSecondariesFirst(true);
+
+    // theScintillationProcess->SetScintillationYieldFactor(1.);
+    // theScintillationProcess->SetTrackSecondariesFirst(true);
+
+    // Use Birks Correction in the Scintillation process
+
+    // G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
+    // theScintillationProcess->AddSaturation(emSaturation);
+
+    G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleTable::G4PTblDicIterator *_theParticleIterator;
+    _theParticleIterator = theParticleTable->GetIterator();
+    _theParticleIterator->reset();
+    while ((*_theParticleIterator)())
+    {
+      G4ParticleDefinition *particle = _theParticleIterator->value();
+      G4String particleName = particle->GetParticleName();
+      G4ProcessManager *pmanager = particle->GetProcessManager();
+      if (theCerenkovProcess->IsApplicable(*particle))
+      {
+        pmanager->AddProcess(theCerenkovProcess);
+        pmanager->SetProcessOrdering(theCerenkovProcess, idxPostStep);
+      }
+      // if (theScintillationProcess->IsApplicable(*particle))
+      // {
+      //   pmanager->AddProcess(theScintillationProcess);
+      //   pmanager->SetProcessOrderingToLast(theScintillationProcess, idxAtRest);
+      //   pmanager->SetProcessOrderingToLast(theScintillationProcess, idxPostStep);
+      // }
+    }
+    G4ProcessManager *pmanager = G4OpticalPhoton::OpticalPhoton()->GetProcessManager();
+    // G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+    pmanager->AddDiscreteProcess(new G4OpAbsorption());
+    pmanager->AddDiscreteProcess(new G4OpRayleigh());
+    pmanager->AddDiscreteProcess(new G4OpMieHG());
+    pmanager->AddDiscreteProcess(new G4OpBoundaryProcess());
+    pmanager->AddDiscreteProcess(new G4OpWLS());
+    pmanager->AddDiscreteProcess(new G4PhotoElectricEffect());
+    // pmanager->DumpInfo();
+
+    // needs large amount of memory which kills central hijing events
+    // store generated trajectories
+    //if( G4TrackingManager* trackingManager = G4EventManager::GetEventManager()->GetTrackingManager() ){
+    //  trackingManager->SetStoreTrajectory( true );
+    //}
+  }
 
   // quiet some G4 print-outs (EM and Hadronic settings during first event)
   G4HadronicProcessStore::Instance()->SetVerbose(0);

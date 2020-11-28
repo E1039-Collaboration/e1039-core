@@ -49,7 +49,7 @@ public:
     void findInteractingPiece();
 
     //get the proton/neutron ratio of the piece, must be called after generateVertex
-    double getPARatio() { return interactables[index].protonPerc; }
+    double getPARatio() { return interactables[index].protonPerc(); }
     
     //get the relative luminosity on this target
     //double getLuminosity() { return p_config->biasVertexGen ? interactables[index].prob : probSum; }

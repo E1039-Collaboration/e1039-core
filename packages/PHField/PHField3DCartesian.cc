@@ -148,6 +148,11 @@ PHField3DCartesian::PHField3DCartesian(const string &fname, const float magfield
   ystepsize = (ymax - ymin) / (yvals.size() - 1);
   zstepsize = (zmax - zmin) / (zvals.size() - 1);
 
+  std::cout << "  its demensions and ranges of the field: " << fieldmap.size() << std::endl;
+  std::cout << "    X: " << xvals.size() << " bins, " << xmin/cm << " cm -- " << xmax/cm << " cm." << std::endl;
+  std::cout << "    Y: " << xvals.size() << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm." << std::endl;
+  std::cout << "    Z: " << xvals.size() << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm." << std::endl;
+
 #ifdef _DEBUG_ON
   auto key = boost::make_tuple(0, 0, 0);
   auto magval = fieldmap.find(key);
@@ -221,6 +226,7 @@ void PHField3DCartesian::GetFieldValue(const double point[4], double *Bfield) co
       point[1] < ymin || point[1] > ymax ||
       point[2] < zmin || point[2] > zmax)
   {
+    //std::cout << " sdsadsadsadasdasdasdas" << std::endl;
     return;
   }
   set<double>::const_iterator it = xvals.lower_bound(x);

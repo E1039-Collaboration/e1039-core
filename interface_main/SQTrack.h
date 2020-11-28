@@ -17,6 +17,9 @@ class SQTrack: public PHObject {
   virtual int  get_track_id() const = 0; ///< Return the track ID, which is unique per event(?).
   virtual void set_track_id(const int a) = 0;
 
+  virtual int  get_rec_track_id() const = 0; ///< Return the track ID of associated reconstructed track.  Valid only if this object holds truth track info.
+  virtual void set_rec_track_id(const int a) = 0;
+
   virtual int  get_charge() const = 0; ///< Return the charge, i.e. +1 or -1.
   virtual void set_charge(const int a) = 0;
 
@@ -40,6 +43,19 @@ class SQTrack: public PHObject {
 
   virtual TLorentzVector get_mom_st3() const = 0; ///< Return the track momentum at Station 3.
   virtual void           set_mom_st3(const TLorentzVector a) = 0;
+
+  virtual double get_chisq() const = 0;
+  virtual double get_chisq_target() const = 0;
+  virtual double get_chisq_dump() const = 0;
+  virtual double get_chsiq_upstream() const = 0;
+  
+  virtual TVector3 get_pos_target() const = 0;
+  virtual TVector3 get_pos_dump() const = 0;
+
+  virtual TLorentzVector get_mom_target() const = 0;
+  virtual TLorentzVector get_mom_dump() const = 0;
+
+  virtual int get_hit_id(const int i) const = 0;
 
  protected:
   SQTrack() {}

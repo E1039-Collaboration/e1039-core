@@ -1,49 +1,20 @@
 #include "DPTriggerAnalyzer.h"
-
-
-#include <interface_main/SQHit.h>
-#include <interface_main/SQHit_v1.h>
-#include <interface_main/SQHitMap_v1.h>
-#include <interface_main/SQHitVector_v1.h>
-#include <interface_main/SQEvent_v1.h>
-#include <interface_main/SQRun_v1.h>
-#include <interface_main/SQSpill_v1.h>
-#include <interface_main/SQSpillMap_v1.h>
-
+#include <interface_main/SQRun.h>
+#include <interface_main/SQEvent.h>
+#include <interface_main/SQHitVector.h>
 #include <geom_svc/GeomSvc.h>
-
 #include <fun4all/Fun4AllBase.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-
-//#include <g4main/PHG4TruthInfoContainer.h>
-//#include <g4main/PHG4HitContainer.h>
-//#include <g4main/PHG4Hit.h>
-//#include <g4main/PHG4Hitv1.h>
-//#include <g4main/PHG4Particle.h>
-//#include <g4main/PHG4HitDefs.h>
-//#include <g4main/PHG4VtxPoint.h>
-
+#include <TSystem.h>
 #include <iomanip>
-#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <regex>
-
-#ifndef __CINT__
-#include <boost/lexical_cast.hpp>
-#endif
-
 using namespace std;
-
-#define IMAX 1000000
-#define JMAX 16
-#define KMAX 1000
-#define LMAX 4
 
 DPTriggerRoad::DPTriggerRoad() : roadID(0), sigWeight(0.), bkgRate(0.), pXmin(0.)
 {
@@ -100,7 +71,6 @@ bool DPTriggerRoad::operator == (const DPTriggerRoad& elem) const
 
 bool DPTriggerRoad::operator < (const DPTriggerRoad& elem) const
 {
-  
   return sigWeight < elem.sigWeight;
 }
 
@@ -126,23 +96,16 @@ std::ostream& operator << (std::ostream& os, const DPTriggerRoad& road)
   return os;
 }
 
-int DPTriggerAnalyzer::Init(PHCompositeNode *topNode) 
-{
-  
- return Fun4AllReturnCodes::EVENT_OK;
-}
+////////////////////////////////////////////////////////////////
 
 DPTriggerAnalyzer::DPTriggerAnalyzer(const std::string& name) :
   SubsysReco(name),
   _road_set_file_name("trigger_67.txt"),
-  _hit_container_type("Vector"),
-  _event(0),
+  _mode_nim1(NIM_AND),
+  _mode_nim2(NIM_AND),
   _run_header(nullptr),
-  _spill_map(nullptr),
   _event_header(nullptr),
-  _hit_map(nullptr),
-  _hit_vector(nullptr),
-  p_geomSvc(nullptr)
+  _hit_vector(nullptr)
 {
 }
 
@@ -152,15 +115,25 @@ DPTriggerAnalyzer::~DPTriggerAnalyzer()
   deleteMatrix(matrix[1]);
 }
 
-int DPTriggerAnalyzer::InitRun(PHCompositeNode* topNode) {
-  p_geomSvc = GeomSvc::instance();
+void DPTriggerAnalyzer::set_nim_mode(const NimMode nim1, const NimMode nim2)
+{
+  _mode_nim1 = nim1;
+  _mode_nim2 = nim2;
+}
 
+/**
+ * A roadset is loaded here, not in InitRun().
+ * It is possible but very unlikely that multiple runs taken with different roadsets are analyzed together.
+ * When someone moves the contents to InitRun(), please confirm that all variables like "roads" are cleared properly.
+ */
+int DPTriggerAnalyzer::Init(PHCompositeNode *topNode) 
+{
   //Load the trigger roads
   int charge = (int) -1e3, roadID = -1;
   int uIDs[NTRPLANES] = { -1, -1, -1, -1 };
   double pXmin = -1.e6, sigWeight = -1.e6, bkgRate = -1.e6;
   string line = "";
-  std::ifstream fin(_road_set_file_name.c_str(), std::ifstream::in);
+  std::ifstream fin(gSystem->ExpandPathName(_road_set_file_name.c_str()), std::ifstream::in);
   if (fin.is_open()) {
     while (getline(fin, line)) {
       stringstream ss(line);
@@ -189,221 +162,119 @@ int DPTriggerAnalyzer::InitRun(PHCompositeNode* topNode) {
   }
   //build the search matrix
   buildTriggerMatrix();
-
-  int ret = MakeNodes(topNode);
-  if (ret != Fun4AllReturnCodes::EVENT_OK)
-    return ret;
-
-  ret = GetNodes(topNode);
-  if (ret != Fun4AllReturnCodes::EVENT_OK)
-    return ret;
-
+  
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int DPTriggerAnalyzer::InitRun(PHCompositeNode* topNode)
+{
+  return GetNodes(topNode);
 }
 
 int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
+  GeomSvc* geomSvc = GeomSvc::instance();
 
-  if(Verbosity() >= Fun4AllBase::VERBOSITY_EVEN_MORE)
-    std::cout << "Entering DPTriggerAnalyzer::process_event: " << _event << std::endl;
-
-  _event_header->Reset();
-
-  if(_spill_map) {
-    auto spill_info=_spill_map->get(spill_id);
-    if(spill_info) {
-      target_pos=spill_info->get_target_pos();
-    } else {
-      LogInfo("");
-    }
-  }
-
-  if(_event_header) {
-    _event_header->set_event_id(_event);
-    event_id=_event_header->get_event_id();
-    spill_id=_event_header->get_spill_id();
-    run_id=_event_header->get_run_id();
-  }
-    
   //NIM trigger first
-  // e1039 fDetectorID : 1-6, 7-12, 13-18, 19-24, 25-30 for ChamberAcc in ST 1(UU'/XX'/VV'), 2(UU'/XX'/VV'), 3+(UU'/XX'/VV'), 3-(UU'/XX'/VV'), optional chamber (Colorado?)
-  // e1039 fDetectorID : 31-34, 35-38, 39-40, 41-46 for HodoAcc in ST 1(H1XT/B,H1YL/R), 2(H2XT/B,H2YL/R), 3(H3XT/B), 4(H4XT/B,H4Y1L/R,H4Y2L/R)
-  // e1039 fDetectorID : 47-54 in ST4(H1X/Y,V1X/Y,H2X/Y,V2X/Y)
-  // Kun's DPSim : 25/26, 31/32, 33/34, 39/40 in ST 1(XB/XT), 2(XB/XT), 3(XB/XT), 4(XB/XT)
-  // Kun's DPSim : 27/28, 29/30, 35/36, 37/38 in ST 1(YL/YR), 2(YL/YR), 3(YL/YR), 4(YL/YR)
-
-  Nhits_YNIM_1XT=0;
-  Nhits_YNIM_2XT=0;
-  Nhits_YNIM_3XT=0;
-  Nhits_YNIM_4XT=0;
-  Nhits_YNIM_1XB=0;
-  Nhits_YNIM_2XB=0;
-  Nhits_YNIM_3XB=0;
-  Nhits_YNIM_4XB=0;
-  Nhits_YNIM_1YL=0;
-  Nhits_YNIM_2YL=0;
-  Nhits_YNIM_4Y1L=0;
-  Nhits_YNIM_4Y2L=0;
-  Nhits_YNIM_1YR=0;
-  Nhits_YNIM_2YR=0;
-  Nhits_YNIM_4Y1R=0;
-  Nhits_YNIM_4Y2R=0;
-
-  if (_hit_vector) {
-    for (Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
-      SQHit *hit = _hit_vector->at(ihit);
-
-      if (!hit) {
-        if (Verbosity() >= Fun4AllBase::VERBOSITY_MORE) {
-          LogInfo("!hit");
-        }
-      }
-
-      if(p_geomSvc->getTriggerLv(hit->get_detector_id())<0) continue;
-
-      if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
-        std::cout
-        << " detector_id: " << hit->get_detector_id()
-        << " TriggerLv: " << p_geomSvc->getTriggerLv(hit->get_detector_id())
-        << std::endl;
-      }
-
-      if(hit->get_detector_id()<31 || hit->get_detector_id()>46) continue;
-      if(hit->get_detector_id()==31) Nhits_YNIM_1XB++;
-      if(hit->get_detector_id()==32) Nhits_YNIM_1XT++;
-      if(hit->get_detector_id()==33) Nhits_YNIM_1YL++;
-      if(hit->get_detector_id()==34) Nhits_YNIM_1YR++;
-      if(hit->get_detector_id()==37) Nhits_YNIM_2XB++;
-      if(hit->get_detector_id()==38) Nhits_YNIM_2XT++;
-      if(hit->get_detector_id()==35) Nhits_YNIM_2YL++;
-      if(hit->get_detector_id()==36) Nhits_YNIM_2YR++;
-      if(hit->get_detector_id()==39) Nhits_YNIM_3XB++;
-      if(hit->get_detector_id()==40) Nhits_YNIM_3XT++;
-      if(hit->get_detector_id()==45) Nhits_YNIM_4XB++;
-      if(hit->get_detector_id()==46) Nhits_YNIM_4XT++;
-      if(hit->get_detector_id()==41) Nhits_YNIM_4Y1L++;
-      if(hit->get_detector_id()==42) Nhits_YNIM_4Y1R++;
-      if(hit->get_detector_id()==43) Nhits_YNIM_4Y2L++;
-      if(hit->get_detector_id()==44) Nhits_YNIM_4Y2R++;
-    }
+  /// Count up the number of hits per hodo planes (and others for simplicity)
+  map<int, int> nhit_det; // [det_id] = counts
+  for (Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
+    nhit_det[ _hit_vector->at(ihit)->get_detector_id() ]++;
+    // Note: GeomSvc::getTriggerLv() was used in the past version, but it should not be used since the "trigger level" was not a standard variable.
   }
 
-  HXB=(Nhits_YNIM_1XB>0 and Nhits_YNIM_2XB>0 and Nhits_YNIM_3XB>0 and Nhits_YNIM_4XB>0);
-  HXT=(Nhits_YNIM_1XT>0 and Nhits_YNIM_2XT>0 and Nhits_YNIM_3XT>0 and Nhits_YNIM_4XT>0);
-  HYL=(Nhits_YNIM_1YL>0 and Nhits_YNIM_2YL>0 and Nhits_YNIM_4Y1L>0 and Nhits_YNIM_4Y2L>0);
-  HYR=(Nhits_YNIM_1YR>0 and Nhits_YNIM_2YR>0 and Nhits_YNIM_4Y1R>0 and Nhits_YNIM_4Y2R>0);
-
-  if(HYL or HYR) _event_header->set_trigger(SQEvent::NIM1, true);
-  if(HXT or HXB) _event_header->set_trigger(SQEvent::NIM2, true);
+  bool HXB = nhit_det[ geomSvc->getDetectorID("H1B"  ) ] > 0 && 
+             nhit_det[ geomSvc->getDetectorID("H2B"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H3B"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4B"  ) ] > 0   ;
+  bool HXT = nhit_det[ geomSvc->getDetectorID("H1T"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H2T"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H3T"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4T"  ) ] > 0   ;
+  bool HYL = nhit_det[ geomSvc->getDetectorID("H1L"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H2L"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4Y1L") ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4Y2L") ] > 0   ;
+  bool HYR = nhit_det[ geomSvc->getDetectorID("H1R"  ) ] > 0 && 
+             nhit_det[ geomSvc->getDetectorID("H2R"  ) ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4Y1R") ] > 0 &&
+             nhit_det[ geomSvc->getDetectorID("H4Y2R") ] > 0   ;
+  bool nim1_on = _mode_nim1 == NIM_AND  ?  HYL && HYR  :  HYL || HYR;
+  bool nim2_on = _mode_nim2 == NIM_AND  ?  HXT && HXB  :  HXT || HXB;
+  _event_header->set_trigger(SQEvent::NIM1, nim1_on);
+  _event_header->set_trigger(SQEvent::NIM2, nim2_on);
 
   //For FPGA trigger, build the internal hit pattern first
-  if(_hit_vector) {
-
-    n_FPGA_hits=0;
-    int nHitsAll=_hit_vector->size();
-
-    for(Int_t ihit = 0; ihit < nHitsAll; ++ihit) {
-      SQHit *hit=_hit_vector->at(ihit);
-      if(p_geomSvc->getTriggerLv(hit->get_detector_id()) < 0) continue;
-      uniqueIDs[n_FPGA_hits++] = hit->get_detector_id()*1000 + hit->get_element_id();
+  data.clear();
+  data.resize(NTRPLANES);
+  for(Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
+    SQHit *hit=_hit_vector->at(ihit);
+    int index = geomSvc->getHodoStation(hit->get_detector_id()) - 1;
+    if (0 <= index && index < NTRPLANES) {
+      data[index].insert( hit->get_detector_id()*1000 + hit->get_element_id() );
     }
-
-    bool all_planes_have_hits = buildHitPattern(n_FPGA_hits, uniqueIDs);
-
-    //do the tree DFS search
-    for(int i = 0; i < 2; ++i) {
-      path.clear();
-      roads_found[i].clear();
-      if(all_planes_have_hits)
-        searchMatrix(matrix[i], 0, i);
-    }
-
-    //FPGA singles trigger
-    nPlusTop=0;
-    nPlusBot=0;
-    nMinusTop=0;
-    nMinusBot=0;
-    nHiPxPlusTop=0;
-    nHiPxPlusBot=0;
-    nHiPxMinusTop=0;
-    nHiPxMinusBot=0;
-
-    for (std::list<DPTriggerRoad>::iterator iter = roads_found[0].begin();
-        iter != roads_found[0].end(); ++iter) {
-      if (iter->getTB() > 0) {
-        ++nPlusTop;
-        if (iter->getPxMin() > 3.)
-          ++nHiPxPlusTop;
-      } else {
-        ++nPlusBot;
-        if (iter->getPxMin() > 3.)
-          ++nHiPxPlusBot;
-      }
-    }
-
-    for (std::list<DPTriggerRoad>::iterator iter = roads_found[1].begin();
-        iter != roads_found[1].end(); ++iter) {
-      if (iter->getTB() > 0) {
-        ++nMinusTop;
-        if (iter->getPxMin() > 3.)
-          ++nHiPxMinusTop;
-      } else {
-        ++nMinusBot;
-        if (iter->getPxMin() > 3.)
-          ++nHiPxMinusBot;
-      }
+  }
+  bool all_planes_have_hits = true;
+  for (int i = 0; i < NTRPLANES; ++i) {
+    if (data[i].empty())  {
+      all_planes_have_hits = false;
+      break;
     }
   }
 
-  if((nPlusTop > 0 && nMinusBot > 0) || (nPlusBot > 0 && nMinusTop > 0)) _event_header->set_trigger(SQEvent::MATRIX1, true);
-  if((nPlusTop > 0 && nMinusTop > 0) || (nPlusBot > 0 && nMinusBot > 0)) _event_header->set_trigger(SQEvent::MATRIX2, true);
-  if((nPlusTop > 0 && nPlusBot > 0) || (nMinusTop > 0 && nMinusBot > 0)) _event_header->set_trigger(SQEvent::MATRIX3, true);
-  if(nPlusTop > 0 || nMinusTop > 0 || nPlusBot > 0 || nMinusBot > 0) _event_header->set_trigger(SQEvent::MATRIX4, true);
-  if(nHiPxPlusTop > 0 || nHiPxMinusTop > 0 || nHiPxPlusBot > 0 || nHiPxMinusBot > 0) _event_header->set_trigger(SQEvent::MATRIX5, true);
-
-  if(Verbosity() >= Fun4AllBase::VERBOSITY_A_LOT) {
-    _event_header->identify();
+  //do the tree DFS search
+  for(int i = 0; i < 2; ++i) {
+    path.clear();
+    roads_found[i].clear();
+    if (all_planes_have_hits) searchMatrix(matrix[i], 0, i);
   }
-
-  _event++;
-
-  if(Verbosity() >= Fun4AllBase::VERBOSITY_EVEN_MORE)
-    std::cout << "Leaving DPTriggerAnalyzer::process_event: " << _event << std::endl;
+  
+  //FPGA singles trigger
+  int nPlusTop      = 0;
+  int nPlusBot      = 0;
+  int nMinusTop     = 0;
+  int nMinusBot     = 0;
+  int nHiPxPlusTop  = 0;
+  int nHiPxPlusBot  = 0;
+  int nHiPxMinusTop = 0;
+  int nHiPxMinusBot = 0;
+  
+  for (std::list<DPTriggerRoad>::iterator iter = roads_found[0].begin();
+       iter != roads_found[0].end(); ++iter) {
+    if (iter->getTB() > 0) {
+      ++nPlusTop;
+      if (iter->getPxMin() > 3.) ++nHiPxPlusTop;
+    } else {
+      ++nPlusBot;
+      if (iter->getPxMin() > 3.) ++nHiPxPlusBot;
+    }
+  }
+  
+  for (std::list<DPTriggerRoad>::iterator iter = roads_found[1].begin();
+       iter != roads_found[1].end(); ++iter) {
+    if (iter->getTB() > 0) {
+      ++nMinusTop;
+      if (iter->getPxMin() > 3.) ++nHiPxMinusTop;
+    } else {
+      ++nMinusBot;
+      if (iter->getPxMin() > 3.) ++nHiPxMinusBot;
+    }
+  }
+  
+  bool fpga1_on = (nPlusTop > 0 && nMinusBot > 0) || (nPlusBot  > 0 && nMinusTop > 0);
+  bool fpga2_on = (nPlusTop > 0 && nMinusTop > 0) || (nPlusBot  > 0 && nMinusBot > 0);
+  bool fpga3_on = (nPlusTop > 0 && nPlusBot  > 0) || (nMinusTop > 0 && nMinusBot > 0);
+  bool fpga4_on =  nPlusTop > 0 || nMinusTop > 0  ||  nPlusBot  > 0 || nMinusBot > 0 ;
+  bool fpga5_on = nHiPxPlusTop > 0 || nHiPxMinusTop > 0 || nHiPxPlusBot > 0 || nHiPxMinusBot > 0;
+  _event_header->set_trigger(SQEvent::MATRIX1, fpga1_on);
+  _event_header->set_trigger(SQEvent::MATRIX2, fpga2_on);
+  _event_header->set_trigger(SQEvent::MATRIX3, fpga3_on);
+  _event_header->set_trigger(SQEvent::MATRIX4, fpga4_on);
+  _event_header->set_trigger(SQEvent::MATRIX5, fpga5_on);
 
   return Fun4AllReturnCodes::EVENT_OK;
-
-}
-
-int DPTriggerAnalyzer::ResetEvalVars() {
-  run_id = std::numeric_limits<int>::max();
-  spill_id = std::numeric_limits<int>::max();
-  target_pos = std::numeric_limits<float>::max();
-  event_id = std::numeric_limits<int>::max();
-
-  return 0;
 }
 
 int DPTriggerAnalyzer::End(PHCompositeNode* topNode) {
-  return Fun4AllReturnCodes::EVENT_OK;
-}
-
-
-int DPTriggerAnalyzer::MakeNodes(PHCompositeNode* topNode) {
-
-  PHNodeIterator iter(topNode);
-
-  PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
-  if (!eventNode) {
-    LogInfo("No DST node, create one");
-    eventNode = new PHCompositeNode("DST");
-    topNode->addNode(eventNode);
-  }
-
-  _event_header = new SQEvent_v1();
-  PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(_event_header,"SQEvent", "PHObject");
-  eventNode->addNode(eventHeaderNode);
-  if (verbosity >= Fun4AllBase::VERBOSITY_SOME)
-    LogInfo("DST/SQEvent Added");
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -415,25 +286,19 @@ int DPTriggerAnalyzer::GetNodes(PHCompositeNode* topNode) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
 
-  if(_hit_container_type.find("Map") != std::string::npos) {
-    _hit_map = findNode::getClass<SQHitMap>(topNode, "SQHitMap");
-    if (!_hit_map) {
-      LogInfo("!_hit_map");
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
+  _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  if (!_hit_vector) {
+    LogInfo("!_hit_vector");
+    return Fun4AllReturnCodes::ABORTEVENT;
   }
-
-  if(_hit_container_type.find("Vector") != std::string::npos) {
-    _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-    if (!_hit_vector) {
-      LogInfo("!_hit_vector");
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-  }
-
+  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
+/// This function converts the lists of roads (i.e. roadset given), into the trees of hodo element nodes.
+/**
+ * The depth of each branch is always four, which corresponds to the four hodo planes.
+ */
 void DPTriggerAnalyzer::buildTriggerMatrix() {
   for (int i = 0; i < 2; ++i) {
     matrix[i] = new MatrixNode(-1);
@@ -462,31 +327,8 @@ void DPTriggerAnalyzer::buildTriggerMatrix() {
   }
 }
 
-bool DPTriggerAnalyzer::buildHitPattern(int nTrHits, int uniqueTrIDs[])
-{
-  data.clear();
-  
-  //insert a dummy common root node first
-  std::set<int> vertex; vertex.insert(-1);
-  data.push_back(vertex);
-  
-  std::set<int> trHits[NTRPLANES];
-  for(int i = 0; i < nTrHits; ++i){
-    int detectorID = uniqueTrIDs[i]/1000;
-    int index = p_geomSvc->getTriggerLv(detectorID);
-    if(index < 0 || index >= NTRPLANES) continue;
-
-    trHits[index].insert(uniqueTrIDs[i]);
-  }
-  
-  for (int i = 0; i < NTRPLANES; ++i) {
-    if (trHits[i].empty())
-      return false;
-    data.push_back(trHits[i]);
-  }
-  
-  return true;
-}
+/// The contents of "buildHitPattern()" have been moved to process_event(),
+/// because the similar hit selection was repeated inside and outside this function.
 
 void DPTriggerAnalyzer::searchMatrix(MatrixNode* node, int level, int index) {
   path.push_back(node->uniqueID);
@@ -501,7 +343,7 @@ void DPTriggerAnalyzer::searchMatrix(MatrixNode* node, int level, int index) {
   }
 
   for (std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter) {
-    if (data[level + 1].find((*iter)->uniqueID) == data[level + 1].end())
+    if (data[level].find((*iter)->uniqueID) == data[level].end())
       continue;
     searchMatrix(*iter, level + 1, index);
   }
@@ -509,13 +351,7 @@ void DPTriggerAnalyzer::searchMatrix(MatrixNode* node, int level, int index) {
 }
 
 void DPTriggerAnalyzer::deleteMatrix(MatrixNode* node) {
-  if (node == NULL)
-    return;
-
-  if (node->children.empty()) {
-    delete node;
-    return;
-  }
+  if (node == NULL) return;
 
   for (std::list<MatrixNode*>::iterator iter = node->children.begin(); iter != node->children.end(); ++iter) {
     deleteMatrix(*iter);
@@ -541,6 +377,8 @@ void DPTriggerAnalyzer::printPath() {
   }
   std::cout << std::endl;
 }
+
+////////////////////////////////////////////////////////////////
 
 DPTriggerAnalyzer::MatrixNode::MatrixNode(int uID) : uniqueID(uID)
 {

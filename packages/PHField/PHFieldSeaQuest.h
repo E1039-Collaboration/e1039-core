@@ -2,7 +2,7 @@
 #define __PHFieldSeaQuest_H__
 
 #include "PHField.h"
-#include "PHField3DCartesian.h"
+#include "SQField3DCartesian.h"
 #include "PHFieldRegionalConst.h"
 
 #include <map>
@@ -32,9 +32,9 @@ class PHFieldSeaQuest : public PHField
   float zValues[4];
   float kmagZOffset;
 
-  PHField3DCartesian fmag;
-  PHField3DCartesian kmag;
+  SQField3DCartesian fmag;
+  SQField3DCartesian kmag;
   PHFieldRegionalConst targetmag;
 };
 
-#endif  // __PHFIELD3D_H
+#endif  // __SQField3D_H

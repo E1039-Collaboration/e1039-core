@@ -22,8 +22,8 @@ Created: 06-17-2015
 #include "SRawEvent.h"
 #include "TriggerAnalyzer.h"
 
+#include <phool/recoConsts.h>
 #include <geom_svc/GeomSvc.h>
-#include <jobopts_svc/JobOptsSvc.h>
 
 class EventReducer
 {
@@ -58,8 +58,8 @@ private:
     //pointer to geometry service, inited outside
     GeomSvc* p_geomSvc;
 
-    //Pointer to job options
-    JobOptsSvc* p_jobOptsSvc;
+    //pointer to the reco configuration 
+    recoConsts* rc;
 
     //pointer to trigger analyzer, inited inside
     TriggerAnalyzer* p_triggerAna;
@@ -94,6 +94,20 @@ private:
     double timeOffset;        //timing correction
     double chamEff;           //chamber efficiency
     double chamResol;         //chamber resolution
+
+    //SagittaReducer parameters
+    double SAGITTA_DUMP_CENTER;
+    double SAGITTA_DUMP_WIDTH;
+    double SAGITTA_TARGET_CENTER;
+    double SAGITTA_TARGET_WIDTH;
+    double Z_TARGET;
+    double Z_DUMP;
+
+    //Hodo masking parameters
+    double TX_MAX;
+    double TY_MAX;
+    bool USE_V1495_HIT;
+    bool USE_TWTDC_HIT;
 };
 
 #endif

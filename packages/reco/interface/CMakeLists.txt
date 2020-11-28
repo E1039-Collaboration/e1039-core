@@ -2,23 +2,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(ktracker CXX C)
 
-# command line option to turn off KMAG
-option(KMAG "Turn KMAG ON/OFF" ON)
-if(KMAG)
-  add_definitions(-DKMAG_ON=1)
-else()
-  message("-- IMPORTANT! Turning KMAG off")
-  add_definitions(-DKMAG_ON=0)
-endif()
-
-# command line option to turn off KF
-option(KFENABLE "Enable Kalman filter fitting in track fitting" ON)
-if(KFENABLE)
-  add_definitions(-D_ENABLE_KF)
-else()
-  message("-- IMPORTANT! Kalman filter fitting is disabled")
-endif()
-
 # ROOT dict generation
 file(GLOB dicts "")
 file(GLOB LinkDefhs ${PROJECT_SOURCE_DIR}/*LinkDef.h)
@@ -64,7 +47,7 @@ string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} ${GEANT4_CFLAGS} -std=c++11")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(ktracker_interface SHARED ${sources} ${dicts})
-target_link_libraries(ktracker_interface -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc -lphg4hit ${ROOT_LINK})
+target_link_libraries(ktracker_interface -lgenfit2 -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc ${ROOT_LINK})
 
 message(STATUS ${PROJECT_SOURCE_DIR} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

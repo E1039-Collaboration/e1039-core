@@ -15,13 +15,93 @@
 #include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/StateOnPlane.h>
 
+#include <phool/recoConsts.h>
+
 #include "SRawEvent.h"
+
+namespace
+{
+  //static flag to indicate the initialized has been done
+  static bool inited = false;
+
+  static double Z_TARGET;
+  static double Z_DUMP;
+  static double Z_UPSTREAM;
+
+  static double X_BEAM;
+  static double Y_BEAM;
+  static double SIGX_BEAM;
+  static double SIGY_BEAM;
+
+  //initialize global variables
+  void initGlobalVariables()
+  {
+    if(!inited) 
+    {
+      inited = true;
+
+      recoConsts* rc = recoConsts::instance();
+      Z_TARGET   = rc->get_DoubleFlag("Z_TARGET");
+      Z_DUMP     = rc->get_DoubleFlag("Z_DUMP");
+      Z_UPSTREAM = rc->get_DoubleFlag("Z_UPSTREAM");
+
+      X_BEAM    = rc->get_DoubleFlag("X_BEAM");
+      Y_BEAM    = rc->get_DoubleFlag("Y_BEAM");
+      SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
+      SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+    }
+  }
+};
 
 namespace SQGenFit
 {
 
 GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
-{}
+{
+  initGlobalVariables();
+}
+
+GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+{
+  _pdg = recTrack.getCharge() > 0 ? -13 : 13;
+  _trkrep = new genfit::RKTrackRep(_pdg);
+    
+  TVector3 seed_mom = recTrack.getMomentumVecSt1();
+  TVector3 seed_pos = recTrack.getPositionVecSt1();
+
+  TVectorD seed_state(6);
+  seed_state[0] = seed_pos.X();
+  seed_state[1] = seed_pos.Y();
+  seed_state[2] = seed_pos.Z();
+  seed_state[3] = seed_mom.Px();
+  seed_state[4] = seed_mom.Py();
+  seed_state[5] = seed_mom.Pz();
+
+  TMatrixDSym seed_cov(6);
+  double uncertainty[6] = {10., 10., 10., 3., 3., 10.};
+  for(int i = 0; i < 6; i++)
+  {
+    for(int j = 0; j < 6; j++)
+    {
+      seed_cov[i][j] = uncertainty[i]*uncertainty[j];
+    }
+  }
+  _track = new genfit::Track(_trkrep, seed_state, seed_cov);
+
+  _fitstates.clear();
+  int nHits = recTrack.getNHits();
+  for(int i = 0; i < nHits; ++i)
+  {
+    genfit::SharedPlanePtr detPlane(new genfit::DetPlane(recTrack.getGFPlaneO(i), recTrack.getGFPlaneU(i), recTrack.getGFPlaneV(i)));
+    
+    _fitstates.push_back(genfit::MeasuredStateOnPlane(recTrack.getGFState(i), recTrack.getGFCov(i), detPlane, _trkrep, recTrack.getGFAuxInfo(i)));
+  }
+}
+
+GFTrack::GFTrack(Tracklet& tracklet): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+{
+  setTracklet(tracklet, 590., false);
+}
 
 GFTrack::~GFTrack()
 {
@@ -193,13 +273,63 @@ double GFTrack::updatePropState(const TVectorD& meas, const TMatrixDSym& V)
 bool GFTrack::setInitialStateForExtrap(const int startPtID)
 {
   genfit::AbsTrackRep* rep = _track->getCardinalRep();
-  genfit::TrackPoint*   tp = _track->getPointWithMeasurementAndFitterInfo(startPtID, rep);
-  if(tp == nullptr) return false;
+  if(_track->getNumPoints() > 0)
+  {
+    genfit::TrackPoint*   tp = _track->getPointWithMeasurementAndFitterInfo(startPtID, rep);
+    if(tp == nullptr) return false;
 
-  genfit::KalmanFitterInfo* info = static_cast<genfit::KalmanFitterInfo*>(tp->getFitterInfo(rep));
-  _propState.reset(new genfit::MeasuredStateOnPlane(info->getFittedState()));
+    genfit::KalmanFitterInfo* info = static_cast<genfit::KalmanFitterInfo*>(tp->getFitterInfo(rep));
+    _propState.reset(new genfit::MeasuredStateOnPlane(info->getFittedState()));
+  }
+  else
+  {
+    _propState.reset(new genfit::MeasuredStateOnPlane(_fitstates[startPtID]));
+  }
 
   return true;
+}
+
+double GFTrack::swimToVertex(double z, TVector3* pos, TVector3* mom, TMatrixDSym* cov)
+{
+  //Basic constants
+  TVector3 pU(1., 0., 0.);
+  TVector3 pV(0., 1., 0.);
+  TVector3 pO(0., 0., z );
+  
+  TVectorD beamCenter(2);
+  beamCenter[0] = X_BEAM; beamCenter[1] = Y_BEAM;
+  TMatrixDSym beamCov(2);
+  beamCov.Zero();
+  beamCov(0, 0) = SIGX_BEAM*SIGX_BEAM; beamCov(1, 1) = SIGY_BEAM*SIGY_BEAM;
+
+  double chi2 = -1.;
+  try
+  {
+    double len = extrapolateToPlane(pO, pU, pV);
+    if(fabs(len) > 6000.) throw len;
+
+    chi2 = updatePropState(beamCenter, beamCov);
+    if(cov != nullptr)
+    {
+      getExtrapPosMomCov(*pos, *mom, *cov);
+    }
+    else if(mom != nullptr)
+    {
+      getExtrapPosMom(*pos, *mom);
+    }
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << z << ": " << e.what() << std::endl;
+    return -1.;
+  }
+  catch(double len)
+  {
+    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << z << ": " << len << std::endl;
+    return -1.;
+  }
+
+  return chi2;
 }
 
 void GFTrack::setTracklet(Tracklet& tracklet, double z_reference, bool wildseedcov)
@@ -269,6 +399,7 @@ SRecTrack GFTrack::getSRecTrack()
     strack.insertHitIndex((*iter)->getBeforeFitHit().hit.index);
 
     const genfit::MeasuredStateOnPlane& fitstate = (*iter)->getTrackPoint()->getKalmanFitterInfo()->getFittedState(true);
+    strack.insertGFState(fitstate);
     
     TVector3 pos, mom;
     fitstate.getPosMom(pos, mom);
@@ -295,66 +426,19 @@ SRecTrack GFTrack::getSRecTrack()
   TVector3 pU(1., 0., 0.);
   TVector3 pV(0., 1., 0.);
   TVectorD beamCenter(2);
-  beamCenter[0] = 0.; beamCenter[1] = 0.;
+  beamCenter[0] = X_BEAM; beamCenter[1] = Y_BEAM; 
   TMatrixDSym beamCov(2);
   beamCov.Zero();
-  beamCov(0, 0) = 100.; beamCov(1, 1) = 100.;
+  beamCov(0, 0) = SIGX_BEAM*SIGX_BEAM; beamCov(1, 1) = SIGY_BEAM*SIGY_BEAM;
 
   //test Z_UPSTREAM
-  try
-  {
-    double len = extrapolateToPlane(pO, pU, pV);
-    if(fabs(len) > 6000.) throw len;
-    strack.setChisqUpstream(updatePropState(beamCenter, beamCov));  
-  }
-  catch(genfit::Exception& e)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed upstream: " << e.what() << std::endl;
-    strack.setChisqUpstream(999.);
-  }
-  catch(double len)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed upstream: " << len << std::endl;
-    strack.setChisqUpstream(999.);
-  }
+  strack.setChisqUpstream(swimToVertex(Z_UPSTREAM));
 
   //test Z_TARGET
-  try
-  {
-    pO.SetZ(Z_TARGET);
-    double len = extrapolateToPlane(pO, pU, pV);
-    if(fabs(len) > 6000.) throw len;
-    strack.setChisqTarget(updatePropState(beamCenter, beamCov));
-  }
-  catch(genfit::Exception& e)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed target: " << e.what() << std::endl;
-    strack.setChisqTarget(999.);
-  }
-  catch(double len)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed target: " << len << std::endl;
-    strack.setChisqTarget(999.);
-  }
+  strack.setChisqTarget(swimToVertex(Z_TARGET));
 
   //test Z_DUMP
-  try
-  {
-    pO.SetZ(Z_DUMP);
-    double len = extrapolateToPlane(pO, pU, pV);
-    if(fabs(len) > 6000.) throw len;
-    strack.setChisqDump(updatePropState(beamCenter, beamCov));
-  }
-  catch(genfit::Exception& e)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed dump: " << e.what() << std::endl;
-    strack.setChisqDump(999.);
-  }
-  catch(double len)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed dump: " << len << std::endl;
-    strack.setChisqDump(999.);
-  }
+  strack.setChisqDump(swimToVertex(Z_DUMP));
 
   /*
   //Find POCA to beamline -- it seems to be funky and mostly found some place way upstream or downstream
@@ -377,23 +461,7 @@ SRecTrack GFTrack::getSRecTrack()
   */
 
   //test Z_VERTEX
-  try
-  {
-    pO.SetZ(strack.getVertexPos().Z());
-    double len = extrapolateToPlane(pO, pU, pV);
-    if(fabs(len) > 6000.) throw len;
-    strack.setChisqVertex(updatePropState(beamCenter, beamCov));
-  }
-  catch(genfit::Exception& e)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << strack.getVertexPos().Z() << ": " << e.what() << std::endl;
-    strack.setChisqVertex(999.);
-  }
-  catch(double len)
-  {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << strack.getVertexPos().Z() << ": " << len << std::endl;
-    strack.setChisqVertex(999.);
-  }
+  strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z()));
 
   strack.setKalmanStatus(1);
   return strack;

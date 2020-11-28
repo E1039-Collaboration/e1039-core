@@ -104,6 +104,9 @@ G4TBMagneticFieldSetup::G4TBMagneticFieldSetup(PHField * phfield)
      << ", z: " << magfield_at_000[2]
      << endl;
     }
+
+  fDummyFieldManager = new G4FieldManager();
+  fDummyFieldManager->SetDetectorField(0);
 }
 
 //G4TBMagneticFieldSetup::G4TBMagneticFieldSetup(const float magfield)
