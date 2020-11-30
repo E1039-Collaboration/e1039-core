@@ -8,6 +8,10 @@
 #include <limits>
 #include <string>
 
+/// An SQ interface class to hold the data of one slow-control channel.
+/**
+ * A list of this objects is held by SQSpill.
+ */
 class SQSlowCont : public PHObject {
 public:
   virtual ~SQSlowCont() {}
@@ -22,16 +26,16 @@ public:
   virtual SQSlowCont* Clone() const {return NULL;}
   virtual PHObject*   clone() const {return NULL;}
 
-  virtual std::string get_time_stamp() const {return "";}
+  virtual std::string get_time_stamp() const {return "";} ///< Return the time when this channel was read out.
   virtual void set_time_stamp(const std::string a) {}
 
-  virtual std::string get_name() const {return "";}
+  virtual std::string get_name() const {return "";} ///< Return the name of this channel.
   virtual void set_name(const std::string a) {}
 
-  virtual std::string get_value() const {return "";}
+  virtual std::string get_value() const {return "";} ///< Return the value of this channel.
   virtual void set_value(const std::string a) {}
 
-  virtual std::string get_type() const {return "";}
+  virtual std::string get_type() const {return "";} ///< Return the type (i.e. caterogy name) of this channel.
   virtual void set_type(const std::string a) {}
 
 protected:
