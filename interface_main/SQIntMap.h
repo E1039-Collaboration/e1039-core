@@ -8,6 +8,9 @@
 #include <map>
 #include <iostream>
 
+/// A general-purpose SQ interface class that holds a list of PHObjects with key = integer.
+/** The usage is nearly identical to SQSpillMap.
+ */
 class SQIntMap : public PHObject {
 public:
   typedef std::map<unsigned int, PHObject*> ObjectMap;

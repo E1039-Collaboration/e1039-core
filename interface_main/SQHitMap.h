@@ -16,6 +16,10 @@
 
 #include "SQHit.h"
 
+/// An SQ interface class to hold a list of SQHit objects as std::map.
+/**
+ * This class is _not_ being used.  Instead the standard list of SQHit is SQHitVector.  This class could be deleted in future.
+ */
 class SQHitMap : public PHObject {
 
 public:

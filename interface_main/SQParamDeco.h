@@ -9,6 +9,10 @@
 #include <iostream>
 #include <phool/PHObject.h>
 
+/// An SQ interface class to hold a set of decoding parameters.
+/**
+ * Available only for real data.
+ */
 class SQParamDeco : public PHObject {
 public:
   typedef std::map<std::string, std::string> ParamMap;
@@ -22,13 +26,13 @@ public:
   virtual SQParamDeco* Clone() const = 0;
   virtual void         Reset() = 0;
 
-  virtual bool        has_variable(const std::string name) const = 0; // {return false;}
-  virtual std::string get_variable(const std::string name) const = 0; // {return "";}
-  virtual void        set_variable(const std::string name, const std::string value) = 0; // {}
+  virtual bool        has_variable(const std::string name) const = 0; ///< Return 'true' if a variable having 'name' exists.
+  virtual std::string get_variable(const std::string name) const = 0; ///< Return the value of a variable having 'name'.  Return "" if no variable exists.
+  virtual void        set_variable(const std::string name, const std::string value) = 0;
 
-  virtual ParamConstIter begin() const = 0;
-  virtual ParamConstIter   end() const = 0;
-  virtual unsigned int    size() const = 0;
+  virtual ParamConstIter begin() const = 0; ///< Return the begin iterator.
+  virtual ParamConstIter   end() const = 0; ///< Return the end iterator.
+  virtual unsigned int    size() const = 0; ///< Return the number of variables held.
   
 protected:
   SQParamDeco() {}

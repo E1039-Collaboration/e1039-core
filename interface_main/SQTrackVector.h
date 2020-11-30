@@ -5,6 +5,17 @@
 #include <phool/PHObject.h>
 #include "SQTrack.h"
 
+/// An SQ interface class to hold a list of SQTrack objects.
+/**
+ * Below is the standard way to find this object in "topNode" and loop over each track;
+ * @code
+ * SQTrackVector* trk_vec = findNode::getClass<SQTrackVector>(topNode, "SQTrackVector");
+ * for (SQTrackVector::ConstIter it = trk_vec->begin(); it != trk_vec->end(); it++) {
+ *   SQTrack* trk = *it;
+ *   int trk_id = trk->get_track_id();
+ * }
+ * @endcode
+ */
 class SQTrackVector: public PHObject {
  public:
   typedef std::vector<SQTrack*>                    Vector;
