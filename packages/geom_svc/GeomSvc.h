@@ -23,6 +23,7 @@ and then prop. tubes
 #include <vector>
 #include <string>
 #include <map>
+#include <unordered_map>
 
 #include <TVector3.h>
 #include <TVectorD.h>
@@ -193,40 +194,41 @@ public:
     std::vector<int> getDetectorIDs(std::string pattern);
     bool findPatternInDetector(int detectorID, std::string pattern);
 
-    Plane getPlane(int detectorID) const { return planes[detectorID]; }
-    double getPlanePosition(int detectorID) const { return planes[detectorID].zc; }
-    double getPlaneSpacing(int detectorID) const  { return planes[detectorID].spacing; }
-    double getPlaneOverlap(int detectorID) const  { return planes[detectorID].overlap; }
-    double getCellWidth(int detectorID)     { return planes[detectorID].cellWidth; }
-    double getCostheta(int detectorID) const  { return planes[detectorID].costheta; }
-    double getSintheta(int detectorID) const  { return planes[detectorID].sintheta; }
-    double getTantheta(int detectorID) const  { return planes[detectorID].tantheta; }
-    double getPlaneScaleX(int detectorID)   { return planes[detectorID].x2 - planes[detectorID].x1; }
-    double getPlaneScaleY(int detectorID)   { return planes[detectorID].y2 - planes[detectorID].y1; }
-    double getPlaneScaleZ(int detectorID)   { return planes[detectorID].z2 - planes[detectorID].z1; }
-    int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
-    int getPlaneNElements(int detectorID)   { return planes[detectorID].nElements; }
+    const Plane& getPlane(int detectorID) const { return planes[detectorID]; }
+    Plane getPlane(int detectorID)              { return planes[detectorID]; }
+
+    double getPlanePosition(int detectorID)   const { return planes[detectorID].zc; }
+    double getPlaneSpacing(int detectorID)    const { return planes[detectorID].spacing; }
+    double getPlaneOverlap(int detectorID)    const { return planes[detectorID].overlap; }
+    double getCellWidth(int detectorID)       const { return planes[detectorID].cellWidth; }
+    double getCostheta(int detectorID)        const { return planes[detectorID].costheta; }
+    double getSintheta(int detectorID)        const { return planes[detectorID].sintheta; }
+    double getTantheta(int detectorID)        const { return planes[detectorID].tantheta; }
+    double getPlaneScaleX(int detectorID)     const { return planes[detectorID].x2 - planes[detectorID].x1; }
+    double getPlaneScaleY(int detectorID)     const { return planes[detectorID].y2 - planes[detectorID].y1; }
+    double getPlaneScaleZ(int detectorID)     const { return planes[detectorID].z2 - planes[detectorID].z1; }
     double getPlaneResolution(int detectorID) const { return planes[detectorID].resolution; }
 
-    double getPlaneCenterX(int detectorID)  { return planes[detectorID].xc; }
-    double getPlaneCenterY(int detectorID)  { return planes[detectorID].yc; }
-    double getPlaneCenterZ(int detectorID)  { return planes[detectorID].zc; }
-    double getRotationInX(int detectorID)    { return planes[detectorID].rX; }
-    double getRotationInY(int detectorID)    { return planes[detectorID].rY; }
-    double getRotationInZ(int detectorID)    { return planes[detectorID].rZ; }
+    double getPlaneCenterX(int detectorID) const { return planes[detectorID].xc; }
+    double getPlaneCenterY(int detectorID) const { return planes[detectorID].yc; }
+    double getPlaneCenterZ(int detectorID) const { return planes[detectorID].zc; }
+    double getRotationInX(int detectorID)  const { return planes[detectorID].rX; }
+    double getRotationInY(int detectorID)  const { return planes[detectorID].rY; }
+    double getRotationInZ(int detectorID)  const { return planes[detectorID].rZ; }
+    double getStereoAngle(int detectorID)  const { return planes[detectorID].angleFromVert+planes[detectorID].rZ; }
 
-    double getPlaneZOffset(int detectorID)   { return planes[detectorID].deltaZ; }
-    double getPlanePhiOffset(int detectorID) { return planes[detectorID].rotZ; }
-    double getPlaneWOffset(int detectorID)   { return planes[detectorID].deltaW; }
-    double getPlaneWOffset(int detectorID, int moduleID) { return planes[detectorID].deltaW_module[moduleID]; }
+    double getPlaneZOffset(int detectorID)   const { return planes[detectorID].deltaZ; }
+    double getPlanePhiOffset(int detectorID) const { return planes[detectorID].rotZ; }
+    double getPlaneWOffset(int detectorID)   const { return planes[detectorID].deltaW; }
+    double getPlaneWOffset(int detectorID, int moduleID) const { return planes[detectorID].deltaW_module[moduleID]; }
 
-    int getPlaneType(int detectorID) const { return planes[detectorID].planeType; }
+    int getPlaneNElements(int detectorID) const { return planes[detectorID].nElements; }
+    int getPlaneType(int detectorID)      const { return planes[detectorID].planeType; }
+
     int getHodoStation(const int detectorID) const; //< Return a station number (1-4) for hodo planes or "0" for others.
     int getHodoStation(const std::string detectorName) const; //< Return a station number (1-4) for hodo planes or "0" for others.
 
-    double getKMAGCenter()     { return (zmin_kmag + zmax_kmag)/2.; }
-    double getKMAGUpstream()   { return zmin_kmag; }
-    double getKMAGDownstream() { return zmax_kmag; }
+    int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
 
     ///Get the interception of a line an a plane
     double getInterception(int detectorID, double tx, double ty, double x0, double y0) const { return planes[detectorID].intercept(tx, ty, x0, y0); }
@@ -324,11 +326,11 @@ private:
     std::map<int, int> map_detid_triggerlv;
 
     //Mapping to wire position
-    std::map<std::pair<int, int>, double> map_wirePosition;
+    std::unordered_map<int, double> map_wirePosition[nChamberPlanes+nHodoPlanes+nHodoPlanes+nDarkPhotonPlanes+1];
 
     //Mapping to wire end position - wire actually includes all detectors
-    std::map<std::pair<int, int>, TVectorD> map_endPoint1;  
-    std::map<std::pair<int, int>, TVectorD> map_endPoint2;
+    std::unordered_map<int, TVectorD> map_endPoint1[nChamberPlanes+nHodoPlanes+nHodoPlanes+nDarkPhotonPlanes+1];
+    std::unordered_map<int, TVectorD> map_endPoint2[nChamberPlanes+nHodoPlanes+nHodoPlanes+nDarkPhotonPlanes+1];
 
     //Pointer to the reco constants
     recoConsts* rc;

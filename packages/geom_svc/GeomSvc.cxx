@@ -197,9 +197,8 @@ std::ostream& operator << (std::ostream& os, const Plane& plane)
        << ", uVec: {" << plane.uVec[0] << ", " << plane.uVec[1] << ", " << plane.uVec[2] << "} "
        << ", vVec: {" << plane.vVec[0] << ", " << plane.vVec[1] << ", " << plane.vVec[2] << "} ";
     if(plane.detectorID>=nChamberPlanes+nHodoPlanes+1 && plane.detectorID<=nChamberPlanes+nHodoPlanes+nPropPlanes) {
-    	os << "\n";
-    	for(int i=0; i<9; ++i)
-			 os << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW_module[i];
+        os << "\n";
+        for(int i=0; i<9; ++i) os << std::setw(10) << std::setiosflags(std::ios::right) << plane.deltaW_module[i];
     }
 
     return os;
@@ -675,17 +674,17 @@ void GeomSvc::initPlaneDbSvc() {
 void GeomSvc::initWireLUT() {
 
   ///Initialize the position look up table for all wires, hodos, and tubes
-  typedef std::map<std::pair<int, int>, double>::value_type   posType;  
-  typedef std::map<std::pair<int, int>, TVectorD>::value_type epType;
+  typedef std::unordered_map<int, double>::value_type   posType;  
+  typedef std::unordered_map<int, TVectorD>::value_type epType;
   for(int i = 1; i <= nChamberPlanes; ++i)
   {
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
-          map_wirePosition.insert(posType(std::make_pair(i, j), pos));
+          map_wirePosition[i].insert(posType(j, pos));
 
-          map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
-          map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
+          map_endPoint1[i].insert(epType(j, planes[i].getEndPoint(j, -1)));
+          map_endPoint2[i].insert(epType(j, planes[i].getEndPoint(j,  1)));
 
           planes[i].elementPos.push_back(pos);
       }
@@ -712,9 +711,9 @@ void GeomSvc::initWireLUT() {
               int elementID = ((i-55) & 2) > 0 ? planes[i].nElements + 1 - j : j;
               pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (elementID - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }
-          map_wirePosition.insert(posType(std::make_pair(i, j), pos));
-          map_endPoint1.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j, -1)));
-          map_endPoint2.insert(epType(std::make_pair(i, j), planes[i].getEndPoint(j,  1)));
+          map_wirePosition[i].insert(posType(j, pos));
+          map_endPoint1[i].insert(epType(j, planes[i].getEndPoint(j, -1)));
+          map_endPoint2[i].insert(epType(j, planes[i].getEndPoint(j,  1)));
           planes[i].elementPos.push_back(pos);
       }
       std::sort(planes[i].elementPos.begin(), planes[i].elementPos.end());
@@ -780,25 +779,25 @@ bool GeomSvc::isInKMAG(double x, double y)
 
 void GeomSvc::getMeasurement(int detectorID, int elementID, double& measurement, double& dmeasurement)
 {
-    measurement = map_wirePosition[std::make_pair(detectorID, elementID)];
+    measurement = map_wirePosition[detectorID][elementID];
     dmeasurement = planes[detectorID].resolution;
 }
 
 double GeomSvc::getMeasurement(int detectorID, int elementID)
 {
-    return map_wirePosition[std::make_pair(detectorID, elementID)];
+    return map_wirePosition[detectorID][elementID];
 }
 
 void GeomSvc::getEndPoints(int detectorID, int elementID, TVectorD& ep1, TVectorD& ep2)
 {
-    ep1 = map_endPoint1[std::make_pair(detectorID, elementID)];
-    ep2 = map_endPoint2[std::make_pair(detectorID, elementID)];
+    ep1 = map_endPoint1[detectorID][elementID];
+    ep2 = map_endPoint2[detectorID][elementID];
 }
 
 void GeomSvc::getEndPoints(int detectorID, int elementID, TVector3& ep1, TVector3& ep2)
 {
-    TVectorD vp1(map_endPoint1[std::make_pair(detectorID, elementID)]);
-    TVectorD vp2(map_endPoint2[std::make_pair(detectorID, elementID)]);
+    TVectorD vp1(map_endPoint1[detectorID][elementID]);
+    TVectorD vp2(map_endPoint2[detectorID][elementID]);
 
     ep1.SetXYZ(vp1[0], vp1[1], vp1[2]);
     ep2.SetXYZ(vp2[0], vp2[1], vp2[2]);
@@ -832,7 +831,7 @@ void GeomSvc::get2DBoxSize(int detectorID, int elementID, double& x_min, double&
     std::string detectorName = getDetectorName(detectorID);
     if(planes[detectorID].planeType == 1)
     {
-        double x_center = map_wirePosition[std::make_pair(detectorID, elementID)];
+        double x_center = map_wirePosition[detectorID][elementID];
         double x_width = 0.5*planes[detectorID].cellWidth;
         x_min = x_center - x_width;
         x_max = x_center + x_width;
@@ -842,7 +841,7 @@ void GeomSvc::get2DBoxSize(int detectorID, int elementID, double& x_min, double&
     }
     else
     {
-        double y_center = map_wirePosition[std::make_pair(detectorID, elementID)];
+        double y_center = map_wirePosition[detectorID][elementID];
         double y_width = 0.5*planes[detectorID].cellWidth;
         y_min = y_center - y_width;
         y_max = y_center + y_width;
@@ -1143,9 +1142,9 @@ void GeomSvc::printWirePosition()
         std::cout << std::setw(6) << std::setiosflags(std::ios::right) << detectorID;
         std::cout << std::setw(6) << std::setiosflags(std::ios::right) << (*iter).first;
         std::cout << std::setw(6) << std::setiosflags(std::ios::right) << i;
-        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)];
-        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] - 0.5*planes[detectorID].cellWidth;
-        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[std::make_pair(detectorID, i)] + 0.5*planes[detectorID].cellWidth;
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[detectorID][i];
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[detectorID][i] - 0.5*planes[detectorID].cellWidth;
+        std::cout << std::setw(10) << std::setiosflags(std::ios::right) << map_wirePosition[detectorID][i] + 0.5*planes[detectorID].cellWidth;
         std::cout << std::endl;
     }
   }
