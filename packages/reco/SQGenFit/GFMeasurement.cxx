@@ -18,7 +18,11 @@
 namespace SQGenFit
 {
 
-GFMeasurement::GFMeasurement(const SignedHit& rawHit, bool en): _bfHit(rawHit)
+GFMeasurement::GFMeasurement(const SignedHit& rawHit, bool en): 
+  _bfHit(rawHit),
+  _proj(0.), 
+  _driftSign(0),
+  _track(nullptr)
 {
   GeomSvc* p_geomSvc = GeomSvc::instance();
 
@@ -52,9 +56,21 @@ GFMeasurement::GFMeasurement(const SignedHit& rawHit, bool en): _bfHit(rawHit)
   //Own data
   _z = p_geomSvc->getPlanePosition(detID);
   _enableInFit = _bfHit.hit.index < 0 ? false : en;
-  _proj = 0.;
-  _driftSign = 0;
+}
+
+GFMeasurement::GFMeasurement(const GFMeasurement& meas):
+  genfit::WireMeasurement(meas.rawHitCoords_, meas.rawHitCov_, meas.detId_, meas.hitId_, meas.trackPoint_),
+  _bfHit(meas._bfHit),
+  _z(meas._z),
+  _enableInFit(meas._enableInFit), 
+  _proj(meas._proj), 
+  _driftSign(meas._driftSign)
+{
   _track = nullptr;
+
+  //WireMeasurement data
+  setMaxDistance(meas.getMaxDistance());
+  setLeftRightResolution(meas.getLeftRightResolution());
 }
 
 void GFMeasurement::setTrackPtr(GFTrack* trackPtr)
@@ -75,7 +91,7 @@ void GFMeasurement::postFitUpdate()
   _proj = H->Hv(state.getState())[0];
 }
 
-void GFMeasurement::print(unsigned int debugLvl)
+void GFMeasurement::print(unsigned int debugLvl) const
 {
   std::cout << " ................................................" << std::endl;
   std::cout << "Hit " << _bfHit.hit.index << ", detID = " << _bfHit.hit.detectorID << ", eleID = " << _bfHit.hit.elementID 
@@ -145,7 +161,7 @@ void GFMeasurement::print(unsigned int debugLvl)
   }
 }
 
-void GFMeasurement::printHelper(double w, TVector3& pos, TVector3& mom, TString name)
+void GFMeasurement::printHelper(double w, TVector3& pos, TVector3& mom, TString name) const
 {
   std::cout << " -- " << name.Data() << ": ";
   std::cout << "pos (X,Y,Z,W) = " << std::setprecision(6) << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << w;
