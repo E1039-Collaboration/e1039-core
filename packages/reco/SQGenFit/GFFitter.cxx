@@ -69,7 +69,7 @@ int GFFitter::processTrack(GFTrack& track, bool display)
   catch(genfit::Exception& e)
   {
     std::cerr << "Track fitting failed: " << e.what() << std::endl;
-    return -1;
+    return -2;
   }
   
   //check after fit
@@ -80,14 +80,14 @@ int GFFitter::processTrack(GFTrack& track, bool display)
   catch(genfit::Exception& e)
   {
     std::cerr << "Track consistency error after fit: " << e.what() << std::endl;
-    return -1;
+    return -3;
   }
 
   genfit::AbsTrackRep* rep = gftrack->getCardinalRep();
   if(!gftrack->getFitStatus(rep)->isFitConverged())
   {
     std::cerr << "Fit failed to converge." << std::endl;
-    return -1;
+    return -4;
   }
 
   if(display)
