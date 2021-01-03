@@ -9,7 +9,8 @@
 #   ./build.sh [-c cmake_args] Optionally pass addtional cmake args to the build
 #
 # The 2nd usage is not recommended but kept available for backward compatibility for now.
-
+#
+# The "-b" option is useful in choosing "/dev/shm/$USER/core-build" for example to speed up the build process.
 test -z "$OFFLINE_MAIN" && echo "Need set 'OFFLINE_MAIN'.  Abort." && exit
 test -z "$MY_INSTALL"   && echo   "Need set 'MY_INSTALL'.  Abort." && exit
 
@@ -20,7 +21,7 @@ install=$MY_INSTALL
 mode=all
 OPTIND=1
 cmake_args=""
-while getopts ":s:r:i:c:" OPT ; do
+while getopts ":s:r:i:c:b:" OPT ; do
     case $OPT in
         s ) mode='single'
             package=$OPTARG
@@ -36,6 +37,9 @@ while getopts ":s:r:i:c:" OPT ; do
             ;;
         c ) cmake_args=$OPTARG
             echo " - pass additional args $cmake_args to cmake"
+            ;;
+        b ) build=$OPTARG
+            echo "Build directory = $build"
             ;;
         * ) echo 'Unsupported option.  Abort.'
             exit

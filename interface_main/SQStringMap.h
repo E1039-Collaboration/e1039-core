@@ -8,6 +8,9 @@
 #include <map>
 #include <iostream>
 
+/// A general-purpose SQ interface class that holds a list of PHObjects with key = string.
+/** The usage is nearly identical to SQSpillMap.
+ */
 class SQStringMap : public PHObject {
 public:
   typedef std::map<std::string, PHObject*> ObjectMap;

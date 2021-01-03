@@ -5,6 +5,17 @@
 #include <phool/PHObject.h>
 #include "SQDimuon.h"
 
+/// An SQ interface class to hold a list of SQDimuon objects.
+/**
+ * Below is the standard way to find this object in "topNode" and loop over each dimuon;
+ * @code
+ * SQDimuonVector* dim_vec = findNode::getClass<SQDimuonVector>(topNode, "SQDimuonVector");
+ * for (SQDimuonVector::ConstIter it = dim_vec->begin(); it != dim_vec->end(); it++) {
+ *   SQDimuon* dim = *it;
+ *   int dim_id = dim->get_dimuon_id();
+ * }
+ * @endcode
+ */
 class SQDimuonVector: public PHObject {
  public:
   typedef std::vector<SQDimuon*>                    Vector;

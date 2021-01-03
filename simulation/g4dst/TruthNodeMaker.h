@@ -12,6 +12,7 @@ namespace HepMC {
 class PHHepMCGenEventMap;
 class PHG4TruthInfoContainer;
 class PHG4HitContainer;
+class SQEvent;
 class SQMCEvent;
 class SQTrack;
 class SQTrackVector;
@@ -47,7 +48,8 @@ class TruthNodeMaker: public SubsysReco {
   std::map<int, PHG4HitContainer*> m_g4hc;
 
   // output nodes
-  SQMCEvent*      m_evt;
+  SQEvent*        m_evt;
+  SQMCEvent*      m_mcevt;
   SQTrackVector*  m_vec_trk;
   SQDimuonVector* m_vec_dim;
 

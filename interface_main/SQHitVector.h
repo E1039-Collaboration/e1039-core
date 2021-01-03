@@ -16,6 +16,19 @@
 
 #include "SQHit.h"
 
+/// An SQ interface class to hold a list of SQHit objects.
+/**
+ * Below is the standard way to find this object in "topNode" and loop over each hit;
+ * @code
+ * SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+ * for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
+ *   SQHit* hit = *it;
+ *   int det_id = hit->get_detector_id();
+ * }
+ * @endcode
+ *
+ * You can use utility functions defined in UtilSQHit for more complicated manipulations.
+ */
 class SQHitVector : public PHObject {
 
 public:

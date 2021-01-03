@@ -43,9 +43,9 @@ int OnlMonHodo::InitOnlMon(PHCompositeNode* topNode)
 int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
 {
   const double DT = 20/9.0; // 4/9 ns per single count of Taiwan TDC
-  int NT    = 200;
+  int NT    = 700;
   double T0 = 200.5*DT;
-  double T1 = 400.5*DT;
+  double T1 = 900.5*DT;
   switch (m_type) {
   case H1X:  SetDet("H1T"  ,"H1B"  ); break;
   case H2X:  SetDet("H2T"  ,"H2B"  ); break;
@@ -55,10 +55,14 @@ int OnlMonHodo::InitRunOnlMon(PHCompositeNode* topNode)
   case H2Y:  SetDet("H2L"  ,"H2R"  ); break;
   case H4Y1: SetDet("H4Y1L","H4Y1R"); break;
   case H4Y2: SetDet("H4Y2L","H4Y2R"); break;
-  case DP1T: SetDet("DP1TL","DP1TR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
-  case DP1B: SetDet("DP1BL","DP1BR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
-  case DP2T: SetDet("DP2TL","DP2TR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
-  case DP2B: SetDet("DP2BL","DP2BR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
+  case DP1T: SetDet("DP1TL","DP1TR"); break;
+  case DP1B: SetDet("DP1BL","DP1BR"); break;
+  case DP2T: SetDet("DP2TL","DP2TR"); break;
+  case DP2B: SetDet("DP2BL","DP2BR"); break;
+//  case DP1T: SetDet("DP1TL","DP1TR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
+//  case DP1B: SetDet("DP1BL","DP1BR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
+//  case DP2T: SetDet("DP2TL","DP2TR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
+//  case DP2B: SetDet("DP2BL","DP2BR"); NT=200; T0=300.5*DT; T1=500.5*DT; break;
   }
 
   GeomSvc* geom = GeomSvc::instance();
@@ -194,6 +198,7 @@ int OnlMonHodo::DrawMonitor()
     if (h1_ele[i_det]->GetMinimum() == 0) empty_ele = true;
 
     pad0->cd(2*i_det+2);
+    UtilHist::AutoSetRangeY(h2_time_ele[i_det]);
     h2_time_ele[i_det]->Draw("colz");
     ostringstream oss;
     oss << "pr_" << h2_time_ele[i_det]->GetName();
@@ -213,7 +218,7 @@ int OnlMonHodo::DrawMonitor()
   pad1->Divide(1, 2);
   for (int i_det = 0; i_det < N_DET; i_det++) {
     pad1->cd(i_det+1);
-    //UtilHist::AutoSetRange(h1_time[i_det]);
+    UtilHist::AutoSetRange(h1_time[i_det]);
     //h1_time[i_det]->GetXaxis()->SetRangeUser(400, 1050);
     h1_time[i_det]->SetLineColor(kBlack);
     h1_time[i_det]->Draw();
