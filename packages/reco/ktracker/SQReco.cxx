@@ -109,7 +109,9 @@ int SQReco::InitRun(PHCompositeNode* topNode)
   if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
   //Init track finding
-  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
+ // _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
+  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, _enable_KF);///Abi (Don't we turn on enable_kF ?)
+
   _fastfinder->Verbosity(Verbosity());
 
   if(_evt_reducer_opt == "none")  //Meaning we disable the event reducer
@@ -491,6 +493,8 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
     return false;
   }
 
+  _kfitter->updateTrack(kmtrk);//update after fitting
+
   if(!kmtrk.isValid()) 
   {
     LogDebug("kmtrk quality cut failed");
@@ -506,7 +510,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
   //Set prop tube slopes
   strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
   strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
-
+  strack.setKalmanStatus(1);
   fillRecTrack(strack);
   return true;
 }
