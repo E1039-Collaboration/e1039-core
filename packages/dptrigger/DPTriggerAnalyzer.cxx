@@ -101,10 +101,14 @@ std::ostream& operator << (std::ostream& os, const DPTriggerRoad& road)
 DPTriggerAnalyzer::DPTriggerAnalyzer(const std::string& name) :
   SubsysReco(name),
   _road_set_file_name("trigger_67.txt"),
+  _output_node_name(""),
+  _use_trig_hit(false),
+  _req_intime(false),
   _mode_nim1(NIM_AND),
   _mode_nim2(NIM_AND),
   _run_header(nullptr),
   _event_header(nullptr),
+  _event_header_out(nullptr),
   _hit_vector(nullptr)
 {
 }
@@ -174,10 +178,15 @@ int DPTriggerAnalyzer::InitRun(PHCompositeNode* topNode)
 int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
   GeomSvc* geomSvc = GeomSvc::instance();
 
+  if (_event_header_out != _event_header) {
+    *_event_header_out = *_event_header; // Set the contents of the output node
+  }
+
   //NIM trigger first
   /// Count up the number of hits per hodo planes (and others for simplicity)
   map<int, int> nhit_det; // [det_id] = counts
   for (Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
+    if (_req_intime && ! _hit_vector->at(ihit)->is_in_time()) continue;
     nhit_det[ _hit_vector->at(ihit)->get_detector_id() ]++;
     // Note: GeomSvc::getTriggerLv() was used in the past version, but it should not be used since the "trigger level" was not a standard variable.
   }
@@ -200,14 +209,15 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
              nhit_det[ geomSvc->getDetectorID("H4Y2R") ] > 0   ;
   bool nim1_on = _mode_nim1 == NIM_AND  ?  HYL && HYR  :  HYL || HYR;
   bool nim2_on = _mode_nim2 == NIM_AND  ?  HXT && HXB  :  HXT || HXB;
-  _event_header->set_trigger(SQEvent::NIM1, nim1_on);
-  _event_header->set_trigger(SQEvent::NIM2, nim2_on);
+  _event_header_out->set_trigger(SQEvent::NIM1, nim1_on);
+  _event_header_out->set_trigger(SQEvent::NIM2, nim2_on);
 
   //For FPGA trigger, build the internal hit pattern first
   data.clear();
   data.resize(NTRPLANES);
   for(Int_t ihit = 0; ihit < _hit_vector->size(); ++ihit) {
     SQHit *hit=_hit_vector->at(ihit);
+    if (_req_intime && ! hit->is_in_time()) continue;
     int index = geomSvc->getHodoStation(hit->get_detector_id()) - 1;
     if (0 <= index && index < NTRPLANES) {
       data[index].insert( hit->get_detector_id()*1000 + hit->get_element_id() );
@@ -265,11 +275,11 @@ int DPTriggerAnalyzer::process_event(PHCompositeNode* topNode) {
   bool fpga3_on = (nPlusTop > 0 && nPlusBot  > 0) || (nMinusTop > 0 && nMinusBot > 0);
   bool fpga4_on =  nPlusTop > 0 || nMinusTop > 0  ||  nPlusBot  > 0 || nMinusBot > 0 ;
   bool fpga5_on = nHiPxPlusTop > 0 || nHiPxMinusTop > 0 || nHiPxPlusBot > 0 || nHiPxMinusBot > 0;
-  _event_header->set_trigger(SQEvent::MATRIX1, fpga1_on);
-  _event_header->set_trigger(SQEvent::MATRIX2, fpga2_on);
-  _event_header->set_trigger(SQEvent::MATRIX3, fpga3_on);
-  _event_header->set_trigger(SQEvent::MATRIX4, fpga4_on);
-  _event_header->set_trigger(SQEvent::MATRIX5, fpga5_on);
+  _event_header_out->set_trigger(SQEvent::MATRIX1, fpga1_on);
+  _event_header_out->set_trigger(SQEvent::MATRIX2, fpga2_on);
+  _event_header_out->set_trigger(SQEvent::MATRIX3, fpga3_on);
+  _event_header_out->set_trigger(SQEvent::MATRIX4, fpga4_on);
+  _event_header_out->set_trigger(SQEvent::MATRIX5, fpga5_on);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -286,12 +296,31 @@ int DPTriggerAnalyzer::GetNodes(PHCompositeNode* topNode) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
 
-  _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  string name_hit_vec = _use_trig_hit ? "SQTriggerHitVector" : "SQHitVector";
+  _hit_vector = findNode::getClass<SQHitVector>(topNode, name_hit_vec);
   if (!_hit_vector) {
     LogInfo("!_hit_vector");
     return Fun4AllReturnCodes::ABORTEVENT;
   }
-  
+
+  if (_output_node_name == "") {
+    _event_header_out = _event_header; 
+  } else { // Create and use a new node for output
+    _event_header_out = findNode::getClass<SQEvent>(topNode, _output_node_name);
+    if (!_event_header_out) {
+      PHNodeIterator iter(topNode);
+      PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+      if(!eventNode) {
+        LogInfo("!eventNode (DST)");
+        return Fun4AllReturnCodes::ABORTEVENT;
+      }
+      _event_header_out = (SQEvent*)_event_header->Clone();
+      _event_header_out->Reset();
+      PHIODataNode<PHObject>* node = new PHIODataNode<PHObject>(_event_header_out, _output_node_name, "PHObject");
+      eventNode->addNode(node);
+    }
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

@@ -97,11 +97,15 @@ public:
     const std::string& get_road_set_file_name() const {
       return _road_set_file_name;
     }
-    
     void set_road_set_file_name(const std::string& roadSetFileName) {
       _road_set_file_name = roadSetFileName;
     }
 
+    const std::string& get_output_node_name() const { return _output_node_name; }
+    void set_output_node_name(const std::string& name) { _output_node_name = name; }
+
+    void use_trigger_hit() { _use_trig_hit = true; }
+    void require_in_time(const bool val) { _req_intime = val; }
     void set_nim_mode(const NimMode nim1, const NimMode nim2);
     
     //!Build the trigger matrix by the input roads list
@@ -129,6 +133,9 @@ private:
 
     //! road set input file name
     std::string _road_set_file_name;
+    std::string _output_node_name;
+    bool    _use_trig_hit;
+    bool    _req_intime;
     NimMode _mode_nim1;
     NimMode _mode_nim2;
 
@@ -153,6 +160,7 @@ private:
 
     SQRun* _run_header;
     SQEvent* _event_header;
+    SQEvent* _event_header_out; //< Node for output
     SQHitVector* _hit_vector;
 };
 
