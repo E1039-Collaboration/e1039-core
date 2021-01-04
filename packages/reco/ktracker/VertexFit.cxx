@@ -117,6 +117,8 @@ VertexFit::VertexFit(const std::string& name) :
 
   ///disable target optimization by default
   optimize = false;
+  //disable targert center fit by default
+  fit_target_center = false;
 
   ///disable evaluation by default
   evalFileName = "vertex_eval.root";
@@ -347,12 +349,16 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
 
                       double m = (track_pos.getMomentumVertex() + track_neg.getMomentumVertex()).M();
                       //z_vertex_opt = -189.6 + 17.71*m - 1.159*m*m;    //parameterization of r1.4.0
-                      z_vertex_opt = -305.465 + 104.731*m - 24.3589*m*m + 2.5564*m*m*m - 0.0978876*m*m*m*m;
+                      //z_vertex_opt = -305.465 + 104.731*m - 24.3589*m*m + 2.5564*m*m*m - 0.0978876*m*m*m*m; //for E906 geomtery
+
+ 		      z_vertex_opt = -310.0540 + 4.3539*m - 0.9518*m*m + 0.0803*m*m*m ;//use this parametrization for E1039 geometry for now, more correction is due (Abi)
 
                       //std::cout << nTry << "  " << z_curr << "  " << z_vertex_opt << "  " << (track_pos.getMomentumVertex() + track_neg.getMomentumVertex()).M() << std::endl;
                   }
               }
           }
+
+	  if(fit_target_center) z_vertex_opt = Z_TARGET; //fit in the target center
 
           track_pos.setZVertex(z_vertex_opt);
           track_neg.setZVertex(z_vertex_opt);
