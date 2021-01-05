@@ -27,7 +27,19 @@
 #define VFEXIT_FAIL_ITERATION -20;
 
 //-------------- Useful marcros -----------------
-#define LogInfo(message) std::cout << "DEBUG: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
+#define LogInfo(message) std::cout << "INFO: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
 #define varName(x) #x
+
+#ifdef _DEBUG_ON
+#  define LogDebug(exp) std::cout << "DEBUG: " << typeid(*this).name() << " " << __FUNCTION__ << " " << __LINE__ << " :: " << exp << std::endl
+#else
+#  define LogDebug(exp)
+#endif
+
+#ifdef _DEBUG_ON_LEVEL_2
+#  define LogDebuglv2(exp) std::cout << "DEBUG: " << typeid(*this).name() << " " << __FUNCTION__ << " " << __LINE__ << " :: " << exp << std::endl
+#else
+#  define LogDebuglv2(exp)
+#endif
 
 #endif

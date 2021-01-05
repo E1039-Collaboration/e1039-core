@@ -86,6 +86,7 @@ bool PHG4BlockSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     }
     G4StepPoint* prePoint = aStep->GetPreStepPoint();
     G4StepPoint* postPoint = aStep->GetPostStepPoint();
+    G4ThreeVector track_mom = aTrack->GetMomentum();
     //       cout << "track id " << aTrack->GetTrackID() << endl;
     //       cout << "time prepoint: " << prePoint->GetGlobalTime() << endl;
     //       cout << "time postpoint: " << postPoint->GetGlobalTime() << endl;
@@ -97,17 +98,17 @@ bool PHG4BlockSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     {
       if (prepointstatus == fPostStepDoItProc && savepoststepstatus == fGeomBoundary)
       {
-	cout << GetName() << ": New Hit for  " << endl;
-	cout << "prestep status: " << PHG4StepStatusDecode::GetStepStatus(prePoint->GetStepStatus())
-	     << ", poststep status: " << PHG4StepStatusDecode::GetStepStatus(postPoint->GetStepStatus())
-	     << ", last pre step status: " << PHG4StepStatusDecode::GetStepStatus(saveprestepstatus)
-	     << ", last post step status: " << PHG4StepStatusDecode::GetStepStatus(savepoststepstatus) << endl;
-	cout << "last track: " << savetrackid
-	     << ", current trackid: " << aTrack->GetTrackID() << endl;
-	cout << "phys pre vol: " << volume->GetName()
-	     << " post vol : " << touchpost->GetVolume()->GetName() << endl;
-	cout << " previous phys pre vol: " << savevolpre->GetName()
-	     << " previous phys post vol: " << savevolpost->GetName() << endl;
+        cout << GetName() << ": New Hit for  " << endl;
+        cout << "prestep status: " << PHG4StepStatusDecode::GetStepStatus(prePoint->GetStepStatus())
+              << ", poststep status: " << PHG4StepStatusDecode::GetStepStatus(postPoint->GetStepStatus())
+              << ", last pre step status: " << PHG4StepStatusDecode::GetStepStatus(saveprestepstatus)
+              << ", last post step status: " << PHG4StepStatusDecode::GetStepStatus(savepoststepstatus) << endl;
+        cout << "last track: " << savetrackid
+              << ", current trackid: " << aTrack->GetTrackID() << endl;
+        cout << "phys pre vol: " << volume->GetName()
+              << " post vol : " << touchpost->GetVolume()->GetName() << endl;
+        cout << " previous phys pre vol: " << savevolpre->GetName()
+              << " previous phys post vol: " << savevolpost->GetName() << endl;
       }
       if (!hit)
       {
@@ -119,7 +120,6 @@ bool PHG4BlockSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
       hit->set_y(0, prePoint->GetPosition().y() / cm);
       hit->set_z(0, prePoint->GetPosition().z() / cm);
       //
-      G4ThreeVector track_mom = aTrack->GetMomentum();
       hit->set_px(0, track_mom.x()/GeV);
       hit->set_py(0, track_mom.y()/GeV);
       hit->set_pz(0, track_mom.z()/GeV);
@@ -184,6 +184,9 @@ bool PHG4BlockSteppingAction::UserSteppingAction(const G4Step* aStep, bool)
     hit->set_x(1, postPoint->GetPosition().x() / cm);
     hit->set_y(1, postPoint->GetPosition().y() / cm);
     hit->set_z(1, postPoint->GetPosition().z() / cm);
+    hit->set_px(1, track_mom.x()/GeV);
+    hit->set_py(1, track_mom.y()/GeV);
+    hit->set_pz(1, track_mom.z()/GeV);
 
     hit->set_t(1, postPoint->GetGlobalTime() / nanosecond);
     //sum up the energy to get total deposited

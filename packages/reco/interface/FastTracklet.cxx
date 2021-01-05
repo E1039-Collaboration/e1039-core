@@ -117,7 +117,7 @@ SignedHit::SignedHit(Hit hit_input, int sign_input) : hit(hit_input), sign(sign_
 void SignedHit::identify(std::ostream& os) const 
 {
     if(sign > 0) os << "L - ";
-    if(sign > 0) os << "R - ";
+    if(sign < 0) os << "R - ";
     if(sign == 0) os << "U - ";
 
     os << hit.index << " " << hit.detectorID << "  " << hit.elementID << std::endl;
@@ -525,6 +525,7 @@ int Tracklet::isValid() const
     {
         //Number of hits cuts, second index is X, U, V, first index is station-1, 2, 3
         int nRealHits[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+        nXHits = 0; nUHits = 0; nVHits = 0;
         for(std::list<SignedHit>::const_iterator iter = hits.begin(); iter != hits.end(); ++iter)
         {
             if(iter->hit.index < 0) continue;
@@ -533,6 +534,12 @@ int Tracklet::isValid() const
             int idx2 = p_geomSvc->getPlaneType(iter->hit.detectorID) - 1;
 
             ++nRealHits[idx1][idx2];
+            if(idx2 == 0)
+                ++nXHits;
+            else if(idx2 == 1)
+                ++nUHits;
+            else
+                ++nVHits;
         }
 
         //Number of hits cut after removing bad hits
@@ -559,37 +566,6 @@ int Tracklet::isValid() const
     return 1;
 }
 
-void Tracklet::updateNHits()
-{
-    /*
-      This function is originally included in the isValid() function, applied when stationID >= nStations-1.
-      It is moved to this separate function so that isValid can be a const function
-      TODO: Need to verify this function is not really needed, i.e. the nX/U/Vhits counter has been properly taken care of for 
-      during  the hit removal process.
-    */
-    nXHits = 0;
-    nUHits = 0;
-    nVHits = 0;
-    for(std::list<SignedHit>::const_iterator iter = hits.begin(); iter != hits.end(); ++iter)
-    {
-        if(iter->hit.index < 0) continue;
-
-        int idx = p_geomSvc->getPlaneType(iter->hit.detectorID) - 1;
-        if(idx == 0)
-        {
-            ++nXHits;
-        }
-        else if(idx == 1)
-        {
-            ++nUHits;
-        }
-        else
-        {
-            ++nVHits;
-        }
-    }
-}
-
 double Tracklet::getProb() const
 {
     int ndf;
@@ -614,7 +590,7 @@ double Tracklet::getMomProb() const
     return (index >= 0 && index < 40) ? (weights[index] < 1.E-5 ? 1.E-5 : weights[index]) : 1.E-5;
 }
 
-TVector3 Tracklet::getExpMomentum(double z)
+TVector3 Tracklet::getExpMomentum(double z) const
 {
     return (KMAG_ON && stationID >= nStations-1 && z < Z_KMAG_BEND - 1.) ? getMomentumSt1() : getMomentumSt3();
 }
@@ -667,14 +643,20 @@ double Tracklet::getExpPosErrorY(double z) const
     return err_y;
 }
 
-double Tracklet::getExpPositionW(int detectorID)
+double Tracklet::getExpPositionW(int detectorID) const
 {
     double z = p_geomSvc->getPlanePosition(detectorID);
 
     double x_exp = getExpPositionX(z);
     double y_exp = getExpPositionY(z);
 
+    if(!p_geomSvc->isInPlane(detectorID, x_exp, y_exp)) return 999999.;
     return p_geomSvc->getCostheta(detectorID)*x_exp + p_geomSvc->getSintheta(detectorID)*y_exp;
+}
+
+int Tracklet::getExpElementID(int detectorID) const
+{
+  return p_geomSvc->getExpElementID(detectorID, getExpPositionW(detectorID));
 }
 
 bool Tracklet::operator<(const Tracklet& elem) const
@@ -755,7 +737,7 @@ int Tracklet::getCharge() const
 	return x0*KMAGSTR > tx ? 1 : -1;
 }
 
-void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
+void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1) const
 {
     if(KMAG_ON)
     {
@@ -769,7 +751,7 @@ void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1)
     }
 }
 
-void Tracklet::getXZErrorInSt1(double& err_tx_st1, double& err_x0_st1)
+void Tracklet::getXZErrorInSt1(double& err_tx_st1, double& err_x0_st1) const
 {
     if(KMAG_ON)
     {
@@ -951,6 +933,7 @@ double Tracklet::calcChisq()
         double sigma;
         if(iter->sign == 0 || COARSE_MODE) 
             sigma = p_geomSvc->getPlaneSpacing(detectorID)/sqrt(12.);
+            //sigma = fabs(iter->hit.driftDistance)/sqrt(12.);
         else
             sigma = p_geomSvc->getPlaneResolution(detectorID);
 
@@ -994,6 +977,17 @@ double Tracklet::Eval(const double* par)
     x0 = par[2];
     y0 = par[3];
     if(KMAG_ON) invP = par[4];
+
+    //std::cout << tx << "  " << ty << "  " << x0 << "  " << y0 << "  " << 1./invP << std::endl;
+    return calcChisq();
+}
+
+double Tracklet::Eval4(const double* par)
+{
+    tx = par[0];
+    ty = par[1];
+    x0 = par[2];
+    y0 = par[3];
 
     //std::cout << tx << "  " << ty << "  " << x0 << "  " << y0 << "  " << 1./invP << std::endl;
     return calcChisq();
@@ -1056,7 +1050,7 @@ SRecTrack Tracklet::getSRecTrack(bool hyptest)
     return strack;
 }
 
-TVector3 Tracklet::getMomentumSt1()
+TVector3 Tracklet::getMomentumSt1() const
 {
     double tx_st1, x0_st1;
     getXZInfoInSt1(tx_st1, x0_st1);
@@ -1065,7 +1059,7 @@ TVector3 Tracklet::getMomentumSt1()
     return TVector3(pz*tx_st1, pz*ty, pz);
 }
 
-TVector3 Tracklet::getMomentumSt3()
+TVector3 Tracklet::getMomentumSt3() const
 {
     double pz = 1./invP/sqrt(1. + tx*tx);
     return TVector3(pz*tx, pz*ty, pz);
@@ -1090,7 +1084,7 @@ void Tracklet::print(std::ostream& os)
         if(iter->sign < 0) os << "R: ";
         if(iter->sign == 0) os << "U: ";
 
-        os << iter->hit.index << " " << iter->hit.detectorID << "  " << iter->hit.elementID << "  " << residual[iter->hit.detectorID-1] << " === ";
+        os << iter->hit.index << " " << p_geomSvc->getDetectorName(iter->hit.detectorID) << "(" << iter->hit.detectorID << ") " << iter->hit.elementID << "  " << residual[iter->hit.detectorID-1] << " = ";
     }
     os << endl;
 

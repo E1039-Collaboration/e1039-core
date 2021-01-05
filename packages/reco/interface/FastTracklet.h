@@ -142,7 +142,6 @@ public:
     void sortHits() { hits.sort(); }
 
     //Update/get number of real hits
-    void updateNHits();
     int getNHits() const { return nXHits + nUHits + nVHits; }
 
     //Number of all hits (even excluded)
@@ -162,18 +161,20 @@ public:
     double getExpPosErrorX(double z) const;
     double getExpPositionY(double z) const;
     double getExpPosErrorY(double z) const;
-    double getExpPositionW(int detectorID);
+    double getExpPositionW(int detectorID) const;
+    int    getExpElementID(int detectorID) const;
 
     //Get momentum upstream/downstream
-    TVector3 getMomentumSt1();
-    TVector3 getMomentumSt3();
-    TVector3 getExpMomentum(double z);
+    TVector3 getMomentumSt1() const;
+    TVector3 getMomentumSt3() const;
+    TVector3 getExpMomentum(double z) const;
 
     //Get the i-th signed hit
     SignedHit getSignedHit(int index);
 
     //Kernal function to calculate chi square for minimizer
     double Eval(const double* par);
+    double Eval4(const double* par);
     double calcChisq();
 
     //Add dummy hits
@@ -187,8 +188,8 @@ public:
     int getCharge() const;
 
     //Get the slope and intersection in station 1
-    void getXZInfoInSt1(double& tx_st1, double& x0_st1);
-    void getXZErrorInSt1(double& err_tx_st1, double& err_x0_st1);
+    void getXZInfoInSt1(double& tx_st1, double& x0_st1) const;
+    void getXZErrorInSt1(double& err_tx_st1, double& err_x0_st1) const;
 
     //For sorting tracklet list
     bool operator<(const Tracklet& elem) const;
@@ -213,9 +214,9 @@ public:
     int stationID;
 
     //Number of hits
-    int nXHits;
-    int nUHits;
-    int nVHits;
+    mutable int nXHits;
+    mutable int nUHits;
+    mutable int nVHits;
 
     //Chi square
     double chisq;
