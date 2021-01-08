@@ -102,9 +102,10 @@ void DecoError::UpdateDbInfo(DbSvc* db)
 void DecoError::UpdateDbTdc(DbSvc* db)
 {
   const char* table_name = "deco_error_tdc";
-  db->DropTable(table_name);
-  if (! db->HasTable(table_name)) { // always true for now
+  //db->DropTable(table_name);
+  if (! db->HasTable(table_name)) {
     DbSvc::VarList list;
+    list.Add("run_id"      , "INT", true);
     list.Add("roc_id"      , "INT", true);
     list.Add("error_id"    , "INT", true);
     list.Add("error_count" , "INT");
@@ -113,13 +114,21 @@ void DecoError::UpdateDbTdc(DbSvc* db)
     db->CreateTable(table_name, list);
   }
 
-  int n_err = 0;
   ostringstream oss;
+  oss << "delete from " << table_name << " where run_id = " << m_run_id;
+  if (! db->Con()->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DecoError::UpdateDbTdc(): delete." << endl;
+    return;
+  }
+
+  int n_err = 0;
+  oss.str("");
   oss << "insert into " << table_name << " values";
   for (int roc = 0; roc < N_ROC; roc++) {
     for (int err = 0; err < N_TDC_ERROR; err++) {
       if (m_n_err_tdc[roc][err].size() == 0) continue;
-      oss << " (" << roc
+      oss << " (" << m_run_id
+          << ", " << roc
           << ", " << err
           << ", " << m_n_err_tdc[roc][err].size()
           << ", " << m_n_err_tdc[roc][err].at(0)
