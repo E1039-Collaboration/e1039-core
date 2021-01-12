@@ -166,7 +166,7 @@ void Fun4AllSRawEventInputManager::E906ToE1039()
   }
 
   vector<Hit>& trhits = _srawEvent->getTriggerHits();
-  for(auto it = hits.begin(); it != hits.end(); ++it) {
+  for(auto it = trhits.begin(); it != trhits.end(); ++it) {
     SQHit* hit = new SQHit_v1();
     hit->set_hit_id(it->index);
     hit->set_detector_id(it->detectorID);
