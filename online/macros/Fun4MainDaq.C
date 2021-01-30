@@ -91,6 +91,10 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   Fun4AllDstOutputManager *out = new Fun4AllDstOutputManager("DSTOUT", fn_out);
   se->registerOutputManager(out);
 
+  Fun4AllSpillDstOutputManager *out2 = new Fun4AllSpillDstOutputManager(UtilOnline::GetDstFileDir(), "DSTOUT2");
+  out2->SetSpillStep(100);
+  se->registerOutputManager(out2);
+
   if (use_evt_disp) {
     se->registerSubsystem(new EvtDispFilter(1000, 1)); // (step, max per spill)
 
@@ -98,10 +102,10 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     oss << "/data2/e1039/onlmon/evt_disp";
     gSystem->mkdir(oss.str().c_str(), true);
     oss << "/run_" << setfill('0') << setw(6) << run << "_evt_disp.root";
-    Fun4AllDstOutputManager *out2 = new Fun4AllDstOutputManager("DSTOUT2", oss.str());
-    out2->EnableRealTimeSave();
-    out2->AddEventSelector("EvtDispFilter");
-    se->registerOutputManager(out2);
+    Fun4AllDstOutputManager *out3 = new Fun4AllDstOutputManager("DSTOUT3", oss.str());
+    out3->EnableRealTimeSave();
+    out3->AddEventSelector("EvtDispFilter");
+    se->registerOutputManager(out3);
   }
 
   se->run(nevent);
