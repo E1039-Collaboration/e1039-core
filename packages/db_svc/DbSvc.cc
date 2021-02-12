@@ -232,7 +232,7 @@ void DbSvc::SelectServer()
 void DbSvc::ConnectServer()
 {
   ostringstream oss;
-  oss << "mysql://" << m_svr << "/?reconnect=1&cnf_file=" << m_my_cnf;
+  oss << "mysql://" << m_svr << "/?timeout=120&reconnect=1&cnf_file=" << m_my_cnf;
 
   /// User and password must be given in my.cnf, not here.
   m_con = TMySQLServer::Connect(oss.str().c_str(), 0, 0);
