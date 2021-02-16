@@ -72,6 +72,8 @@ public:
 
     ///Enable the optimization of final dimuon vertex z position
     void enableOptimization() { optimize = true; }
+ //Fitting in the target center (Abi)
+    void enable_fit_target_center() {fit_target_center = true;}
 
     ///Set the convergence control parameters
     void setControlParameter(int nMaxIteration, double tolerance)
@@ -172,6 +174,7 @@ private:
 
     ///Flag to enable/disable optimization of final position
     bool optimize;
+    bool fit_target_center;
 
     TGeoManager * _t_geo_manager;
 

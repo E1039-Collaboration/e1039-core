@@ -87,10 +87,12 @@ bool KalmanFilter::predict(Node& _node)
     _extrapolator.getPropagator(_node.getPropagator());
     _node.setPredictionDone();
 
-    if(z_pred > recoConsts::instance()->get_DoubleFlag("FMAG_LENGTH"))
-    {
-        _node.getPredicted()._covar_kf = SMatrix::getABCt(_node.getPropagator(), _trkpar_curr._covar_kf, _node.getPropagator());
-    }
+
+///probably we don't need this (?); Abi
+//    if(z_pred > recoConsts::instance()->get_DoubleFlag("FMAG_LENGTH"))
+//    {
+//        _node.getPredicted()._covar_kf = SMatrix::getABCt(_node.getPropagator(), _trkpar_curr._covar_kf, _node.getPropagator());
+//    }
     /*
     else
       {

@@ -77,6 +77,12 @@ public:
     void setPropCalc(bool option) { calcProp = option; }
     void setLengthCalc(bool option) { calcLength = option; }
 
+
+   ///Tranformation between GenFit and Legacy plane; Abi
+    void TRGENFIT2LEGACY(int charge, TVector3 mom_input, TVector3 pos_input);
+    void TRLEGACY2GENFIT(int charge, TVector3 mom_input, TVector3 pos_input);
+
+
     ///Debug print
     void print();
 
@@ -131,6 +137,14 @@ private:
     ///Control on calculation of travel length
     bool calcLength;
     double travelLength;
+
+
+    ///Jacobians for genfit and lecay; Abi
+    TMatrixD jac_genfit2legacy;
+    TMatrixD jac_legacy2genfit;
+
+    ///Propagator from genfit; Abi
+    TMatrixD propM;    
 
     TGeoManager* _tgeo_manager;
 };

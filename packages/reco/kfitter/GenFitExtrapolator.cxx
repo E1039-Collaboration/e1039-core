@@ -63,7 +63,8 @@ using namespace std;
 GenFitExtrapolator::GenFitExtrapolator():
 	pos_i(TVector3()), mom_i(TVector3()), cov_i(TMatrixDSym(5)),
 	pos_f(TVector3()), mom_f(TVector3()), cov_f(TMatrixDSym(5)),
-	jac_sd2sc(TMatrixD(5,5)), jac_sc2sd(TMatrixD(5,5))
+	jac_sd2sc(TMatrixD(5,5)), jac_sc2sd(TMatrixD(5,5)), propM(TMatrixD(5,5)),
+        jac_genfit2legacy(TMatrixD(5,5)), jac_legacy2genfit(TMatrixD(5,5))
 {
     initGlobalVariables();
 }
@@ -135,6 +136,8 @@ void GenFitExtrapolator::setInitialStateWithCov(
       setParticleType(-1);
   }
 
+///we can probably remove the commented section below (? Abi)
+/*
   TMatrixD cov_sd(5, 5);
   for(int i = 0; i < 5; i++)
   {
@@ -160,6 +163,24 @@ void GenFitExtrapolator::setInitialStateWithCov(
           cov_i[i][j] = cov_sc[i][j];
       }
   }
+
+*/
+
+///Convert the error matrix from legacy to genfit plane before extrapolation; Abi
+  TRLEGACY2GENFIT(iParType, mom_i, pos_i);
+  TMatrixD jac_legacy2genfit_T = jac_legacy2genfit;
+  jac_legacy2genfit_T.T();
+  TMatrixD cov_hold= jac_legacy2genfit*cov_in*jac_legacy2genfit_T;
+  
+  for(int i = 0; i < 5; i++)
+  {
+      for(int j = 0; j < 5; j++)
+      {
+          cov_i[i][j] = cov_hold[i][j];
+      }
+  }
+
+
 }
 
 void GenFitExtrapolator::setParticleType(int type) {
@@ -169,6 +190,8 @@ void GenFitExtrapolator::setParticleType(int type) {
 void GenFitExtrapolator::getFinalStateWithCov(TMatrixD& state_out, TMatrixD& cov_out) {
   convertMPtoSV(mom_f, pos_f, state_out);
 
+/*
+///we can probably remove the commented section below (? Abi)
   TMatrixD cov_sc(5, 5);
   for(int i = 0; i < 5; i++)
   {
@@ -201,15 +224,33 @@ void GenFitExtrapolator::getFinalStateWithCov(TMatrixD& state_out, TMatrixD& cov
           if(j == 0) cov_out[i][j] = double(iParType)*cov_out[i][j];
       }
   }
+*/
+
+///Convert from genfit to legacy plane after extrapolation; Abi
+  TRGENFIT2LEGACY(iParType, mom_i, pos_i);
+  TMatrixD jac_genfit2legacy_T = jac_genfit2legacy;
+  jac_genfit2legacy_T.T();
+  TMatrixD cov_hold= jac_genfit2legacy*cov_f*jac_genfit2legacy_T;
+
+  for(int i = 0; i < 5; i++)
+   {
+      for(int j = 0; j < 5; j++)
+       {
+          cov_out[i][j] = cov_hold[i][j];
+       }
+    }
+
 }
 
 void GenFitExtrapolator::getPropagator(TMatrixD& prop) {
-//  if(fabs(pos_i[2] - pos_f[2]) < 1E-3)
-//  {
-//      prop.UnitMatrix();
-//      return;
-//  }
-//
+  if(fabs(pos_i[2] - pos_f[2]) < 1E-3)
+  {
+      prop.UnitMatrix();
+      return;
+  }
+
+/// can probably remove the commented section below (?Abi)
+
 //  for(int i = 0; i < 5; i++)
 //  {
 //      for(int j = 0; j < 5; j++)
@@ -229,6 +270,19 @@ void GenFitExtrapolator::getPropagator(TMatrixD& prop) {
 //  }
 //
 //  prop = jac_sc2sd*prop*jac_sd2sc;
+
+ for(int i = 0; i < 5; i++)
+  {
+      for(int j = 0; j < 5; j++)
+      {
+	   prop[i][j] = propM[i][j];
+
+      }
+       	
+  }
+
+  prop = jac_legacy2genfit*prop*jac_genfit2legacy;
+
 }
 
 bool GenFitExtrapolator::extrapolateTo(double z_out) {
@@ -260,10 +314,13 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 
 	auto up_rep = std::unique_ptr<genfit::AbsTrackRep> (new genfit::RKTrackRep(pid));
 	auto rep = up_rep.get();
-
+        ///set destination plane
 	genfit::SharedPlanePtr destPlane(new genfit::DetPlane(TVector3(0, 0, z_out), TVector3(0, 0, 1)));
 
 	std::unique_ptr<genfit::MeasuredStateOnPlane> currentState = std::unique_ptr < genfit::MeasuredStateOnPlane > (new genfit::MeasuredStateOnPlane(rep));
+        ///Set starting plane in GenFit (similar as destination plane)
+        genfit::SharedPlanePtr startplane(new genfit::DetPlane(TVector3(0, 0, pos_i[2]), TVector3(0, 0, 1)));
+        currentState->setPlane(startplane);
 	//rep->setPosMomCov(*currentState, pos_i, mom_i, cov_i);
 	currentState->setPosMom(pos_i, mom_i);
 	currentState->setCov(cov_i);
@@ -279,7 +336,7 @@ bool GenFitExtrapolator::extrapolateTo(double z_out) {
 
 	currentState->getPosMom(pos_f, mom_f);
 	cov_f = currentState->getCov();
-
+	propM =  rep->getJacobian();///Get propagator between the starting and destination plane
 
 	return true;
 }
@@ -367,6 +424,30 @@ void GenFitExtrapolator::convertMPtoSV(TVector3& mom, TVector3& pos, TMatrixD& s
 
 	state[3][0] = pos_cm.x();
 	state[4][0] = pos_cm.y();
+}
+
+void GenFitExtrapolator::TRLEGACY2GENFIT(int charge, TVector3 mom_input, TVector3 pos_input)
+{
+    ///simple jacobian independent of arguments (can remove the arguments later)  
+    jac_legacy2genfit.Zero();
+    jac_legacy2genfit[0][0]=1.;
+    jac_legacy2genfit[1][1]=-1.;
+    jac_legacy2genfit[2][2]=-1.;
+    jac_legacy2genfit[3][3]=-1.;
+    jac_legacy2genfit[4][4]=-1.;
+
+}
+
+void GenFitExtrapolator::TRGENFIT2LEGACY(int charge, TVector3 mom_input, TVector3 pos_input)
+{
+    ///simple jacobian independent of arguments (can remove the arguments later)  
+    jac_genfit2legacy.Zero();
+    jac_genfit2legacy[0][0]=1.;
+    jac_genfit2legacy[1][1]=-1.;
+    jac_genfit2legacy[2][2]=-1.;
+    jac_genfit2legacy[3][3]=-1.;
+    jac_genfit2legacy[4][4]=-1.;
+
 }
 
 void GenFitExtrapolator::TRSDSC(int charge, TVector3 mom_input, TVector3 pos_input)
