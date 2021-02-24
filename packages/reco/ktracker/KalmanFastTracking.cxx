@@ -122,7 +122,11 @@ namespace
     }
 }
 
-KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag), outputListIdx(4)
+KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag, bool enable): 
+    verbosity(0), 
+    enable_KF(flag), 
+    outputListIdx(4), 
+    enable_front_partial(enable)
 {
     using namespace std;
     initGlobalVariables();
@@ -501,6 +505,12 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
         return TFEXIT_FAIL_ST2_TRACKLET;
     }
 
+    if(enable_front_partial)
+    {
+        trackletsInSt[5].clear();
+        buildFrontPartialTracks();
+    }
+
     _timers["st3"]->restart();
     buildTrackletsInStation(4, 2);   //4 for station-3+
     buildTrackletsInStation(5, 2);   //5 for station-3-
@@ -653,7 +663,7 @@ void KalmanFastTracking::buildBackPartialTracks()
             {
                 if(fabs(tracklet2->tx - tracklet3->tx) > 0.15 || fabs(tracklet2->ty - tracklet3->ty) > 0.1) continue;
 
-                //Extract the X hits from station-2 tracke
+                //Extract the X hits from station-2 track
                 nHitsX2 = nHitsX3;
                 for(std::list<SignedHit>::iterator ptr_hit = tracklet2->hits.begin(); ptr_hit != tracklet2->hits.end(); ++ptr_hit)
                 {
@@ -755,6 +765,53 @@ void KalmanFastTracking::buildBackPartialTracks()
 
     reduceTrackletList(trackletsInSt[3]);
     trackletsInSt[3].sort();
+}
+
+void KalmanFastTracking::buildFrontPartialTracks()
+{
+    buildTrackletsInStation(1, 0);
+    for(std::list<Tracklet>::iterator tracklet2 = trackletsInSt[1].begin(); tracklet2 != trackletsInSt[1].end(); ++tracklet2)
+    {
+        Tracklet tracklet_best;
+        for(std::list<Tracklet>::iterator tracklet1 = trackletsInSt[0].begin(); tracklet1 != trackletsInSt[0].end(); ++tracklet1)
+        {
+            Tracklet tracklet_12 = (*tracklet1) + (*tracklet2);
+#ifdef _DEBUG_ON
+            LogInfo("Using following two tracklets:");
+            tracklet1->print();
+            tracklet2->print();
+            LogInfo("Yield this combination:");
+            tracklet_12.print();
+#endif
+            fitTracklet(tracklet_12);
+            if(tracklet_12.chisq > 9000.)
+            {
+#ifdef _DEBUG_ON
+                tracklet_12.print();
+                LogInfo("Impossible combination!");
+#endif
+                continue;
+            }
+
+            //If current tracklet is better than the best tracklet up-to-now
+            if(acceptTracklet(tracklet_12) && tracklet_12 < tracklet_best)
+            {
+                tracklet_best = tracklet_12;
+            }
+#ifdef _DEBUG_ON
+            else
+            {
+                tracklet_12.print();
+                LogInfo("Rejected!!");
+            }
+#endif
+        }
+
+        if(tracklet_best.isValid() > 0) trackletsInSt[5].push_back(tracklet_best);
+    }
+
+    reduceTrackletList(trackletsInSt[5]);
+    trackletsInSt[5].sort();
 }
 
 void KalmanFastTracking::buildGlobalTracks()

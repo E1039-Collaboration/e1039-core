@@ -543,8 +543,9 @@ int Tracklet::isValid() const
         }
 
         //Number of hits cut after removing bad hits
-        for(int i = 1; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
         {
+            if(nRealHits[i][0] == 0 && nRealHits[i][1] == 0 && nRealHits[i][2] == 0) continue;
             if(nRealHits[i][0] < 1 || nRealHits[i][1] < 1 || nRealHits[i][2] < 1) return 0;
             if(nRealHits[i][0] + nRealHits[i][1] + nRealHits[i][2] < 4) return 0;
         }
@@ -552,9 +553,6 @@ int Tracklet::isValid() const
         //for global tracks only -- TODO: may need to set a new station-1 cut
         if(stationID == nStations)
         {
-            if(nRealHits[0][0] < 1 || nRealHits[0][1] < 1 || nRealHits[0][2] < 1) return 0;
-            if(nRealHits[0][0] + nRealHits[0][1] + nRealHits[0][2] < 4) return 0;
-
             if(prob < PROB_TIGHT) return 0;
             if(KMAG_ON)
             {
@@ -580,14 +578,6 @@ double Tracklet::getProb() const
 
     return TMath::Prob(chisq, ndf);
     //return -chisq/ndf;
-}
-
-double Tracklet::getMomProb() const
-{
-    double weights[40] = {0, 0, 3.1292e-05, 0.00203877, 0.0147764, 0.0417885, 0.08536, 0.152212, 0.250242, 0.322011, 0.327125, 0.275443, 0.220316, 0.189932, 0.162112, 0.131674, 0.100102, 0.0736696, 0.0510353, 0.0364215, 0.0233914, 0.0152907, 0.00992716, 0.00601322, 0.00382757, 0.00239005, 0.00137169, 0.000768309, 0.000413311, 0.00019659, 8.31216e-05, 2.77721e-05, 7.93826e-06, 7.45884e-07, 2.57648e-08, 0, 6.00088e-09, 0, 0, 0};
-    int index = int(1./invP/2.5);
-
-    return (index >= 0 && index < 40) ? (weights[index] < 1.E-5 ? 1.E-5 : weights[index]) : 1.E-5;
 }
 
 TVector3 Tracklet::getExpMomentum(double z) const

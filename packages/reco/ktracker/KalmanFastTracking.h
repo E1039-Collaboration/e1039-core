@@ -34,7 +34,7 @@ class PHTimer;
 class KalmanFastTracking
 {
 public:
-    explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
+    explicit KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag = true, bool enableFront = false);
     ~KalmanFastTracking();
 
     //set/get verbosity
@@ -55,6 +55,9 @@ public:
 
     //Build back partial tracks using tracklets in station 2 & 3
     void buildBackPartialTracks();
+
+    //Build front partial tracks using tracklets in station 1 & 2
+    void buildFrontPartialTracks();
 
     //Build global tracks by connecting station 23 tracklets and station 1 tracklets
     void buildGlobalTracks();
@@ -101,7 +104,8 @@ public:
 
     ///Final output
     std::list<Tracklet>& getFinalTracklets() { return trackletsInSt[outputListIdx]; }
-    std::list<Tracklet>& getBackPartials() { return trackletsInSt[3]; }
+    std::list<Tracklet>& getBackPartials()   { return trackletsInSt[3]; }
+    std::list<Tracklet>& getFrontPartials()  { return trackletsInSt[5]; }
     std::list<Tracklet>& getTrackletList(int i) { return trackletsInSt[i]; }
     std::list<SRecTrack>& getSRecTracks() { return stracks; }
     std::list<PropSegment>& getPropSegments(int i) { return propSegs[i]; }
@@ -120,9 +124,9 @@ private:
     SRawEvent* rawEvent;
     std::vector<Hit> hitAll;
 
-    //Tracklets in one event, id = 0, 1, 2 for station 0/1, 2, 3+/-, id = 3 for station 2&3 combined, id = 4 for global tracks
+    //Tracklets in one event, id = 0, 1, 2 for station 0/1, 2, 3+/-, id = 3 for station 2&3 combined, id = 4 for global tracks, id = 5 for station-1&2 combined (only needed for cosmic commissioning)
     //Likewise for the next part
-    std::list<Tracklet> trackletsInSt[5];
+    std::list<Tracklet> trackletsInSt[6];
 
     //Final SRecTrack list
     std::list<SRecTrack> stracks;
@@ -205,6 +209,9 @@ private:
 
     //Flag for enable Kalman fitting
     const bool enable_KF;
+
+    //Flag to enable front partial building
+    bool enable_front_partial;
 
     //Timer
     std::map<std::string, PHTimer*> _timers;

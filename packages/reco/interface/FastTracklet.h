@@ -150,9 +150,6 @@ public:
     //Get the probabilities
     double getProb() const;
 
-    //Get the momentum probabilities
-    double getMomProb() const;
-
     //Get the chi square
     double getChisq() const { return chisq; }
 

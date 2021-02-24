@@ -59,6 +59,7 @@ SQReco::SQReco(const std::string& name):
   _fastfinder(nullptr),
   _eventReducer(nullptr),
   _enable_KF(true),
+  _enable_front_partial(false),
   _kfitter(nullptr),
   _gfitter(nullptr),
   _phfield(nullptr),
@@ -109,10 +110,9 @@ int SQReco::InitRun(PHCompositeNode* topNode)
   if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
   //Init track finding
- // _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
-  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, _enable_KF);///Abi (Don't we turn on enable_kF ?)
-
+  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false, _enable_front_partial);
   _fastfinder->Verbosity(Verbosity());
+  if(_enable_front_partial) add_eval_list(5);
 
   if(_evt_reducer_opt == "none")  //Meaning we disable the event reducer
   {

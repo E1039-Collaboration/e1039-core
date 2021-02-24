@@ -71,6 +71,9 @@ public:
   void set_enable_eval_dst(bool enable) { _enable_eval_dst = enable; }
   void add_eval_list(int listID);
 
+  bool is_front_partial_enabled() const { return _enable_front_partial; }
+  void set_enable_front_partial(bool enable) { _enable_front_partial = enable; }
+
   const TString& get_evt_reducer_opt() const { return _evt_reducer_opt; }
   void set_evt_reducer_opt(const TString& opt) { _evt_reducer_opt = opt; }
 
@@ -105,6 +108,8 @@ private:
 
   bool _enable_eval_dst;
   TrackletVector* _tracklet_vector;
+
+  bool _enable_front_partial;
 
   TString _evt_reducer_opt;
   KalmanFastTracking* _fastfinder;
