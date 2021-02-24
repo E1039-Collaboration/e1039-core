@@ -444,6 +444,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
       std::list<Tracklet>& eval_tracklets = _fastfinder->getTrackletList(_eval_listIDs[i]);
       for(auto iter = eval_tracklets.begin(); iter != eval_tracklets.end(); ++iter)
       {
+        iter->calcChisq();
         if(is_eval_enabled())
         {
           new((*_tracklets)[nTracklets]) Tracklet(*iter);
