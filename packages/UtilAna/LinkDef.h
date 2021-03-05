@@ -5,6 +5,7 @@
 
 #pragma link C++ class UtilOnline-!;
 #pragma link C++ class UtilSQHit-!;
+#pragma link C++ class UtilTrack-!;
 #pragma link C++ class UtilDimuon-!;
 
 #endif

@@ -1,7 +1,25 @@
+#include <cassert>
 #include <TLorentzVector.h>
-#include <interface_main/SQDimuon.h>
+#include <interface_main/SQDimuonVector.h>
 #include "UtilDimuon.h"
 using namespace std;
+
+/// Find a dimuon by dimuon ID in the given dimuon list.
+/**
+ * This function returns a SQDimuon pointer if successful.
+ * Otherwise it returns '0' by default, or aborts when 'do_assert' = true.
+ */
+SQDimuon* UtilDimuon::FindDimuonByID(const SQDimuonVector* vec, const int id_dim, const bool do_assert)
+{
+  for (SQDimuonVector::ConstIter it = vec->begin(); it != vec->end(); it++) {
+    SQDimuon* dim = *it;
+    if (dim->get_dimuon_id() == id_dim) {
+      if (do_assert) assert(dim);
+      return dim;
+    }
+  }
+  return 0;
+}
 
 void UtilDimuon::GetX1X2(const SQDimuon* dim, double& x1, double& x2)
 {
