@@ -439,6 +439,7 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     //Initialize tracklet lists
     for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
+    if(enable_front_partial)   trackletsInSt[5].clear();
     stracks.clear();
 
     //pre-tracking cuts
@@ -507,7 +508,6 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
 
     if(enable_front_partial)
     {
-        trackletsInSt[5].clear();
         buildFrontPartialTracks();
     }
 
