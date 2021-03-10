@@ -16,39 +16,34 @@ from Kun to E1039 experiment in Fun4All framework
 class SQBeamlineObject
 {
 public:
-    SQBeamlineObject();
-    SQBeamlineObject(const TGeoMaterial* pMaterial);
-    //BeamlineObject(const TGeoMixture* pMaterial);
-    //! get the expotential z distribution
-    double getZ();
+  SQBeamlineObject();
+  SQBeamlineObject(const TGeoMaterial* pMaterial);
 
-    //! check if the beam is in acceptance
-    bool inAcceptance(double x, double y);
+  //! get the expotential z distribution
+  double getZ(double rndm);
 
-    bool operator < (const SQBeamlineObject& obj) const;
-    friend std::ostream& operator << (std::ostream& os, const SQBeamlineObject& obj);
+  bool operator < (const SQBeamlineObject& obj) const;
+  friend std::ostream& operator << (std::ostream& os, const SQBeamlineObject& obj);
 
 public:
-    TString name;
+  TString name;
 
-    //intialized by geometry
-    double z_up, z_down, z0; //! the z position of upstram/downstream face and center
-    double length;           //! length of the stuff
-    double radiusX;          //! radiusX
-    double radiusY;          //! radiusY
+  //intialized by geometry
+  double z_up, z_down, z0; //! the z position of upstram/downstream face and center
+  double length;           //! length of the stuff
 
-    //initialized by material property
-    double nucIntLen;        //! nuclear interaction length in cm
-    double density;          //! density in g/cm3
-    double Z, A, N;          //! number of protons, nucleons, neutrons
+  //initialized by material property
+  double nucIntLen;        //! nuclear interaction length in cm
+  double density;          //! density in g/cm3
+  double Z, A, N;          //! number of protons, nucleons, neutrons
 
-    //intialized by its neighbours
-    double attenuationSelf;  //! beam attenuation percentage by itself
-    double attenuation;      //! beam attenuation factor by this object
-    double prob;             //! probability of having collision
-    double accumulatedProb;  //! sum of all the previous/upstream probs
+  //intialized by its neighbours
+  double attenuationSelf;  //! beam attenuation percentage by itself
+  double attenuation;      //! beam attenuation factor by this object
+  double prob;             //! probability of having collision
+  double accumulatedProb;  //! sum of all the previous/upstream probs
 
-    double protonPerc() { return Z/A; } //! percentage of protons = Z/A;
+  double protonPerc() { return Z/A; } //! percentage of protons = Z/A;
 };
 
 

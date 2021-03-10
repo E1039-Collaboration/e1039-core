@@ -86,6 +86,11 @@ void recoConsts::set_defaults()
   set_DoubleFlag("SIGX_BEAM", 2.);
   set_DoubleFlag("SIGY_BEAM", 2.);
 
+  set_DoubleFlag("X0_TARGET", 0.);
+  set_DoubleFlag("Y0_TARGET", 0.);
+  set_DoubleFlag("RX_TARGET", 0.95);
+  set_DoubleFlag("RY_TARGET", 0.95);
+
   set_CharFlag("EventReduceOpts", "aoc");
 
   set_BoolFlag("USE_V1495_HIT", true);

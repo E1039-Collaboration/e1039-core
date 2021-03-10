@@ -74,8 +74,8 @@ from Kun to E1039 experiment in Fun4All framework
   }
 
 
-SQPrimaryParticleGen::SQPrimaryParticleGen():
-  PHG4ParticleGeneratorBase(),
+SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
+  PHG4ParticleGeneratorBase(name),
   _Pythia(false),
   _CustomDimuon(false),
   _DrellYanGen(false),
@@ -181,36 +181,29 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
       dstNode->addNode(new PHIODataNode<PHObject>(_vec_dim, "SQTruthDimuonVector", "PHObject"));
     }
   }
+
+  _vertexGen->InitRun(topNode);
   
   return 0;
 }
 
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
+  TVector3 vtx        = _vertexGen->generateVertex();
+  Double_t pARatio    = _vertexGen->getPARatio();
+  Double_t luminosity = _vertexGen->getLuminosity();
 
-  _vertexGen->InitRun(topNode);
-  TGeoManager* geoManager = PHGeomUtility::GetTGeoManager(topNode);
-  double x_vtx,y_vtx,z_vtx;
-  x_vtx=0.;
-  y_vtx=0.;
-  z_vtx=0.;
-  _vertexGen->traverse(geoManager->GetTopNode(),x_vtx,y_vtx, z_vtx);
-  Double_t pARatio = _vertexGen->getPARatio();
-  Double_t luminosity =  _vertexGen->getLuminosity();
-  TVector3 vtx;
-  vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
+  if (_DrellYanGen) generateDrellYan(vtx, pARatio, luminosity);
+  if (_Pythia) generatePythia(vtx, pARatio);
+  if (_JPsiGen) generateJPsi(vtx, pARatio, luminosity);
+  if (_PsipGen) generatePsip(vtx, pARatio, luminosity);
 
-  if (_DrellYanGen) generateDrellYan(topNode,vtx, pARatio, luminosity);
-  if (_Pythia) generatePythia(topNode,vtx, pARatio);
-  if (_JPsiGen) generateJPsi(topNode,vtx, pARatio, luminosity);
-  if (_PsipGen) generatePsip(topNode,vtx, pARatio, luminosity);
-  
   return Fun4AllReturnCodes::EVENT_OK; 
 }
 
 //=====================DrellYan=====================================
 
-int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity)
 {
   drellyanMode = true;
   //sets invaraint mass and xF  = x1-x2 for virtual photon
@@ -282,7 +275,7 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
 }
 
 //====================generateJPsi===================================================
-int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generateJPsi(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
@@ -310,7 +303,7 @@ int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, co
 }
 
 //======================Psi-prime====================
-int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generatePsip(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
@@ -339,7 +332,7 @@ int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, co
 
 
 //==========Pythia Generator====================================================================
-int SQPrimaryParticleGen::generatePythia(PHCompositeNode *topNode,TVector3 vtx, const double pARatio)
+int SQPrimaryParticleGen::generatePythia(const TVector3& vtx, const double pARatio)
 {
  
   Pythia8::Pythia* p_pythia =gRandom->Uniform(0,1)  < pARatio ? &ppGen : &pnGen ;
@@ -448,7 +441,7 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF, bool angular)
  *  in the past versions since 2020-11-05.  But it seems not proper because a muon pair
  *   should share one vertex.
  */
-void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx)
+void SQPrimaryParticleGen::InsertMuonPair(const TVector3& vtx)
 {
   int vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
 
@@ -479,7 +472,7 @@ void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx)
 /**
  * This function could be merged to InsertMuonPair().
  */
-void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx)
+void SQPrimaryParticleGen::InsertEventInfo(double xsec, const TVector3& vtx)
 {
   static int dim_id = 0;
 

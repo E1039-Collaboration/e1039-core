@@ -15,6 +15,8 @@ from Kun to E1039 experiment in Fun4All framework
 #include <gsl/gsl_rng.h>
 #endif
 
+#include <string>
+
 #include <TGenPhaseSpace.h>
 #include <g4main/PHG4ParticleGeneratorBase.h>
 
@@ -32,7 +34,7 @@ class SQPrimaryVertexGen;
 class SQPrimaryParticleGen: public PHG4ParticleGeneratorBase
 {
 public:
-    SQPrimaryParticleGen();
+    SQPrimaryParticleGen(const std::string& name = "PrimaryGen");
     virtual ~SQPrimaryParticleGen();
 
     
@@ -43,12 +45,12 @@ public:
 
     //!Various generators
     //@{
-    int generateDrellYan(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
-    int generateJPsi(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
-    int generatePsip(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
+    int generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity);
+    int generateJPsi(const TVector3& vtx, const double pARatio, double luminosity);
+    int generatePsip(const TVector3& vtx, const double pARatio, double luminosity);
     // void generateDarkPhotonFromEta();
-    int generatePythia(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
-    int generateCustomDimuon(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
+    int generatePythia(const TVector3& vtx, const double pARatio);
+    //int generateCustomDimuon(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
   
     //@}
 
@@ -123,8 +125,8 @@ public:
     double zOffsetMin = -1.;
     double zOffsetMax = 1.;
 
-    void InsertMuonPair(TVector3& vtx);
-    void InsertEventInfo(double xsec, TVector3& vtx);
+    void InsertMuonPair(const TVector3& vtx);
+    void InsertEventInfo(double xsec, const TVector3& vtx);
 };
 
 //========

@@ -9,78 +9,86 @@ from Kun to E1039 experiment in Fun4All framework
 #define __SQPRIMARYVERTEXGEN_H__
 
 #include <vector>
+#include <memory>
 #include <TString.h>
 #include <TGeoManager.h>
-#include <TGeoMedium.h>
-#include <TGeoNode.h>
 #include <TF2.h>
 #include <TVector3.h>
-#include <TH1F.h>
+#include <TRandom1.h>
 #include "SQBeamlineObject.h"
 
 class PHCompositeNode;
-class SQBeamlineObject;
+
+class MaterialProfile
+{
+public:
+  MaterialProfile();
+  int findInteractingPiece(double rndm);
+  void calcProb();
+
+public:
+  unsigned int nPieces;
+  double probSum;
+  double accumulatedProbs[100];
+  std::vector<SQBeamlineObject> interactables;
+};
 
 class SQPrimaryVertexGen
 {
 public:
-    SQPrimaryVertexGen();
-    ~SQPrimaryVertexGen();;
+  SQPrimaryVertexGen();
+  ~SQPrimaryVertexGen();;
 
+  //! Initialize at the begining of Run
+  void InitRun(PHCompositeNode* node);
+  void InitRun(TString filename);
 
-    //Initialize files
-    void Initfile();
+  //! Real initialization
+  void init();
 
-    //Initialize at the begining of Run
-    void InitRun(PHCompositeNode* topNode);
+  //! fill material profile using initial x/y position
+  void fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx);
 
-    //Tree traversal
-    void traverse(TGeoNode* node, double&xvertex,double&yvertex,double&zvertex);
+  //! generate 3-D vertex position
+  TVector3 generateVertex();
 
+  //! use the beam profile to generate vertex in X-Y plane
+  void generateVtxPerp(double& x, double& y);
 
-    //get the vertex generated
-    // TVector3 generateVertex();
-    double generateVertex();
+  //! get the proton/neutron ratio of the piece, must be called after generateVertex
+  double getPARatio() { return pARatio; }
 
-    //use the beam profile to generate
-    void generateVtxPerp(double& x, double& y);
-
-    //do the actual sampling
-    void findInteractingPiece();
-
-    //get the proton/neutron ratio of the piece, must be called after generateVertex
-    double getPARatio() { return interactables[index].protonPerc(); }
-    
-    //get the relative luminosity on this target
-    //double getLuminosity() { return p_config->biasVertexGen ? interactables[index].prob : probSum; }
-    double getLuminosity() { return  probSum; }
-
-   //get the reference to the chosen objects
-   //const BeamlineObject& getInteractable() { return interactables[index]; } 
+  //! get the relative luminosity on this target
+  double getLuminosity() { return probSum; }
 
 private:
-    //Array of beamline objects
-    unsigned int nPieces;
-    double probSum;
-    double accumulatedProbs[100]; //for now set to no more than 100 objects
- 
-      //vector of the interactable stuff
-    std::vector<SQBeamlineObject> interactables;
-
-
-    //the index of the piece that is chosen
-    int index;
-
-    //Beam profile
-    TF2* beamProfile;
-
-    //flag to test if the generator has been initialized
-    bool inited;
-
-    // flag to use beamProfile function
-    bool beam_profile;
-
+  //! Default material profile - pre-calculated and used for protons within the target acceptance
+  MaterialProfile* defaultMatProf;
   
+  //! cache of the properties of the material selected
+  double pARatio;
+  double probSum;
+
+  //! Beam profile
+  TF2* beamProfile;
+
+  //! pointer to the geomManager
+  TGeoManager* geoManager;
+
+  //! Random number
+  TRandom1 rndm;
+
+  //! Pointer to the topNode to get geometry after PHG4Reco Init
+  PHCompositeNode* topNode;
+
+  //! flag signifying the vertex generator has been initialized
+  bool inited;
+
+  //! target profile parameters
+  double targetX0;
+  double targetY0;
+  double targetSX;
+  double targetSY;
 };
 
 #endif
