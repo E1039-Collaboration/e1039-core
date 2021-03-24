@@ -12,21 +12,22 @@ using namespace std;
  *   cout << "N = " << hv_h1t->size() << endl;
  * @endcode
  */
-SQHitVector* UtilSQHit::FindHits(const SQHitVector* vec_in, const std::string det_name)
+SQHitVector* UtilSQHit::FindHits(const SQHitVector* vec_in, const std::string det_name, const bool in_time)
 {
   GeomSvc* geom = GeomSvc::instance();
-  return FindHits(vec_in, geom->getDetectorID(det_name));
+  return FindHits(vec_in, geom->getDetectorID(det_name), in_time);
 }
 
 /**
  * See the other FindHits() function to find how to handle the returned object.
  */
-SQHitVector* UtilSQHit::FindHits(const SQHitVector* vec_in, const int det_id)
+SQHitVector* UtilSQHit::FindHits(const SQHitVector* vec_in, const int det_id, const bool in_time)
 {
   SQHitVector* vec = vec_in->Clone();
   vec->clear();
   for (SQHitVector::ConstIter it = vec_in->begin(); it != vec_in->end(); it++) {
     SQHit* hit = *it;
+    if (in_time && ! hit->is_in_time()) continue;
     if (hit->get_detector_id() == det_id) vec->push_back(hit);
   }
   return vec;
@@ -35,21 +36,22 @@ SQHitVector* UtilSQHit::FindHits(const SQHitVector* vec_in, const int det_id)
 /**
  * See FindHits() to find how to handle the returned object.
  */
-SQHitVector* UtilSQHit::FindFirstHits(const SQHitVector* vec_in, const std::string det_name)
+SQHitVector* UtilSQHit::FindFirstHits(const SQHitVector* vec_in, const std::string det_name, const bool in_time)
 {
   GeomSvc* geom = GeomSvc::instance();
-  return FindFirstHits(vec_in, geom->getDetectorID(det_name));
+  return FindFirstHits(vec_in, geom->getDetectorID(det_name), in_time);
 }
 
 /**
  * See FindHits() to find how to handle the returned object.
  */
-SQHitVector* UtilSQHit::FindFirstHits(const SQHitVector* vec_in, const int det_id)
+SQHitVector* UtilSQHit::FindFirstHits(const SQHitVector* vec_in, const int det_id, const bool in_time)
 {
   map<int, double> id2time; // [element ID] = first (max) tdcTime;
   map<int, int   > id2idx ; // [element ID] = index of vec_in
   for (unsigned int idx = 0; idx < vec_in->size(); idx++) {
     const SQHit* hit = vec_in->at(idx);
+    if (in_time && ! hit->is_in_time()) continue;
     if (hit->get_detector_id() != det_id) continue;
     short  ele_id = hit->get_element_id();
     double time   = hit->get_tdc_time();
