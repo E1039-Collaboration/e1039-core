@@ -25,6 +25,8 @@ Created: 10-19-2011
 #include <TRotation.h>
 #include <TMatrixD.h>
 
+#include <phool/recoConsts.h>
+
 #include "GeomParamPlane.h"
 #include "GeomSvc.h"
 
@@ -564,7 +566,12 @@ void GeomSvc::initPlaneDirect() {
 
 void GeomSvc::initPlaneDbSvc() {
   using namespace std;
-  const int run = 1; // todo: need adjustable in the future
+  recoConsts* rc = recoConsts::instance();
+  int run = rc->get_IntFlag("RUNNUMBER");
+  if (run == 0) {
+    run = 1;
+    rc->set_IntFlag("RUNNUMBER", run);
+  }
   cout << "GeomSvc:  Load the plane geometry info via DbSvc for run = " << run << "." << endl;
 
   GeomParamPlane* geom = new GeomParamPlane();

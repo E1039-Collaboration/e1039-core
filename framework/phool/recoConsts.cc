@@ -157,6 +157,7 @@ void recoConsts::set_defaults()
 void recoConsts::init(int runNo, bool verbose)
 {
   //TODO: initialization based on run range
+  set_IntFlag("RUNNUMBER", runNo);
   return;
 }
 
