@@ -1,4 +1,5 @@
 /// OnlMonTrigNim.C
+#include <sstream>
 #include <iomanip>
 #include <TStyle.h>
 #include <TH2D.h>
@@ -10,7 +11,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonTrigNim.h"
 using namespace std;
 

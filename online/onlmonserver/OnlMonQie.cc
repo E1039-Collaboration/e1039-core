@@ -1,10 +1,12 @@
 /// OnlMonQie.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <THStack.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <TLegend.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQEvent.h>
 #include <fun4all/Fun4AllReturnCodes.h>
@@ -13,7 +15,6 @@
 #include <phool/getClass.h>
 #include <UtilAna/UtilBeam.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonQie.h"
 using namespace std;
 
@@ -42,12 +43,12 @@ int OnlMonQie::InitRunOnlMon(PHCompositeNode* topNode)
 
   //h1_trig_cnt = new TH1D("h1_trig_cnt", ";Trigger counts;N of events", 100, -0.5, 4999.5);
   //h2_presum   = new TH2D("h2_presum" , ";Presum;Index", 100, -0.5, 4999.5,  N_PRESUM, -0.5, N_PRESUM-0.5);
-  h2_turn_rf = new TH2D("h2_turn_rf", ";Turn ID;RF ID", 369, 0.5, 369000.5,  588, 0.5, 588.5);
+  h2_turn_rf = new TH2D("h2_turn_rf", "Turn+RF IDs of events;Turn ID;RF ID", 369, 0.5, 369000.5,  588, 0.5, 588.5);
 
   int     inte_num;
   double* inte_edges;
   UtilBeam::ListOfRfValueEdges(inte_num, inte_edges);
-  h2_inte_rf = new TH2D("h2_inte_rf", ";RF intensity;RF+nn", inte_num, inte_edges, N_RF_INTE, -N_RF_INTE/2.0, N_RF_INTE/2.0);
+  h2_inte_rf = new TH2D("h2_inte_rf", "RF intensity;RF intensity;RF+nn", inte_num, inte_edges, N_RF_INTE, -N_RF_INTE/2.0, N_RF_INTE/2.0);
 
   RegisterHist(h1_evt_status);
   //RegisterHist(h1_trig_cnt);
@@ -155,11 +156,16 @@ int OnlMonQie::DrawMonitor()
   h1_p00->SetLineColor(kRed);
   h1_p01->SetLineColor(kBlue);
   h1_m01->SetLineColor(kBlack);
-  THStack* hs = new THStack("hs", "RF intensity @ RF+01, RF+00, RF-01;N of events");
+  THStack* hs = new THStack("hs", "RF intensity @ RF+nn;RF intensity;N of events");
   hs->Add(h1_p00, "l");
   hs->Add(h1_p01, "l");
   hs->Add(h1_m01, "l");
   hs->Draw("nostack");
+  TLegend* leg = new TLegend(0.8, 0.8, 0.99, 0.99);
+  leg->AddEntry(h1_p01, "RF+01", "l");
+  leg->AddEntry(h1_p00, "RF+00", "l");
+  leg->AddEntry(h1_m01, "RF-01", "l");
+  leg->Draw();
 
   return 0;
 }

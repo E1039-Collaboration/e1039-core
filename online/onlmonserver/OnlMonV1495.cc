@@ -1,4 +1,5 @@
 /// OnlMonV1495.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -12,7 +13,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonV1495.h"
 using namespace std;
 

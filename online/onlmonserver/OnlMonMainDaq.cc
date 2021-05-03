@@ -1,4 +1,5 @@
 /// OnlMonMainDaq.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TCanvas.h>
@@ -10,7 +11,6 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonMainDaq.h"
 using namespace std;
 

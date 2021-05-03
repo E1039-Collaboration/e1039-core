@@ -1,4 +1,5 @@
 /// OnlMonTrigSig.C
+#include <sstream>
 #include <iomanip>
 #include <TH2D.h>
 #include <interface_main/SQEvent.h>
@@ -9,7 +10,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonTrigSig.h"
 using namespace std;
 
