@@ -3,7 +3,7 @@
 
 namespace UtilBeam {
   void ListOfRfValues(int& n_value, int*& list_values);
-  void ListOfRfValueEdges(int& n_edge, double*& list_edges);
+  void ListOfRfValues(int& n_value, double*& list_values);
 }; // namespace UtilBeam
 
 #endif /* _UTIL_BEAM__H_ */

@@ -1,6 +1,5 @@
 #include "UtilBeam.h"
 using namespace std;
-namespace UtilBeam {
 
 /// Make a list of QIE RF+nn values.
 /**
@@ -8,7 +7,7 @@ namespace UtilBeam {
  * This function just fills `list_values` with a list of all values.
  * The values are taken from "float_2_linrom-2.xls" in DocDB 537.
  */
-void ListOfRfValues(int& n_value, int*& list_values)
+void UtilBeam::ListOfRfValues(int& n_value, int*& list_values)
 {
   static int idx = 0;
   static int list[256];
@@ -35,38 +34,26 @@ void ListOfRfValues(int& n_value, int*& list_values)
   list_values = list;
 }
 
-/// Make a list of histogram bin edges for the QIE RF+nn value.
+/// Make a list of QIE RF+nn values.
 /**
- * The possible values for QIE RF+nn are not evenly distributed.
- * This function generates a proper set of histogram bin edges for them.
- *
+ * This function uses an array of "double", instead of "int".
+ * It is suitable for the constructors of the TH1 classes.
  * ```
- * int n_edge;
- * double* list_edges;
- * UtilBeam::ListOfRfValueEdges(n_edge, list_edges);
- * TH1* h1_rf_inte = new TH1D("h1_rf_inte", "", n_edge, list_edges);
+ * int num_inte;
+ * double* list_inte;
+ * UtilBeam::ListOfRfValues(num_inte, list_inte);
+ * TH1* h1_rf_inte = new TH1D("h1_rf_inte", "", num_inte - 1, list_inte);
  * ```
  */
-void ListOfRfValueEdges(int& n_edge, double*& list_edges)
+void UtilBeam::ListOfRfValues(int& n_value, double*& list_values)
 {
-  static int num = 0;
+  static int idx = 0;
   static double list[256];
-  if (num == 0) {
-    int n_value;
-    int* list_values;
-    ListOfRfValues(n_value, list_values);
-    num = n_value + 1;
-    
-    list[0] = -0.5;
-    for (int i = 1; i < n_value; i++) list[i] = (list_values[i] + list_values[i-1]) / 2.0;
-    list[n_value] = list_values[n_value-1] + 4096/2;
-    
-    //cout << "n = " << n_value << "\n";
-    //for (int i = 0; i < n_value; i++) cout << i << "\t" << list_values[i] << "\t" << list_edges[i] << "\n";
-    //cout << "\t\t" << list_edges[n_value] << endl;
+  if (idx == 0) {
+    int* list_int;
+    ListOfRfValues(idx, list_int);
+    for (int i = 0; i < idx; i++) list[i] = list_int[i];
   }
-  n_edge = num;
-  list_edges = list;
+  n_value = idx;
+  list_values = list;
 }
-
-}; // End of "namespace UtilBeam"

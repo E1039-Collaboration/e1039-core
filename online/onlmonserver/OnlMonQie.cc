@@ -45,10 +45,10 @@ int OnlMonQie::InitRunOnlMon(PHCompositeNode* topNode)
   //h2_presum   = new TH2D("h2_presum" , ";Presum;Index", 100, -0.5, 4999.5,  N_PRESUM, -0.5, N_PRESUM-0.5);
   h2_turn_rf = new TH2D("h2_turn_rf", "Turn+RF IDs of events;Turn ID;RF ID", 369, 0.5, 369000.5,  588, 0.5, 588.5);
 
-  int     inte_num;
-  double* inte_edges;
-  UtilBeam::ListOfRfValueEdges(inte_num, inte_edges);
-  h2_inte_rf = new TH2D("h2_inte_rf", "RF intensity;RF intensity;RF+nn", inte_num, inte_edges, N_RF_INTE, -N_RF_INTE/2.0, N_RF_INTE/2.0);
+  int num_inte;
+  double* list_inte;
+  UtilBeam::ListOfRfValues(num_inte, list_inte);
+  h2_inte_rf = new TH2D("h2_inte_rf", "RF intensity;RF intensity;RF+nn", num_inte-1, list_inte, N_RF_INTE, -N_RF_INTE/2.0, N_RF_INTE/2.0);
 
   RegisterHist(h1_evt_status);
   //RegisterHist(h1_trig_cnt);
@@ -137,6 +137,8 @@ int OnlMonQie::DrawMonitor()
     }
   }
   //can0->SetStatus(OnlMonCanvas::OK);
+
+  h2_inte_rf->GetXaxis()->SetRangeUser(0.0, 2000.0);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
