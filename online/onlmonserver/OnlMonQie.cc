@@ -120,10 +120,15 @@ int OnlMonQie::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
   pad0->Divide(1, 2);
-  pad0->cd(1);  h1_evt_status->Draw();
-  pad0->cd(2);  h2_turn_rf   ->Draw("colz");
+
+  TVirtualPad* pad01 = pad0->cd(1);
+  pad01->SetGrid();
+  h1_evt_status->Draw();
+
+  TVirtualPad* pad02 = pad0->cd(2);
+  pad02->SetGrid();
+  h2_turn_rf->Draw("colz");
 
   double n_evt_all = h1_evt_status->GetBinContent(ALL); // bin = 1
   // "bin = 2" is skipped since it means OK.
@@ -142,14 +147,16 @@ int OnlMonQie::DrawMonitor()
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
   pad1->Divide(1, 2);
-  pad1->cd(1);
-  pad1->SetLogx();
+
+  TVirtualPad* pad11 = pad1->cd(1);
+  pad11->SetGrid();
+  pad11->SetLogx();
   h2_inte_rf->Draw("colz");
 
-  pad1->cd(2);
-  pad1->SetLogx();
+  TVirtualPad* pad12 = pad1->cd(2);
+  pad12->SetGrid();
+  pad12->SetLogx();
   int bin = h2_inte_rf->GetYaxis()->FindBin(0.0); // RF+00
   TH1* h1_p01 = h2_inte_rf->ProjectionX("h1_p01", bin+1, bin+1);
   TH1* h1_p00 = h2_inte_rf->ProjectionX("h1_p00", bin  , bin  );
