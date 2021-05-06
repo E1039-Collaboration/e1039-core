@@ -1,4 +1,5 @@
 /// OnlMonProp.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <interface_main/SQRun.h>
@@ -10,7 +11,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonProp.h"
 using namespace std;
 
@@ -115,20 +115,20 @@ int OnlMonProp::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
-  pad0->Divide(2, 2);
+  pad0->Divide(2, N_PL/2); // Assume N_PL is even.
   for (int pl = 0; pl < N_PL; pl++) {
-    pad0->cd(pl+1);
+    TVirtualPad* pad0i = pad0->cd(pl+1);
+    pad0i->SetGrid();
     h1_ele[pl]->Draw();
   }
   //can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
-  pad1->Divide(2, 2);
+  pad1->Divide(2, N_PL/2); // Assume N_PL is even.
   for (int pl = 0; pl < N_PL; pl++) {
-    pad1->cd(pl+1);
+    TVirtualPad* pad1i = pad1->cd(pl+1);
+    pad1i->SetGrid();
     UtilHist::AutoSetRange(h1_time[pl]);
     h1_time[pl]->Draw();
   }

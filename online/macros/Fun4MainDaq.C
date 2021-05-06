@@ -9,11 +9,6 @@ R__LOAD_LIBRARY(libpheve_modules)
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
   gSystem->Umask(0002);
-  gSystem->Load("libinterface_main.so");
-  gSystem->Load("libdecoder_maindaq.so");
-  gSystem->Load("libonlmonserver.so");
-  gSystem->Load("libpheve_modules.so");
-  GeomSvc::UseDbSvc(true);
   const bool use_onlmon = true;
   const bool use_evt_disp = true;
 
@@ -58,6 +53,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonTrigNim());
+    se->registerSubsystem(new OnlMonQie());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H3X, 1));

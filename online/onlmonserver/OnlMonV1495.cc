@@ -1,4 +1,5 @@
 /// OnlMonV1495.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -12,7 +13,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonV1495.h"
 using namespace std;
 
@@ -174,17 +174,17 @@ int OnlMonV1495::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
-  pad0->Divide(2, 2);
+  pad0->Divide(2, N_DET);
   for (int i_det = 0; i_det < N_DET; i_det++) {
-    pad0->cd(2*i_det+1);
+    TVirtualPad* pad01 = pad0->cd(2*i_det+1);
     h1_ele[i_det]->SetLineColor(kBlack);
     h1_ele[i_det]->Draw();
     h1_ele_in[i_det]->SetLineColor(kBlue);
     h1_ele_in[i_det]->SetFillColor(kBlue-7);
     h1_ele_in[i_det]->Draw("same");
 
-    pad0->cd(2*i_det+2);
+    TVirtualPad* pad02 = pad0->cd(2*i_det+2);
+    pad02->SetGrid();
     h2_time_ele[i_det]->Draw("colz");
     ostringstream oss;
     oss << "pr_" << h2_time_ele[i_det]->GetName();
@@ -196,10 +196,10 @@ int OnlMonV1495::DrawMonitor()
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
-  pad1->Divide(1, 2);
+  pad1->Divide(1, N_DET);
   for (int i_det = 0; i_det < N_DET; i_det++) {
-    pad1->cd(i_det+1);
+    TVirtualPad* pad11 = pad1->cd(i_det+1);
+    pad11->SetGrid();
     //UtilHist::AutoSetRange(h1_time[i_det]);
     h1_time[i_det]->SetLineColor(kBlack);
     h1_time[i_det]->Draw();

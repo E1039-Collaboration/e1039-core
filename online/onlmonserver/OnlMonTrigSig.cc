@@ -1,4 +1,5 @@
 /// OnlMonTrigSig.C
+#include <sstream>
 #include <iomanip>
 #include <TH2D.h>
 #include <interface_main/SQEvent.h>
@@ -9,7 +10,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonTrigSig.h"
 using namespace std;
 
@@ -144,26 +144,35 @@ int OnlMonTrigSig::DrawMonitor()
 
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
   pad0->Divide(1, 2);
-  pad0->cd(1);  DrawTH2WithPeakPos(h2_bi_fpga);
-  pad0->cd(2);  DrawTH2WithPeakPos(h2_ai_fpga);
+  TVirtualPad* pad01 = pad0->cd(1);
+  pad01->SetGrid();
+  DrawTH2WithPeakPos(h2_bi_fpga);
+  TVirtualPad* pad02 = pad0->cd(2);
+  pad02->SetGrid();
+  DrawTH2WithPeakPos(h2_ai_fpga);
   //can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
   pad1->Divide(1, 2);
-  pad1->cd(1);  DrawTH2WithPeakPos(h2_bi_nim);
-  pad1->cd(2);  DrawTH2WithPeakPos(h2_ai_nim);
+  TVirtualPad* pad11 = pad1->cd(1);
+  pad11->SetGrid();
+  DrawTH2WithPeakPos(h2_bi_nim);
+  TVirtualPad* pad12 = pad1->cd(2);
+  pad12->SetGrid();
+  DrawTH2WithPeakPos(h2_ai_nim);
   //can1->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can2 = GetCanvas(2);
   TPad* pad2 = can2->GetMainPad();
-  pad2->SetGrid();
   pad2->Divide(1, 2);
-  pad2->cd(1);  DrawTH2WithPeakPos(h2_rf  );
-  pad2->cd(2);  DrawTH2WithPeakPos(h2_stop);
+  TVirtualPad* pad21 = pad2->cd(1);
+  pad21->SetGrid();
+  DrawTH2WithPeakPos(h2_rf);
+  TVirtualPad* pad22 = pad2->cd(2);
+  pad22->SetGrid();
+  DrawTH2WithPeakPos(h2_stop);
   //can2->SetStatus(OnlMonCanvas::OK);
 
   return 0;

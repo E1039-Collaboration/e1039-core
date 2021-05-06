@@ -1,4 +1,5 @@
 /// OnlMonMainDaq.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TCanvas.h>
@@ -10,7 +11,6 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonMainDaq.h"
 using namespace std;
 
@@ -140,7 +140,6 @@ int OnlMonMainDaq::DrawMonitor()
   can->SetStatus(OnlMonCanvas::OK);
 
   TPad* pad = can->GetMainPad();
-  pad->SetGrid();
   pad->Divide(1, 3);
 
   pad->cd(1);
@@ -148,16 +147,28 @@ int OnlMonMainDaq::DrawMonitor()
   TPad* pad12 = new TPad("pad12", "", 0.6, 0.0, 1.0, 1.0);
   pad11->Draw();
   pad12->Draw();
-  pad11->cd();  h1_trig->Draw();
-  pad12->cd();  h1_flag_v1495->Draw();
+
+  pad11->cd();
+  pad11->SetGrid();
+  h1_trig->Draw();
+
+  pad12->cd();
+  pad12->SetGrid();
+  h1_flag_v1495->Draw();
 
   pad->cd(2);
   TPad* pad21 = new TPad("pad21", "", 0.0, 0.0, 0.7, 1.0);
   TPad* pad22 = new TPad("pad22", "", 0.7, 0.0, 1.0, 1.0);
   pad21->Draw();
   pad22->Draw();
-  pad21->cd();  h1_evt_qual->Draw();
-  pad22->cd();  h1_n_taiwan->Draw();
+
+  pad21->cd();
+  pad21->SetGrid();
+  h1_evt_qual->Draw();
+
+  pad22->cd();
+  pad22->SetGrid();
+  h1_n_taiwan->Draw();
 
   pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);

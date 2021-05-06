@@ -7,5 +7,6 @@
 #pragma link C++ class UtilSQHit-!;
 #pragma link C++ class UtilTrack-!;
 #pragma link C++ class UtilDimuon-!;
+#pragma link C++ class UtilBeam-!;
 
 #endif

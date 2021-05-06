@@ -1,4 +1,5 @@
 /// OnlMonHodo.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -12,7 +13,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonHodo.h"
 using namespace std;
 
@@ -185,11 +185,11 @@ int OnlMonHodo::DrawMonitor()
   OnlMonCanvas* can0 = GetCanvas(0);
   can0->SetStatus(OnlMonCanvas::OK);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
-  pad0->Divide(2, 2);
+  pad0->Divide(2, N_DET);
   bool empty_ele = false;
   for (int i_det = 0; i_det < N_DET; i_det++) {
-    pad0->cd(2*i_det+1);
+    TVirtualPad* pad01 = pad0->cd(2*i_det+1);
+    pad01->SetGrid();
     h1_ele[i_det]->SetLineColor(kBlack);
     h1_ele[i_det]->Draw();
     h1_ele_in[i_det]->SetLineColor(kBlue);
@@ -197,7 +197,8 @@ int OnlMonHodo::DrawMonitor()
     h1_ele_in[i_det]->Draw("same");
     if (h1_ele[i_det]->GetMinimum() == 0) empty_ele = true;
 
-    pad0->cd(2*i_det+2);
+    TVirtualPad* pad02 = pad0->cd(2*i_det+2);
+    pad02->SetGrid();
     UtilHist::AutoSetRangeY(h2_time_ele[i_det]);
     h2_time_ele[i_det]->Draw("colz");
     ostringstream oss;
@@ -214,10 +215,10 @@ int OnlMonHodo::DrawMonitor()
   OnlMonCanvas* can1 = GetCanvas(1);
   //can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
-  pad1->Divide(1, 2);
+  pad1->Divide(1, N_DET);
   for (int i_det = 0; i_det < N_DET; i_det++) {
-    pad1->cd(i_det+1);
+    TVirtualPad* pad1i = pad1->cd(i_det+1);
+    pad1i->SetGrid();
     UtilHist::AutoSetRange(h1_time[i_det]);
     //h1_time[i_det]->GetXaxis()->SetRangeUser(400, 1050);
     h1_time[i_det]->SetLineColor(kBlack);

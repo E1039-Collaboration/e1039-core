@@ -18,6 +18,7 @@
 #pragma link C++ class OnlMonH4-!;
 #pragma link C++ class OnlMonCham-!;
 #pragma link C++ class OnlMonProp-!;
+#pragma link C++ class OnlMonQie-!;
 #pragma link C++ class OnlMonReco-!;
 
 #endif
