@@ -326,7 +326,6 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   //Total cross-section
   double xsec   = xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const;
   double weight = xsec * luminosity;
-
   InsertEventInfo(xsec, weight, vtx);
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -385,7 +384,7 @@ int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, co
 
   double xsec = DPGEN::psipscale * DPGEN::brjpsi * xsec_xf * xsec_limit;
   double weight = xsec * luminosity;
-  InsertEventInfo(xsec, xsec, vtx);
+  InsertEventInfo(xsec, weight, vtx);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
