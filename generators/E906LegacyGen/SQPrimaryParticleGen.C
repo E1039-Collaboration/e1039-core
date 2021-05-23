@@ -20,6 +20,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <Pythia8Plugins/HepMC2.h>
 #include <phgeom/PHGeomUtility.h>
 #include <boost/format.hpp>
+#include <phhepmc/PHGenIntegralv1.h>
 #include <g4main/PHG4ParticleGeneratorBase.h>
 #include <g4main/PHG4InEvent.h>
 #include <g4main/PHG4Particlev1.h>
@@ -28,6 +29,8 @@ from Kun to E1039 experiment in Fun4All framework
 #include <g4main/PHG4TruthInfoContainer.h>
 #include <gsl/gsl_randist.h>
 #include <Geant4/G4ParticleTable.hh>
+#include <Geant4/G4PhysicalConstants.hh>
+#include <interface_main/SQEvent_v1.h>
 #include <interface_main/SQMCEvent_v1.h>
 #include <interface_main/SQDimuon_v1.h>
 #include <interface_main/SQDimuonVector_v1.h>
@@ -35,6 +38,8 @@ from Kun to E1039 experiment in Fun4All framework
 
 #include "SQPrimaryParticleGen.h"
 #include "SQPrimaryVertexGen.h"
+
+using namespace std;
 
  namespace DPGEN
   {
@@ -83,7 +88,12 @@ SQPrimaryParticleGen::SQPrimaryParticleGen():
   _JPsiGen(false),
   _PsipGen(false),
   ineve(NULL),
-  _dim_gen(new SQDimuon_v1())
+  _dim_gen(new SQDimuon_v1()),
+  _integral_node(0),
+  _n_gen_acc_evt(0),
+  _n_proc_evt(0),
+  _weight_sum(0),
+  _inte_lumi(0)
 {
  
   _vertexGen = new SQPrimaryVertexGen();
@@ -169,6 +179,12 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
     PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
     dstNode->addNode(newNode);
 
+    _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
+    if (! _evt) {
+      _evt = new SQEvent_v1();
+      dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
+    }
+
     _mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
     if (! _mcevt) {
       _mcevt = new SQMCEvent_v1();
@@ -179,6 +195,20 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
     if (! _vec_dim) {
       _vec_dim = new SQDimuonVector_v1();
       dstNode->addNode(new PHIODataNode<PHObject>(_vec_dim, "SQTruthDimuonVector", "PHObject"));
+    }
+
+    PHCompositeNode *runNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+    if (!runNode) {
+      cout << PHWHERE << "RUN Node missing.  ABORTRUN." << endl;
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
+    _integral_node = findNode::getClass<PHGenIntegral>(runNode, "PHGenIntegral");
+    if (!_integral_node) {
+      _integral_node = new PHGenIntegralv1("By SQPrimaryParticleGen");
+      runNode->addNode(new PHIODataNode<PHObject>(_integral_node, "PHGenIntegral", "PHObject"));
+    } else {
+      cout << PHWHERE << "PHGenIntegral Node exists.  Unexpected.  ABORTRUN." << endl;
+      return Fun4AllReturnCodes::ABORTRUN;
     }
   }
   
@@ -200,10 +230,26 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   TVector3 vtx;
   vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
 
-  if (_DrellYanGen) generateDrellYan(topNode,vtx, pARatio, luminosity);
-  if (_Pythia) generatePythia(topNode,vtx, pARatio);
-  if (_JPsiGen) generateJPsi(topNode,vtx, pARatio, luminosity);
-  if (_PsipGen) generatePsip(topNode,vtx, pARatio, luminosity);
+  int ret; // KN: Do we need to return ABORTEVENT or repeat to generate a good event???
+  if (_DrellYanGen) ret = generateDrellYan(topNode,vtx, pARatio, luminosity);
+  if (_Pythia     ) ret = generatePythia(topNode,vtx, pARatio);
+  if (_JPsiGen    ) ret = generateJPsi(topNode,vtx, pARatio, luminosity);
+  if (_PsipGen    ) ret = generatePsip(topNode,vtx, pARatio, luminosity);
+  if (ret != Fun4AllReturnCodes::EVENT_OK) return Fun4AllReturnCodes::ABORTEVENT;
+
+  static int evt_id = 0;
+  _evt->set_run_id  (0);
+  _evt->set_spill_id(0);
+  _evt->set_event_id(evt_id++);
+
+  _n_gen_acc_evt++;
+  _n_proc_evt++;
+  _weight_sum += _mcevt->get_weight();
+  _inte_lumi  += luminosity;
+  _integral_node->set_N_Generator_Accepted_Event(_n_gen_acc_evt);
+  _integral_node->set_N_Processed_Event         (_n_proc_evt);
+  _integral_node->set_Sum_Of_Weight             (_weight_sum);
+  _integral_node->set_Integrated_Lumi           (_inte_lumi);
   
   return Fun4AllReturnCodes::EVENT_OK; 
 }
@@ -270,15 +316,20 @@ int SQPrimaryParticleGen::generateDrellYan(PHCompositeNode *topNode,TVector3 vtx
   double xsec_phsp = dim_x1*dim_x2/(dim_x1 + dim_x2)/dim_mass/dim_mass/dim_mass;
   
   //generation limitation
-  double xsec_limit = (massMax - massMin)*(xfMax - xfMin)*(cosThetaMax*cosThetaMax*cosThetaMax/3. 
-							   +cosThetaMax - cosThetaMin*cosThetaMin*cosThetaMin/3. 
-							   - cosThetaMin)*4./3.;
+  //double xsec_limit = (massMax - massMin)*(xfMax - xfMin)*(cosThetaMax*cosThetaMax*cosThetaMax/3. 
+  //      						   +cosThetaMax - cosThetaMin*cosThetaMin*cosThetaMin/3. 
+  //							   - cosThetaMin)*4./3.;
+  double xsec_limit = (pow(cosThetaMax, 3)/3 + cosThetaMax - pow(cosThetaMin, 3)/3 - cosThetaMin) * 4./3.; // or 3/4?
+
+  const double xsec_const = 8.0 / 9.0 * pi * pow(fine_structure_const, 2) * pow(hbar_Planck, 2) * c_squared;
   
   //Total cross-section
-  double xsec = xsec_pdf*xsec_kfactor*xsec_phsp*xsec_limit*luminosity;
-  //@cross_section
+  double xsec   = xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const;
+  double weight = xsec * luminosity;
 
-  InsertEventInfo(xsec, vtx);
+  InsertEventInfo(xsec, weight, vtx);
+
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 //====================generateJPsi===================================================
@@ -303,10 +354,11 @@ int SQPrimaryParticleGen::generateJPsi(PHCompositeNode *topNode,TVector3 vtx, co
   //generation limitation
   double xsec_limit = xfMax - xfMin;
 
-  double xsec = DPGEN::brjpsi*xsec_xf*xsec_limit*luminosity;
-  //@cross_section}
+  double xsec = DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double weight = xsec * luminosity;
+  InsertEventInfo(xsec, weight, vtx);
 
-  InsertEventInfo(xsec, vtx);
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 //======================Psi-prime====================
@@ -331,10 +383,11 @@ int SQPrimaryParticleGen::generatePsip(PHCompositeNode *topNode,TVector3 vtx, co
   //generation limitation
   double xsec_limit = xfMax - xfMin;
 
-  double xsec = DPGEN::psipscale*DPGEN::brjpsi*xsec_xf*xsec_limit*luminosity;
-  //@}
+  double xsec = DPGEN::psipscale * DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double weight = xsec * luminosity;
+  InsertEventInfo(xsec, xsec, vtx);
 
-  InsertEventInfo(xsec, vtx);
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 
@@ -376,10 +429,8 @@ int SQPrimaryParticleGen::generatePythia(PHCompositeNode *topNode,TVector3 vtx, 
       ineve->AddParticle(vtxindex, particle);
       
     }
- 
-  return 0;
 
-
+  return Fun4AllReturnCodes::EVENT_OK;
 }
 
 
@@ -425,6 +476,7 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF, bool angular)
     double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
 
     // while loop to generate dimuons with 1+cos^2theta distribution
+    // KN: Do we need this loop???
     while(firstTry || angular)
     {
         firstTry = false;
@@ -479,12 +531,12 @@ void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx)
 /**
  * This function could be merged to InsertMuonPair().
  */
-void SQPrimaryParticleGen::InsertEventInfo(double xsec, TVector3& vtx)
+void SQPrimaryParticleGen::InsertEventInfo(double xsec, double weight, TVector3& vtx)
 {
   static int dim_id = 0;
 
   _mcevt->set_cross_section(xsec);
-  _mcevt->set_weight       (xsec);
+  _mcevt->set_weight       (weight);
 
   _vec_dim->clear();
   _dim_gen->set_dimuon_id   (++dim_id);
