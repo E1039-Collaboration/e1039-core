@@ -57,38 +57,30 @@ public:
 
     //!Various generators
     //@{
-    int generateDrellYan(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
-    int generateJPsi(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
-    int generatePsip(PHCompositeNode *topNode, TVector3 vtx, const double pARatio, double luminosity);
+    int generateDrellYan(TVector3 vtx, const double pARatio, double luminosity);
+    int generateJPsi(TVector3 vtx, const double pARatio, double luminosity);
+    int generatePsip(TVector3 vtx, const double pARatio, double luminosity);
     // void generateDarkPhotonFromEta();
-    int generatePythia(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
-    int generateCustomDimuon(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
+    int generatePythia(TVector3 vtx, const double pARatio);
+    //int generateCustomDimuon(PHCompositeNode *topNode, TVector3 vtx, const double pARatio);
   
     //@}
 
     //!Dimuon phase space generator
-     bool generateDimuon(double mass, double xF, bool angular = false);
+     bool generateDimuon(double mass, double xF);
 
-     //! Run-accumulated variables
-    //@{
-    Int_t nEventsThrown;
-    Int_t nEventsPhysics;
-    Int_t nEventsAccepted;
-    //@}
-    
     //swith for the generators; Abi
     //@
     void enablePythia(){_Pythia = true;}
-    bool _Pythia;
     void enableCustomDimuon(){_CustomDimuon = true;}
-    bool _CustomDimuon;
     void enableDrellYanGen(){_DrellYanGen = true;}
-    bool _DrellYanGen;
-    bool drellyanMode;
     void enableJPsiGen(){_JPsiGen = true;}
-    bool _JPsiGen;
     void enablePsipGen(){_PsipGen = true;}
-    bool _PsipGen;
+
+    void set_pT0DY    (const double val) { _pT0DY     = val; }
+    void set_pTpowDY  (const double val) { _pTpowDY   = val; }
+    void set_pT0JPsi  (const double val) { _pT0JPsi   = val; }
+    void set_pTpowJPsi(const double val) { _pTpowJPsi = val; }
 
     void set_xfRange(const double xmin, const double xmax){
       xfMin = xmin;
@@ -100,17 +92,24 @@ public:
     }
     //@
 
+    double CrossSectionDrellYan(const double mass, const double xF, const double pARatio);
+    double CrossSectionDrellYan(const double mass, const double xF, const double x1, const double x2, const double pARatio);
+
  private:
+    bool _Pythia;
+    bool _CustomDimuon;
+    bool _DrellYanGen;
+    bool _JPsiGen;
+    bool _PsipGen;
 
     SQPrimaryVertexGen* _vertexGen;
     PHG4InEvent *ineve;
     SQEvent* _evt; //< An output node
     SQMCEvent* _mcevt; //< An output node
     SQDimuonVector* _vec_dim; //< An output node
+    PHGenIntegral *_integral_node; //< An output node
 
     SQDimuon* _dim_gen; //< To hold the kinematics of a dimuon generated
-
-    PHGenIntegral *_integral_node;
 
     //Pythia generator
     Pythia8::Pythia ppGen;    //!< Pythia pp generator
@@ -123,7 +122,12 @@ public:
 
     //!PDFs
     LHAPDF::PDF* pdf;
-    
+
+    // Parameters (being moved from DPGEN)
+    double _pT0DY;
+    double _pTpowDY;
+    double _pT0JPsi;
+    double _pTpowJPsi;
   
     //some initializations
   
