@@ -5,6 +5,7 @@
 #include <geom_svc/GeomSvc.h>
 #include <fun4all/Fun4AllBase.h>
 #include <fun4all/Fun4AllReturnCodes.h>
+#include <phool/recoConsts.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
@@ -139,6 +140,7 @@ int DPTriggerAnalyzer::Init(PHCompositeNode *topNode)
   string line = "";
   std::ifstream fin(gSystem->ExpandPathName(_road_set_file_name.c_str()), std::ifstream::in);
   if (fin.is_open()) {
+    recoConsts::instance()->set_CharFlag("TRIGGER_EMU_L1", _road_set_file_name);
     while (getline(fin, line)) {
       stringstream ss(line);
 

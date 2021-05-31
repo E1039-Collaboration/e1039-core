@@ -42,9 +42,6 @@ public:
   //!digitize the emcal hits
   void digitizeEMCal(const std::string& detName);
 
-  //!realization process 
-  bool realize(SQHit& dHit);
-
   //!Get the trigger level by detectorID
   int getTriggerLv(int detectorID) { return p_geomSvc->getTriggerLv(detectorID); }
 
