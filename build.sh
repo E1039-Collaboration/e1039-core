@@ -71,7 +71,8 @@ else # 'all' or 'resume'
     database/pdbcal/base
     database/PHParameter
     packages/PHGeometry
-    packages/PHField
+    packages/PHField 
+    generators/E906LegacyVtxGen
     generators/phhepmc
     generators/PHPythia8
     simulation/g4decayer
