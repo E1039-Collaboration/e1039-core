@@ -34,7 +34,10 @@ from Kun to E1039 experiment in Fun4All framework
 #include <UtilAna/UtilDimuon.h>
 
 #include "SQPrimaryParticleGen.h"
-#include "SQPrimaryVertexGen.h"
+#include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
+#include <cassert>
+#include <cstdlib>
+using namespace std;
 
  namespace DPGEN
   {
@@ -76,13 +79,14 @@ from Kun to E1039 experiment in Fun4All framework
 
 SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   PHG4ParticleGeneratorBase(name),
-  _Pythia(false),
+  _PythiaGen(false),
   _CustomDimuon(false),
   _DrellYanGen(false),
   drellyanMode(false),
   _JPsiGen(false),
   _PsipGen(false),
   ineve(NULL),
+  _configFile("phpythia8.cfg"),
   _dim_gen(new SQDimuon_v1())
 {
  
@@ -102,36 +106,8 @@ SQPrimaryParticleGen::~SQPrimaryParticleGen()
 
 int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 {
-
-  // ppGen.readFile("pythia8_DY.cfg");
-  // pnGen.readFile("pythia8_DY.cfg");
-  //can't read the configuration file..hard coded for now ..change it back to reading from configuration file
-  if(_Pythia){
-  ppGen.readString("PDF:pSet = 7 ");//  CTEQ6L
-  ppGen.readString("ParticleDecays:limitTau = on"); //Only decays the unstable particles
-  ppGen.readString("WeakSingleBoson:ffbar2ffbar(s:gm) = on");// ffbar -> gamma* -> ffbar
-  ppGen.readString("Beams:frameType = 2");
-  ppGen.readString("Beams:idA = 2212");
-  ppGen.readString("Beams:eA = 120.");
-  ppGen.readString("Beams:eB = 0.");
-  ppGen.readString("Beams:allowVertexSpread = on");
-
-
-  pnGen.readString("PDF:pSet = 7 ");
-  pnGen.readString("ParticleDecays:limitTau = on");
-  pnGen.readString("WeakSingleBoson:ffbar2ffbar(s:gm) = on");
-  pnGen.readString("Beams:frameType = 2");
-  pnGen.readString("Beams:idA = 2212");
-  pnGen.readString("Beams:eA = 120.");
-  pnGen.readString("Beams:eB = 0.");
-  pnGen.readString("Beams:allowVertexSpread = on");
-
-
-
-  ppGen.readString("Beams:idB = 2212");
-  pnGen.readString("Beams:idB = 2112");
-  
-
+  if(_PythiaGen){
+  if (!_configFile.empty()) read_config();
   unsigned int seed = PHRandomSeed();
   if (seed > 900000000)
     {
@@ -147,6 +123,9 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
       pnGen.readString(str(boost::format("Random:seed = %1%") % seed));
       
     }
+
+  ppGen.readString("Beams:idB = 2212");
+  ppGen.readString("Beams:idB = 2112");
 
   ppGen.init();
   pnGen.init();
@@ -194,7 +173,7 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   Double_t luminosity = _vertexGen->getLuminosity();
 
   if (_DrellYanGen) generateDrellYan(vtx, pARatio, luminosity);
-  if (_Pythia) generatePythia(vtx, pARatio);
+  if (_PythiaGen) generatePythia(vtx, pARatio);
   if (_JPsiGen) generateJPsi(vtx, pARatio, luminosity);
   if (_PsipGen) generatePsip(vtx, pARatio, luminosity);
 
@@ -372,9 +351,28 @@ int SQPrimaryParticleGen::generatePythia(const TVector3& vtx, const double pARat
  
   return 0;
 
-
 }
 
+int SQPrimaryParticleGen::read_config(const char *cfg_file)
+{
+  if (cfg_file) _configFile = cfg_file;
+
+  if (verbosity >= VERBOSITY_SOME)
+    cout << "PHPythia8::read_config - Reading " << _configFile << endl;
+
+  ifstream infile(_configFile.c_str());
+
+  if (infile.fail())
+  {
+    cout << "PHPythia8::read_config - Failed to open file " << _configFile << endl;
+    exit(2);
+  }
+
+  ppGen.readFile(_configFile.c_str());
+  pnGen.readFile(_configFile.c_str());
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
 
 //============Main function to generate dimuon====================
 //Reference: G. Moerno et.al. Phys. Rev D43:2815-2836, 1991

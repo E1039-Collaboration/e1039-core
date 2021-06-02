@@ -66,8 +66,8 @@ public:
     
     //swith for the generators; Abi
     //@
-    void enablePythia(){_Pythia = true;}
-    bool _Pythia;
+    void enablePythia(){_PythiaGen = true;}
+    bool _PythiaGen;
     void enableCustomDimuon(){_CustomDimuon = true;}
     bool _CustomDimuon;
     void enableDrellYanGen(){_DrellYanGen = true;}
@@ -77,6 +77,12 @@ public:
     bool _JPsiGen;
     void enablePsipGen(){_PsipGen = true;}
     bool _PsipGen;
+
+    //! config file for pythia
+    void set_config_file(const char *cfg_file)
+    {
+     if (cfg_file) _configFile = cfg_file; 
+    }
 
     void set_xfRange(const double xmin, const double xmax){
       xfMin = xmin;
@@ -94,24 +100,23 @@ public:
     PHG4InEvent *ineve;
     SQMCEvent* _mcevt; //< An output node
     SQDimuonVector* _vec_dim; //< An output node
-
     SQDimuon* _dim_gen; //< To hold the kinematics of a dimuon generated
 
     //Pythia generator
     Pythia8::Pythia ppGen;    //!< Pythia pp generator
     Pythia8::Pythia pnGen;    //!< Pythia pn generator
+    Pythia8::Pythia _Pythia;
+   //!config for pythia generator ; Abi
+    std::string _configFile;
+    int read_config(const char *cfg_file = 0);
 
-  
     //!ROOT phase space generator
     TGenPhaseSpace phaseGen;
-
 
     //!PDFs
     LHAPDF::PDF* pdf;
     
-  
-    //some initializations
-  
+    //! some initializations  
     double massMin = 0.22;
     double massMax = 10.;
     double x1Min = 0.;
@@ -127,6 +132,7 @@ public:
 
     void InsertMuonPair(const TVector3& vtx);
     void InsertEventInfo(double xsec, const TVector3& vtx);
+
 };
 
 //========

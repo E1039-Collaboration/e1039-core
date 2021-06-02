@@ -26,7 +26,7 @@
 #include <interface_main/SQMCEvent_v1.h>
 
 #include "SQExternalGen.h"
-#include "SQPrimaryVertexGen.h"
+#include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
 
 ExtParticle::ExtParticle(int evtID, int pdg, const TVector3& pos, const TVector3& mom):
   _evtID(evtID),

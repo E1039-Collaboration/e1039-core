@@ -156,7 +156,7 @@ add_library(g4testbench SHARED
 )
 
 target_link_libraries(phg4hit      -lphool -lSubsysReco -lfun4all ${GEANT4_LINK})
-target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc_io -lxerces-c -lphgeom -lphg4gdml -L./ -lphg4hit ${GEANT4_LINK})
+target_link_libraries(g4testbench  -lphfield -lg4decayer -lgsl -lgslcblas -lvararray -lHepMC -lphhepmc_io -lxerces-c -lphgeom -lphg4gdml -L./ -lphg4hit -lSQPrimaryVtxGen ${GEANT4_LINK})
 
 install(TARGETS phg4hit     					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS g4testbench 					DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

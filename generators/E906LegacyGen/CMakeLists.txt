@@ -13,8 +13,6 @@ add_custom_command (
   ARGS -f SQPrimaryGen_Dict.C -noIncludePaths -inlineInputHeader -c -p 
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQPrimaryParticleGen.h
-  ${PROJECT_SOURCE_DIR}/SQPrimaryVertexGen.h
-  ${PROJECT_SOURCE_DIR}/SQBeamlineObject.h
   ${PROJECT_SOURCE_DIR}/SQExternalGen.h
   ${PROJECT_SOURCE_DIR}/SQPrimaryGenLinkDef.h
 	)
@@ -61,8 +59,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${LHAPDF_PREFIX}/include/ ")
 
 add_library(SQPrimaryGen SHARED
   SQPrimaryParticleGen.C
-  SQPrimaryVertexGen.C
-  SQBeamlineObject.C
   SQExternalGen.C
   SQPrimaryGen_Dict.C	
 )
@@ -80,6 +76,7 @@ target_link_libraries(SQPrimaryGen -L./
   -lphg4hit
   -lg4testbench
   -lpythia8
+  -lSQPrimaryVtxGen
   ${LHAPDF_LINK}
 )
 
@@ -89,8 +86,6 @@ message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
   SQPrimaryParticleGen.h
-  SQPrimaryVertexGen.h
-  SQBeamlineObject.h
   SQExternalGen.h
 )
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)

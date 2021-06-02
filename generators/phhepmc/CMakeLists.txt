@@ -76,7 +76,7 @@ add_library(phhepmc_io SHARED
 target_link_libraries(phhepmc_io -lphool -lHepMC)
 
 add_dependencies(phhepmc phhepmc_io)
-target_link_libraries(phhepmc phhepmc_io -lphool -lSubsysReco -lboost_iostreams -lfun4all -lgsl -lgslcblas)
+target_link_libraries(phhepmc phhepmc_io -lphool -lSubsysReco -lboost_iostreams -lfun4all -lgsl -lgslcblas -lSQPrimaryVtxGen)
 
 install(TARGETS phhepmc_io  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(TARGETS phhepmc     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
