@@ -124,7 +124,7 @@ void SQPrimaryVertexGen::init()
 
 void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx)
 {
-  std::cout << xvtx << "  " << yvtx << std::endl;
+  //std::cout << xvtx << "  " << yvtx << std::endl;
   //retrieve the z position of all geometry boundaries
   recoConsts* rc = recoConsts::instance();
 
