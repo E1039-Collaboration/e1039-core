@@ -158,9 +158,7 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
     {
       double z_center = 0.5*(z[i] + z[i+1]);
       if(z_center > 503.) continue;
-      //if (z_center<-310.) continue;
-      //if (z_center>-290.) continue;
-      std::cout<<"z_center: "<<z_center<<" ith value: "<<i<<std::endl;
+ 
       SQBeamlineObject obj(geoManager->FindNode(xvtx, yvtx, z_center)->GetVolume()->GetMaterial());
       //TString name = geoManager->FindNode(xvtx, yvtx, z_center)->GetVolume()->GetName();
 
@@ -168,12 +166,9 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
       obj.z_down = z[i+1];
       obj.z0 = z_center;
       obj.length = z[i+1] - z[i];
-   
-      TString name = obj.name;    
-      if(! name.Contains("Target")) continue;
+     //TString name = obj.name;    
+    
       prof->interactables.push_back(obj);
-      // if (z_center<-310.) break;
-      //if (z_center>-290.) break; 
     }
 
   //calculate all related properties
