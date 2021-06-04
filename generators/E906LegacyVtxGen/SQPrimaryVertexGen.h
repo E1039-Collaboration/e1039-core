@@ -1,9 +1,9 @@
 /*==========================================================================
-Author: Abinash Pun, Kun Liu
-Sep, 2019
-Goal: Import the primary vertex generator of E906 experiment(DPVertexGenerator)
-from Kun to E1039 experiment in Fun4All framework
-============================================================================*/
+  Author: Abinash Pun, Kun Liu
+  Sep, 2019
+  Goal: Import the primary vertex generator of E906 experiment(DPVertexGenerator)
+  from Kun to E1039 experiment in Fun4All framework
+  ============================================================================*/
 
 #ifndef __SQPRIMARYVERTEXGEN_H__
 #define __SQPRIMARYVERTEXGEN_H__
@@ -22,12 +22,12 @@ class PHCompositeNode;
 
 class MaterialProfile
 {
-public:
+ public:
   MaterialProfile();
   int findInteractingPiece(double rndm);
   void calcProb();
 
-public:
+ public:
   unsigned int nPieces;
   double probSum;
   double accumulatedProbs[100];
@@ -36,7 +36,7 @@ public:
 
 class SQPrimaryVertexGen: public SubsysReco
 {
-public:
+ public:
   SQPrimaryVertexGen();
   ~SQPrimaryVertexGen();;
 
@@ -63,9 +63,13 @@ public:
   double getLuminosity() { return probSum; }
 
   //! beam profile function
-   static double funcBeamProfile(double* val, double* par);
-   
-private:
+  static double funcBeamProfile(double* val, double* par);
+  
+  //!setting target/fmag only function
+  static void set_targetOnlyMode(){_targetOnlyMode = true;}
+  static void set_dumpOnlyMode(){_dumpOnlyMode = true;}
+
+ private:
   //! Default material profile - pre-calculated and used for protons within the target acceptance
   MaterialProfile* defaultMatProf;
   
@@ -87,12 +91,16 @@ private:
 
   //! flag signifying the vertex generator has been initialized
   bool inited;
-  bool enableTargetOnly;//abi
+  
   //! target profile parameters
   double targetX0;
   double targetY0;
   double targetSX;
   double targetSY;
+
+  //! flag for using target and dump only
+  static bool _targetOnlyMode;
+  static bool _dumpOnlyMode;
 };
 
 #endif
