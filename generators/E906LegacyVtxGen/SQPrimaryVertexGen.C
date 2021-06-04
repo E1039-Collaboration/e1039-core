@@ -45,7 +45,7 @@ void MaterialProfile::calcProb()
 
   //set the accumulatedProbs
   nPieces = interactables.size();
-
+ 
   interactables[0].accumulatedProb = 0.;
   accumulatedProbs[0] = 0.;
   for(unsigned int i = 1; i < nPieces; ++i)
@@ -79,6 +79,9 @@ SQPrimaryVertexGen::~SQPrimaryVertexGen()
   if(defaultMatProf != nullptr) delete defaultMatProf;
 }
 
+bool SQPrimaryVertexGen::_targetOnlyMode = false;
+bool SQPrimaryVertexGen::_dumpOnlyMode = false;
+
 int SQPrimaryVertexGen::InitRun(PHCompositeNode* node)
 {
   topNode = node;
@@ -95,20 +98,21 @@ int SQPrimaryVertexGen::InitRun(TString filename)
 void SQPrimaryVertexGen::init()
 {
   recoConsts* rc = recoConsts::instance();
-  
+
+  targetX0 = rc->get_DoubleFlag("X0_TARGET");
+  targetY0 = rc->get_DoubleFlag("Y0_TARGET");
+  targetSX = rc->get_DoubleFlag("RX_TARGET");
+  targetSY = rc->get_DoubleFlag("RY_TARGET"); 
+
+ 
   beamProfile = new TF2("beamProfile", &SQPrimaryVertexGen::funcBeamProfile, -6.,6.,-6.,6.,4,2);
-  beamProfile->SetNpx(100);//SetNpx and Npy for smooth distribution (default is 30)
-  beamProfile->SetNpy(100); 
+  beamProfile->SetNpx(200);//SetNpx and Npy for smooth distribution (default is 30)
+  beamProfile->SetNpy(200); 
  
   beamProfile->SetParameter(0, rc->get_DoubleFlag("X_BEAM"));
   beamProfile->SetParameter(1, rc->get_DoubleFlag("SIGX_BEAM"));
   beamProfile->SetParameter(2, rc->get_DoubleFlag("Y_BEAM"));
   beamProfile->SetParameter(3, rc->get_DoubleFlag("SIGY_BEAM"));
-  
-  targetX0 = rc->get_DoubleFlag("X0_TARGET");
-  targetY0 = rc->get_DoubleFlag("Y0_TARGET");
-  targetSX = rc->get_DoubleFlag("RX_TARGET");
-  targetSY = rc->get_DoubleFlag("RY_TARGET");
 
   rndm.SetSeed(PHRandomSeed());
 
@@ -160,14 +164,23 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
       if(z_center > 503.) continue;
  
       SQBeamlineObject obj(geoManager->FindNode(xvtx, yvtx, z_center)->GetVolume()->GetMaterial());
-      //TString name = geoManager->FindNode(xvtx, yvtx, z_center)->GetVolume()->GetName();
-
+      TString name = geoManager->FindNode(xvtx, yvtx, z_center)->GetVolume()->GetName();
       obj.z_up = z[i];
       obj.z_down = z[i+1];
       obj.z0 = z_center;
       obj.length = z[i+1] - z[i];
-     //TString name = obj.name;    
     
+      //TString name = obj.name;    
+      //std::cout<<" Name of beam volume "<<name<<std::endl;  
+
+      if (_targetOnlyMode){
+	if(! name.Contains("Target")) continue;
+      }
+
+      if (_dumpOnlyMode){
+	if(! name.Contains("fmag")) continue;
+      }
+
       prof->interactables.push_back(obj);
     }
 
@@ -178,6 +191,7 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
   // {
   //   std::cout << prof->interactables[i] << std::endl;
   // }
+  // return 0;
 }
 
 
@@ -192,6 +206,7 @@ TVector3 SQPrimaryVertexGen::generateVertex()
   MaterialProfile* activeProf;
   if(!inTarget)
     {
+      
       activeProf = new MaterialProfile;
       fillMaterialProfile(activeProf, xvtx, yvtx);
     }
@@ -231,7 +246,17 @@ double SQPrimaryVertexGen::funcBeamProfile(double* val, double* par)
   if (pow(x,2) + pow(y,2) > pow(r_pipe,2)) { // not "x-x_c" nor "y-y_c" here
     return 0.0;
   }
-  
+
+  //@ for target only mode
+  recoConsts* rc = recoConsts::instance();   
+  bool inTarget = (pow(x-rc->get_DoubleFlag("X0_TARGET"),2)/pow(rc->get_DoubleFlag("RX_TARGET"),2 )+ pow(y-rc->get_DoubleFlag("Y0_TARGET"),2)/pow(rc->get_DoubleFlag("RY_TARGET"),2)) < 1.; 
+  if (_targetOnlyMode){ 
+    if (! inTarget) { // 
+      return 0.0;
+    }
+  } 
+  //@
+
   double x_nr = (x - x_c)/x_s; // normalized relative x
   double y_nr = (y - y_c)/y_s; // normalized relative y
   double r_nr = sqrt(pow(x_nr, 2) + pow(y_nr, 2));
@@ -240,5 +265,6 @@ double SQPrimaryVertexGen::funcBeamProfile(double* val, double* par)
   } else { // >= r_boun
     return exp(-0.5*pow(r_boun, 2)) * r_boun / r_nr;
   }
+  
 }
 
