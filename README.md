@@ -29,6 +29,10 @@ If you are a member of the GitHub E1039 group, you better use the following comm
 ```
 git clone git@github.com:E1039-Collaboration/e1039-core.git
 ```
+If you are looking to install the DarkQuest repository you can use:
+```
+git clone git@github.com:DarkQuest-FNAL/e1039-core.git
+```
 
 ## Build and Install
 
