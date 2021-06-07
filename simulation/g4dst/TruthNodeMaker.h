@@ -74,6 +74,7 @@ class TruthNodeMaker: public SubsysReco {
 
   void set_legacy_rec_container(bool b = true) { m_legacy_rec_container = b; }
   void set_matching_threshold(double threshold) { m_matching_threshold = threshold; }
+  void set_do_evt_header(bool b = true) { m_do_evt_header = b;}
   void set_do_truthtrk_tagging(bool b = true) { m_do_truthtrk_tagging = b;}
   void set_m_process_type(int process=4) { m_process_type = process;}
 
