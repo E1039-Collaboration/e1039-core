@@ -865,7 +865,7 @@ void KalmanFastTracking::buildGlobalTracks()
             {
                 tracklet_best[i] = tracklet_best_vtx;
             }
-            if(tracklet_best_prob.isValid() > 0) //then fall back to the default only choice
+            else if(tracklet_best_prob.isValid() > 0) //then fall back to the default only choice
             {
                 tracklet_best[i] = tracklet_best_prob;
             }
