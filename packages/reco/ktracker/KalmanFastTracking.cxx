@@ -76,6 +76,9 @@ namespace
     static bool COSMIC_MODE;
     static bool COARSE_MODE;
 
+    //if displaced, skip fit to the target/vertex
+    static bool NOT_DISPLACED;
+
     //initialize global variables
     void initGlobalVariables()
     {
@@ -88,6 +91,8 @@ namespace
             KMAG_ON = rc->get_BoolFlag("KMAG_ON");
             COSMIC_MODE = rc->get_BoolFlag("COSMIC_MODE");
             COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
+
+            NOT_DISPLACED = rc->get_BoolFlag("NOT_DISPLACED");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -788,8 +793,7 @@ void KalmanFastTracking::buildGlobalTracks()
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
-            //Tracklet tracklet_best_prob, tracklet_best_vtx;
-            Tracklet tracklet_best_prob;
+            Tracklet tracklet_best_prob, tracklet_best_vtx;
             for(std::list<Tracklet>::iterator tracklet1 = trackletsInSt[0].begin(); tracklet1 != trackletsInSt[0].end(); ++tracklet1)
             {
 #ifdef _DEBUG_ON
@@ -820,15 +824,15 @@ void KalmanFastTracking::buildGlobalTracks()
 
                 ///Set vertex information - only applied when KF is enabled
                 ///TODO: maybe in the future add a Genfit-based equivalent here, for now leave as is
-                //if(enable_KF)
-                //{
-                //    _timers["global_kalman"]->restart();
-                //    SRecTrack recTrack = processOneTracklet(tracklet_global);
-                //    _timers["global_kalman"]->stop();
-                //    tracklet_global.chisq_vtx = recTrack.getChisqVertex();
+                if(enable_KF && NOT_DISPLACED)
+                {
+                    _timers["global_kalman"]->restart();
+                    SRecTrack recTrack = processOneTracklet(tracklet_global);
+                    _timers["global_kalman"]->stop();
+                    tracklet_global.chisq_vtx = recTrack.getChisqVertex();
 
-                //    if(recTrack.isValid() && tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx) tracklet_best_vtx = tracklet_global;
-                //}
+                    if(recTrack.isValid() && tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx) tracklet_best_vtx = tracklet_global;
+                }
 
 #ifdef _DEBUG_ON
                 LogInfo("New tracklet: ");
@@ -840,28 +844,28 @@ void KalmanFastTracking::buildGlobalTracks()
                 LogInfo("Comparison I: " << (tracklet_global < tracklet_best_prob));
                 LogInfo("Quality I   : " << acceptTracklet(tracklet_global));
 
-                //if(enable_KF)
-                //{
-                //    LogInfo("Current best by vtx:");
-                //    tracklet_best_vtx.print();
+                if(enable_KF && NOT_DISPLACED)
+                {
+                    LogInfo("Current best by vtx:");
+                    tracklet_best_vtx.print();
 
-                //    LogInfo("Comparison II: " << (tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx));
-                //    //LogInfo("Quality II   : " << recTrack.isValid());
-                //}
+                    LogInfo("Comparison II: " << (tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx));
+                    //LogInfo("Quality II   : " << recTrack.isValid());
+                }
 #endif
             }
             _timers["global_link"]->stop();
 
-            ////The selection logic is, prefer the tracks with best p-value, as long as it's not low-pz
-            //if(enable_KF && tracklet_best_prob.isValid() > 0 && 1./tracklet_best_prob.invP > 18.)
-            //{
-            //    tracklet_best[i] = tracklet_best_prob;
-            //}
-            //else if(enable_KF && tracklet_best_vtx.isValid() > 0) //otherwise select the one with best vertex chisq, TODO: maybe add a z-vtx constraint
-            //{
-            //    tracklet_best[i] = tracklet_best_vtx;
-            //}
-            if(tracklet_best_prob.isValid() > 0) //then fall back to the default only choice
+            //The selection logic is, prefer the tracks with best p-value, as long as it's not low-pz
+            if(enable_KF && NOT_DISPLACED && tracklet_best_prob.isValid() > 0 && 1./tracklet_best_prob.invP > 18.)
+            {
+                tracklet_best[i] = tracklet_best_prob;
+            }
+            else if(enable_KF && NOT_DISPLACED && tracklet_best_vtx.isValid() > 0) //otherwise select the one with best vertex chisq, TODO: maybe add a z-vtx constraint
+            {
+                tracklet_best[i] = tracklet_best_vtx;
+            }
+            else if(tracklet_best_prob.isValid() > 0) //then fall back to the default only choice
             {
                 tracklet_best[i] = tracklet_best_prob;
             }
