@@ -72,6 +72,8 @@ class TruthNodeMaker: public SubsysReco {
   void set_legacy_rec_container(bool b = true) { m_legacy_rec_container = b; }
   void set_matching_threshold(double threshold) { m_matching_threshold = threshold; }
 
+  void set_do_event_header(bool do_evt_header) { m_do_evt_header = do_evt_header; }
+
  private:
   int  GetNodes(PHCompositeNode *topNode);
   int MakeNodes(PHCompositeNode *topNode);
