@@ -104,7 +104,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
         lvec.SetPxPyPzE(mom->px(), mom->py(), mom->pz(), mom->e());
         m_mcevt->set_particle_id(iii, par->pdg_id());
         m_mcevt->set_particle_momentum(iii, lvec);
-	cout << "set particle id " << par->pdg_id() << " and momentum " << lvec.E() << std::endl;
+	// cout << "set particle id " << par->pdg_id() << " and momentum " << lvec.E() << std::endl;
 	it++;
       }
     }
