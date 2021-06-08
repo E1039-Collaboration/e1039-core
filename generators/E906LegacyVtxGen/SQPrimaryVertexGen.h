@@ -34,7 +34,7 @@ class MaterialProfile
   std::vector<SQBeamlineObject> interactables;
 };
 
-class SQPrimaryVertexGen: public SubsysReco
+class SQPrimaryVertexGen
 {
  public:
   SQPrimaryVertexGen();

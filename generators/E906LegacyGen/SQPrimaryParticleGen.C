@@ -125,7 +125,7 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
     }
 
   ppGen.readString("Beams:idB = 2212");
-  ppGen.readString("Beams:idB = 2112");
+  pnGen.readString("Beams:idB = 2112");
 
   ppGen.init();
   pnGen.init();

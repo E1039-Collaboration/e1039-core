@@ -201,12 +201,18 @@ TVector3 SQPrimaryVertexGen::generateVertex()
 
   double xvtx, yvtx, zvtx;
   generateVtxPerp(xvtx, yvtx);
+      
+  if (_targetOnlyMode){///Generate (x,y) with in target area
+    while(((xvtx-targetX0)*(xvtx-targetX0)/targetSX/targetSX + (yvtx-targetY0)*(yvtx-targetX0)/targetSY/targetSY) > 1.) { 
+      generateVtxPerp(xvtx, yvtx);
+    }
+  }
 
   bool inTarget = ((xvtx-targetX0)*(xvtx-targetX0)/targetSX/targetSX + (yvtx-targetY0)*(yvtx-targetX0)/targetSY/targetSY) < 1.;
   MaterialProfile* activeProf;
+
   if(!inTarget)
-    {
-      
+    {    
       activeProf = new MaterialProfile;
       fillMaterialProfile(activeProf, xvtx, yvtx);
     }
@@ -246,16 +252,6 @@ double SQPrimaryVertexGen::funcBeamProfile(double* val, double* par)
   if (pow(x,2) + pow(y,2) > pow(r_pipe,2)) { // not "x-x_c" nor "y-y_c" here
     return 0.0;
   }
-
-  //@ for target only mode
-  recoConsts* rc = recoConsts::instance();   
-  bool inTarget = (pow(x-rc->get_DoubleFlag("X0_TARGET"),2)/pow(rc->get_DoubleFlag("RX_TARGET"),2 )+ pow(y-rc->get_DoubleFlag("Y0_TARGET"),2)/pow(rc->get_DoubleFlag("RY_TARGET"),2)) < 1.; 
-  if (_targetOnlyMode){ 
-    if (! inTarget) { // 
-      return 0.0;
-    }
-  } 
-  //@
 
   double x_nr = (x - x_c)/x_s; // normalized relative x
   double y_nr = (y - y_c)/y_s; // normalized relative y
