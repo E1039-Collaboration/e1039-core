@@ -15,19 +15,18 @@
 #include <TF2.h>
 #include <TVector3.h>
 #include <TRandom1.h>
-#include <fun4all/SubsysReco.h>
 #include "SQBeamlineObject.h"
 
 class PHCompositeNode;
 
 class MaterialProfile
 {
- public:
+public:
   MaterialProfile();
   int findInteractingPiece(double rndm);
   void calcProb();
 
- public:
+public:
   unsigned int nPieces;
   double probSum;
   double accumulatedProbs[100];
@@ -36,16 +35,13 @@ class MaterialProfile
 
 class SQPrimaryVertexGen
 {
- public:
+public:
   SQPrimaryVertexGen();
-  ~SQPrimaryVertexGen();;
+  ~SQPrimaryVertexGen();
 
   //! Initialize at the begining of Run
   int InitRun(PHCompositeNode* node);
   int InitRun(TString filename);
-
-  //! Real initialization
-  void init();
 
   //! fill material profile using initial x/y position
   void fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx);
@@ -66,10 +62,13 @@ class SQPrimaryVertexGen
   static double funcBeamProfile(double* val, double* par);
   
   //!setting target/fmag only function
-  static void set_targetOnlyMode(){_targetOnlyMode = true;}
-  static void set_dumpOnlyMode(){_dumpOnlyMode = true;}
+  void set_targetOnlyMode();
+  void set_dumpOnlyMode();
 
- private:
+private:
+  //! Real initialization - should not be called directly
+  void init();
+
   //! Default material profile - pre-calculated and used for protons within the target acceptance
   MaterialProfile* defaultMatProf;
   
@@ -99,8 +98,12 @@ class SQPrimaryVertexGen
   double targetSY;
 
   //! flag for using target and dump only
-  static bool _targetOnlyMode;
-  static bool _dumpOnlyMode;
+  bool targetOnlyMode;
+  bool dumpOnlyMode;
+
+  //! Start/Stop position for Z search
+  double z_start;
+  double z_stop;
 };
 
 #endif
