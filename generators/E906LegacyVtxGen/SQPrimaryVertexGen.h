@@ -61,7 +61,7 @@ public:
   //! beam profile function
   static double funcBeamProfile(double* val, double* par);
   
-  //!setting target/fmag only function
+  //! setting target/fmag only function
   void set_targetOnlyMode();
   void set_dumpOnlyMode();
 

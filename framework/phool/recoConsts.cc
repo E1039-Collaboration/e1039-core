@@ -49,6 +49,9 @@ void recoConsts::set_defaults()
   set_BoolFlag("MC_MODE", false);
   set_BoolFlag("COSMIC_MODE", false);
 
+  set_BoolFlag("TARGETONLY", false);
+  set_BoolFlag("DUMPONLY", false);
+
   //Following values are fed to GeomSvc
   set_BoolFlag("OnlineAlignment", false);
   set_BoolFlag("IdealGeom", false);

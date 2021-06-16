@@ -102,11 +102,13 @@ void SQPrimaryVertexGen::init()
 {
   recoConsts* rc = recoConsts::instance();
 
+  // initialize target location/shape parameters
   targetX0 = rc->get_DoubleFlag("X0_TARGET");
   targetY0 = rc->get_DoubleFlag("Y0_TARGET");
   targetSX = rc->get_DoubleFlag("RX_TARGET");
-  targetSY = rc->get_DoubleFlag("RY_TARGET"); 
+  targetSY = rc->get_DoubleFlag("RY_TARGET");
 
+  // initialize beam profile
   beamProfile = new TF2("beamProfile", &SQPrimaryVertexGen::funcBeamProfile, -6., 6., -6., 6., 4, 2);
   beamProfile->SetNpx(200);//SetNpx and Npy for smooth distribution (default is 30)
   beamProfile->SetNpy(200); 
@@ -120,6 +122,16 @@ void SQPrimaryVertexGen::init()
 
   //If inited from a root file, then skip this step, so that it can be used independent of the Fun4All
   if(geoManager == nullptr) geoManager = PHGeomUtility::GetTGeoManager(topNode);
+
+  // initialize target/dump only mode
+  if(rc->get_BoolFlag("TARGETONLY"))
+  {
+    set_targetOnlyMode();
+  }
+  else if(rc->get_BoolFlag("DUMPONLY"))
+  {
+    set_dumpOnlyMode();
+  }
 
   //Read the default 
   defaultMatProf = new MaterialProfile;

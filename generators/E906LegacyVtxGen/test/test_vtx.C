@@ -1,22 +1,24 @@
 #include <iostream>
 #include <TTree.h>
 #include <TFile.h>
+#include <phool/recoConsts.h>
 #include "SQPrimaryVertexGen.h"
 
 int main(int argc, char *argv[])
 {
-  SQPrimaryVertexGen* vtx = new SQPrimaryVertexGen();
-  vtx->InitRun("geom.root");
-
+  recoConsts* rc = recoConsts::instance();
   int choice = atoi(argv[1]);
   if(choice == 1)
   {
-    vtx->set_targetOnlyMode();
+    rc->set_BoolFlag("TARGETONLY", true);
   }
   else if(choice == 2)
   {
-    vtx->set_dumpOnlyMode();
+    rc->set_BoolFlag("DUMPONLY", true);
   }
+
+  SQPrimaryVertexGen* vtx = new SQPrimaryVertexGen();
+  vtx->InitRun("geom.root");
 
   TFile* saveFile = new TFile(argv[2], "recreate");
   TTree* saveTree = new TTree("save", "save");
