@@ -100,6 +100,12 @@ class PHPythia8 : public SubsysReco
     hepmc_helper.set_reuse_vertex(src_embedding_id);
   }
 
+  //! add interface for using legacy gen vertex; Abi
+  void enableLegacyVtxGen()
+  {
+    hepmc_helper.enableLegacyVtxGen();
+  }
+
   //! embedding ID for the event
   //! positive ID is the embedded event of interest, e.g. jetty event from pythia
   //! negative IDs are backgrounds, .e.g out of time pile up collisions
@@ -115,6 +121,7 @@ class PHPythia8 : public SubsysReco
   void save_integrated_luminosity(const bool b) { _save_integrated_luminosity = b; }
  private:
   int read_config(const char *cfg_file = 0);
+  int read_config_hybrid (const char *cfg_file1 = 0, const char *cfg_file2 =0);
   int create_node_tree(PHCompositeNode *topNode);
   double percent_diff(const double a, const double b) { return abs((a - b) / a); }
   int _eventcount;
@@ -131,6 +138,10 @@ class PHPythia8 : public SubsysReco
 
   std::string _configFile;
   std::vector<std::string> _commands;
+  //! Abi add
+  std::string _config_pp_File;
+  std::string _config_pn_File;
+
 
   // HepMC
   HepMC::Pythia8ToHepMC *_pythiaToHepMC;

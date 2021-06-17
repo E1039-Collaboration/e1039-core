@@ -49,6 +49,9 @@ void recoConsts::set_defaults()
   set_BoolFlag("MC_MODE", false);
   set_BoolFlag("COSMIC_MODE", false);
 
+  set_BoolFlag("TARGETONLY", false);
+  set_BoolFlag("DUMPONLY", false);
+
   //Following values are fed to GeomSvc
   set_BoolFlag("OnlineAlignment", false);
   set_BoolFlag("IdealGeom", false);
@@ -85,6 +88,11 @@ void recoConsts::set_defaults()
   set_DoubleFlag("Y_BEAM", 0.);
   set_DoubleFlag("SIGX_BEAM", 2.);
   set_DoubleFlag("SIGY_BEAM", 2.);
+
+  set_DoubleFlag("X0_TARGET", 0.);
+  set_DoubleFlag("Y0_TARGET", 0.);
+  set_DoubleFlag("RX_TARGET", 0.95);
+  set_DoubleFlag("RY_TARGET", 0.95);
 
   set_CharFlag("EventReduceOpts", "aoc");
 
