@@ -1,4 +1,5 @@
 /// OnlMonTrigNim.C
+#include <sstream>
 #include <iomanip>
 #include <TStyle.h>
 #include <TH2D.h>
@@ -10,7 +11,6 @@
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonTrigNim.h"
 using namespace std;
 
@@ -141,11 +141,14 @@ int OnlMonTrigNim::DrawMonitor()
 
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
   pad0->Divide(1, 2);
-  pad0->cd(1);
+
+  TVirtualPad* pad01 = pad0->cd(1);
+  pad01->SetGrid();
   h2_count->Draw("colz");
-  pad0->cd(2);
+
+  TVirtualPad* pad02 = pad0->cd(2);
+  pad02->SetGrid();
   h2_rate->Draw("colz");
   h2_rate->SetMarkerSize(2.0); // = text size (1.0 by default)
   gStyle->SetPaintTextFormat("3.0f");

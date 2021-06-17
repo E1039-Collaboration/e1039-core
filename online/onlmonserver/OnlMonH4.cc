@@ -1,4 +1,5 @@
 /// OnlMonH4.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
@@ -12,7 +13,6 @@
 #include <geom_svc/GeomSvc.h>
 #include <UtilAna/UtilHist.h>
 #include <UtilAna/UtilSQHit.h>
-#include "OnlMonServer.h"
 #include "OnlMonH4.h"
 using namespace std;
 
@@ -176,13 +176,19 @@ int OnlMonH4::DrawMonitor()
   OnlMonCanvas* can0 = GetCanvas(0);
   can0->SetStatus(OnlMonCanvas::OK);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
   pad0->Divide(1, 2);
-  TVirtualPad* pad00 = pad0->cd(1); // for 1D histograms
-  pad00->Divide(2, 1);
-  pad00->cd(1);  h1_ele[0]->Draw();
-  pad00->cd(2);  h1_ele[1]->Draw();
-  pad0->cd(2); // for 2D histogram
+
+  TVirtualPad* pad01 = pad0->cd(1); // for 1D histograms
+  pad01->Divide(2, 1);
+  TVirtualPad* pad011 = pad01->cd(1);
+  pad011->SetGrid();
+  h1_ele[0]->Draw();
+  TVirtualPad* pad012 = pad01->cd(2);
+  pad012->SetGrid();
+  h1_ele[1]->Draw();
+
+  TVirtualPad* pad02 = pad0->cd(2); // for 2D histogram
+  pad02->SetGrid();
   h2_ele->Draw("colz");
   if (h1_ele[0]->Integral() + h1_ele[1]->Integral() == 0) {
     can0->SetStatus(OnlMonCanvas::WARN);
@@ -196,13 +202,19 @@ int OnlMonH4::DrawMonitor()
   OnlMonCanvas* can1 = GetCanvas(1);
   can1->SetStatus(OnlMonCanvas::OK);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
   pad1->Divide(1, 2);
-  TVirtualPad* pad10 = pad1->cd(1); // for 1D histograms
-  pad10->Divide(2, 1);
-  pad10->cd(1);  h1_time[0]->Draw();
-  pad10->cd(2);  h1_time[1]->Draw();
-  pad1->cd(2); // for 2D histogram
+
+  TVirtualPad* pad11 = pad1->cd(1); // for 1D histograms
+  pad11->Divide(2, 1);
+  TVirtualPad* pad111 = pad11->cd(1);
+  pad111->SetGrid();
+  h1_time[0]->Draw();
+  TVirtualPad* pad112 = pad11->cd(2);
+  pad112->SetGrid();
+  h1_time[1]->Draw();
+
+  TVirtualPad* pad12 = pad1->cd(2); // for 2D histogram
+  pad12->SetGrid();
   h2_time->Draw("colz");
   if (h1_time[0]->Integral() + h1_time[1]->Integral() == 0) {
     can1->SetStatus(OnlMonCanvas::WARN);

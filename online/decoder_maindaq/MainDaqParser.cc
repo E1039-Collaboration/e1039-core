@@ -805,95 +805,93 @@ int MainDaqParser::ProcessBoardTriggerCount (int* words, int j)
  */
 int MainDaqParser::ProcessBoardFeeQIE (int* words, int idx)
 {
-    if (dec_par.runID < 22400) Abort("feeQIE does not support run < 22400.");
+  while (words[idx] == (int)0xe906e906) idx++; // Still necessary??
 
-    while (words[idx] == (int)0xe906e906) idx++; // Still necessary??
-
-    // int boardID = get_hex_bits (words[idx], 7, 4);
-    int n_wd = get_hex_bits (words[idx], 3, 4);
-    int idx_end = idx + n_wd + 1; // It points to the 1st word of the next board.
-    idx++;
-    if (n_wd == 0) return idx;
-
-    while (words[idx] == (int)0xe906e906) { idx++; idx_end++; }
-
-    idx++; // skip the number-of-words word for this TDC
-
-    // One physics event contains 49 words:
-    //   * 1 word for the number of filled words (44 or 39)
-    //   * [5 words for spill header] ... appear only in 1st event in spill
-    //   * 8 words for 4 presums,
-    //   * 2 words for trigger counts
-    //   * 2 words for turn ID
-    //   * 1 words for rf ID
-    //   * 25 words for rf intensities
-    //   * 4 or 9 words for padding with "0"
-    //   * 1 word for event ID
-    // The number of physics events per Coda event is 7 in most cases, but can be less
-    // in last Coda event per spill.  Such case is caught by "idx < idx_end".
-    for (int i_evt = 0; i_evt < 7 && idx < idx_end; i_evt++) {
-      int idx_evt = idx; // Increment idx_evt (not idx) and update idx at loop end.
-      int eventID = words[idx_evt + 48];
-
-      int n_wd_evt = get_hex_bits(words[idx_evt], 7, 4);
-      if      (n_wd_evt == 44) idx_evt += 5; // skip the spill header
-      else if (n_wd_evt != 39) {
-	/// Known issue.  See memo.txt.
-	//cerr << "!! QIE: Unexpected N of words: "  << dec_par.codaID << " " << i_evt << " " << n_wd_evt << " (" << n_wd << ")." << endl;
-	return idx_end;
-      }
-
-      idx_evt++; // Move to the 1st word of data block
-
-      unsigned int sums_vals[4]; // QIE records four intensity sums (called "presum")
-      for (int i_sum = 0; i_sum < 4 ; i_sum++) {
-	sums_vals[i_sum] = get_hex_bits(words[idx_evt],7,4)*65536 + get_hex_bits(words[idx_evt+1],7,4);
-	idx_evt += 2;
-      }
-      //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
-      
-      unsigned int triggerCount = words[idx_evt] | ( get_hex_bits (words[idx_evt+1], 7, 4) );
+  // int boardID = get_hex_bits (words[idx], 7, 4);
+  int n_wd = get_hex_bits (words[idx], 3, 4);
+  int idx_end = idx + n_wd + 1; // It points to the 1st word of the next board.
+  idx++;
+  if (n_wd == 0) return idx;
+  
+  while (words[idx] == (int)0xe906e906) { idx++; idx_end++; }
+  
+  idx++; // skip the number-of-words word for this TDC
+  
+  // One physics event contains 49 words:
+  //   * 1 word for the number of filled words (44 or 39)
+  //   * [5 words for spill header] ... appear only in 1st event in spill
+  //   * 8 words for 4 presums,
+  //   * 2 words for trigger counts
+  //   * 2 words for turn ID
+  //   * 1 words for rf ID
+  //   * 25 words for rf intensities
+  //   * 4 or 9 words for padding with "0"
+  //   * 1 word for event ID
+  // The number of physics events per Coda event is 7 in most cases, but can be less
+  // in last Coda event per spill.  Such case is caught by "idx < idx_end".
+  for (int i_evt = 0; i_evt < 7 && idx < idx_end; i_evt++) {
+    int idx_evt = idx; // Increment idx_evt (not idx) and update idx at loop end.
+    int eventID = words[idx_evt + 48];
+    
+    int n_wd_evt = get_hex_bits(words[idx_evt], 7, 4);
+    if      (n_wd_evt == 44) idx_evt += 5; // skip the spill header
+    else if (n_wd_evt != 39) {
+      /// Known issue.  See memo.txt.
+      //cerr << "!! QIE: Unexpected N of words: "  << dec_par.codaID << " " << i_evt << " " << n_wd_evt << " (" << n_wd << ")." << endl;
+      return idx_end;
+    }
+    
+    idx_evt++; // Move to the 1st word of data block
+    
+    unsigned int sums_vals[4]; // QIE records four intensity sums (called "presum")
+    for (int i_sum = 0; i_sum < 4 ; i_sum++) {
+      sums_vals[i_sum] = get_hex_bits(words[idx_evt],7,4)*65536 + get_hex_bits(words[idx_evt+1],7,4);
       idx_evt += 2;
-      //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
-      
-      unsigned int turnOnset = words[idx_evt] | ( get_hex_bits (words[idx_evt+1], 7, 4) );
-      if (turnOnset > dec_par.turn_id_max) dec_par.turn_id_max = turnOnset;
-      idx_evt += 2;
-      //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
-      
-      unsigned int rfOnset = get_hex_bits(words[idx_evt],7,4);
+    }
+    //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+    
+    unsigned int triggerCount = words[idx_evt] | ( get_hex_bits (words[idx_evt+1], 7, 4) );
+    idx_evt += 2;
+    //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+    
+    unsigned int turnOnset = words[idx_evt] | ( get_hex_bits (words[idx_evt+1], 7, 4) );
+    if (turnOnset > dec_par.turn_id_max) dec_par.turn_id_max = turnOnset;
+    idx_evt += 2;
+    //while (words[idx_evt] == (int)0xe906e906) { idx_evt++; idx_end++; }
+    
+    unsigned int rfOnset = get_hex_bits(words[idx_evt],7,4);
+    idx_evt++;
+    
+    unsigned int rf_vals[25];
+    for (int i_rf = 0; i_rf < 25; i_rf++) { // RF-12...RF+12
+      if (words[idx_evt] == (int)0xe906e906) Abort("Unexpected 0xe906e906 in QIE.");
+      rf_vals[i_rf] = ( get_hex_bits(words[idx_evt],7,4) );
       idx_evt++;
-      
-      unsigned int rf_vals[25];
-      for (int i_rf = 0; i_rf < 25; i_rf++) { // RF-12...RF+12
-	if (words[idx_evt] == (int)0xe906e906) Abort("Unexpected 0xe906e906 in QIE.");
-	rf_vals[i_rf] = ( get_hex_bits(words[idx_evt],7,4) );
-	idx_evt++;
-      }
-      
-      EventData* ed = &(*list_ed)[eventID];
-      ed->n_qie++;
-      EventInfo* evt = &ed->event;
-      //if (ed->n_qie == 2) {
-      //  cout << "QIE#1 " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
-      //       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
-      //}
-      SetEventInfo(evt, eventID);
-      
-      for (int ii = 0; ii < 4; ii++) evt->sums[ii] = sums_vals[ii];
-      evt->triggerCount = triggerCount;
-      evt->turnOnset    = turnOnset;
-      evt->rfOnset      = rfOnset;
-      for (int ii = 0; ii < 25 ; ii++) evt->rf[ii+4] = rf_vals[ii]; // We are now missing first 4 bins and last 4 bins. YC, 2016/05/27
-            
-      idx += 49;
     }
-
-    if (idx != idx_end) {
-      cout << idx << " != " << idx_end;
-      Abort("idx != idx_end in feeQIE().");
-    }
-    return idx_end;
+    
+    EventData* ed = &(*list_ed)[eventID];
+    ed->n_qie++;
+    EventInfo* evt = &ed->event;
+    //if (ed->n_qie == 2) {
+    //  cout << "QIE#1 " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
+    //       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
+    //}
+    SetEventInfo(evt, eventID);
+    
+    for (int ii = 0; ii < 4; ii++) evt->sums[ii] = sums_vals[ii];
+    evt->triggerCount = triggerCount;
+    evt->turnOnset    = turnOnset;
+    evt->rfOnset      = rfOnset;
+    for (int ii = 0; ii < 25 ; ii++) evt->rf[ii+4] = rf_vals[ii]; // We are now missing first 4 bins and last 4 bins. YC, 2016/05/27
+    
+    idx += 49;
+  }
+  
+  if (idx != idx_end) {
+    cout << idx << " != " << idx_end;
+    Abort("idx != idx_end in feeQIE().");
+  }
+  return idx_end;
 }
 
 /** Process one v1495-TDC event.

@@ -1,4 +1,5 @@
 /// OnlMonReco.C
+#include <sstream>
 #include <iomanip>
 #include <TH1D.h>
 #include <interface_main/SQRun.h>
@@ -11,7 +12,6 @@
 #include <phool/getClass.h>
 //#include <geom_svc/CalibParamInTimeTaiwan.h>
 #include <UtilAna/UtilHist.h>
-#include "OnlMonServer.h"
 #include "OnlMonReco.h"
 
 #define MUON_MASS 0.105658
@@ -99,20 +99,24 @@ int OnlMonReco::DrawMonitor()
 {
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
-  pad0->SetGrid();
-  pad0->Divide(1, 1);
-  pad0->cd(1);
+  pad0->Divide(1, 1); // to be divided more when more plots are available.
+
+  TVirtualPad* pad01 = pad0->cd(1);
+  pad01->SetGrid();
   h1_rec_stats->Draw();
   can0->AddMessage("OK");
   can0->SetStatus(OnlMonCanvas::OK);
 
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
-  pad1->SetGrid();
   pad1->Divide(1, 2);
-  pad1->cd(1);
+
+  TVirtualPad* pad11 = pad1->cd(1);
+  pad11->SetGrid();
   h1_sgmu_pt->Draw();
-  pad1->cd(2);
+
+  TVirtualPad* pad12 = pad1->cd(2);
+  pad12->SetGrid();
   h1_dimu_mass->Draw();
   can1->AddMessage("OK");
   can1->SetStatus(OnlMonCanvas::OK);
