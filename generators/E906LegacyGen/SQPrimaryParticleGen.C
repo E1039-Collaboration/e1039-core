@@ -290,7 +290,7 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   return CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
 }
 
-int SQPrimaryParticleGen::generateDrellYan(TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
