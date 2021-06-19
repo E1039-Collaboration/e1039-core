@@ -12,7 +12,7 @@
 using namespace std;
 
 CalibParamXT::CalibParamXT() :
-  CalibParamBase("xt_curve", "det\tt\tx\tdx")
+  CalibParamBase("xt_curve", "det\tt\tx\tdt\tdx")
 {
   ;
 }
@@ -34,8 +34,7 @@ int CalibParamXT::ReadFileCont(LineList& lines)
     iss.str(*it);
     string det;
     double t, x, dt, dx;
-    if (! (iss >> det >> t >> x >> dx)) continue;
-    dt = dx * t / x; // Temporary solution!
+    if (! (iss >> det >> t >> x >> dt >> dx)) continue;
     Add(det, t, x, dt, dx);
     nn++;
   }
@@ -47,7 +46,7 @@ int CalibParamXT::WriteFileCont(std::ostream& os)
   int nn = 0;
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
     os << it->det_name << "\t"
-       << it->t << "\t" << it->x << "\t" << it->dx << "\n";
+       << it->t << "\t" << it->x << "\t" << it->dt << "\t" << it->dx << "\n";
     nn++;
   }
   return nn;
@@ -56,15 +55,15 @@ int CalibParamXT::WriteFileCont(std::ostream& os)
 void CalibParamXT::ReadDbTable(DbSvc& db)
 {
   ostringstream oss;
-  oss << "select det_name, det, t, x, dx from " << MapTableName();
+  oss << "select det_name, det, t, x, dt, dx from " << MapTableName();
   TSQLStatement* stmt = db.Process(oss.str());
   while (stmt->NextResultRow()) {
     string det_name = stmt->GetString(0);
     short  det      = stmt->GetInt   (1);
     double t        = stmt->GetDouble(2);
     double x        = stmt->GetDouble(3);
-    double dx       = stmt->GetDouble(4);
-    double dt = dx * t / x; // Temporary solution!
+    double dt       = stmt->GetDouble(4);
+    double dx       = stmt->GetDouble(5);
     Add(det_name, det, t, x, dt, dx);
   }
   delete stmt;
@@ -74,16 +73,16 @@ void CalibParamXT::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
-  const char* list_var [] = {    "det_name",      "det",      "t",      "x",     "dx" };
-  const char* list_type[] = { "VARCHAR(32)", "SMALLINT", "DOUBLE", "DOUBLE", "DOUBLE" };
-  const int   n_var       = 5;
+  const char* list_var [] = {    "det_name",      "det",      "t",      "x",     "dt",     "dx" };
+  const char* list_type[] = { "VARCHAR(32)", "SMALLINT", "DOUBLE", "DOUBLE", "DOUBLE", "DOUBLE" };
+  const int   n_var       = 6;
   db.CreateTable(name_table, n_var, list_var, list_type);
 
   ostringstream oss;
-  oss << "insert into " << name_table << "(det_name, det, t, x, dx) values";
+  oss << "insert into " << name_table << "(det_name, det, t, x, dt, dx) values";
   for (List_t::iterator it = m_list.begin(); it != m_list.end(); it++) {
     oss << " ('" << it->det_name << "', " << it->det << ", "
-        << it->t << ", " << it->x << ", " << it->dx << "),";
+        << it->t << ", " << it->x << ", " << it->dt << ", " << it->dx << "),";
   }
   string query = oss.str();
   query.erase(query.length()-1, 1); // Remove the last ',' char.
