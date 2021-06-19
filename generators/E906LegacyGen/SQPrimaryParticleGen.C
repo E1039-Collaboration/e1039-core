@@ -37,8 +37,9 @@ from Kun to E1039 experiment in Fun4All framework
 #include <UtilAna/UtilDimuon.h>
 
 #include "SQPrimaryParticleGen.h"
-#include "SQPrimaryVertexGen.h"
-
+#include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
+#include <cassert>
+#include <cstdlib>
 using namespace std;
 
  namespace DPGEN
@@ -79,14 +80,15 @@ using namespace std;
   }
 
 
-SQPrimaryParticleGen::SQPrimaryParticleGen():
-  PHG4ParticleGeneratorBase(),
-  _Pythia(false),
+SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
+  PHG4ParticleGeneratorBase(name),
+  _PythiaGen(false),
   _CustomDimuon(false),
   _DrellYanGen(false),
   _JPsiGen(false),
   _PsipGen(false),
   ineve(NULL),
+  _configFile("phpythia8.cfg"),
   _evt(0),
   _mcevt(0),
   _vec_dim(0),
@@ -118,36 +120,8 @@ SQPrimaryParticleGen::~SQPrimaryParticleGen()
 
 int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 {
-
-  // ppGen.readFile("pythia8_DY.cfg");
-  // pnGen.readFile("pythia8_DY.cfg");
-  //can't read the configuration file..hard coded for now ..change it back to reading from configuration file
-  if(_Pythia){
-  ppGen.readString("PDF:pSet = 7 ");//  CTEQ6L
-  ppGen.readString("ParticleDecays:limitTau = on"); //Only decays the unstable particles
-  ppGen.readString("WeakSingleBoson:ffbar2ffbar(s:gm) = on");// ffbar -> gamma* -> ffbar
-  ppGen.readString("Beams:frameType = 2");
-  ppGen.readString("Beams:idA = 2212");
-  ppGen.readString("Beams:eA = 120.");
-  ppGen.readString("Beams:eB = 0.");
-  ppGen.readString("Beams:allowVertexSpread = on");
-
-
-  pnGen.readString("PDF:pSet = 7 ");
-  pnGen.readString("ParticleDecays:limitTau = on");
-  pnGen.readString("WeakSingleBoson:ffbar2ffbar(s:gm) = on");
-  pnGen.readString("Beams:frameType = 2");
-  pnGen.readString("Beams:idA = 2212");
-  pnGen.readString("Beams:eA = 120.");
-  pnGen.readString("Beams:eB = 0.");
-  pnGen.readString("Beams:allowVertexSpread = on");
-
-
-
-  ppGen.readString("Beams:idB = 2212");
-  pnGen.readString("Beams:idB = 2112");
-  
-
+  if(_PythiaGen){
+  if (!_configFile.empty()) read_config();
   unsigned int seed = PHRandomSeed();
   if (seed > 900000000)
     {
@@ -163,6 +137,9 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
       pnGen.readString(str(boost::format("Random:seed = %1%") % seed));
       
     }
+
+  ppGen.readString("Beams:idB = 2212");
+  pnGen.readString("Beams:idB = 2112");
 
   ppGen.init();
   pnGen.init();
@@ -217,28 +194,21 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
       return Fun4AllReturnCodes::ABORTRUN;
     }
   }
+
+  _vertexGen->InitRun(topNode);
   
   return 0;
 }
 
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
-
-  _vertexGen->InitRun(topNode);
-  TGeoManager* geoManager = PHGeomUtility::GetTGeoManager(topNode);
-  double x_vtx,y_vtx,z_vtx;
-  x_vtx=0.;
-  y_vtx=0.;
-  z_vtx=0.;
-  _vertexGen->traverse(geoManager->GetTopNode(),x_vtx,y_vtx, z_vtx);
-  Double_t pARatio = _vertexGen->getPARatio();
-  Double_t luminosity =  _vertexGen->getLuminosity();
-  TVector3 vtx;
-  vtx.SetXYZ(x_vtx,y_vtx,z_vtx);
+  TVector3 vtx        = _vertexGen->generateVertex();
+  Double_t pARatio    = _vertexGen->getPARatio();
+  Double_t luminosity = _vertexGen->getLuminosity();
 
   int ret = 1; // Error status by default
   if (_DrellYanGen) ret = generateDrellYan(vtx, pARatio, luminosity);
-  if (_Pythia     ) ret = generatePythia(vtx, pARatio);
+  if (_PythiaGen  ) ret = generatePythia(vtx, pARatio);
   if (_JPsiGen    ) ret = generateJPsi(vtx, pARatio, luminosity);
   if (_PsipGen    ) ret = generatePsip(vtx, pARatio, luminosity);
   if (ret != 0) return Fun4AllReturnCodes::ABORTEVENT;
@@ -256,12 +226,11 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   _integral_node->set_N_Processed_Event         (_n_proc_evt);
   _integral_node->set_Sum_Of_Weight             (_weight_sum);
   _integral_node->set_Integrated_Lumi           (_inte_lumi);
-  
+
   return Fun4AllReturnCodes::EVENT_OK; 
 }
 
 //=====================DrellYan=====================================
-
 /// Calculate the Drell-Yan cross section, d^2sigma/dM*dxF in nb/GeV
 double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const double xF, const double x1, const double x2, const double pARatio)
 {
@@ -321,7 +290,7 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   return CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
 }
 
-int SQPrimaryParticleGen::generateDrellYan(TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
@@ -342,7 +311,7 @@ int SQPrimaryParticleGen::generateDrellYan(TVector3 vtx, const double pARatio, d
 }
 
 //====================generateJPsi===================================================
-int SQPrimaryParticleGen::generateJPsi(TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generateJPsi(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
@@ -371,7 +340,7 @@ int SQPrimaryParticleGen::generateJPsi(TVector3 vtx, const double pARatio, doubl
 }
 
 //======================Psi-prime====================
-int SQPrimaryParticleGen::generatePsip(TVector3 vtx, const double pARatio, double luminosity)
+int SQPrimaryParticleGen::generatePsip(const TVector3& vtx, const double pARatio, double luminosity)
 {
   //sets invaraint mass and xF  = x1-x2 for virtual photon
   double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
@@ -401,7 +370,7 @@ int SQPrimaryParticleGen::generatePsip(TVector3 vtx, const double pARatio, doubl
 
 
 //==========Pythia Generator====================================================================
-int SQPrimaryParticleGen::generatePythia(TVector3 vtx, const double pARatio)
+int SQPrimaryParticleGen::generatePythia(const TVector3& vtx, const double pARatio)
 {
  
   Pythia8::Pythia* p_pythia =gRandom->Uniform(0,1)  < pARatio ? &ppGen : &pnGen ;
@@ -442,6 +411,26 @@ int SQPrimaryParticleGen::generatePythia(TVector3 vtx, const double pARatio)
   return 0;
 }
 
+int SQPrimaryParticleGen::read_config(const char *cfg_file)
+{
+  if (cfg_file) _configFile = cfg_file;
+
+  if (verbosity >= VERBOSITY_SOME)
+    cout << "PHPythia8::read_config - Reading " << _configFile << endl;
+
+  ifstream infile(_configFile.c_str());
+
+  if (infile.fail())
+  {
+    cout << "PHPythia8::read_config - Failed to open file " << _configFile << endl;
+    exit(2);
+  }
+
+  ppGen.readFile(_configFile.c_str());
+  pnGen.readFile(_configFile.c_str());
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
 
 /// Main function to generate dimuon
 /**
@@ -512,7 +501,7 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
  *  in the past versions since 2020-11-05.  But it seems not proper because a muon pair
  *   should share one vertex.
  */
-void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx)
+void SQPrimaryParticleGen::InsertMuonPair(const TVector3& vtx)
 {
   int vtxindex = ineve->AddVtx(vtx.X(),vtx.Y(),vtx.Z(),0.);
 
@@ -543,7 +532,7 @@ void SQPrimaryParticleGen::InsertMuonPair(TVector3& vtx)
 /**
  * This function could be merged to InsertMuonPair().
  */
-void SQPrimaryParticleGen::InsertEventInfo(double xsec, double weight, TVector3& vtx)
+void SQPrimaryParticleGen::InsertEventInfo(const double xsec, const double weight, const TVector3& vtx)
 {
   static int dim_id = 0;
 

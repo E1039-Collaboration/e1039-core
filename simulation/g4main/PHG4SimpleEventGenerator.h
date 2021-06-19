@@ -11,6 +11,7 @@
 
 class PHG4InEvent;
 class PHCompositeNode;
+class SQPrimaryVertexGen;
 
 class PHG4SimpleEventGenerator : public PHG4ParticleGeneratorBase {
 
@@ -73,6 +74,8 @@ public:
 			const double z_min, const double z_max
 			);
 
+   //! Enable legacy vertex gen
+   void enableLegacyVtxGen() { _legacy_vertexgenerator = true; } //Abi
 
 private:
 
@@ -113,6 +116,9 @@ private:
   double _pz_min, _pz_max;
 
   PHG4InEvent* _ineve;
+
+  bool _legacy_vertexgenerator;
+  SQPrimaryVertexGen* _vertexGen;
 };
 
 #endif

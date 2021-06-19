@@ -13,8 +13,6 @@ add_custom_command (
   ARGS -f SQPrimaryGen_Dict.C -noIncludePaths -inlineInputHeader -c -p 
   -I${PROJECT_SOURCE_DIR}/
   ${PROJECT_SOURCE_DIR}/SQPrimaryParticleGen.h
-  ${PROJECT_SOURCE_DIR}/SQPrimaryVertexGen.h
-  ${PROJECT_SOURCE_DIR}/SQBeamlineObject.h
   ${PROJECT_SOURCE_DIR}/SQPrimaryGenLinkDef.h
 	)
 
@@ -32,36 +30,34 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} -std=c++0x ")
 
 # Geant4
-  find_program(G4CONF "geant4-config")
-  if(G4CONF)
-    message("-- Detecting Geant4:  found at ${G4CONF}")
-  else()
-    message(FATAL_ERROR "-- Detecting Geant4:  not found")
-  endif()
-  #find_package(Geant4 REQUIRED gdml vis_all)
-  execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
+find_program(G4CONF "geant4-config")
+if(G4CONF)
+  message("-- Detecting Geant4:  found at ${G4CONF}")
+else()
+  message(FATAL_ERROR "-- Detecting Geant4:  not found")
+endif()
+#find_package(Geant4 REQUIRED gdml vis_all)
+execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GEANT4_PREFIX}/include/ ")
 
  # LHAPDF
-  find_program(LHAPDFCONF "lhapdf-config")
-  if(LHAPDFCONF)
-    message("-- Detecting LHAPDF:  found at ${LHAPDFCONF}")
-  elseif(NOT(LIBONLY))
-    message(FATAL_ERROR "-- Detecting LHAPDF:  not found")
-  endif()
-  execute_process(COMMAND lhapdf-config --prefix OUTPUT_VARIABLE LHAPDF_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND lhapdf-config --cflags OUTPUT_VARIABLE LHAPDF_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND lhapdf-config --libs   OUTPUT_VARIABLE LHAPDF_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
+find_program(LHAPDFCONF "lhapdf-config")
+if(LHAPDFCONF)
+  message("-- Detecting LHAPDF:  found at ${LHAPDFCONF}")
+elseif(NOT(LIBONLY))
+  message(FATAL_ERROR "-- Detecting LHAPDF:  not found")
+endif()
+execute_process(COMMAND lhapdf-config --prefix OUTPUT_VARIABLE LHAPDF_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND lhapdf-config --cflags OUTPUT_VARIABLE LHAPDF_CFLAGS  OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND lhapdf-config --libs   OUTPUT_VARIABLE LHAPDF_LINK    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${LHAPDF_PREFIX}/include/ ")
 
 add_library(SQPrimaryGen SHARED
   SQPrimaryParticleGen.C
-  SQPrimaryVertexGen.C
-  SQBeamlineObject.C
   SQPrimaryGen_Dict.C	
 )
 
@@ -78,6 +74,7 @@ target_link_libraries(SQPrimaryGen -L./
   -lphg4hit
   -lg4testbench
   -lpythia8
+  -lSQPrimaryVtxGen
   ${LHAPDF_LINK}
 )
 
@@ -87,8 +84,6 @@ message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 
 file(GLOB dist_headers
   SQPrimaryParticleGen.h
-  SQPrimaryVertexGen.h
-  SQBeamlineObject.h
 )
 file(GLOB non_dist_headers ${PROJECT_SOURCE_DIR}/*LinkDef.h)
 

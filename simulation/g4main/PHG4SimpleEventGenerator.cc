@@ -21,9 +21,7 @@
 #include <cassert>
 
 //Abi
-#include <TGeoMaterial.h>
-#include <phgeom/PHGeomUtility.h>
-#include <TGeoManager.h>
+#include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
 
 using namespace std;
 
@@ -60,11 +58,11 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
 	_px_min(NAN), _px_max(NAN),
 	_py_min(NAN), _py_max(NAN),
 	_pz_min(NAN), _pz_max(NAN),
-  _ineve(NULL) 
-  //_legacy_vertexgenerator(nullptr)
+  _ineve(NULL), 
+  _legacy_vertexgenerator(false)
 {
 
-  //_vertexGen = new SQPrimaryVertexGen();
+  _vertexGen = new SQPrimaryVertexGen();
   return;
 }
 
@@ -248,6 +246,7 @@ int PHG4SimpleEventGenerator::InitRun(PHCompositeNode *topNode) {
     string pdgname = get_pdgname(pdgcode);
     _particle_names.push_back(make_pair(pdgname,count));
   }
+   _vertexGen->InitRun(topNode);//abi
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -268,8 +267,14 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
       vtx_y = smearvtx(_vertex_y,_vertex_width_y,_vertex_func_y);
       vtx_z = smearvtx(_vertex_z,_vertex_width_z,_vertex_func_z);
     } 
-
-
+   //! use vertex from E906 legacy generator
+   if ( _legacy_vertexgenerator)
+        {TVector3 vtx        = _vertexGen->generateVertex();
+        vtx_x = vtx.X();        
+        vtx_y = vtx.Y();
+        vtx_z = vtx.Z();
+        }
+  
   vtx_x += _vertex_offset_x;
   vtx_y += _vertex_offset_y;
   vtx_z += _vertex_offset_z;

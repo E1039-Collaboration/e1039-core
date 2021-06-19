@@ -21,6 +21,7 @@
 
 #include <HepMC/GenEvent.h>
 #include <HepMC/IO_GenEvent.h>
+#include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
 
 #include <gsl/gsl_const.h>
 #include <gsl/gsl_randist.h>
@@ -49,16 +50,19 @@ PHHepMCGenHelper::PHHepMCGenHelper()
   , _reuse_vertex(false)
   , _reuse_vertex_embedding_id(numeric_limits<int>::min())
   , _geneventmap(nullptr)
+  , _legacy_vertexgenerator(false)
 {
 
   RandomGenerator = gsl_rng_alloc(gsl_rng_mt19937);
   unsigned int seed = PHRandomSeed();  // fixed seed is handled in this function
   gsl_rng_set(RandomGenerator, seed );
+  _vertexGen = new SQPrimaryVertexGen(); //Abi
 }
 
 PHHepMCGenHelper::~PHHepMCGenHelper()
 {
   gsl_rng_free(RandomGenerator);
+  delete _vertexGen;
 }
 
 //! init interface nodes
@@ -81,6 +85,9 @@ int PHHepMCGenHelper::create_node_tree(PHCompositeNode *topNode)
   }
 
   assert(_geneventmap);
+
+  //! for legacy vertex gen
+   _vertexGen->InitRun(topNode);//abi
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -120,18 +127,27 @@ void PHHepMCGenHelper::move_vertex(PHHepMCGenEvent *genevent)
       exit(11);
     }
 
-    genevent->moveVertex(
-        vtx_evt->get_collision_vertex().x(),
-        vtx_evt->get_collision_vertex().y(),
-        vtx_evt->get_collision_vertex().z(),
-        vtx_evt->get_collision_vertex().t());
-  }
+  
+   genevent->moveVertex(
+   vtx_evt->get_collision_vertex().x(),
+   vtx_evt->get_collision_vertex().y(),
+   vtx_evt->get_collision_vertex().z(),
+   vtx_evt->get_collision_vertex().t());
+ }
 
-  genevent->moveVertex(
+   genevent->moveVertex(
       (smear(_vertex_x, _vertex_width_x, _vertex_func_x)),
       (smear(_vertex_y, _vertex_width_y, _vertex_func_y)),
       (smear(_vertex_z, _vertex_width_z, _vertex_func_z)),
       (smear(_vertex_t, _vertex_width_t, _vertex_func_t)));
+
+  //!setting vertex from E906 legacy generator
+  if( _legacy_vertexgenerator)
+  {
+    TVector3 vtx        = _vertexGen->generateVertex();
+    genevent->moveVertex(vtx.X(), vtx.Y(), vtx.Z(), _vertex_func_t);
+  }
+
 }
 
 void PHHepMCGenHelper::set_vertex_distribution_function(VTXFUNC x, VTXFUNC y, VTXFUNC z, VTXFUNC t)
