@@ -78,8 +78,6 @@ class TruthNodeMaker: public SubsysReco {
   void set_do_truthtrk_tagging(bool b = true) { m_do_truthtrk_tagging = b;}
   void set_m_process_type(int process=4) { m_process_type = process;}
 
-  void set_do_event_header(bool do_evt_header) { m_do_evt_header = do_evt_header; }
-
  private:
   int  GetNodes(PHCompositeNode *topNode);
   int MakeNodes(PHCompositeNode *topNode);
