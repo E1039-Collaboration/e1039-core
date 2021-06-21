@@ -49,12 +49,12 @@ int SQChamberRealization::InitRun(PHCompositeNode* topNode)
   PHNodeIterator iter(topNode);
   m_run = findNode::getClass<SQRun>(topNode, "SQRun");
   if (!m_run) {
-    cerr << Name() << "SQRun node missing.  Abort." << endl;
+    cerr << Name() << ": SQRun node missing.  Abort." << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
   m_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if (!m_hit_vec) {
-    cerr << Name() << "SQHitVector node missing.  Abort." << endl;
+    cerr << Name() << ": SQHitVector node missing.  Abort." << endl;
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
@@ -94,10 +94,17 @@ int SQChamberRealization::process_event(PHCompositeNode* topNode)
     if (m_cal_xt->FindX2T(det_id, gr_x2t, gr_x2dt)) {
       int    ele_id  = hit->get_element_id();
       double dist    = hit->get_drift_distance();
-      double mean_t  = gr_x2t ->Eval(dist);
-      double width_t = gr_x2dt->Eval(dist);
+      double mean_t  = gr_x2t ->Eval(fabs(dist));
+      double width_t = gr_x2dt->Eval(fabs(dist));
       double drift_time = -1;
-      while (drift_time < 0) drift_time = gRandom->Gaus(mean_t, width_t);
+      for (int i_try = 0; i_try < 10000; i_try++) {
+        drift_time = gRandom->Gaus(mean_t, width_t);
+        if (drift_time >= 0) break;
+      }
+      if (drift_time < 0) {
+        cout << PHWHERE << " Failed at generating a positive drift time.  Something unexpected.  Abort." << endl;
+        exit(1);
+      }
 
       double t0 = 0;
       double center_int, width_int;
@@ -107,7 +114,6 @@ int SQChamberRealization::process_event(PHCompositeNode* topNode)
       hit->set_tdc_time(tdc_time);
     }
   }
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
