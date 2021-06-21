@@ -51,13 +51,8 @@ int PHG4TruthSubsystem::InitRun( PHCompositeNode* topNode )
     sqrun = new SQRun_v1();
     runNode->addNode(new PHIODataNode<PHObject>(sqrun, "SQRun", "PHObject"));
   }
-  recoConsts* rc = recoConsts::instance();
-  int run = rc->get_IntFlag("RUNNUMBER");
-  if (run == 0) {
-    run = 1;
-    rc->set_IntFlag("RUNNUMBER", run);
-  }
-  sqrun->set_run_id(run);
+  int run_id = recoConsts::instance()->get_IntFlag("RUNNUMBER");
+  sqrun->set_run_id(run_id);
 
   PHCompositeNode *dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST" ));
 
