@@ -192,16 +192,15 @@ TSQLStatement* DbSvc::Process(const char* query)
  */
 void DbSvc::SelectServer()
 {
-  if (m_svr_id == AUTO) {
+  if (m_svr_id == AutoSvr) {
     recoConsts* rc = recoConsts::instance();
     string svr = rc->get_CharFlag("DB_SERVER");
-    switch (svr) {
-    case "DB1"  :  m_svr_id = DB1  ;  break;
-    case "DB2"  :  m_svr_id = DB2  ;  break;
-    case "DB3"  :  m_svr_id = DB3  ;  break;
-    case "DB4"  :  m_svr_id = DB4  ;  break;
-    case "LOCAL":  m_svr_id = LOCAL;  break;
-    default:
+    if      (svr == "DB1"  ) m_svr_id = DB1  ;
+    else if (svr == "DB2"  ) m_svr_id = DB2  ;
+    else if (svr == "DB3"  ) m_svr_id = DB3  ;
+    else if (svr == "DB4"  ) m_svr_id = DB4  ;
+    else if (svr == "LOCAL") m_svr_id = LOCAL;
+    else {
       cerr << "!!ERROR!!  DbSvc():  Unsupported DB_SERVER in recoConsts.  Abort.\n";
       exit(1);
     }
@@ -220,21 +219,20 @@ void DbSvc::SelectServer()
 
 void DbSvc::SelectUser()
 {
-  if (m_usr_id == AUTO) {
+  if (m_usr_id == AutoUsr) {
     recoConsts* rc = recoConsts::instance();
     string usr = rc->get_CharFlag("DB_USER");
-    switch (usr) {
-    case "seaguest"  :  m_usr_id = Guest;  break;
-    case "production":  m_usr_id = Prod ;  break;
-    default:
+    if      (usr == "seaguest"  ) m_usr_id = Guest;
+    else if (usr == "production") m_usr_id = Prod ;
+    else {
       cerr << "!!ERROR!!  DbSvc():  Unsupported DB_USER in recoConsts.  Abort.\n";
       exit(1);
     }
   }
 
   if (m_my_cnf.length() == 0) {
-    if (usr_id == Guest) m_my_cnf = "$E1039_RESOURCE/db_conf/guest.cnf";
-    else /* == Prod */   m_my_cnf = "$E1039_RESOURCE/db_conf/prod.cnf";
+    if (m_usr_id == Guest) m_my_cnf = "$E1039_RESOURCE/db_conf/guest.cnf";
+    else /* == Prod */     m_my_cnf = "$E1039_RESOURCE/db_conf/prod.cnf";
   }
   m_my_cnf = ExpandEnvironmentals(m_my_cnf);
   //LogInfo("Using "<< m_my_cnf);

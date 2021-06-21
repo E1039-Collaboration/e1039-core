@@ -13,8 +13,8 @@ class TSQLStatement;
  */
 class DbSvc {
  public:
-  typedef enum { AUTO, DB1, DB2, DB3, DB4, LITE, LOCAL } SvrId_t;
-  typedef enum { AUTO, Guest, Prod } UsrId_t;
+  typedef enum { AutoSvr, DB1, DB2, DB3, DB4, LITE, LOCAL } SvrId_t;
+  typedef enum { AutoUsr, Guest, Prod } UsrId_t;
   class VarList {
     std::vector<std::string> m_name;
     std::vector<std::string> m_type;
@@ -25,7 +25,7 @@ class DbSvc {
     void Get(const int idx, std::string& name, std::string& type, bool& is_key) const;
   };
 
-  DbSvc(const SvrId_t svr_id=AUTO, const UsrId_t usr_id=AUTO, const std::string my_cnf="");
+  DbSvc(const SvrId_t svr_id=AutoSvr, const UsrId_t usr_id=AutoUsr, const std::string my_cnf="");
   explicit DbSvc(const SvrId_t svr_id, std::string dbfile);  // this is only for sqlite db
   ~DbSvc();
 

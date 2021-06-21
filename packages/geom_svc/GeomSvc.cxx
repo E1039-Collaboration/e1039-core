@@ -409,10 +409,10 @@ void GeomSvc::init()
 }
 
 void GeomSvc::initPlaneDirect() {
-  cerr << "!! ERROR !!\n"
-       << "!! GeomSvc::initPlaneDirect() is called but no longer available.\n"
-       << "!! Probably you have 'GeomSvc::UseDbSvc(false)' in your macro.\n"
-       << "!! Please delete it.  Abort for now." << endl;
+  std::cerr << "!! ERROR !!\n"
+            << "!! GeomSvc::initPlaneDirect() is called but no longer available.\n"
+            << "!! Probably you have 'GeomSvc::UseDbSvc(false)' in your macro.\n"
+            << "!! Please delete it.  Abort for now." << std::endl;
   exit(1);
 }
 
