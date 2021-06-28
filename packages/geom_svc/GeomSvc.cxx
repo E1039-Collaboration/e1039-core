@@ -977,8 +977,8 @@ void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std:
         for(int i = 1; i <= nChamberPlanes; i += 2)
         {
             double resol = planes[i].resolution > planes[i+1].resolution ? planes[i].resolution : planes[i+1].resolution;
-            planes[i].resolution = resol;
-            planes[i].resolution = resol;
+            planes[i  ].resolution = resol;
+            planes[i+1].resolution = resol;
         }
 
         cout << "GeomSvc: loaded chamber alignment parameters from " << alignmentFile_chamber << endl;
