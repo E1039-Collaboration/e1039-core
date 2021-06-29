@@ -11,8 +11,10 @@
 
 #include "PHG4InEvent.h"
 
+#include <interface_main/SQRun_v1.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/getClass.h>
+#include <phool/recoConsts.h>
 
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4ParticleDefinition.hh>
@@ -37,6 +39,21 @@ int PHG4TruthSubsystem::InitRun( PHCompositeNode* topNode )
 {
 
   PHNodeIterator iter( topNode );
+
+  PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+  if (!runNode) {
+    runNode = new PHCompositeNode("RUN");
+    topNode->addNode(runNode);
+  }
+
+  SQRun* sqrun = findNode::getClass<SQRun>(topNode, "SQRun");
+  if (!sqrun) {
+    sqrun = new SQRun_v1();
+    runNode->addNode(new PHIODataNode<PHObject>(sqrun, "SQRun", "PHObject"));
+  }
+  int run_id = recoConsts::instance()->get_IntFlag("RUNNUMBER");
+  sqrun->set_run_id(run_id);
+
   PHCompositeNode *dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST" ));
 
   // create truth information container

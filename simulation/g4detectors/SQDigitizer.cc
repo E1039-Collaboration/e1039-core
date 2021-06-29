@@ -47,8 +47,6 @@ int SQDigitizer::Init(PHCompositeNode *topNode)
     detIDByName[detName] = i;
   }
 
-  //TODO: Load the detector realization setup
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 #endif
@@ -287,10 +285,4 @@ void SQDigitizer::digitizeEMCal(const std::string& detName)
     iter->second.set_hit_id(digits->size());
     digits->push_back(&(iter->second));
   }
-}
-
-bool SQDigitizer::realize(SQHit& dHit)
-{
-  //TODO: implement efficiency and calibration smearing
-  return true;
 }
