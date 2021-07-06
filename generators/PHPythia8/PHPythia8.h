@@ -23,13 +23,13 @@ class PHPy8GenTrigger;
 
 namespace HepMC
 {
-class GenEvent;
-class Pythia8ToHepMC;
+  class GenEvent;
+  class Pythia8ToHepMC;
 };
 
 namespace Pythia8
 {
-class Pythia;
+  class Pythia;
 };
 
 class PHPythia8 : public SubsysReco
@@ -103,8 +103,14 @@ class PHPythia8 : public SubsysReco
   //! add interface for using legacy gen vertex; Abi
   void enableLegacyVtxGen()
   {
+    _legacy_vertexgenerator=true;
     hepmc_helper.enableLegacyVtxGen();
   }
+  double get_LegacyPARatio()
+  {
+    return hepmc_helper.get_LegacyPARatio();
+  }
+
 
   //! embedding ID for the event
   //! positive ID is the embedded event of interest, e.g. jetty event from pythia
@@ -131,17 +137,16 @@ class PHPythia8 : public SubsysReco
   bool _triggersOR;
   bool _triggersAND;
 
-// PYTHIA
+  // PYTHIA
 #ifndef __CINT__
   Pythia8::Pythia *_pythia;
+  Pythia8::Pythia *ppGen;    //!< Pythia pp generator
+  Pythia8::Pythia *pnGen;    //!< Pythia pn generator
 #endif
 
   std::string _configFile;
   std::vector<std::string> _commands;
-  //! Abi add
-  std::string _config_pp_File;
-  std::string _config_pn_File;
-
+  
 
   // HepMC
   HepMC::Pythia8ToHepMC *_pythiaToHepMC;
@@ -154,6 +159,9 @@ class PHPythia8 : public SubsysReco
 
   //! pointer to data node saving the integrated luminosity
   PHGenIntegral *_integral_node;
+
+  //! legacy vtx gen flag
+  bool _legacy_vertexgenerator;
 };
 
 #endif /* __PHPYTHIA8_H__ */

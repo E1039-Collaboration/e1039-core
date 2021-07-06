@@ -20,7 +20,7 @@ class SQPrimaryVertexGen; //Abi
 
 namespace HepMC
 {
-class GenEvent;
+  class GenEvent;
 };
 
 #ifndef __CINT__
@@ -102,8 +102,9 @@ class PHHepMCGenHelper
     _geneventmap = geneventmap;
   }
  
- //! to use the vertex from legacy generator
- void enableLegacyVtxGen() { _legacy_vertexgenerator = true; }
+  //! to use the vertex from legacy generator
+  void enableLegacyVtxGen() { _legacy_vertexgenerator = true; }
+  double get_LegacyPARatio(){return _paratio;}
  
  protected:
 #ifndef __CINT__
@@ -145,6 +146,7 @@ class PHHepMCGenHelper
   //! pointer to legay vertex generator; Abi
   SQPrimaryVertexGen* _vertexGen;
   bool _legacy_vertexgenerator;
+  double _paratio;
 };
 
 #endif /* SIMULATION_CORESOFTWARE_SIMULATION_G4SIMULATION_PHHEPMC_PHHEPMCGENHELPER_H_ */

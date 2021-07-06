@@ -38,7 +38,7 @@ using namespace std;
 /// this predicate returns true if the input has no decay vertex
 class IsStateFinal
 {
- public:
+public:
   /// returns true if the GenParticle does not decay
   bool operator()(const HepMC::GenParticle *p)
   {
@@ -60,7 +60,9 @@ HepMCNodeReader::HepMCNodeReader(const std::string &name)
   , width_vx(0.0)
   , width_vy(0.0)
   , width_vz(0.0)
-	, _particle_filter_on(false)
+  , _bkg_mode(false)//Abi
+  , _pxy2pz_rat(0.25)
+  , _particle_filter_on(false)
 {
   RandomGenerator = gsl_rng_alloc(gsl_rng_mt19937);
   _particle_filter_pid.clear();
@@ -76,22 +78,22 @@ int HepMCNodeReader::Init(PHCompositeNode *topNode)
 {
   PHG4InEvent *ineve = findNode::getClass<PHG4InEvent>(topNode, "PHG4INEVENT");
   if (!ineve)
-  {
-    PHNodeIterator iter(topNode);
-    PHCompositeNode *dstNode;
-    dstNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "DST"));
+    {
+      PHNodeIterator iter(topNode);
+      PHCompositeNode *dstNode;
+      dstNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "DST"));
 
-    ineve = new PHG4InEvent();
-    PHDataNode<PHObject> *newNode =
+      ineve = new PHG4InEvent();
+      PHDataNode<PHObject> *newNode =
         new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
-    dstNode->addNode(newNode);
-  }
+      dstNode->addNode(newNode);
+    }
   unsigned int phseed = PHRandomSeed();  // fixed seed is handled in this funtcion, need to call it to preserve random numbder order even if we override it
   if (use_seed)
-  {
-    phseed = seed;
-    cout << Name() << " override random seed: " << phseed << endl;
-  }
+    {
+      phseed = seed;
+      cout << Name() << " override random seed: " << phseed << endl;
+    }
   gsl_rng_set(RandomGenerator, phseed);
   return 0;
 }
@@ -102,25 +104,25 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
   PHHepMCGenEventMap *genevtmap = findNode::getClass<PHHepMCGenEventMap>(topNode, "PHHepMCGenEventMap");
 
   if (!genevtmap)
-  {
-    static bool once = true;
-
-    if (once and Verbosity())
     {
-      once = false;
+      static bool once = true;
 
-      cout << "HepMCNodeReader::process_event - No PHHepMCGenEventMap node. Do not perform HepMC->Geant4 input" << endl;
+      if (once and Verbosity())
+	{
+	  once = false;
+
+	  cout << "HepMCNodeReader::process_event - No PHHepMCGenEventMap node. Do not perform HepMC->Geant4 input" << endl;
+	}
+
+      return Fun4AllReturnCodes::DISCARDEVENT;
     }
-
-    return Fun4AllReturnCodes::DISCARDEVENT;
-  }
 
   PHG4InEvent *ineve = findNode::getClass<PHG4InEvent>(topNode, "PHG4INEVENT");
   if (!ineve)
-  {
-    cout << PHWHERE << "no PHG4INEVENT node" << endl;
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
+    {
+      cout << PHWHERE << "no PHG4INEVENT node" << endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
 
   recoConsts *rc = recoConsts::instance();
 
@@ -137,173 +139,203 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 
   int ishape;
   if (worldshape == "G4Tubs")
-  {
-    ishape = ShapeG4Tubs;
-  }
+    {
+      ishape = ShapeG4Tubs;
+    }
   else if (worldshape == "G4Box")
-  {
-    ishape = ShapeG4Box;
-  }
+    {
+      ishape = ShapeG4Box;
+    }
   else
-  {
-    cout << PHWHERE << " unknown world shape " << worldshape << endl;
-    exit(1);
-  }
+    {
+      cout << PHWHERE << " unknown world shape " << worldshape << endl;
+      exit(1);
+    }
 
   // For pile-up simulation: loop over PHHepMC event map
   // insert highest embedding ID event first, whose vertex maybe resued in  PHG4ParticleGeneratorBase::ReuseExistingVertex()
   int vtxindex = -1;
   for (PHHepMCGenEventMap::ReverseIter iter = genevtmap->rbegin(); iter != genevtmap->rend(); ++iter)
-  {
-    PHHepMCGenEvent *genevt = iter->second;
-    assert(genevt);
-
-    if (genevt->is_simulated())
     {
-      if (Verbosity())
-      {
-        cout << "HepMCNodeReader::process_event - this event is already simulated. Move on: ";
-        genevt->identify();
-      }
+      PHHepMCGenEvent *genevt = iter->second;
+      assert(genevt);
 
-      continue;
-    }
+      if (genevt->is_simulated())
+	{
+	  if (Verbosity())
+	    {
+	      cout << "HepMCNodeReader::process_event - this event is already simulated. Move on: ";
+	      genevt->identify();
+	    }
 
-    HepMC::GenEvent *evt = genevt->getEvent();
-    if (!evt)
-    {
-      cout << PHWHERE << " no evt pointer under HEPMC Node found:";
-      genevt->identify();
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
+	  continue;
+	}
 
-    genevt->is_simulated(true);
+      HepMC::GenEvent *evt = genevt->getEvent();
+      if (!evt)
+	{
+	  cout << PHWHERE << " no evt pointer under HEPMC Node found:";
+	  genevt->identify();
+	  return Fun4AllReturnCodes::ABORTEVENT;
+	}
 
-    const int embed_flag = genevt->get_embedding_id();
+      genevt->is_simulated(true);
 
-    double xshift = vertex_pos_x + genevt->get_collision_vertex().x();
-    double yshift = vertex_pos_y + genevt->get_collision_vertex().y();
-    double zshift = vertex_pos_z + genevt->get_collision_vertex().z();
-    double tshift = vertex_t0 + genevt->get_collision_vertex().t();
+      const int embed_flag = genevt->get_embedding_id();
 
-    if (width_vx > 0.0)
-      xshift += smeargauss(width_vx);
-    else if (width_vx < 0.0)
-      xshift += smearflat(width_vx);
+      double xshift = vertex_pos_x + genevt->get_collision_vertex().x();
+      double yshift = vertex_pos_y + genevt->get_collision_vertex().y();
+      double zshift = vertex_pos_z + genevt->get_collision_vertex().z();
+      double tshift = vertex_t0 + genevt->get_collision_vertex().t();
 
-    if (width_vy > 0.0)
-      yshift += smeargauss(width_vy);
-    else if (width_vy < 0.0)
-      yshift += smearflat(width_vy);
+      if (width_vx > 0.0)
+	xshift += smeargauss(width_vx);
+      else if (width_vx < 0.0)
+	xshift += smearflat(width_vx);
 
-    if (width_vz > 0.0)
-      zshift += smeargauss(width_vz);
-    else if (width_vz < 0.0)
-      zshift += smearflat(width_vz);
+      if (width_vy > 0.0)
+	yshift += smeargauss(width_vy);
+      else if (width_vy < 0.0)
+	yshift += smearflat(width_vy);
 
-    std::list<HepMC::GenParticle *> finalstateparticles;
-    std::list<HepMC::GenParticle *>::const_iterator fiter;
+      if (width_vz > 0.0)
+	zshift += smeargauss(width_vz);
+      else if (width_vz < 0.0)
+	zshift += smearflat(width_vz);
 
-    // units in G4 interface are GeV and CM as in PHENIX convention
-    const double mom_factor = HepMC::Units::conversion_factor(evt->momentum_unit(), HepMC::Units::GEV);
-    const double length_factor = HepMC::Units::conversion_factor(evt->length_unit(), HepMC::Units::CM);
-    const double time_factor = HepMC::Units::conversion_factor(evt->length_unit(), HepMC::Units::CM) / GSL_CONST_CGS_SPEED_OF_LIGHT * 1e9;  // from length_unit()/c to ns
+      std::list<HepMC::GenParticle *> finalstateparticles;
+      std::list<HepMC::GenParticle *>::const_iterator fiter;
 
-    for (HepMC::GenEvent::vertex_iterator v = evt->vertices_begin();
-         v != evt->vertices_end();
-         ++v)
-    {
-      finalstateparticles.clear();
-      for (HepMC::GenVertex::particle_iterator p =
-               (*v)->particles_begin(HepMC::children);
-           p != (*v)->particles_end(HepMC::children); ++p)
-      {
-        if (isfinal(*p))
-        {
-        	if(_particle_filter_on) {
-        		if(!PassParticleFilter(*p)) continue;
-        	}
-          finalstateparticles.push_back(*p);
-        }
-      }
+      // units in G4 interface are GeV and CM as in PHENIX convention
+      const double mom_factor = HepMC::Units::conversion_factor(evt->momentum_unit(), HepMC::Units::GEV);
+      const double length_factor = HepMC::Units::conversion_factor(evt->length_unit(), HepMC::Units::CM);
+      const double time_factor = HepMC::Units::conversion_factor(evt->length_unit(), HepMC::Units::CM) / GSL_CONST_CGS_SPEED_OF_LIGHT * 1e9;  // from length_unit()/c to ns
 
-      if (!finalstateparticles.empty())
-      {
-        double xpos = (*v)->position().x() * length_factor + xshift;
-        double ypos = (*v)->position().y() * length_factor + yshift;
-        double zpos = (*v)->position().z() * length_factor + zshift;
-        double time = (*v)->position().t() * time_factor + tshift;
+      for (HepMC::GenEvent::vertex_iterator v = evt->vertices_begin();
+	   v != evt->vertices_end();
+	   ++v)
+	{
+	  finalstateparticles.clear();
+	  for (HepMC::GenVertex::particle_iterator p =
+		 (*v)->particles_begin(HepMC::children);
+	       p != (*v)->particles_end(HepMC::children); ++p)
+	    {
+	      if (isfinal(*p))
+		{
+		  if(_particle_filter_on) {
+		    if(!PassParticleFilter(*p)) continue;
+		  }
+		  finalstateparticles.push_back(*p);
+		}
+	    }
 
-        if (Verbosity() > 1)
-        {
-          cout << "Vertex : " << endl;
-          (*v)->print();
-          cout << "id: " << (*v)->barcode() << endl;
-          cout << "x: " << xpos << endl;
-          cout << "y: " << ypos << endl;
-          cout << "z: " << zpos << endl;
-          cout << "t: " << time << endl;
-          cout << "Particles" << endl;
-        }
+	  if (!finalstateparticles.empty())
+	    {
+	      double xpos = (*v)->position().x() * length_factor + xshift;
+	      double ypos = (*v)->position().y() * length_factor + yshift;
+	      double zpos = (*v)->position().z() * length_factor + zshift;
+	      double time = (*v)->position().t() * time_factor + tshift;
 
-        if (ishape == ShapeG4Tubs)
-        {
-          if (sqrt(xpos * xpos + ypos * ypos) > worldsizey / 2 ||
-              fabs(zpos) > worldsizez / 2)
-          {
-            cout << "vertex x/y/z" << xpos << "/" << ypos << "/" << zpos
-                 << " outside world volume radius/z (+-) " << worldsizex / 2
-                 << "/" << worldsizez / 2 << ", dropping it and its particles"
-                 << endl;
-            continue;
-          }
-        }
-        else if (ishape == ShapeG4Box)
-        {
-          if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
-              fabs(zpos) > worldsizez / 2)
-          {
-            cout << "Vertex x/y/z " << xpos << "/" << ypos << "/" << zpos
-                 << " outside world volume x/y/z (+-) " << worldsizex / 2 << "/"
-                 << worldsizey / 2 << "/" << worldsizez / 2
-                 << ", dropping it and its particles" << endl;
-            continue;
-          }
-        }
-        else
-        {
-          cout << PHWHERE << " shape " << ishape << " not implemented. exiting"
-               << endl;
-          exit(1);
-        }
+	      if (Verbosity() > 1)
+		{
+		  cout << "Vertex : " << endl;
+		  (*v)->print();
+		  cout << "id: " << (*v)->barcode() << endl;
+		  cout << "x: " << xpos << endl;
+		  cout << "y: " << ypos << endl;
+		  cout << "z: " << zpos << endl;
+		  cout << "t: " << time << endl;
+		  cout << "Particles" << endl;
+		}
 
-        // For pile-up simulation: vertex position
-        vtxindex = ineve->AddVtx(xpos, ypos, zpos, time);
-        int trackid = -1;
-        for (fiter = finalstateparticles.begin();
-             fiter != finalstateparticles.end();
-             ++fiter)
-        {
-          ++trackid;
 
-          if (verbosity > 1) (*fiter)->print();
+	      if(_bkg_mode){
+		if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
+		    fabs(zpos) > worldsizez / 2) continue;
+	      }
 
-          PHG4Particle *particle = new PHG4Particlev1();
-          particle->set_pid((*fiter)->pdg_id());
-          particle->set_px((*fiter)->momentum().px() * mom_factor);
-          particle->set_py((*fiter)->momentum().py() * mom_factor);
-          particle->set_pz((*fiter)->momentum().pz() * mom_factor);
-          particle->set_barcode((*fiter)->barcode());
+	      if (ishape == ShapeG4Tubs)
+		{
+		  if (sqrt(xpos * xpos + ypos * ypos) > worldsizey / 2 ||
+		      fabs(zpos) > worldsizez / 2)
+		    {
+		      cout << "vertex x/y/z" << xpos << "/" << ypos << "/" << zpos
+			   << " outside world volume radius/z (+-) " << worldsizex / 2
+			   << "/" << worldsizez / 2 << ", dropping it and its particles"
+			   << endl;
+		      continue;
+		    }
+		}
+	      else if (ishape == ShapeG4Box)
+		{
+		  if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
+		      fabs(zpos) > worldsizez / 2)
+		    {
+		      cout << "Vertex x/y/z " << xpos << "/" << ypos << "/" << zpos
+			   << " outside world volume x/y/z (+-) " << worldsizex / 2 << "/"
+			   << worldsizey / 2 << "/" << worldsizez / 2
+			   << ", dropping it and its particles" << endl;
+		      continue;
+		    }
+		}
+	      else
+		{
+		  cout << PHWHERE << " shape " << ishape << " not implemented. exiting"
+		       << endl;
+		  exit(1);
+		}
 
-          ineve->AddParticle(vtxindex, particle);
+	      // For pile-up simulation: vertex position
+	      vtxindex = ineve->AddVtx(xpos, ypos, zpos, time);
+	      int trackid = -1;
+	      for (fiter = finalstateparticles.begin();
+		   fiter != finalstateparticles.end();
+		   ++fiter)
+		{
+		  ++trackid;
 
-          if (embed_flag != 0) ineve->AddEmbeddedParticle(particle, embed_flag);
-        }
-      }  //      if (!finalstateparticles.empty())
+		  if (verbosity > 1) (*fiter)->print();
 
-    }  //    for (HepMC::GenEvent::vertex_iterator v = evt->vertices_begin();
+		  PHG4Particle *particle = new PHG4Particlev1();
+		  particle->set_pid((*fiter)->pdg_id());
+		  particle->set_px((*fiter)->momentum().px() * mom_factor);
+		  particle->set_py((*fiter)->momentum().py() * mom_factor);
+		  particle->set_pz((*fiter)->momentum().pz() * mom_factor);
+		  particle->set_barcode((*fiter)->barcode());
 
-  }  // For pile-up simulation: loop end for PHHepMC event map
+	  
+		  if(_bkg_mode){//@
+
+		    ///Filter related to z-position of the decay 
+		    float FMAG_hole_R = 2.5;//circular hole of 5 cm of length 25 cm at FMAG
+		    float FMAG_hole_L = 25.;
+		    if(sqrt(pow(xpos,2)+pow(ypos,2))> pow(FMAG_hole_R,2))
+		      {
+			if(zpos>0.) continue;
+		      } 
+		    else
+		      {
+			if (zpos>FMAG_hole_L) continue;
+		      }
+
+		    //Filter for transverse momentum of decay muons
+		    if (fabs((*fiter)->momentum().px()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+		    if (fabs((*fiter)->momentum().py()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+
+		    //Filter to get decay muons having enough energy to pass trough FMAG
+		    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));             	      if (totMom/(502.92-zpos)<0.01) continue; 
+		  }
+		  //@
+
+		  ineve->AddParticle(vtxindex, particle);
+
+		  if (embed_flag != 0) ineve->AddEmbeddedParticle(particle, embed_flag);
+		}
+	    }  //      if (!finalstateparticles.empty())
+
+	}  //    for (HepMC::GenEvent::vertex_iterator v = evt->vertices_begin();
+
+    }  // For pile-up simulation: loop end for PHHepMC event map
 
   if (verbosity > 0) ineve->identify();
 
@@ -317,10 +349,10 @@ double HepMCNodeReader::smeargauss(const double width)
 }
 
 bool HepMCNodeReader::PassParticleFilter(HepMC::GenParticle* p) {
-	for(int pid : _particle_filter_pid) {
-		if(p->pdg_id() == pid) return true;
-	}
-	return false;
+  for(int pid : _particle_filter_pid) {
+    if(p->pdg_id() == pid) return true;
+  }
+  return false;
 }
 
 double HepMCNodeReader::smearflat(const double width)
