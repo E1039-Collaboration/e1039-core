@@ -10,10 +10,11 @@
 using namespace std;
 
 SQGeomAcc::SQGeomAcc(const string& name)
-  : SubsysReco  (name)
-  , m_mode_muon (UNDEF_MUON)
-  , m_mode_plane(UNDEF_PLANE)
-  , m_vec_hit   (0)
+  : SubsysReco   (name)
+  , m_mode_muon  (UNDEF_MUON)
+  , m_mode_plane (UNDEF_PLANE)
+  , m_n_ele_h1_ex(0)
+  , m_vec_hit    (0)
 {
   ;
 }
@@ -56,10 +57,14 @@ int SQGeomAcc::process_event(PHCompositeNode* topNode)
   const vector<string> list_cham_bot_name = { "D0X", "D2X", "D3mX" };
   static vector<int> list_top_id;
   static vector<int> list_bot_id;
+  static int h1t_id = 0;
+  static int h1b_id = 0;
   if (list_top_id.size() == 0) { // Initialize
     if (m_mode_plane == HODO || m_mode_plane == HODO_CHAM) { // Add hodoscope planes
       for (unsigned int ii = 0; ii < list_hodo_top_name.size(); ii++) list_top_id.push_back(GetDetId(list_hodo_top_name[ii]));
       for (unsigned int ii = 0; ii < list_hodo_bot_name.size(); ii++) list_bot_id.push_back(GetDetId(list_hodo_bot_name[ii]));
+      h1t_id = GetDetId("H1T");
+      h1b_id = GetDetId("H1B");
     }
     if (m_mode_plane == CHAM || m_mode_plane == HODO_CHAM) { // Add chamber planes
       for (unsigned int ii = 0; ii < list_cham_top_name.size(); ii++) list_top_id.push_back(GetDetId(list_cham_top_name[ii]));
@@ -72,7 +77,12 @@ int SQGeomAcc::process_event(PHCompositeNode* topNode)
   map< int, vector<int> > map_vec_det_id; // [track ID] -> vector<detector ID>
   for (SQHitVector::ConstIter it = m_vec_hit->begin(); it != m_vec_hit->end(); it++) {
     SQHit* hit = *it;
-    map_vec_det_id[ hit->get_track_id() ].push_back( hit->get_detector_id() );
+    int det_id = hit->get_detector_id();
+    if (m_n_ele_h1_ex > 0 && (det_id == h1t_id || det_id == h1b_id)) { // Consider excluding edge elements
+      int ele_id = hit->get_element_id();
+      if (ele_id <= m_n_ele_h1_ex || ele_id > GeomSvc::instance()->getPlaneNElements(det_id) - m_n_ele_h1_ex) continue;
+    }
+    map_vec_det_id[ hit->get_track_id() ].push_back(det_id);
   }
 
   /// Check if each true track has a hit on all required planes and count up such tracks

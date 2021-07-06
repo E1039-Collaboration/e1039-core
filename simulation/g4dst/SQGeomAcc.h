@@ -11,11 +11,22 @@ class SQHitVector;
  *   SQGeomAcc* geom_acc = new SQGeomAcc();
  *   geom_acc->SetMuonMode(SQGeomAcc::PAIR_TBBT);
  *   geom_acc->SetPlaneMode(SQGeomAcc::HODO_CHAM);
+ *   geom_acc->SetNumOfH1EdgeElementsExcluded(4); // 0 by default
  *   se->registerSubsystem(geom_acc);
  * ```
  *
- * All the available modes are listed and explained in the sections of `MuonMode_t` and `PlaneMode_t`.
  * This module must be registered after `SQDigitizer` since it uses SQHits.
+ * All the available modes are listed and explained in the sections of `MuonMode_t` and `PlaneMode_t`.
+ * Elements at the left and right edges of H1T and H1B can be excluded via `SetNumOfH1EdgeElementsExcluded()`,
+ * where the four elements at each edge are planned to be excluded from the trigger logic.
+ *
+ * The chamber acceptance is defined by D0X, D2X, D3pX and D3mX (not Xp, U, Up, V nor Vp).
+ * This definition should be simple and sufficient in terms of the "geometric" acceptance. 
+ * D0U/V and D2U/V are identical to D0X and D2X in the plane size.
+ * U/V of D3p/m are larger than X but the X-U-V overlapping region is almost identical to X.
+ *
+ * The effect of detection/reconstruction inefficiencies is not considered by this module.
+ * It can/should be studied with other modules, like `SQChamberRealization` and `SQReco`.
  */
 class SQGeomAcc: public SubsysReco {
  public:
@@ -38,6 +49,7 @@ class SQGeomAcc: public SubsysReco {
  private:
   MuonMode_t   m_mode_muon;
   PlaneMode_t  m_mode_plane;
+  unsigned int m_n_ele_h1_ex; //< N of H1T/B elements excluded
   SQHitVector* m_vec_hit;
 
  public:
@@ -50,6 +62,7 @@ class SQGeomAcc: public SubsysReco {
 
   void SetMuonMode (MuonMode_t  mode) { m_mode_muon  = mode; }
   void SetPlaneMode(PlaneMode_t mode) { m_mode_plane = mode; }
+  void SetNumOfH1EdgeElementsExcluded(const unsigned int num) { m_n_ele_h1_ex = num; }
 
  private:
   int  GetDetId(const std::string& det_name);
