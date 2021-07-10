@@ -102,6 +102,8 @@ public:
 
     double CrossSectionDrellYan(const double mass, const double xF, const double pARatio);
     double CrossSectionDrellYan(const double mass, const double xF, const double x1, const double x2, const double pARatio);
+    double CrossSectionJPsi(const double xF);
+    double CrossSectionPsip(const double xF);
 
  private:
     bool _PythiaGen;

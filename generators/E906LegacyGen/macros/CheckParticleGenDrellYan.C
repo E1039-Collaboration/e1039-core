@@ -1,8 +1,8 @@
 R__LOAD_LIBRARY(libSQPrimaryGen)
 using namespace std;
 
-/// Macro to check the cross-section value computed by SQPrimaryParticleGen.
-int CheckParticleGen()
+/// Macro to check the cross-section value of D-Y computed by SQPrimaryParticleGen.
+int CheckParticleGenDrellYan()
 {
   const double xF       = 0.3;
   const int    n_mass   = 20;

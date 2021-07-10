@@ -63,20 +63,6 @@ using namespace std;
     const TVector3 bv_cms = p_cms.BoostVector();
     const double s = p_cms.M2();
     const double sqrts = p_cms.M();
-
-    /// distribution-wise constants, moved into SQPrimaryParticleGen
-    //const double pT0DY = 2.8;
-    //const double pTpowDY = 1./(6. - 1.);
-    //const double pT0JPsi = 3.0;
-    //const double pTpowJPsi = 1./(6. - 1.);
-
-    //charmonium generation constants  Ref: Schub et al Phys Rev D 52, 1307 (1995)
-    const double sigmajpsi = 0.2398;    //Jpsi xf gaussian width
-    const double brjpsi = 0.0594;       //Br(Jpsi -> mumu)
-    const double ajpsi = 0.001464*TMath::Exp(-16.66*mjpsi/sqrts);
-    const double bjpsi = 2.*sigmajpsi*sigmajpsi;
-
-    const double psipscale = 0.019;     //psip relative to jpsi
   }
 
 
@@ -285,9 +271,36 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
     cout << PHWHERE << "Failed at generating a dimuon.  Unexpected." << endl;
     exit(1);
   }
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
   return CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
+}
+
+/// Calculate the cross section for J/psi vs xF in nb.  Return "BR*sigma(xF)".
+/**
+ * The cross section is parameterized as "BR*sigma = A * exp(-(xF/W)^2/2) / (sqrt(2*pi)*W)".
+ * The "A" term includes the sqrt(s) dependence.
+ * The remaining term includes the xF dependence using the Gaussian shape.
+ * The constants were taken from "Schub et al., Phys Rev D 52, 1307 (1995)".
+ */
+double SQPrimaryParticleGen::CrossSectionJPsi(const double xF)
+{
+  const double A = 1464*TMath::Exp(-16.66*DPGEN::mjpsi/DPGEN::sqrts); // Taken from Tab. 1 of PRD52_1307
+  const double W = 0.2398; // Jpsi xf gaussian width. Taken from where?
+  const double BR = 0.0594; // Branching ratio of J/psi -> mumu.  Seen above Fig. 4 of PRD52_1307.
+  return BR * A * TMath::Exp(-xF*xF/W/W/2) / (DPGEN::sqrt2pi * W);
+}
+
+/// Calculate the cross section for psi' vs xF in nb.
+/**
+ * It just returns the cross section of J/psi scaled by the psi'-to-J/psi ratio, "psipscale".
+ * "psipscale" was taken from line 5 in page 1313 of PRD52_1307, 
+ * although the value is slightly different (0.019 vs 0.018).
+ */
+double SQPrimaryParticleGen::CrossSectionPsip(const double xF)
+{
+  const double psipscale = 0.019; // psi' relative to J/psi in dimuon channel
+  return psipscale * CrossSectionJPsi(xF);
 }
 
 int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity)
@@ -300,8 +313,8 @@ int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pAR
  
   InsertMuonPair(vtx);
 
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
 
   double xsec   = CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
   double weight = xsec * luminosity;
@@ -313,58 +326,24 @@ int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pAR
 //====================generateJPsi===================================================
 int SQPrimaryParticleGen::generateJPsi(const TVector3& vtx, const double pARatio, double luminosity)
 {
-  //sets invaraint mass and xF  = x1-x2 for virtual photon
-  double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
-
   if(!generateDimuon(DPGEN::mjpsi, xF)) return 1;
-
   InsertMuonPair(vtx);
-
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
-  
-  // Calculate the cross section for J/Psi
-  //@cross_section{
-  //xf distribution, in nb
-  double xsec_xf = DPGEN::ajpsi*TMath::Exp(-pow(dim_xF, 2)/DPGEN::bjpsi)/(DPGEN::sigmajpsi*DPGEN::sqrt2pi);
-
-  //generation limitation
-  double xsec_limit = xfMax - xfMin;
-
-  double xsec = DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double xsec   = CrossSectionJPsi(xF);
   double weight = xsec * luminosity;
   InsertEventInfo(xsec, weight, vtx);
-
   return 0;
 }
 
 //======================Psi-prime====================
 int SQPrimaryParticleGen::generatePsip(const TVector3& vtx, const double pARatio, double luminosity)
 {
-  //sets invaraint mass and xF  = x1-x2 for virtual photon
-  double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
-
   if(!generateDimuon(DPGEN::mpsip, xF)) return 1;
-
   InsertMuonPair(vtx);
-
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
- 
-  // Calculate the cross section for J/Psi
-  //@cross_section{
-  //xf distribution, in nb
-  double xsec_xf = DPGEN::ajpsi*TMath::Exp(-pow(dim_xF, 2)/DPGEN::bjpsi)/(DPGEN::sigmajpsi*DPGEN::sqrt2pi);
-
-  //generation limitation
-  double xsec_limit = xfMax - xfMin;
-
-  double xsec = DPGEN::psipscale * DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double xsec   = CrossSectionPsip(xF);
   double weight = xsec * luminosity;
   InsertEventInfo(xsec, weight, vtx);
-
   return 0;
 }
 
@@ -483,10 +462,12 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
         phaseGen.Generate();
         _dim_gen->set_mom_pos(*(phaseGen.GetDecay(0)));
         _dim_gen->set_mom_neg(*(phaseGen.GetDecay(1)));
-        double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-        UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+        double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+        UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
         if(dim_x1 < x1Min || dim_x1 > x1Max) continue;
         if(dim_x2 < x2Min || dim_x2 > x2Max) continue;
+        double dim_costh, dim_phi;
+        UtilDimuon::Lab2CollinsSoper(_dim_gen, dim_costh, dim_phi);
         if(dim_costh < cosThetaMin || dim_costh >cosThetaMax) continue;
         if(_DrellYanGen  &&  gRandom->Uniform(0,2) > 1. + pow(dim_costh, 2)) continue;
         return true; // A proper dimuon is generated.
