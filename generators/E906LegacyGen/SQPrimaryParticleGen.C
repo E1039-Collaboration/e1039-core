@@ -217,7 +217,7 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 }
 
 //=====================DrellYan=====================================
-/// Calculate the Drell-Yan cross section, d^2sigma/dM*dxF in nb/GeV
+/// Calculate the Drell-Yan cross section, d^2sigma/dM*dxF in pb/GeV
 double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const double xF, const double x1, const double x2, const double pARatio)
 {
   double zOverA = pARatio;
@@ -256,8 +256,8 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   // hbarc_squared is in MeV*mm^2, given by Geant4.
   const double xsec_const = 8.0 / 9.0 * pi * pow(CLHEP::fine_structure_const, 2) * CLHEP::hbarc_squared;
   
-  // Cross section in nb/GeV
-  return xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const * (CLHEP::mm2/CLHEP::nanobarn) / (CLHEP::MeV/CLHEP::GeV);
+  // Cross section in pb/GeV
+  return xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const * (CLHEP::mm2/CLHEP::picobarn) / (CLHEP::MeV/CLHEP::GeV);
 }
 
 /// Calculate the Drell-Yan cross section, given only mass, xF and pARatio
@@ -276,7 +276,7 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   return CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
 }
 
-/// Calculate the cross section for J/psi vs xF in nb.  Return "BR*sigma(xF)".
+/// Calculate the cross section for J/psi vs xF in pb.  Return "BR*sigma(xF)".
 /**
  * The cross section is parameterized as "BR*sigma = A * exp(-(xF/W)^2/2) / (sqrt(2*pi)*W)".
  * The "A" term includes the sqrt(s) dependence.
@@ -285,13 +285,13 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
  */
 double SQPrimaryParticleGen::CrossSectionJPsi(const double xF)
 {
-  const double A = 1464*TMath::Exp(-16.66*DPGEN::mjpsi/DPGEN::sqrts); // Taken from Tab. 1 of PRD52_1307
+  const double A = 1.464e6*TMath::Exp(-16.66*DPGEN::mjpsi/DPGEN::sqrts); // Taken from Tab. 1 of PRD52_1307
   const double W = 0.2398; // Jpsi xf gaussian width. Taken from where?
   const double BR = 0.0594; // Branching ratio of J/psi -> mumu.  Seen above Fig. 4 of PRD52_1307.
   return BR * A * TMath::Exp(-xF*xF/W/W/2) / (DPGEN::sqrt2pi * W);
 }
 
-/// Calculate the cross section for psi' vs xF in nb.
+/// Calculate the cross section for psi' vs xF in pb.
 /**
  * It just returns the cross section of J/psi scaled by the psi'-to-J/psi ratio, "psipscale".
  * "psipscale" was taken from line 5 in page 1313 of PRD52_1307, 
@@ -416,13 +416,14 @@ int SQPrimaryParticleGen::read_config(const char *cfg_file)
  * Reference: G. Moerno et.al. Phys. Rev D43:2815-2836, 1991
  * 
  * The pT and theta distributions generated are affected by the value of `_DrellYanGen`.
+ * The formula of pTmaxSq is discussed in DocDB 9292.
  */
 bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
 {
     double pz = xF*(DPGEN::sqrts - mass*mass/DPGEN::sqrts)/2.;
     
-    double pTmaxSq = (DPGEN::s*DPGEN::s*(1. - xF*xF) - 2.*DPGEN::s*mass*mass + mass*mass*mass*mass)/DPGEN::s/4.;
-  
+    //double pTmaxSq = (DPGEN::s*DPGEN::s*(1. - xF*xF) - 2.*DPGEN::s*mass*mass + mass*mass*mass*mass)/DPGEN::s/4.;
+    double pTmaxSq = (DPGEN::s / 4) * (1 - mass*mass/DPGEN::s)*(1 - mass*mass/DPGEN::s) * (1 - xF*xF);
     if(pTmaxSq < 0.)
     {
       cout << PHWHERE << "pTmaxSq < 0." << endl;
