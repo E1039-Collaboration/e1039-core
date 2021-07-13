@@ -12,6 +12,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <cstdlib>
 
 #include <fun4all/Fun4AllReturnCodes.h>
+#include <phool/recoConsts.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
 #include <phool/PHRandomSeed.h>
@@ -73,6 +74,7 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _DrellYanGen(false),
   _JPsiGen(false),
   _PsipGen(false),
+  _vertexGen(0),
   ineve(NULL),
   _configFile("phpythia8.cfg"),
   _evt(0),
@@ -80,6 +82,8 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _vec_dim(0),
   _integral_node(0),
   _dim_gen(new SQDimuon_v1()),
+  _pdfset("CT10nlo"),
+  _pdf(0),
   _pT0DY    (2.8),
   _pTpowDY  (1./(6. - 1.)),
   _pT0JPsi  (3.0),
@@ -89,23 +93,23 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _weight_sum(0),
   _inte_lumi(0)
 {
- 
-  _vertexGen = new SQPrimaryVertexGen();
-  pdf = LHAPDF::mkPDF("CT10nlo", 0);
-
+  ;
 }
 
 
 SQPrimaryParticleGen::~SQPrimaryParticleGen()
 {
-  delete _dim_gen;
-  delete _vertexGen;
-  //delete pdf;
+  if (_dim_gen  ) delete _dim_gen;
+  if (_vertexGen) delete _vertexGen;
+  //delete _pdf;
 
 }
 
 int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 {
+  _vertexGen = new SQPrimaryVertexGen();
+  _pdf = LHAPDF::mkPDF(_pdfset, 0);
+
   if(_PythiaGen){
   if (!_configFile.empty()) read_config();
   unsigned int seed = PHRandomSeed();
@@ -186,6 +190,40 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
   return 0;
 }
 
+int SQPrimaryParticleGen::End(PHCompositeNode* topNode)
+{
+  recoConsts* rc = recoConsts::instance();
+  rc->set_IntFlag   ("E906GEN_EVENT_COUNT", _n_proc_evt);
+  rc->set_CharFlag  ("E906GEN_PDFSET"     , _pdfset);
+  rc->set_DoubleFlag("E906GEN_xfMin"      , xfMin);
+  rc->set_DoubleFlag("E906GEN_xfMax"      , xfMax);
+  rc->set_DoubleFlag("E906GEN_massMin"    , massMin);
+  rc->set_DoubleFlag("E906GEN_massMax"    , massMax);
+
+  if (_PythiaGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Pythia");
+    rc->set_CharFlag("E906GEN_PYTHIA8_CONFIG", _configFile);
+  } else if (_CustomDimuon) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Custom");
+  } else if (_DrellYanGen) {
+    rc->set_CharFlag  ("E906GEN_CHANNEL", "DrellYan");
+    rc->set_DoubleFlag("E906GEN_pT0DY"  , _pT0DY  );
+    rc->set_DoubleFlag("E906GEN_pTpowDY", _pTpowDY);
+  } else if (_JPsiGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Jpsi");
+    rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
+    rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
+  } else if (_PsipGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Psip");
+    rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
+    rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
+  } else {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Undefined");
+  }
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
   TVector3 vtx        = _vertexGen->generateVertex();
@@ -199,11 +237,6 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   if (_PsipGen    ) ret = generatePsip(vtx, pARatio, luminosity);
   if (ret != 0) return Fun4AllReturnCodes::ABORTEVENT;
 
-  static int evt_id = 0;
-  _evt->set_run_id  (0);
-  _evt->set_spill_id(0);
-  _evt->set_event_id(evt_id++);
-
   _n_gen_acc_evt++;
   _n_proc_evt++;
   _weight_sum += _mcevt->get_weight();
@@ -212,6 +245,10 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   _integral_node->set_N_Processed_Event         (_n_proc_evt);
   _integral_node->set_Sum_Of_Weight             (_weight_sum);
   _integral_node->set_Integrated_Lumi           (_inte_lumi);
+
+  _evt->set_run_id  (0);
+  _evt->set_spill_id(0);
+  _evt->set_event_id(_n_proc_evt);
 
   return Fun4AllReturnCodes::EVENT_OK; 
 }
@@ -223,19 +260,19 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   double zOverA = pARatio;
   double nOverA = 1. - zOverA;
 
-  double dbar1 = pdf->xfxQ(-1, x1, mass)/x1;
-  double ubar1 = pdf->xfxQ(-2, x1, mass)/x1;
-  double d1    = pdf->xfxQ( 1, x1, mass)/x1;
-  double u1    = pdf->xfxQ( 2, x1, mass)/x1;
-  double s1    = pdf->xfxQ( 3, x1, mass)/x1;
-  double c1    = pdf->xfxQ( 4, x1, mass)/x1;
+  double dbar1 = _pdf->xfxQ(-1, x1, mass)/x1;
+  double ubar1 = _pdf->xfxQ(-2, x1, mass)/x1;
+  double d1    = _pdf->xfxQ( 1, x1, mass)/x1;
+  double u1    = _pdf->xfxQ( 2, x1, mass)/x1;
+  double s1    = _pdf->xfxQ( 3, x1, mass)/x1;
+  double c1    = _pdf->xfxQ( 4, x1, mass)/x1;
 
-  double dbar2 = pdf->xfxQ(-1, x2, mass)/x2;
-  double ubar2 = pdf->xfxQ(-2, x2, mass)/x2;
-  double d2    = pdf->xfxQ( 1, x2, mass)/x2;
-  double u2    = pdf->xfxQ( 2, x2, mass)/x2;
-  double s2    = pdf->xfxQ( 3, x2, mass)/x2;
-  double c2    = pdf->xfxQ( 4, x2, mass)/x2;
+  double dbar2 = _pdf->xfxQ(-1, x2, mass)/x2;
+  double ubar2 = _pdf->xfxQ(-2, x2, mass)/x2;
+  double d2    = _pdf->xfxQ( 1, x2, mass)/x2;
+  double u2    = _pdf->xfxQ( 2, x2, mass)/x2;
+  double s2    = _pdf->xfxQ( 3, x2, mass)/x2;
+  double c2    = _pdf->xfxQ( 4, x2, mass)/x2;
  
   double xsec_pdf = 4./9.*(u1*(zOverA*ubar2 + nOverA*dbar2) + ubar1*(zOverA*u2 + nOverA*d2) + 2*c1*c2) +
                     1./9.*(d1*(zOverA*dbar2 + nOverA*ubar2) + dbar1*(zOverA*d2 + nOverA*u2) + 2*s1*s2);

@@ -54,6 +54,7 @@ public:
     
     int Init(PHCompositeNode* topNode);
     int InitRun(PHCompositeNode* topNode);
+    int End(PHCompositeNode* topNode);
     int process_event(PHCompositeNode* topNode);
     //void GeneratePrimaries(G4Event* anEvent);
 
@@ -69,7 +70,7 @@ public:
     //@}
 
     //!Dimuon phase space generator
-     bool generateDimuon(double mass, double xF);
+    bool generateDimuon(double mass, double xF);
 
     //swith for the generators; Abi
     //@
@@ -78,6 +79,8 @@ public:
     void enableDrellYanGen(){_DrellYanGen = true;}
     void enableJPsiGen(){_JPsiGen = true;}
     void enablePsipGen(){_PsipGen = true;}
+
+    void set_pdfset(const std::string pdfset) { m_pdfset = pdfset; }
 
     void set_pT0DY    (const double val) { _pT0DY     = val; }
     void set_pTpowDY  (const double val) { _pTpowDY   = val; }
@@ -133,7 +136,8 @@ public:
     TGenPhaseSpace phaseGen;
 
     //!PDFs
-    LHAPDF::PDF* pdf;
+    std::string  _pdfset;
+    LHAPDF::PDF* _pdf;
 
     // Parameters (being moved from DPGEN)
     double _pT0DY;
