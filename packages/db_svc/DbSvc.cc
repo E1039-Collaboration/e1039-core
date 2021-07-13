@@ -245,13 +245,16 @@ void DbSvc::ConnectServer()
 {
   ostringstream oss;
   oss << "mysql://" << m_svr << "/?timeout=120&reconnect=1&cnf_file=" << m_my_cnf;
-
-  /// User and password must be given in my.cnf, not here.
-  m_con = TMySQLServer::Connect(oss.str().c_str(), 0, 0);
-  if (! (m_con && m_con->IsConnected())) {
-    cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
-    exit(1);
+  string url = oss.str();
+  
+  for (int i_try = 0; i_try < 5; i_try++) { // The connection sometimes fails even with "reconnect=1".  Thus let's try it 5 times.
+    m_con = TMySQLServer::Connect(url.c_str(), 0, 0); // User and password must be given in my.cnf, not here.
+    if (m_con && m_con->IsConnected()) return; // OK
+    sleep(10);
   }
+
+  cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
+  exit(1);
 }
 
 bool DbSvc::FileExist(const std::string fileName)

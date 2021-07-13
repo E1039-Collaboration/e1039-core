@@ -80,7 +80,7 @@ public:
     void enableJPsiGen(){_JPsiGen = true;}
     void enablePsipGen(){_PsipGen = true;}
 
-    void set_pdfset(const std::string pdfset) { m_pdfset = pdfset; }
+    void set_pdfset(const std::string name) { _pdfset = name; }
 
     void set_pT0DY    (const double val) { _pT0DY     = val; }
     void set_pTpowDY  (const double val) { _pTpowDY   = val; }

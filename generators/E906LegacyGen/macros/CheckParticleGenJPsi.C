@@ -25,7 +25,7 @@ int CheckParticleGenJPsi()
 
   ofs.close();
 
-  gr->SetTitle("J/#psi #rightarrow #mu^{+}#mu^{-};x_{F};BR d#sigma/dx_{F} (nb)");
+  gr->SetTitle("J/#psi #rightarrow #mu^{+}#mu^{-};x_{F};BR d#sigma/dx_{F} (pb)");
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(8);
 

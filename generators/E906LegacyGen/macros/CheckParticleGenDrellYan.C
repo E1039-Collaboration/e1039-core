@@ -29,7 +29,7 @@ int CheckParticleGenDrellYan()
   ofs.close();
 
   ostringstream oss;
-  oss << "Drell-Yan @ x_{F} = " << xF << ";Mass (GeV);M^{3} d^{2}#sigma/dMdx_{F} (nb GeV^{2})";
+  oss << "Drell-Yan @ x_{F} = " << xF << ";Mass (GeV);M^{3} d^{2}#sigma/dMdx_{F} (pb GeV^{2})";
   gr->SetTitle(oss.str().c_str());
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(8);
