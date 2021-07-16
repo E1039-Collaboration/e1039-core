@@ -35,6 +35,9 @@ public:
 
 class SQPrimaryVertexGen
 {
+  static constexpr double Z_MIN = -800.0;
+  static constexpr double Z_MAX =  503.0;
+
 public:
   SQPrimaryVertexGen();
   ~SQPrimaryVertexGen();
@@ -69,6 +72,12 @@ private:
   //! Real initialization - should not be called directly
   void init();
 
+  //! Find the z-boundaries of all materials at (xpos, ypos, z_min...z_max).
+  void FindMaterialBoundaries(const double xpos, const double ypos, const double z_min, const double z_max, int& n_b, double* z_b);
+
+  //! Find the z-range of the material given.
+  void FindMaterialRange(double& z1, double& z2, const std::string name, const double xpos=0, const double ypos=0);
+
   //! Default material profile - pre-calculated and used for protons within the target acceptance
   MaterialProfile* defaultMatProf;
   
@@ -100,6 +109,7 @@ private:
   //! flag for using target and dump only
   bool targetOnlyMode;
   bool dumpOnlyMode;
+  std::string material_mode;
 
   //! Start/Stop position for Z search
   double z_start;
