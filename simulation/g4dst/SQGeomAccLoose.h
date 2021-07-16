@@ -7,11 +7,11 @@ class PHG4HitContainer;
 /// An SubsysReco module to skip a simulated event in which a muon or a muon pair doesn't pass through the _rough_ geometric acceptance.
 /**
  * Typical usage:
- * ```
+ * @code
  *   SQGeomAccLoose* geom_acc = new SQGeomAccLoose();
  *   geom_acc->SetNumParticlesPerEvent(2); // or 1 for single events
  *   se->registerSubsystem(geom_acc);
- * ```
+ * @endcode
  *
  * This module can/should be registered before `SQDigitizer` for better process speed.
  * The geometric acceptance required by this module is _rough_, because 

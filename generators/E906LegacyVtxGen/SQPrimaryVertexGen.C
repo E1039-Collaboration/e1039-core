@@ -73,7 +73,6 @@ SQPrimaryVertexGen::SQPrimaryVertexGen():
   inited(false),
   topNode(nullptr),
   targetOnlyMode(false),
-  dumpOnlyMode(false),
   material_mode("All"),
   z_start(Z_MIN),
   z_stop (Z_MAX)
@@ -124,22 +123,24 @@ void SQPrimaryVertexGen::init()
   //If inited from a root file, then skip this step, so that it can be used independent of the Fun4All
   if(geoManager == nullptr) geoManager = PHGeomUtility::GetTGeoManager(topNode);
 
-  // initialize target/dump only mode
+  // initialize special material modes
   if(rc->get_BoolFlag("TARGETONLY"))
   {
-    set_targetOnlyMode();
+    rc->set_CharFlag("VTX_GEN_MATERIAL_MODE", "Target");
+    std::cout << "Warning: TARGETONLY will be obsolete soon.  Use VTX_GEN_MATERIAL_MODE instead." << std::endl;
   }
   else if(rc->get_BoolFlag("DUMPONLY"))
   {
-    set_dumpOnlyMode();
+    rc->set_CharFlag("VTX_GEN_MATERIAL_MODE", "Dump");
+    std::cout << "Warning: DUMPONLY will be obsolete soon.  Use VTX_GEN_MATERIAL_MODE instead." << std::endl;
   }
-
   if (rc->FlagExist("VTX_GEN_MATERIAL_MODE")) {
     material_mode = rc->get_CharFlag("VTX_GEN_MATERIAL_MODE");
     if (material_mode == "All") {
       ; // Do nothing
     } else if (material_mode == "Target") {
       FindMaterialRange(z_start, z_stop, "Target");
+      targetOnlyMode = true;
     } else if (material_mode == "Dump") {
       FindMaterialRange(z_start, z_stop, "fmag_body", 10, 10); // Any (x, y) outside the dump hole.
     } else if (material_mode == "TargetDumpGap") {
@@ -213,22 +214,6 @@ void SQPrimaryVertexGen::FindMaterialRange(double& z1, double& z2, const std::st
     std::cout << "SQPrimaryVertexGen::FindMaterialRange():  Failed.  Wrong material name?  Abort." << std::endl;
     exit(1);
   }
-}
-
-void SQPrimaryVertexGen::set_targetOnlyMode()
-{
-  targetOnlyMode = true;
-  //z_start = -304;
-  //z_stop  = -296;
-  FindMaterialRange(z_start, z_stop, "Target");
-}
-
-void SQPrimaryVertexGen::set_dumpOnlyMode() 
-{
-  dumpOnlyMode = true;
-  //z_start = -100.;
-  //z_stop = 503.;
-  FindMaterialRange(z_start, z_stop, "fmag_body");
 }
 
 void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx)
