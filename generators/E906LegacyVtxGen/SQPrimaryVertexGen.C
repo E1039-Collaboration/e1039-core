@@ -315,7 +315,7 @@ double SQPrimaryVertexGen::funcBeamProfile(double* val, double* par)
   double y_nr = (y - y_c)/y_s; // normalized relative y
   double r2_nr = x_nr*x_nr + y_nr*y_nr;
   double r_nr  = sqrt(r2_nr);
-  if(r_nr < r_boun*r_boun) {
+  if(r_nr < r_boun) {
     return exp(-0.5*r2_nr);
   } else { // >= r_boun
     return exp(-0.5*r_boun*r_boun)*r_boun/r_nr;
