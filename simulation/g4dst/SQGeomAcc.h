@@ -7,13 +7,13 @@ class SQHitVector;
 /// An SubsysReco module to skip a simulated event in which a muon or a muon pair doesn't pass through the geometric acceptance.
 /**
  * Typical usage:
- * ```
+ * @code
  *   SQGeomAcc* geom_acc = new SQGeomAcc();
  *   geom_acc->SetMuonMode(SQGeomAcc::PAIR_TBBT);
  *   geom_acc->SetPlaneMode(SQGeomAcc::HODO_CHAM);
  *   geom_acc->SetNumOfH1EdgeElementsExcluded(4); // 0 by default
  *   se->registerSubsystem(geom_acc);
- * ```
+ * @endcode
  *
  * This module must be registered after `SQDigitizer` since it uses SQHits.
  * All the available modes are listed and explained in the sections of `MuonMode_t` and `PlaneMode_t`.

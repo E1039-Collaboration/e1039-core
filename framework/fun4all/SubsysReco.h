@@ -33,7 +33,7 @@ class SubsysReco: public Fun4AllBase
   /// Called at the end of each run.
   virtual int EndRun(const int /*runnumber*/) {return 0;}
 
-  /** Called during initialization.
+  /** Called during initialization, i.e. registered via Fun4AllServer::registerSubsystem().
       Typically this is where you can book histograms, and e.g.
       register them to Fun4AllServer (so they can be output to file
       using Fun4AllServer::dumpHistos() method).

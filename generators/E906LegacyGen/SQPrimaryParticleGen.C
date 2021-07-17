@@ -12,6 +12,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <cstdlib>
 
 #include <fun4all/Fun4AllReturnCodes.h>
+#include <phool/recoConsts.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
 #include <phool/PHRandomSeed.h>
@@ -63,20 +64,6 @@ using namespace std;
     const TVector3 bv_cms = p_cms.BoostVector();
     const double s = p_cms.M2();
     const double sqrts = p_cms.M();
-
-    /// distribution-wise constants, moved into SQPrimaryParticleGen
-    //const double pT0DY = 2.8;
-    //const double pTpowDY = 1./(6. - 1.);
-    //const double pT0JPsi = 3.0;
-    //const double pTpowJPsi = 1./(6. - 1.);
-
-    //charmonium generation constants  Ref: Schub et al Phys Rev D 52, 1307 (1995)
-    const double sigmajpsi = 0.2398;    //Jpsi xf gaussian width
-    const double brjpsi = 0.0594;       //Br(Jpsi -> mumu)
-    const double ajpsi = 0.001464*TMath::Exp(-16.66*mjpsi/sqrts);
-    const double bjpsi = 2.*sigmajpsi*sigmajpsi;
-
-    const double psipscale = 0.019;     //psip relative to jpsi
   }
 
 
@@ -87,6 +74,7 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _DrellYanGen(false),
   _JPsiGen(false),
   _PsipGen(false),
+  _vertexGen(0),
   ineve(NULL),
   _configFile("phpythia8.cfg"),
   _evt(0),
@@ -94,6 +82,8 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _vec_dim(0),
   _integral_node(0),
   _dim_gen(new SQDimuon_v1()),
+  _pdfset("CT10nlo"),
+  _pdf(0),
   _pT0DY    (2.8),
   _pTpowDY  (1./(6. - 1.)),
   _pT0JPsi  (3.0),
@@ -103,23 +93,23 @@ SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   _weight_sum(0),
   _inte_lumi(0)
 {
- 
-  _vertexGen = new SQPrimaryVertexGen();
-  pdf = LHAPDF::mkPDF("CT10nlo", 0);
-
+  ;
 }
 
 
 SQPrimaryParticleGen::~SQPrimaryParticleGen()
 {
-  delete _dim_gen;
-  delete _vertexGen;
-  //delete pdf;
+  if (_dim_gen  ) delete _dim_gen;
+  if (_vertexGen) delete _vertexGen;
+  //delete _pdf;
 
 }
 
 int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 {
+  _vertexGen = new SQPrimaryVertexGen();
+  _pdf = LHAPDF::mkPDF(_pdfset, 0);
+
   if(_PythiaGen){
   if (!_configFile.empty()) read_config();
   unsigned int seed = PHRandomSeed();
@@ -200,6 +190,40 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
   return 0;
 }
 
+int SQPrimaryParticleGen::End(PHCompositeNode* topNode)
+{
+  recoConsts* rc = recoConsts::instance();
+  rc->set_IntFlag   ("E906GEN_EVENT_COUNT", _n_proc_evt);
+  rc->set_CharFlag  ("E906GEN_PDFSET"     , _pdfset);
+  rc->set_DoubleFlag("E906GEN_xfMin"      , xfMin);
+  rc->set_DoubleFlag("E906GEN_xfMax"      , xfMax);
+  rc->set_DoubleFlag("E906GEN_massMin"    , massMin);
+  rc->set_DoubleFlag("E906GEN_massMax"    , massMax);
+
+  if (_PythiaGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Pythia");
+    rc->set_CharFlag("E906GEN_PYTHIA8_CONFIG", _configFile);
+  } else if (_CustomDimuon) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Custom");
+  } else if (_DrellYanGen) {
+    rc->set_CharFlag  ("E906GEN_CHANNEL", "DrellYan");
+    rc->set_DoubleFlag("E906GEN_pT0DY"  , _pT0DY  );
+    rc->set_DoubleFlag("E906GEN_pTpowDY", _pTpowDY);
+  } else if (_JPsiGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Jpsi");
+    rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
+    rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
+  } else if (_PsipGen) {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Psip");
+    rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
+    rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
+  } else {
+    rc->set_CharFlag("E906GEN_CHANNEL", "Undefined");
+  }
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
 int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
 {
   TVector3 vtx        = _vertexGen->generateVertex();
@@ -213,11 +237,6 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   if (_PsipGen    ) ret = generatePsip(vtx, pARatio, luminosity);
   if (ret != 0) return Fun4AllReturnCodes::ABORTEVENT;
 
-  static int evt_id = 0;
-  _evt->set_run_id  (0);
-  _evt->set_spill_id(0);
-  _evt->set_event_id(evt_id++);
-
   _n_gen_acc_evt++;
   _n_proc_evt++;
   _weight_sum += _mcevt->get_weight();
@@ -227,29 +246,33 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   _integral_node->set_Sum_Of_Weight             (_weight_sum);
   _integral_node->set_Integrated_Lumi           (_inte_lumi);
 
+  _evt->set_run_id  (0);
+  _evt->set_spill_id(0);
+  _evt->set_event_id(_n_proc_evt);
+
   return Fun4AllReturnCodes::EVENT_OK; 
 }
 
 //=====================DrellYan=====================================
-/// Calculate the Drell-Yan cross section, d^2sigma/dM*dxF in nb/GeV
+/// Calculate the Drell-Yan cross section, d^2sigma/dM*dxF in pb/GeV
 double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const double xF, const double x1, const double x2, const double pARatio)
 {
   double zOverA = pARatio;
   double nOverA = 1. - zOverA;
 
-  double dbar1 = pdf->xfxQ(-1, x1, mass)/x1;
-  double ubar1 = pdf->xfxQ(-2, x1, mass)/x1;
-  double d1    = pdf->xfxQ( 1, x1, mass)/x1;
-  double u1    = pdf->xfxQ( 2, x1, mass)/x1;
-  double s1    = pdf->xfxQ( 3, x1, mass)/x1;
-  double c1    = pdf->xfxQ( 4, x1, mass)/x1;
+  double dbar1 = _pdf->xfxQ(-1, x1, mass)/x1;
+  double ubar1 = _pdf->xfxQ(-2, x1, mass)/x1;
+  double d1    = _pdf->xfxQ( 1, x1, mass)/x1;
+  double u1    = _pdf->xfxQ( 2, x1, mass)/x1;
+  double s1    = _pdf->xfxQ( 3, x1, mass)/x1;
+  double c1    = _pdf->xfxQ( 4, x1, mass)/x1;
 
-  double dbar2 = pdf->xfxQ(-1, x2, mass)/x2;
-  double ubar2 = pdf->xfxQ(-2, x2, mass)/x2;
-  double d2    = pdf->xfxQ( 1, x2, mass)/x2;
-  double u2    = pdf->xfxQ( 2, x2, mass)/x2;
-  double s2    = pdf->xfxQ( 3, x2, mass)/x2;
-  double c2    = pdf->xfxQ( 4, x2, mass)/x2;
+  double dbar2 = _pdf->xfxQ(-1, x2, mass)/x2;
+  double ubar2 = _pdf->xfxQ(-2, x2, mass)/x2;
+  double d2    = _pdf->xfxQ( 1, x2, mass)/x2;
+  double u2    = _pdf->xfxQ( 2, x2, mass)/x2;
+  double s2    = _pdf->xfxQ( 3, x2, mass)/x2;
+  double c2    = _pdf->xfxQ( 4, x2, mass)/x2;
  
   double xsec_pdf = 4./9.*(u1*(zOverA*ubar2 + nOverA*dbar2) + ubar1*(zOverA*u2 + nOverA*d2) + 2*c1*c2) +
                     1./9.*(d1*(zOverA*dbar2 + nOverA*ubar2) + dbar1*(zOverA*d2 + nOverA*u2) + 2*s1*s2);
@@ -270,8 +293,8 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
   // hbarc_squared is in MeV*mm^2, given by Geant4.
   const double xsec_const = 8.0 / 9.0 * pi * pow(CLHEP::fine_structure_const, 2) * CLHEP::hbarc_squared;
   
-  // Cross section in nb/GeV
-  return xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const * (CLHEP::mm2/CLHEP::nanobarn) / (CLHEP::MeV/CLHEP::GeV);
+  // Cross section in pb/GeV
+  return xsec_pdf * xsec_kfactor * xsec_phsp * xsec_limit * xsec_const * (CLHEP::mm2/CLHEP::picobarn) / (CLHEP::MeV/CLHEP::GeV);
 }
 
 /// Calculate the Drell-Yan cross section, given only mass, xF and pARatio
@@ -285,9 +308,36 @@ double SQPrimaryParticleGen::CrossSectionDrellYan(const double mass, const doubl
     cout << PHWHERE << "Failed at generating a dimuon.  Unexpected." << endl;
     exit(1);
   }
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
   return CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
+}
+
+/// Calculate the cross section for J/psi vs xF in pb.  Return "BR*sigma(xF)".
+/**
+ * The cross section is parameterized as "BR*sigma = A * exp(-(xF/W)^2/2) / (sqrt(2*pi)*W)".
+ * The "A" term includes the sqrt(s) dependence.
+ * The remaining term includes the xF dependence using the Gaussian shape.
+ * The constants were taken from "Schub et al., Phys Rev D 52, 1307 (1995)".
+ */
+double SQPrimaryParticleGen::CrossSectionJPsi(const double xF)
+{
+  const double A = 1.464e6*TMath::Exp(-16.66*DPGEN::mjpsi/DPGEN::sqrts); // Taken from Tab. 1 of PRD52_1307
+  const double W = 0.2398; // Jpsi xf gaussian width. Taken from where?
+  const double BR = 0.0594; // Branching ratio of J/psi -> mumu.  Seen above Fig. 4 of PRD52_1307.
+  return BR * A * TMath::Exp(-xF*xF/W/W/2) / (DPGEN::sqrt2pi * W);
+}
+
+/// Calculate the cross section for psi' vs xF in pb.
+/**
+ * It just returns the cross section of J/psi scaled by the psi'-to-J/psi ratio, "psipscale".
+ * "psipscale" was taken from line 5 in page 1313 of PRD52_1307, 
+ * although the value is slightly different (0.019 vs 0.018).
+ */
+double SQPrimaryParticleGen::CrossSectionPsip(const double xF)
+{
+  const double psipscale = 0.019; // psi' relative to J/psi in dimuon channel
+  return psipscale * CrossSectionJPsi(xF);
 }
 
 int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pARatio, double luminosity)
@@ -300,8 +350,8 @@ int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pAR
  
   InsertMuonPair(vtx);
 
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
 
   double xsec   = CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
   double weight = xsec * luminosity;
@@ -313,58 +363,24 @@ int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pAR
 //====================generateJPsi===================================================
 int SQPrimaryParticleGen::generateJPsi(const TVector3& vtx, const double pARatio, double luminosity)
 {
-  //sets invaraint mass and xF  = x1-x2 for virtual photon
-  double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
-
   if(!generateDimuon(DPGEN::mjpsi, xF)) return 1;
-
   InsertMuonPair(vtx);
-
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
-  
-  // Calculate the cross section for J/Psi
-  //@cross_section{
-  //xf distribution, in nb
-  double xsec_xf = DPGEN::ajpsi*TMath::Exp(-pow(dim_xF, 2)/DPGEN::bjpsi)/(DPGEN::sigmajpsi*DPGEN::sqrt2pi);
-
-  //generation limitation
-  double xsec_limit = xfMax - xfMin;
-
-  double xsec = DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double xsec   = CrossSectionJPsi(xF);
   double weight = xsec * luminosity;
   InsertEventInfo(xsec, weight, vtx);
-
   return 0;
 }
 
 //======================Psi-prime====================
 int SQPrimaryParticleGen::generatePsip(const TVector3& vtx, const double pARatio, double luminosity)
 {
-  //sets invaraint mass and xF  = x1-x2 for virtual photon
-  double mass = gRandom->Uniform(0,1)*(massMax - massMin) + massMin;
   double xF = gRandom->Uniform(0,1)*(xfMax - xfMin) + xfMin;
-
   if(!generateDimuon(DPGEN::mpsip, xF)) return 1;
-
   InsertMuonPair(vtx);
-
-  double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-  UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
- 
-  // Calculate the cross section for J/Psi
-  //@cross_section{
-  //xf distribution, in nb
-  double xsec_xf = DPGEN::ajpsi*TMath::Exp(-pow(dim_xF, 2)/DPGEN::bjpsi)/(DPGEN::sigmajpsi*DPGEN::sqrt2pi);
-
-  //generation limitation
-  double xsec_limit = xfMax - xfMin;
-
-  double xsec = DPGEN::psipscale * DPGEN::brjpsi * xsec_xf * xsec_limit;
+  double xsec   = CrossSectionPsip(xF);
   double weight = xsec * luminosity;
   InsertEventInfo(xsec, weight, vtx);
-
   return 0;
 }
 
@@ -437,13 +453,14 @@ int SQPrimaryParticleGen::read_config(const char *cfg_file)
  * Reference: G. Moerno et.al. Phys. Rev D43:2815-2836, 1991
  * 
  * The pT and theta distributions generated are affected by the value of `_DrellYanGen`.
+ * The formula of pTmaxSq is discussed in DocDB 9292.
  */
 bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
 {
     double pz = xF*(DPGEN::sqrts - mass*mass/DPGEN::sqrts)/2.;
     
-    double pTmaxSq = (DPGEN::s*DPGEN::s*(1. - xF*xF) - 2.*DPGEN::s*mass*mass + mass*mass*mass*mass)/DPGEN::s/4.;
-  
+    //double pTmaxSq = (DPGEN::s*DPGEN::s*(1. - xF*xF) - 2.*DPGEN::s*mass*mass + mass*mass*mass*mass)/DPGEN::s/4.;
+    double pTmaxSq = (DPGEN::s / 4) * (1 - mass*mass/DPGEN::s)*(1 - mass*mass/DPGEN::s) * (1 - xF*xF);
     if(pTmaxSq < 0.)
     {
       cout << PHWHERE << "pTmaxSq < 0." << endl;
@@ -483,10 +500,12 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
         phaseGen.Generate();
         _dim_gen->set_mom_pos(*(phaseGen.GetDecay(0)));
         _dim_gen->set_mom_neg(*(phaseGen.GetDecay(1)));
-        double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi;
-        UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF, dim_costh, dim_phi);
+        double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+        UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
         if(dim_x1 < x1Min || dim_x1 > x1Max) continue;
         if(dim_x2 < x2Min || dim_x2 > x2Max) continue;
+        double dim_costh, dim_phi;
+        UtilDimuon::Lab2CollinsSoper(_dim_gen, dim_costh, dim_phi);
         if(dim_costh < cosThetaMin || dim_costh >cosThetaMax) continue;
         if(_DrellYanGen  &&  gRandom->Uniform(0,2) > 1. + pow(dim_costh, 2)) continue;
         return true; // A proper dimuon is generated.
