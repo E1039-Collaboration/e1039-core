@@ -202,9 +202,9 @@ void SQPrimaryVertexGen::FindMaterialRange(double& z1, double& z2, const std::st
     double z_lo = z_b[i_b  ];
     double z_hi = z_b[i_b+1];
     TGeoVolume* vol = geoManager->FindNode(xpos, ypos, (z_lo+z_hi)/2)->GetVolume();
-    TString vol_mat  = vol->GetMaterial()->GetName();
     TString vol_name = vol->GetName();
-    std::cout << "  S " << vol_name << "   " << vol_mat << "   " << z_lo << "..." << z_hi << "   " << z_hi-z_lo << std::endl;
+    //TString vol_mat  = vol->GetMaterial()->GetName();
+    //std::cout << "  " << vol_name << "   " << vol_mat << "   " << z_lo << "..." << z_hi << "   " << z_hi-z_lo << std::endl;
     if (vol_name.Contains(name.c_str())) {
       if (z_lo < z1) z1 = z_lo;
       if (z_hi > z2) z2 = z_hi;
@@ -218,9 +218,6 @@ void SQPrimaryVertexGen::FindMaterialRange(double& z1, double& z2, const std::st
 
 void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx)
 {
-  //std::cout << xvtx << "  " << yvtx << std::endl;
-  //retrieve the z position of all geometry boundaries
-
   double z[100];
   int nBoundaries = 0;
   FindMaterialBoundaries(xvtx, yvtx, z_start, z_stop, nBoundaries, z);
@@ -243,14 +240,8 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
 
   //calculate all related properties
   prof->calcProb();
-
-  // for(int i = 0; i < prof->nPieces; ++i)
-  // {
-  //   std::cout << prof->interactables[i] << std::endl;
-  // }
-  // return 0;
+  // for(int i = 0; i < prof->nPieces; ++i) std::cout << prof->interactables[i] << std::endl;
 }
-
 
 TVector3 SQPrimaryVertexGen::generateVertex()
 {
