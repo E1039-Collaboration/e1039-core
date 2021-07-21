@@ -91,7 +91,14 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
       m_evt->set_spill_id(0);
       m_evt->set_event_id(evt->event_number());
       m_mcevt->set_process_id(evt->signal_process_id());
-
+      if (evt){
+	// set last weight in weight container as the weight
+	double weight = 1;
+	for ( HepMC::WeightContainer::const_iterator wgt = evt->weights().begin(); wgt != evt->weights().end(); ++wgt){
+	  weight = weight * (*wgt);
+	}
+	m_mcevt->set_weight(weight);
+      }
       //HepMC::GenVertex* vtx = evt->signal_process_vertex(); // Return 0 as of 2019-11-19.
       // process_type: 4 means you will have 4 particles in the primary process: 0 + 1 -> 2 + 3
       // process type: 3 means you will have 3 particles in the primary process: 1 -> 2 + 3
