@@ -317,13 +317,21 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
               addTrack(0, track_neg);
               addTrack(1, track_pos);
           }
-          addHypothesis(0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), 50.);
+          //addHypothesis(0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), 50.);
+          TVector3 posSt1 = findVertexDumpSt1(track_pos, track_neg);
           addHypothesis(findDimuonVertexFast(track_pos, track_neg), 50.);
           choice_eval = processOnePair();
 
           //Fill the dimuon info which are not related to track refitting first
           dimuon.chisq_vx = getVXChisq();
-          dimuon.vtx.SetXYZ(_vtxpar_curr._r[0][0], _vtxpar_curr._r[1][0], _vtxpar_curr._r[2][0]);
+          if (fabs(posSt1.Z() - 550.0) < 0.1) {
+            //std::cout << " Hypothetical position between dump and st1 " << z_start.back() << std::endl;
+            std::cout << " no vertex between Dump and Station1" << std::endl;
+            dimuon.vtx.SetXYZ(_vtxpar_curr._r[0][0], _vtxpar_curr._r[1][0], _vtxpar_curr._r[2][0]);
+          } else {
+            std::cout << "posSt1.Z() " << posSt1.Z()<< " set the vertex to be between dump and station1 " << std::endl;
+            dimuon.vtx.SetXYZ(posSt1.X(), posSt1.Y(), posSt1.Z());
+          }
 
           dimuon.proj_target_pos = track_pos.getTargetPos();
           dimuon.proj_dump_pos = track_pos.getDumpPos();
@@ -333,7 +341,8 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
           //Retrieve the results
           double z_vertex_opt = getVertexZ0();
           if(optimize)
-          {
+          {   
+              std::cout << "do vertex optimization " << std::endl;
               //if(z_vertex_opt < -80. && getKFChisq() < 10.) z_vertex_opt = Z_TARGET;
               if(dimuon.proj_target_pos.Perp() < dimuon.proj_dump_pos.Perp() && dimuon.proj_target_neg.Perp() < dimuon.proj_dump_neg.Perp())
               {
@@ -406,6 +415,58 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
 
   if(recEvent->getNDimuons() > 0) return VFEXIT_SUCCESS;
   return VFEXIT_FAIL_ITERATION;
+}
+
+TVector3 VertexFit::findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2)
+{
+    int NSteps_St1 = 100;
+    double step_st1 = 100.0/NSteps_St1;
+
+    //Try to find a vertex candidate between the downstream face of FMag and Track station1
+    TVector3 pos1[NSteps_St1 + 1];
+    TVector3 pos2[NSteps_St1 + 1];
+    pos1[0] = track1.getPositionVecSt1();
+    pos2[0] = track2.getPositionVecSt1();
+    //std::cout << " pos1 " << pos1[0].X() << " Y " << pos1[0].Y() << " Z " << pos1[0].Z() << std::endl;
+    //std::cout << " pos2 " << pos2[0].X() << " Y " << pos2[0].Y() << " Z " << pos2[0].Z() << std::endl;
+
+    // assume FMag has no effect between downstream face and the station1
+    TVector3 mom1 = track1.getMomentumVecSt1();
+    double tx_1 = mom1.Px() / mom1.Pz();
+    double ty_1 = mom1.Py() / mom1.Pz();
+    //std::cout << "tx_1 " << tx_1 << " ty_1 " << ty_1 << std::endl; 
+
+    TVector3 mom2 = track2.getMomentumVecSt1();
+    double tx_2 = mom2.Px() / mom2.Pz();
+    double ty_2 = mom2.Py() / mom2.Pz();
+    //std::cout << "tx_2 " << tx_2 << " ty_2 " << ty_2 << std::endl;
+
+    // make the swim from Station1 to FMag
+    for (int iStep = 1; iStep < NSteps_St1; ++iStep) {
+       TVector3 trajVec1(tx_1*step_st1, ty_1*step_st1, step_st1); 
+       TVector3 trajVec2(tx_2*step_st1, ty_2*step_st1, step_st1);
+
+       pos1[iStep] = pos1[iStep - 1] - trajVec1;
+       pos2[iStep] = pos2[iStep - 1] - trajVec2;
+    }
+
+    // find the closest distance
+    int iStep_min = -1;
+    int dist_min = 1E6;
+    for (int iStep = 0; iStep < NSteps_St1; ++iStep) {
+        double dist = (pos1[iStep] - pos2[iStep]).Perp();
+        if(dist < dist_min) {
+            iStep_min = iStep;
+            dist_min = dist;
+        }
+        //std::cout << "step "<< iStep <<" dist " << dist << endl;
+    }
+
+    if(iStep_min == -1 || dist_min > 5.0) {
+        return TVector3(0., 0., 550.);
+    }
+    TVector3 pos_sum = pos1[iStep_min] + pos2[iStep_min];
+    return TVector3( pos_sum.X()/2.0, pos_sum.Y()/2.0, pos_sum.Z()/2.0 );
 }
 
 double VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
@@ -582,7 +643,8 @@ int VertexFit::findVertex()
         LogInfo("At this iteration: ");
         LogInfo(_vtxpar_curr._r[2][0] << " ===  " << _node_vertex.getZ() << " : " << _chisq_kalman << " === " << _chisq_vertex << " : " << _vtxpar_curr._r[0][0] << " === " << _vtxpar_curr._r[1][0]);
 #endif
-        if(_vtxpar_curr._r[2][0] < Z_UPSTREAM || _vtxpar_curr._r[2][0] > Z_DOWNSTREAM)
+        //if(_vtxpar_curr._r[2][0] < Z_UPSTREAM || _vtxpar_curr._r[2][0] > Z_DOWNSTREAM)
+        if(_vtxpar_curr._r[2][0] < Z_UPSTREAM)
         {
             _chisq_kalman = 1E5;
             _chisq_vertex = 1E5;

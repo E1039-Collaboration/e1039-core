@@ -100,6 +100,7 @@ public:
 
     ///Find the primary vertex
     int findVertex();
+	TVector3 findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2);
     double findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2);
     double findSingleMuonVertex(SRecTrack& _track);
     double findSingleMuonVertex(Node& _node_start);
