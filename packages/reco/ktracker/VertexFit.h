@@ -87,8 +87,8 @@ public:
 
     ///Initialize and reset
     void init();
-    void addHypothesis(double z, double sigz = 50.) { z_start.push_back(z); sig_z_start.push_back(sigz); }
-    void setStartingVertex(double z_start, double sigz_start);
+    void addHypothesis(double x, double y, double z, double sigx = 2., double sigy = 2., double sigz = 50.0);
+    void setStartingVertex(double x_start, double sigx_start, double y_start, double sigy_start, double z_start, double sigz_start);
 
     ///Add one track parameter set into the fit
     void addTrack(int index, SRecTrack& _track);
@@ -158,7 +158,11 @@ private:
 
     ///Starting points
     std::vector<double> z_start;
-    std::vector<double> sig_z_start;
+    std::vector<double> sig_z_start;	
+    std::vector<double> x_start;
+    std::vector<double> sig_x_start;
+    std::vector<double> y_start;
+    std::vector<double> sig_y_start;
 
     ///Temporary results
     std::vector<double> z_vertex;
