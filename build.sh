@@ -75,7 +75,6 @@ else # 'all' or 'resume'
     generators/E906LegacyVtxGen
     generators/phhepmc
     generators/PHPythia8
-    simulation/g4decayer
     simulation/g4gdml
     simulation/g4main
     simulation/g4detectors
