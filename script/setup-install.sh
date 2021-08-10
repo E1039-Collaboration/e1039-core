@@ -53,8 +53,9 @@ if   [ ${HOSTNAME:0:11} = 'seaquestdaq' -o \
 	echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
     } >$DIR_INST/this-e1039.sh
     
-elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o \
-       ${HOSTNAME:0:13} = 'spinquestgpvm' ] ; then
+elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o  \
+       ${HOSTNAME:0:13} = 'spinquestgpvm' -o \
+       $HOSTNAME = $HOSTNAME ] ; then
     echo "Use the environment for seaquestgpvm/spinquestgpvm."
     {
 	echo 'export E1039_ROOT=/e906/app/software/osg/software/e1039'

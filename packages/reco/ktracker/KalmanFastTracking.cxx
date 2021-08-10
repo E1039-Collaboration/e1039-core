@@ -24,7 +24,7 @@ Created: 05-28-2013
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 
-//#define _DEBUG_ON
+#define _DEBUG_ON
 
 namespace 
 {
@@ -690,7 +690,7 @@ void KalmanFastTracking::buildBackPartialTracks()
                     }
                     if(nPropHits > 0) break;
                 }
-                if(nPropHits == 0) continue;
+                //if(nPropHits == 0) continue; //Turned off by Patrick for electron tracks
             }
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
@@ -1363,8 +1363,11 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     //For back partials, require projection inside KMAG, and muon id in prop. tubes
     if(tracklet.stationID > nStations-2)
     {
-        if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
-        if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false;
+      if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
+      //if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false; //Original line does muon check for 2-3 connected tracklets
+      if(!(muonID_comp(tracklet) || muonID_search(tracklet) || tracklet.stationID > 5)){
+	return false;
+      }
     }
 
     //If everything is fine ...
@@ -1377,6 +1380,7 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
 bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
 {
     //LogInfo(tracklet.stationID);
+  if(tracklet.stationID == 4 || tracklet.stationID == 5) return true; //Patrick's skip of hodoscope checks for station 3 tracks
     int nHodoHits = 0;
     for(std::vector<int>::iterator stationID = stationIDs_mask[tracklet.stationID-1].begin(); stationID != stationIDs_mask[tracklet.stationID-1].end(); ++stationID)
     {
@@ -1411,6 +1415,8 @@ bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
             {
                 nHodoHits++;
                 masked = true;
+
+		if(tracklet.stationID > 5) return true; //Once the first hodoscope hit is found (at z=1420cm), the combined tracklet passes
 
                 break;
             }
