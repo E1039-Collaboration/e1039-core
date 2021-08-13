@@ -608,7 +608,10 @@ int MainDaqParser::ProcessPhysFlush(int* words)
     
     idx++; // go to next position to get ROCID
     int rocID = get_hex_bits (words[idx], 5, 2);
-    if (rocID > 32) {
+    if (rocID == 25) { // Skip this ROC temporarily, during development of CRL code
+      idx = idx_roc_end;
+      continue; // Move to next ROC
+    } else if (rocID > 32) {
       dec_err.SetFlushError(true);
       cerr << "ERROR: rocID > 32." << endl;
       ret = -1;
