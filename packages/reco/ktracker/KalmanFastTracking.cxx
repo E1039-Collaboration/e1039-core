@@ -24,7 +24,7 @@ Created: 05-28-2013
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 
-#define _DEBUG_ON
+//#define _DEBUG_ON
 
 namespace 
 {
@@ -78,6 +78,7 @@ namespace
 
     //if displaced, skip fit to the target/vertex
     static bool NOT_DISPLACED;
+    static bool TRACK_ELECTRONS;
 
     //initialize global variables
     void initGlobalVariables()
@@ -93,6 +94,7 @@ namespace
             COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
 
             NOT_DISPLACED = rc->get_BoolFlag("NOT_DISPLACED");
+            TRACK_ELECTRONS = rc->get_BoolFlag("TRACK_ELECTRONS");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -690,7 +692,7 @@ void KalmanFastTracking::buildBackPartialTracks()
                     }
                     if(nPropHits > 0) break;
                 }
-                //if(nPropHits == 0) continue; //Turned off by Patrick for electron tracks
+                if(TRACK_ELECTRONS && nPropHits == 0) continue; //Turned off by Patrick for electron tracks
             }
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
@@ -1364,8 +1366,8 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     if(tracklet.stationID > nStations-2)
     {
       if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
-      //if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false; //Original line does muon check for 2-3 connected tracklets
-      if(!(muonID_comp(tracklet) || muonID_search(tracklet) || tracklet.stationID > 5)){
+      if(!TRACK_ELECTRONS && !(muonID_comp(tracklet) || muonID_search(tracklet))) return false; //Muon check for 2-3 connected tracklets.  This needs to be off for electron tracks
+      if(TRACK_ELECTRONS && !(muonID_comp(tracklet) || muonID_search(tracklet) || tracklet.stationID > 5)){
 	return false;
       }
     }
@@ -1380,7 +1382,7 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
 bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
 {
     //LogInfo(tracklet.stationID);
-  if(tracklet.stationID == 4 || tracklet.stationID == 5) return true; //Patrick's skip of hodoscope checks for station 3 tracks
+  if(TRACK_ELECTRONS && (tracklet.stationID == 4 || tracklet.stationID == 5)) return true; //Patrick's skip of hodoscope checks for station 3 tracks in the electron-tracking setup
     int nHodoHits = 0;
     for(std::vector<int>::iterator stationID = stationIDs_mask[tracklet.stationID-1].begin(); stationID != stationIDs_mask[tracklet.stationID-1].end(); ++stationID)
     {
@@ -1416,7 +1418,7 @@ bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
                 nHodoHits++;
                 masked = true;
 
-		if(tracklet.stationID > 5) return true; //Once the first hodoscope hit is found (at z=1420cm), the combined tracklet passes
+		if(TRACK_ELECTRONS && tracklet.stationID > 5) return true; //Once the first hodoscope hit is found (at z=1420cm), the combined tracklet passes for electron tracks
 
                 break;
             }

@@ -52,6 +52,7 @@ void recoConsts::set_defaults()
   set_BoolFlag("NOT_DISPLACED", true);
   set_BoolFlag("TARGETONLY", false);
   set_BoolFlag("DUMPONLY", false);
+  set_BoolFlag("TRACK_ELECTRONS", false);
 
   //Following values are fed to GeomSvc
   set_BoolFlag("OnlineAlignment", false);
