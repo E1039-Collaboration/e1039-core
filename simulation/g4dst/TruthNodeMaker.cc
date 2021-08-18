@@ -271,8 +271,6 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
       }
     }
 
-    std::cout<<"what is rtrkid now "<<rtrkid<<" and what is n_match = "<<n_match<<" and what is ttrkid_hitidvec[ttrkid].size() = "<<ttrkid_hitidvec[ttrkid].size()<<" and what is m_matching_threshold = "<<m_matching_threshold<<std::endl;
-
     if(rtrkid >= 0 && double(n_match)/double(ttrkid_hitidvec[ttrkid].size()) > m_matching_threshold) {
       trk->set_rec_track_id(rtrkid);
     }
