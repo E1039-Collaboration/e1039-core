@@ -101,7 +101,7 @@ public:
     ///Find the primary vertex
     int findVertex();
 	TVector3 findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2);
-    double findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2);
+    TVector3 findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2);
     double findSingleMuonVertex(SRecTrack& _track);
     double findSingleMuonVertex(Node& _node_start);
     double findSingleMuonVertex(TrkPar& _trkpar_start);
@@ -166,6 +166,8 @@ private:
 
     ///Temporary results
     std::vector<double> z_vertex;
+	std::vector<double> x_vertex;
+	std::vector<double> y_vertex;
     std::vector<double> r_vertex;
     std::vector<double> chisq_km;
     std::vector<double> chisq_vx;
