@@ -692,7 +692,7 @@ void KalmanFastTracking::buildBackPartialTracks()
                     }
                     if(nPropHits > 0) break;
                 }
-                if(TRACK_ELECTRONS && nPropHits == 0) continue; //Turned off by Patrick for electron tracks
+                if(!TRACK_ELECTRONS && nPropHits == 0) continue; //Turned off by Patrick for electron tracks
             }
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
