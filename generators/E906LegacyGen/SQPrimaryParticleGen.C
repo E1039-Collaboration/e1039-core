@@ -142,47 +142,46 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
 int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
 { 
   gRandom->SetSeed(PHRandomSeed());
+
+  PHNodeIterator iter( topNode );
+  PHCompositeNode *dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+  if (!dstNode) {
+    cout << PHWHERE << "DST Node missing.  ABORTRUN." << endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
   ineve = findNode::getClass<PHG4InEvent>(topNode,"PHG4INEVENT");
   if (!ineve) {
-    PHNodeIterator iter( topNode );
-    PHCompositeNode *dstNode;
-    dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
-      
     ineve = new PHG4InEvent();
-    PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
-    dstNode->addNode(newNode);
+    dstNode->addNode(new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject"));
+  }
+  _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (! _evt) {
+    _evt = new SQEvent_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
+  }
+  _mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
+  if (! _mcevt) {
+    _mcevt = new SQMCEvent_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(_mcevt, "SQMCEvent", "PHObject"));
+  }
+  _vec_dim = findNode::getClass<SQDimuonVector>(topNode, "SQTruthDimuonVector");
+  if (! _vec_dim) {
+    _vec_dim = new SQDimuonVector_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(_vec_dim, "SQTruthDimuonVector", "PHObject"));
+  }
 
-    _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
-    if (! _evt) {
-      _evt = new SQEvent_v1();
-      dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
-    }
-
-    _mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
-    if (! _mcevt) {
-      _mcevt = new SQMCEvent_v1();
-      dstNode->addNode(new PHIODataNode<PHObject>(_mcevt, "SQMCEvent", "PHObject"));
-    }
-
-    _vec_dim = findNode::getClass<SQDimuonVector>(topNode, "SQTruthDimuonVector");
-    if (! _vec_dim) {
-      _vec_dim = new SQDimuonVector_v1();
-      dstNode->addNode(new PHIODataNode<PHObject>(_vec_dim, "SQTruthDimuonVector", "PHObject"));
-    }
-
-    PHCompositeNode *runNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
-    if (!runNode) {
-      cout << PHWHERE << "RUN Node missing.  ABORTRUN." << endl;
-      return Fun4AllReturnCodes::ABORTRUN;
-    }
-    _integral_node = findNode::getClass<PHGenIntegral>(runNode, "PHGenIntegral");
-    if (!_integral_node) {
-      _integral_node = new PHGenIntegralv1("By SQPrimaryParticleGen");
-      runNode->addNode(new PHIODataNode<PHObject>(_integral_node, "PHGenIntegral", "PHObject"));
-    } else {
-      cout << PHWHERE << "PHGenIntegral Node exists.  Unexpected.  ABORTRUN." << endl;
-      return Fun4AllReturnCodes::ABORTRUN;
-    }
+  PHCompositeNode *runNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+  if (!runNode) {
+    cout << PHWHERE << "RUN Node missing.  ABORTRUN." << endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
+  _integral_node = findNode::getClass<PHGenIntegral>(runNode, "PHGenIntegral");
+  if (!_integral_node) {
+    _integral_node = new PHGenIntegralv1("By SQPrimaryParticleGen");
+    runNode->addNode(new PHIODataNode<PHObject>(_integral_node, "PHGenIntegral", "PHObject"));
+  } else {
+    cout << PHWHERE << "PHGenIntegral Node exists.  Unexpected.  ABORTRUN." << endl;
+    return Fun4AllReturnCodes::ABORTRUN;
   }
 
   _vertexGen->InitRun(topNode);
