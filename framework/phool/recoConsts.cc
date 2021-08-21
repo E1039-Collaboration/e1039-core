@@ -88,8 +88,8 @@ void recoConsts::set_defaults()
 
   set_DoubleFlag("X_BEAM", 0.);
   set_DoubleFlag("Y_BEAM", 0.);
-  set_DoubleFlag("SIGX_BEAM", 2.);
-  set_DoubleFlag("SIGY_BEAM", 2.);
+  set_DoubleFlag("SIGX_BEAM", 0.3);
+  set_DoubleFlag("SIGY_BEAM", 0.3);
 
   set_DoubleFlag("X0_TARGET", 0.);
   set_DoubleFlag("Y0_TARGET", 0.);
