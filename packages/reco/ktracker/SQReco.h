@@ -59,6 +59,9 @@ public:
   const TString& get_eval_file_name() const { return _eval_file_name; }
   void set_eval_file_name(const TString& evalFileName) { _eval_file_name = evalFileName; }
 
+  bool use_geom_io_node() const  { return _use_geom_io_node; }
+  void use_geom_io_node(const bool val) { _use_geom_io_node = val; }
+
   const std::string& get_geom_file_name() const { return _geom_file_name; }
   void set_geom_file_name(const std::string& geomFileName) { _geom_file_name = geomFileName; }
 
@@ -137,6 +140,7 @@ private:
   SRecEvent* _recEvent;
   SQTrackVector* _recTrackVec;
 
+  bool _use_geom_io_node;
   std::string  _geom_file_name;
   TGeoManager* _t_geo_manager;
 };
