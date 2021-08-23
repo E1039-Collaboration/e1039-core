@@ -609,10 +609,12 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
 
   if(_legacy_rec_container)
   {
-    _recEvent = new SRecEvent();
-    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
-    eventNode->addNode(recEventNode);
-    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+    _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent"); // Could exist when the tracking is re-done.
+    if(!_recEvent) {
+      _recEvent = new SRecEvent();
+      eventNode->addNode(new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject"));
+      if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+    }
   }
   else
   {
