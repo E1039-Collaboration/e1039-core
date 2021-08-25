@@ -40,7 +40,7 @@ DbSvc::DbSvc(const SvrId_t svr_id, const std::string dbfile)
     return;
   }
 
-  m_svr = Form("sqlite://%s", m_dbfile.c_str());
+  m_svr = "sqlite://" + m_dbfile;
   m_con = new TSQLiteServer(m_svr.c_str());
 }
 

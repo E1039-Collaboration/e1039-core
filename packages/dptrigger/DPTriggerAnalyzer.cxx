@@ -80,7 +80,7 @@ TString DPTriggerRoad::getStringID()
   TString sid;
   for(unsigned int i = 0; i < uniqueTrIDs.size(); ++i)
     {
-      sid = sid + Form("%06d", uniqueTrIDs[i]);
+      sid += TString::Format("%06d", uniqueTrIDs[i]);
     }
   
   return sid;
