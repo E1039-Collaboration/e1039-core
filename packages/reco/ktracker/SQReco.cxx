@@ -73,6 +73,7 @@ SQReco::SQReco(const std::string& name):
   _rawEvent(nullptr),
   _recEvent(nullptr),
   _recTrackVec(nullptr),
+  _use_geom_io_node(false),
   _geom_file_name(""),
   _t_geo_manager(nullptr)
 {
@@ -203,18 +204,36 @@ int SQReco::InitGeom(PHCompositeNode* topNode)
     }
   }
 
-  PHGeomTGeo* dstGeom = PHGeomUtility::GetGeomTGeoNode(topNode, true); //hacky way to bypass PHGeoUtility's lack of exception throwing
-  if(!dstGeom->isValid())
+  if (_geom_file_name != "")
   {
-    if(_geom_file_name == "") return Fun4AllReturnCodes::ABORTEVENT;
-
     if(Verbosity() > 1) std::cout << "SQReco::InitGeom - create geom from " << _geom_file_name << std::endl;
+    if (_use_geom_io_node)
+    {
+      std::cout << "SQReco::InitGeom - Both 'geom_file_name' and 'use_geom_io_node' are active.  Use only one." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
     int ret = PHGeomUtility::ImportGeomFile(topNode, _geom_file_name);
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   }
+  else if (_use_geom_io_node)
+  {
+    if(Verbosity() > 1) std::cout << "SQReco::InitGeom - use geom from RUN node tree." << std::endl;
+    PHGeomTGeo* node = PHGeomUtility::LoadFromIONode(topNode);
+    if (! node)
+    {
+      std::cout << "SQReco::InitGeom - Failed at loading the GEOMETRY_IO node." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
+  }
   else
   {
-    if(Verbosity() > 1) std::cout << "SQReco::InitGeom - use geom from NodeTree." << std::endl;
+    if(Verbosity() > 1) std::cout << "SQReco::InitGeom - use geom from PAR node tree." << std::endl;
+    PHGeomTGeo* dstGeom = PHGeomUtility::GetGeomTGeoNode(topNode, true); //hacky way to bypass PHGeoUtility's lack of exception throwing
+    if(!dstGeom->isValid())
+    {
+      std::cout << "SQReco::InitGeom - Failed at loading the GEOMETRY node." << std::endl;
+      return Fun4AllReturnCodes::ABORTEVENT;
+    }
   }
 
   _t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
@@ -590,10 +609,12 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
 
   if(_legacy_rec_container)
   {
-    _recEvent = new SRecEvent();
-    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject");
-    eventNode->addNode(recEventNode);
-    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+    _recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent"); // Could exist when the tracking is re-done.
+    if(!_recEvent) {
+      _recEvent = new SRecEvent();
+      eventNode->addNode(new PHIODataNode<PHObject>(_recEvent, "SRecEvent", "PHObject"));
+      if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SRecEvent Added");
+    }
   }
   else
   {
