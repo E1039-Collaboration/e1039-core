@@ -30,6 +30,8 @@ Created: 2-8-2012
 #include <memory>
 #include <fstream>
 
+//#define _DEBUG_ON
+
 using namespace std;
 
 namespace 
@@ -317,12 +319,26 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
               addTrack(0, track_neg);
               addTrack(1, track_pos);
           }
-          addHypothesis(0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), 50.);
-          addHypothesis(findDimuonVertexFast(track_pos, track_neg), 50.);
+          // check if it decays between 500 and 600 cm first
+          TVector3 posSt1 = findVertexDumpSt1(track_pos, track_neg);
+          if(fabs(posSt1.Z() - (-9999.)) > 0.1) {
+              addHypothesis(posSt1.X(), posSt1.Y(), posSt1.Z(), 10.0, 10.0, 10.0);
+              //addHypothesis(0., 0., posSt1.Z(), 5.0, 5.0, 10.0);
+#ifdef _DEBUG_ON
+              std::cout << "posSt1 " << posSt1.X() << " Y " << posSt1.Y() << " Z " << posSt1.Z() << std::endl;
+#endif
+          } 
+          addHypothesis(0.5*(dimuon.vtx_pos[0] + dimuon.vtx_neg[0]), 0.5*(dimuon.vtx_pos[1] + dimuon.vtx_neg[1]), 0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), 10.0, 10.0, 50.);
+          TVector3 posCand = findDimuonVertexFast(track_pos, track_neg);
+          addHypothesis(posCand.X(), posCand.Y(), posCand.Z(),  10.0, 10.0, 50.);
+
           choice_eval = processOnePair();
 
           //Fill the dimuon info which are not related to track refitting first
           dimuon.chisq_vx = getVXChisq();
+#ifdef _DEBUG_ON
+          std::cout << "after processing one piar, vtx chisq " << getVXChisq() << " kalman chisq " << getKFChisq() << std::endl;
+#endif
           dimuon.vtx.SetXYZ(_vtxpar_curr._r[0][0], _vtxpar_curr._r[1][0], _vtxpar_curr._r[2][0]);
 
           dimuon.proj_target_pos = track_pos.getTargetPos();
@@ -333,7 +349,7 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
           //Retrieve the results
           double z_vertex_opt = getVertexZ0();
           if(optimize)
-          {
+          {   
               //if(z_vertex_opt < -80. && getKFChisq() < 10.) z_vertex_opt = Z_TARGET;
               if(dimuon.proj_target_pos.Perp() < dimuon.proj_dump_pos.Perp() && dimuon.proj_target_neg.Perp() < dimuon.proj_dump_neg.Perp())
               {
@@ -408,7 +424,55 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
   return VFEXIT_FAIL_ITERATION;
 }
 
-double VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
+TVector3 VertexFit::findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2)
+{
+    int NSteps_St1 = 100;
+    double step_st1 = 100.0/NSteps_St1;
+
+    //Try to find a vertex candidate between the downstream face of FMag and Track station1
+    TVector3 pos1[NSteps_St1 + 1];
+    TVector3 pos2[NSteps_St1 + 1];
+    pos1[0] = track1.getPositionVecSt1();
+    pos2[0] = track2.getPositionVecSt1();
+
+    // assume FMag has no effect between downstream face and the station1
+    TVector3 mom1 = track1.getMomentumVecSt1();
+    double tx_1 = mom1.Px() / mom1.Pz();
+    double ty_1 = mom1.Py() / mom1.Pz();
+
+    TVector3 mom2 = track2.getMomentumVecSt1();
+    double tx_2 = mom2.Px() / mom2.Pz();
+    double ty_2 = mom2.Py() / mom2.Pz();
+
+    // make the swim from Station1 to FMag
+    for (int iStep = 1; iStep < NSteps_St1; ++iStep) {
+       TVector3 trajVec1(tx_1*step_st1, ty_1*step_st1, step_st1); 
+       TVector3 trajVec2(tx_2*step_st1, ty_2*step_st1, step_st1);
+
+       pos1[iStep] = pos1[iStep - 1] - trajVec1;
+       pos2[iStep] = pos2[iStep - 1] - trajVec2;
+    }
+
+    // find the closest distance
+    int iStep_min = -1;
+    int dist_min = 1E6;
+    for (int iStep = 0; iStep < NSteps_St1; ++iStep) {
+        double dist = (pos1[iStep] - pos2[iStep]).Perp();
+        if(dist < dist_min) {
+            iStep_min = iStep;
+            dist_min = dist;
+        }
+    }
+
+    //if(iStep_min == -1 || dist_min > 5.0) {
+    if(iStep_min == -1) {
+        return TVector3(0., 0., -9999.);
+    }
+    TVector3 pos_sum = pos1[iStep_min] + pos2[iStep_min];
+    return TVector3( pos_sum.X()/2.0, pos_sum.Y()/2.0, pos_sum.Z()/2.0 );
+}
+
+TVector3 VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
 {
     //Swim both tracks all the way down, and store the numbers
     TVector3 pos1[NSTEPS_FMAG + NSTEPS_TARGET + 1];
@@ -432,8 +496,10 @@ double VertexFit::findDimuonVertexFast(SRecTrack& track1, SRecTrack& track2)
         }
     }
 
-    if(iStep_min == -1) return Z_DUMP;
-    return pos1[iStep_min].Z();
+    if(iStep_min == -1) return TVector3(0., 0., Z_DUMP);
+    TVector3 pos_sum = pos1[iStep_min] + pos2[iStep_min];
+    return TVector3( pos_sum.X()/2.0, pos_sum.Y()/2.0, pos_sum.Z()/2.0 );
+    //return pos1[iStep_min].Z();
 }
 
 void VertexFit::init()
@@ -441,28 +507,46 @@ void VertexFit::init()
     _trkpar_curr.clear();
 
     z_vertex.clear();
+    x_vertex.clear();
+    y_vertex.clear();
     r_vertex.clear();
     chisq_km.clear();
     chisq_vx.clear();
 
     z_start.clear();
     sig_z_start.clear();
+    x_start.clear();
+    sig_x_start.clear();
+    y_start.clear();
+    sig_y_start.clear();
 
     ///Two default starting points
     //addHypothesis(Z_DUMP, 50.);
     //addHypothesis(Z_TARGET, 50.);
 }
 
-void VertexFit::setStartingVertex(double z_start, double sigz_start)
+void VertexFit::addHypothesis(double x, double y, double z, double sigx, double sigy, double sigz) 
+{
+    x_start.push_back(x);
+    sig_x_start.push_back(sigx);
+
+    y_start.push_back(y);
+    sig_y_start.push_back(sigy);
+
+    z_start.push_back(z);
+    sig_z_start.push_back(sigz);
+}
+
+void VertexFit::setStartingVertex(double x_start, double sigx_start, double y_start, double sigy_start, double z_start, double sigz_start)
 {
     ///Initialize the starting vertex with a guess and large error
-    _vtxpar_curr._r[0][0] = X_BEAM;
-    _vtxpar_curr._r[1][0] = Y_BEAM;
+    _vtxpar_curr._r[0][0] = x_start;
+    _vtxpar_curr._r[1][0] = y_start;
     _vtxpar_curr._r[2][0] = z_start;
 
     _vtxpar_curr._cov.Zero();
-    _vtxpar_curr._cov[0][0] = SIGX_BEAM*SIGX_BEAM;
-    _vtxpar_curr._cov[1][1] = SIGY_BEAM*SIGY_BEAM;
+    _vtxpar_curr._cov[0][0] = sigx_start*sigx_start;
+    _vtxpar_curr._cov[1][1] = sigy_start*sigy_start;
     _vtxpar_curr._cov[2][2] = sigz_start*sigz_start;
 
     _chisq_vertex = 0.;
@@ -481,13 +565,18 @@ int VertexFit::processOnePair()
         LogInfo("Testing starting point: " << z_start[i]);
 #endif
 
-        setStartingVertex(z_start[i], sig_z_start[i]);
+        setStartingVertex(x_start[i], sig_x_start[i], y_start[i], sig_y_start[i], z_start[i], sig_z_start[i]);
         nIter_eval[i] = findVertex();
 
         chisq_km.push_back(_chisq_kalman);
         chisq_vx.push_back(_chisq_vertex);
         z_vertex.push_back(_vtxpar_curr._r[2][0]);
+        x_vertex.push_back(_vtxpar_curr._r[0][0]);
+        y_vertex.push_back(_vtxpar_curr._r[1][0]);
         r_vertex.push_back(sqrt(_vtxpar_curr._r[0][0]*_vtxpar_curr._r[0][0] + _vtxpar_curr._r[1][0]*_vtxpar_curr._r[1][0]));
+#ifdef _DEBUG_ON
+        std::cout << "after findVertex, position: " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
+#endif
 
         if(_chisq_kalman < chisq_min)
         {
@@ -500,12 +589,18 @@ int VertexFit::processOnePair()
 
     _chisq_kalman = chisq_km[index_min];
     _chisq_vertex = chisq_vx[index_min];
+    _vtxpar_curr._r[0][0] = x_vertex[index_min];
+    _vtxpar_curr._r[1][0] = y_vertex[index_min];
     _vtxpar_curr._r[2][0] = z_vertex[index_min];
     if(z_vertex[index_min] > 1E4)
     {
         index_min = z_start.size();
         _vtxpar_curr._r[2][0] = z_start.back();
     }
+
+#ifdef _DEBUG_ON
+    std::cout << "at the end of processing one pair, position " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
+#endif
 
     return index_min;
 }
@@ -549,6 +644,7 @@ int VertexFit::findVertex()
     {
 #ifdef _DEBUG_ON
         LogInfo("Iteration: " << nIter);
+        std::cout << "iteration " << nIter << " vtx position " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
 #endif
 
         _chisq_vertex = 0.;
@@ -582,7 +678,8 @@ int VertexFit::findVertex()
         LogInfo("At this iteration: ");
         LogInfo(_vtxpar_curr._r[2][0] << " ===  " << _node_vertex.getZ() << " : " << _chisq_kalman << " === " << _chisq_vertex << " : " << _vtxpar_curr._r[0][0] << " === " << _vtxpar_curr._r[1][0]);
 #endif
-        if(_vtxpar_curr._r[2][0] < Z_UPSTREAM || _vtxpar_curr._r[2][0] > Z_DOWNSTREAM)
+        //if(_vtxpar_curr._r[2][0] < Z_UPSTREAM || _vtxpar_curr._r[2][0] > Z_DOWNSTREAM)
+        if(_vtxpar_curr._r[2][0] < Z_UPSTREAM)
         {
             _chisq_kalman = 1E5;
             _chisq_vertex = 1E5;
@@ -614,6 +711,8 @@ void VertexFit::updateVertex()
 
     TMatrixD vertex_dummy(3, 1);
     vertex_dummy.Zero();
+    //vertex_dummy[0][0] = _vtxpar_curr._r[0][0];
+    //vertex_dummy[1][0] = _vtxpar_curr._r[1][0];
     vertex_dummy[2][0] = _vtxpar_curr._r[2][0];
 
     TMatrixD mxy = _node_vertex.getFiltered()._state_kf.GetSub(3, 4, 0, 0);
