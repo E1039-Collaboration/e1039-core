@@ -30,6 +30,8 @@ Created: 2-8-2012
 #include <memory>
 #include <fstream>
 
+//#define _DEBUG_ON
+
 using namespace std;
 
 namespace 
@@ -322,26 +324,21 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
           if(fabs(posSt1.Z() - (-9999.)) > 0.1) {
               addHypothesis(posSt1.X(), posSt1.Y(), posSt1.Z(), 10.0, 10.0, 10.0);
               //addHypothesis(0., 0., posSt1.Z(), 5.0, 5.0, 10.0);
+#ifdef _DEBUG_ON
               std::cout << "posSt1 " << posSt1.X() << " Y " << posSt1.Y() << " Z " << posSt1.Z() << std::endl;
+#endif
           } 
-          //else {
-              //addHypothesis(X_BEAM, Y_BEAM, 0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), SIGX_BEAM, SIGY_BEAM, 50.);
           addHypothesis(0.5*(dimuon.vtx_pos[0] + dimuon.vtx_neg[0]), 0.5*(dimuon.vtx_pos[1] + dimuon.vtx_neg[1]), 0.5*(dimuon.vtx_pos[2] + dimuon.vtx_neg[2]), 10.0, 10.0, 50.);
           TVector3 posCand = findDimuonVertexFast(track_pos, track_neg);
           addHypothesis(posCand.X(), posCand.Y(), posCand.Z(),  10.0, 10.0, 50.);
-          //addHypothesis(0., 0., posCand.Z(),  10.0, 10.0, 50.);
-          //}
+
           choice_eval = processOnePair();
 
           //Fill the dimuon info which are not related to track refitting first
-          std::cout << "after processing one piar, vtx chisq " << getVXChisq() << " kalman chisq " << getKFChisq() << std::endl;
           dimuon.chisq_vx = getVXChisq();
-          //if (fabs(posSt1.Z() - 550.0) < 0.1) {
-          //std::cout << " Hypothetical position between dump and st1 " << z_start.back() << std::endl;
-          //std::cout << " no vertex between Dump and Station1. " << std::endl;
-          //std::cout << "PosSt1 position X " << posSt1.X() << " vertex pos " <<  _vtxpar_curr._r[0][0] <<std::endl;
-          //std::cout << "PosSt1 position Y " << posSt1.Y() << " vertex pos " <<  _vtxpar_curr._r[1][0] <<std::endl;
-          //std::cout << "PosSt1 position Z " << posSt1.Z() << " vertex pos " <<  _vtxpar_curr._r[2][0] <<std::endl;
+#ifdef _DEBUG_ON
+          std::cout << "after processing one piar, vtx chisq " << getVXChisq() << " kalman chisq " << getKFChisq() << std::endl;
+#endif
           dimuon.vtx.SetXYZ(_vtxpar_curr._r[0][0], _vtxpar_curr._r[1][0], _vtxpar_curr._r[2][0]);
 
           dimuon.proj_target_pos = track_pos.getTargetPos();
@@ -353,7 +350,6 @@ int VertexFit::setRecEvent(SRecEvent* recEvent, int sign1, int sign2)
           double z_vertex_opt = getVertexZ0();
           if(optimize)
           {   
-              std::cout << "do vertex optimization " << std::endl;
               //if(z_vertex_opt < -80. && getKFChisq() < 10.) z_vertex_opt = Z_TARGET;
               if(dimuon.proj_target_pos.Perp() < dimuon.proj_dump_pos.Perp() && dimuon.proj_target_neg.Perp() < dimuon.proj_dump_neg.Perp())
               {
@@ -438,19 +434,15 @@ TVector3 VertexFit::findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2)
     TVector3 pos2[NSteps_St1 + 1];
     pos1[0] = track1.getPositionVecSt1();
     pos2[0] = track2.getPositionVecSt1();
-    //std::cout << " pos1 " << pos1[0].X() << " Y " << pos1[0].Y() << " Z " << pos1[0].Z() << std::endl;
-    //std::cout << " pos2 " << pos2[0].X() << " Y " << pos2[0].Y() << " Z " << pos2[0].Z() << std::endl;
 
     // assume FMag has no effect between downstream face and the station1
     TVector3 mom1 = track1.getMomentumVecSt1();
     double tx_1 = mom1.Px() / mom1.Pz();
     double ty_1 = mom1.Py() / mom1.Pz();
-    //std::cout << "tx_1 " << tx_1 << " ty_1 " << ty_1 << std::endl; 
 
     TVector3 mom2 = track2.getMomentumVecSt1();
     double tx_2 = mom2.Px() / mom2.Pz();
     double ty_2 = mom2.Py() / mom2.Pz();
-    //std::cout << "tx_2 " << tx_2 << " ty_2 " << ty_2 << std::endl;
 
     // make the swim from Station1 to FMag
     for (int iStep = 1; iStep < NSteps_St1; ++iStep) {
@@ -470,7 +462,6 @@ TVector3 VertexFit::findVertexDumpSt1(SRecTrack& track1, SRecTrack& track2)
             iStep_min = iStep;
             dist_min = dist;
         }
-        //std::cout << "step "<< iStep <<" dist " << dist << endl;
     }
 
     //if(iStep_min == -1 || dist_min > 5.0) {
@@ -583,7 +574,9 @@ int VertexFit::processOnePair()
         x_vertex.push_back(_vtxpar_curr._r[0][0]);
         y_vertex.push_back(_vtxpar_curr._r[1][0]);
         r_vertex.push_back(sqrt(_vtxpar_curr._r[0][0]*_vtxpar_curr._r[0][0] + _vtxpar_curr._r[1][0]*_vtxpar_curr._r[1][0]));
+#ifdef _DEBUG_ON
         std::cout << "after findVertex, position: " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
+#endif
 
         if(_chisq_kalman < chisq_min)
         {
@@ -605,7 +598,9 @@ int VertexFit::processOnePair()
         _vtxpar_curr._r[2][0] = z_start.back();
     }
 
+#ifdef _DEBUG_ON
     std::cout << "at the end of processing one pair, position " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
+#endif
 
     return index_min;
 }
@@ -644,14 +639,13 @@ void VertexFit::addTrack(int index, TrkPar& _trkpar)
 int VertexFit::findVertex()
 {
     int nIter = 0;
-    std::cout << "_trkpar_curr size "<< _trkpar_curr.size() << std::endl;
     double _chisq_kalman_prev = 1E6;
     for(; nIter < _max_iteration; ++nIter)
     {
 #ifdef _DEBUG_ON
         LogInfo("Iteration: " << nIter);
-#endif
         std::cout << "iteration " << nIter << " vtx position " << _vtxpar_curr._r[0][0] << " " << _vtxpar_curr._r[1][0] << " " << _vtxpar_curr._r[2][0]  << " chi2 kalman " << _chisq_kalman << " chi2 vtx " << _chisq_vertex <<std::endl;
+#endif
 
         _chisq_vertex = 0.;
         _chisq_kalman = 0.;
