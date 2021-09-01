@@ -73,8 +73,8 @@ void PHG4CylinderDetector::Construct(G4LogicalVolume *logicWorld)
 		// M_He = 0.4*0.145 = 0.058 g; M_NH3 = 0.6*0.867 = 0.520 g, M/rho = 0.578
 		// f_M_He = 10.0%, f_M_NH3 = 90.0%
 		G4Material* Target = new G4Material(name = "Target", density = 0.578 * g/cm3, ncomponents = 2);
-		Target->AddMaterial(sNH3, 90 * perCent);
-		Target->AddMaterial(lHe,  10 * perCent);
+		Target->AddMaterial(sNH3, 60 * perCent);
+		Target->AddMaterial(lHe,  40 * perCent);
 
 		TrackerMaterial = Target;
 
