@@ -697,6 +697,7 @@ void SRecEvent::setRawEvent(SRawEvent *rawEvent)
     }
 
     fAllTracks.clear();
+    fAllSt3Tracklets.clear(); //WPM
 }
 
 void SRecEvent::setEventInfo(SRawEvent* rawEvent)
@@ -729,6 +730,7 @@ std::vector<Int_t> SRecEvent::getChargedTrackIDs(Int_t charge)
 void SRecEvent::clear()
 {
     fAllTracks.clear();
+    fAllSt3Tracklets.clear(); //WPM
     fLocalID.clear();
     fDimuons.clear();
 

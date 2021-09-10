@@ -734,7 +734,17 @@ double Tracklet::getMomentum() const
 
 int Tracklet::getCharge() const
 {
-	return x0*KMAGSTR > tx ? 1 : -1;
+  if(!_chargeSet){
+    return x0*KMAGSTR > tx ? 1 : -1;
+  } else{
+    return _charge;
+  }
+}
+
+void Tracklet::setCharge(int chrg)
+{
+  _chargeSet = true;
+  _charge = chrg;
 }
 
 void Tracklet::getXZInfoInSt1(double& tx_st1, double& x0_st1) const

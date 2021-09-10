@@ -247,6 +247,10 @@ public:
     //Residuals of all pos
     double residual[nChamberPlanes];
 
+    bool _chargeSet = false;
+    int _charge = 0;
+    void setCharge(int chrg);
+
     ClassDef(Tracklet, 4)
 };
 

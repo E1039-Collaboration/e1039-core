@@ -773,7 +773,7 @@ void KalmanFastTracking::buildGlobalTracks()
         for(int i = 0; i < 2; ++i) //for two station-1 chambers
         {
             trackletsInSt[0].clear();
-
+	    /* //WPM
             //Calculate the window in station 1
             if(KMAG_ON)
             {
@@ -783,7 +783,7 @@ void KalmanFastTracking::buildGlobalTracks()
             {
                 getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
             }
-
+	    */
 #ifdef _DEBUG_ON
             LogInfo("Using this back partial: ");
             tracklet23->print();
@@ -791,7 +791,8 @@ void KalmanFastTracking::buildGlobalTracks()
 #endif
 
             _timers["global_st1"]->restart();
-            buildTrackletsInStation(i+1, 0, pos_exp, window);
+            //buildTrackletsInStation(i+1, 0, pos_exp, window); //WPM
+	    buildTrackletsInStation(i+1, 0); //WPM
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
@@ -814,7 +815,20 @@ void KalmanFastTracking::buildGlobalTracks()
                     resolveLeftRight(tracklet_global, 150.);
                     resolveSingleLeftRight(tracklet_global);
                 }
-
+		double firstChiSq = tracklet_global.calcChisq(); //WPM
+                Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1); //WPM
+                tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //WPM
+                if(!COARSE_MODE)
+                {
+                    resolveLeftRight(tracklet_global2, 75.);
+                    resolveLeftRight(tracklet_global2, 150.);
+                    resolveSingleLeftRight(tracklet_global2);
+                } //WPM
+		double secondChiSq = tracklet_global2.calcChisq(); //WPM
+		if(secondChiSq < firstChiSq){
+		  tracklet_global = tracklet_global2;
+		}//WPM
+		
                 ///Remove bad hits if needed
                 removeBadHits(tracklet_global);
 
