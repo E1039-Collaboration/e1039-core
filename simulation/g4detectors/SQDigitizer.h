@@ -52,6 +52,8 @@ public:
   void set_enable_st1dc(const bool en)  { enableDC1 = en; }
   void set_enable_dphodo(const bool en) { enableDPHodo = en; }
 
+  void set_digitize_secondaries(const bool val) { digitize_secondaries = val; }
+
 private:
   //!GeomSvc
   GeomSvc* p_geomSvc;
@@ -68,6 +70,7 @@ private:
   //!flags to toggle station-1 DC and dark photon dp
   bool enableDC1;
   bool enableDPHodo;
+  bool digitize_secondaries;
 };
 
 #endif
