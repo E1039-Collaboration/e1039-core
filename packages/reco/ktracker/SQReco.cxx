@@ -258,6 +258,18 @@ int SQReco::updateHitInfo(SRawEvent* sraw_event)
   return 0;
 }
 
+/**
+ * Note for pull request.
+ * 
+ * The translation from SQ* to SRawEvent is useful for other classes
+ * (like `Fun4AllSRawEventInputManager`).
+ * Therefore I exported the contetns of this function to a new utility namespace, `UtilSRawEvent`.
+ * Can I modify this function to make use of `UtilSRawEvent`?
+ *
+ * `UtilSRawEvent` cannot handle `_m_hitID_idx` and `_m_trghitID_idx`, but
+ * they seem not in use at present.
+ * Can I remove them??
+ */
 SRawEvent* SQReco::BuildSRawEvent() 
 {
   //Needed for E1039 since we switched to a more generic interface
