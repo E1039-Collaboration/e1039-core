@@ -7,7 +7,7 @@ using namespace std;
 std::string UtilOnline::m_dir_end     = "/seaquest/e906daq/coda/data/END";
 std::string UtilOnline::m_dir_coda    = "/localdata/codadata"; // could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
 std::string UtilOnline::m_dir_dst     = "/data2/e1039/dst";
-std::string UtilOnline::m_dir_eddst   = "/data2/e1039/onlmon/evt_disp";
+std::string UtilOnline::m_dir_eddst   = "/data2/e1039/online/evt_disp";
 std::string UtilOnline::m_dir_onlmon  = "/data2/e1039/onlmon/plots";
 std::string UtilOnline::m_sch_maindaq = "user_e1039_maindaq";
 
