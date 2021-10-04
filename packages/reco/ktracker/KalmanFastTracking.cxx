@@ -79,6 +79,7 @@ namespace
     //if displaced, skip fit to the target/vertex
     static bool NOT_DISPLACED;
     static bool TRACK_ELECTRONS;
+    static bool TRACK_DISPLACED;
 
     //initialize global variables
     void initGlobalVariables()
@@ -95,6 +96,7 @@ namespace
 
             NOT_DISPLACED = rc->get_BoolFlag("NOT_DISPLACED");
             TRACK_ELECTRONS = rc->get_BoolFlag("TRACK_ELECTRONS");
+            TRACK_DISPLACED = rc->get_BoolFlag("TRACK_DISPLACED");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -773,17 +775,17 @@ void KalmanFastTracking::buildGlobalTracks()
         for(int i = 0; i < 2; ++i) //for two station-1 chambers
         {
             trackletsInSt[0].clear();
-	    /* //WPM
-            //Calculate the window in station 1
-            if(KMAG_ON)
-            {
-                getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
-            }
-            else
-            {
-                getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
-            }
-	    */
+	    if(!TRACK_DISPLACED){
+	      //Calculate the window in station 1
+	      if(KMAG_ON)
+		{
+		  getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
+		}
+	      else
+		{
+		  getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
+		}
+	    }
 #ifdef _DEBUG_ON
             LogInfo("Using this back partial: ");
             tracklet23->print();
@@ -791,8 +793,12 @@ void KalmanFastTracking::buildGlobalTracks()
 #endif
 
             _timers["global_st1"]->restart();
-            //buildTrackletsInStation(i+1, 0, pos_exp, window); //WPM
-	    buildTrackletsInStation(i+1, 0); //WPM
+            if(!TRACK_DISPLACED){
+	      buildTrackletsInStation(i+1, 0, pos_exp, window);
+	    }
+	    if(TRACK_DISPLACED){
+	      buildTrackletsInStation(i+1, 0);
+	    }
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
@@ -815,19 +821,21 @@ void KalmanFastTracking::buildGlobalTracks()
                     resolveLeftRight(tracklet_global, 150.);
                     resolveSingleLeftRight(tracklet_global);
                 }
-		double firstChiSq = tracklet_global.calcChisq(); //WPM
-                Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1); //WPM
-                tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //WPM
-                if(!COARSE_MODE)
-                {
-                    resolveLeftRight(tracklet_global2, 75.);
-                    resolveLeftRight(tracklet_global2, 150.);
-                    resolveSingleLeftRight(tracklet_global2);
-                } //WPM
-		double secondChiSq = tracklet_global2.calcChisq(); //WPM
-		if(secondChiSq < firstChiSq){
-		  tracklet_global = tracklet_global2;
-		}//WPM
+		if(TRACK_DISPLACED){
+		  double firstChiSq = tracklet_global.calcChisq();
+		  Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1);
+		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge());
+		  if(!COARSE_MODE)
+		    {
+		      resolveLeftRight(tracklet_global2, 75.);
+		      resolveLeftRight(tracklet_global2, 150.);
+		      resolveSingleLeftRight(tracklet_global2);
+		    }
+		  double secondChiSq = tracklet_global2.calcChisq();
+		  if(secondChiSq < firstChiSq){
+		    tracklet_global = tracklet_global2;
+		  }
+		}
 		
                 ///Remove bad hits if needed
                 removeBadHits(tracklet_global);

@@ -439,7 +439,6 @@ int SQReco::process_event(PHCompositeNode* topNode)
 
 
 
-  ///////////WPM
   std::list<Tracklet>& rec_trackletsSt3 = _fastfinder->getTrackletList(2);
   for(auto iter = rec_trackletsSt3.begin(); iter != rec_trackletsSt3.end(); ++iter)
   {
@@ -467,7 +466,6 @@ int SQReco::process_event(PHCompositeNode* topNode)
     }
   }
 
-  ///////////WPM
 
   //add additional eval information if applicable
   if(is_eval_enabled() || is_eval_dst_enabled())
@@ -486,7 +484,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
         if(is_eval_dst_enabled()){
 	  iter->print();
 	  _tracklet_vector->push_back(&(*iter));
-	} //WPM
+	}
       }
     }
   }
@@ -551,7 +549,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
   return true;
 }
 
-bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter) //WPM
+bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter)
 {
   KalmanTrack kmtrk;
   kmtrk.setTracklet(tracklet);
@@ -570,12 +568,6 @@ bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter) //WPM
 
   _kfitter->updateTrack(kmtrk);//update after fitting
 
-  /*if(!kmtrk.isValid()) 
-  {
-    LogDebug("kmtrk quality cut failed");
-    return false;
-    }*/
-
   SRecTrack strack = kmtrk.getSRecTrack();
 
   //Set trigger road ID
@@ -588,7 +580,7 @@ bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter) //WPM
   strack.setKalmanStatus(1);
   fillRecSt3Tracklet(strack);
   return true;
-} //WPM
+}
 
 bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
 {
@@ -625,7 +617,6 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
 }
 
 
-//WPM
 bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
 {
   SQGenFit::GFTrack gftrk;
@@ -659,7 +650,6 @@ bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
   fillRecSt3Tracklet(strack);
   return true;
 }
-//WPM
 
 
 int SQReco::InitEvalTree() 
@@ -690,7 +680,7 @@ void SQReco::fillRecTrack(SRecTrack& recTrack)
     _recTrackVec->push_back(&recTrack);
 }
 
-void SQReco::fillRecSt3Tracklet(SRecTrack& recTrack) //WPM
+void SQReco::fillRecSt3Tracklet(SRecTrack& recTrack)
 {
   if(_legacy_rec_container)
     _recEvent->insertSt3Tracklet(recTrack);
