@@ -718,11 +718,16 @@ void GeomSvc::getWireEndPoints(int detectorID, int elementID, double& x_min, dou
     x_max = planes[detectorID].xc + dw*cos(planes[detectorID].rZ) + fabs(0.5*planes[detectorID].tantheta*(y_max - y_min));
 }
 
+/**
+ * Convert, for example, "P1H1f" to "P1Y1" and element ID accordingly.
+ * The input arguments are kept unchanged when they are not "local" name.
+ * The local name is used only in the channel mapping of the prop tube as of 2021-10-03.
+ */
 void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
 {
     using namespace std;
 
-    if(detectorName[0] == 'P')
+    if(detectorName[0] == 'P' && (detectorName[2] == 'H' || detectorName[2] == 'V'))
     {
         string XY = detectorName[2] == 'H' ? "Y" : "X";
         string FB = (detectorName[3] == 'f' || detectorName[4] == 'f') ? "1" : "2"; //temporary solution

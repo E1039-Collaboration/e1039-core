@@ -5,6 +5,10 @@ class CalibParamXT;
 class CalibParamInTimeTaiwan;
 
 class CalibXT: public SubsysReco {
+  SQHitVector* m_vec_hit;
+  CalibParamXT* m_cal_xt;
+  CalibParamInTimeTaiwan* m_cal_int;
+
  public:
   CalibXT(const std::string &name = "CalibXT");
   virtual ~CalibXT();
@@ -12,10 +16,6 @@ class CalibXT: public SubsysReco {
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
-
- private:
-  CalibParamXT* m_cal_xt;
-  CalibParamInTimeTaiwan* m_cal_int;
 };
 
 #endif /* __CALIB_XT_H__ */

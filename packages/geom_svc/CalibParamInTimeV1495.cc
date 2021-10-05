@@ -135,6 +135,8 @@ bool CalibParamInTimeV1495::Find(const short det, const short ele, const short l
     center = val->first;
     width  = val->second;
     return true;
+  } else if (ele != 0) { // Try to find an entry common to all elements.
+    return Find(det, 0, lvl, center, width);
   }
   center = width = 0;
   return false;
