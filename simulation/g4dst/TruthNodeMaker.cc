@@ -35,6 +35,7 @@ TruthNodeMaker::TruthNodeMaker()
   , m_mcevt(nullptr)
   , m_vec_trk(nullptr)
   , m_vec_dim(nullptr)
+  , m_job_id(-1)
   , m_legacy_rec_container(true)
   , m_do_evt_header(true)
   , m_do_truthtrk_tagging(true)
@@ -104,6 +105,11 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
         m_mcevt->set_particle_momentum(iii, lvec);
       }
     }
+  }
+
+  if (m_job_id >= 0) {
+    m_evt->set_spill_id(m_job_id); // Divert the spill-ID field
+    //m_mcevt->set_job_id(m_job_id); // Better way in a future.
   }
 
   /// Extract the true-track info

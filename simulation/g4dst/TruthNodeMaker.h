@@ -53,6 +53,8 @@ class TruthNodeMaker: public SubsysReco {
   SQTrackVector*  m_vec_trk;
   SQDimuonVector* m_vec_dim;
 
+  int m_job_id; ///< Job ID
+
   // rec input container type
   bool m_legacy_rec_container;
   bool m_do_truthtrk_tagging;
@@ -68,6 +70,9 @@ class TruthNodeMaker: public SubsysReco {
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
+
+  void SetJobID(const int job_id) { m_job_id = job_id; }
+  int  GetJobID() const    { return m_job_id; }
 
   void set_legacy_rec_container(bool b = true) { m_legacy_rec_container = b; }
   void set_matching_threshold(double threshold) { m_matching_threshold = threshold; }
