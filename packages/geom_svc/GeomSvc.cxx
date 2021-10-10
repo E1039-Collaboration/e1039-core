@@ -755,6 +755,46 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
     //}
 }
 
+bool GeomSvc::isChamber(const int detectorID) const
+{
+  return isChamber(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isChamber(const std::string detectorName) const
+{
+  return detectorName[0] == 'D' && '0' <= detectorName[1] && detectorName[1] <= '3';
+}
+
+bool GeomSvc::isHodo(const int detectorID) const
+{
+  return isHodo(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isHodo(const std::string detectorName) const
+{
+  return detectorName[0] == 'H' && '1' <= detectorName[1] && detectorName[1] <= '4';
+}
+
+bool GeomSvc::isPropTube(const int detectorID) const
+{
+  return isPropTube(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isPropTube(const std::string detectorName) const
+{
+  return detectorName[0] == 'P' && '1' <= detectorName[1] && detectorName[1] <= '2';
+}
+
+bool GeomSvc::isDPHodo(const int detectorID) const
+{
+  return isDPHodo(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isDPHodo(const std::string detectorName) const
+{
+  return detectorName.substr(0, 2) == "DP";
+}
+
 int GeomSvc::getHodoStation(const int detectorID) const
 {
   return getHodoStation(getDetectorName(detectorID));

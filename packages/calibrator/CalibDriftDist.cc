@@ -11,10 +11,10 @@
 #include <geom_svc/GeomSvc.h>
 #include <geom_svc/CalibParamXT.h>
 #include <geom_svc/CalibParamInTimeTaiwan.h>
-#include "CalibXT.h"
+#include "CalibDriftDist.h"
 using namespace std;
 
-CalibXT::CalibXT(const std::string& name)
+CalibDriftDist::CalibDriftDist(const std::string& name)
   : SubsysReco(name)
   , m_vec_hit(0)
   , m_cal_xt (0)
@@ -23,32 +23,32 @@ CalibXT::CalibXT(const std::string& name)
   ;
 }
 
-CalibXT::~CalibXT()
+CalibDriftDist::~CalibDriftDist()
 {
   if (m_cal_xt ) delete m_cal_xt ;
   if (m_cal_int) delete m_cal_int;
 }
 
-int CalibXT::Init(PHCompositeNode* topNode)
+int CalibDriftDist::Init(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int CalibXT::InitRun(PHCompositeNode* topNode)
+int CalibDriftDist::InitRun(PHCompositeNode* topNode)
 {
-  SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
-  m_vec_hit               = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  SQRun*       run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
+  SQRun* run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
+  m_vec_hit         = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if (!run_header || !m_vec_hit) return Fun4AllReturnCodes::ABORTEVENT;
 
-  if (! m_cal_xt) m_cal_xt = new CalibParamXT();
+  m_cal_xt = new CalibParamXT();
   m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
   m_cal_xt->ReadFromDB();
 
-  if (! m_cal_int) m_cal_int = new CalibParamInTimeTaiwan();
+  m_cal_int = new CalibParamInTimeTaiwan();
   m_cal_int->SetMapIDbyDB(run_header->get_run_id());
   m_cal_int->ReadFromDB();
 
+  SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
   if (param_deco) {
     param_deco->set_variable(m_cal_xt ->GetParamID(), m_cal_xt ->GetMapID());
     param_deco->set_variable(m_cal_int->GetParamID(), m_cal_int->GetMapID());
@@ -66,43 +66,38 @@ int CalibXT::InitRun(PHCompositeNode* topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int CalibXT::process_event(PHCompositeNode* topNode)
+int CalibDriftDist::process_event(PHCompositeNode* topNode)
 {
   GeomSvc* geom = GeomSvc::instance();
   for (SQHitVector::Iter it = m_vec_hit->begin(); it != m_vec_hit->end(); it++) {
     SQHit* hit = *it;
-    hit->set_pos(geom->getMeasurement(det, ele));
+    int det = hit->get_detector_id();
+    if (!geom->isChamber(det) && !geom->isPropTube(det)) continue;
 
+    int ele = hit->get_element_id();
     TGraphErrors* gr_t2x;
     TGraphErrors* gr_t2dx;
-    int det = hit->get_detector_id();
-    int ele = hit->get_element_id();
-    if (m_cal_xt->Find(det, gr_t2x, gr_t2dx)) {
-      double center, width;
-      if (! m_cal_int->Find(det, ele, center, width)) {
-        cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << " in CalibXT.\n";
-        continue;
-        //return Fun4AllReturnCodes::ABORTEVENT;
-      }
-      float t1 = center - width / 2;
-      float t0 = center + width / 2;
-      float   tdc_time = hit->get_tdc_time();
-      float drift_time = t0 - tdc_time;
-      float drift_dist = gr_t2x->Eval(drift_time);
-      if (drift_dist < 0) drift_dist = 0;
-      hit->set_in_time(t1 <= tdc_time && tdc_time <= t0);
-      hit->set_drift_distance(drift_dist);
-      /// No field for resolution in SQHit now.
-      //cout << "check: " << det << " " << ele << " " << t0 << " " << drift_time << " " << hit->get_drift_distance() << endl;
-    } else { // Hodoscope
-      hit->set_drift_distance(0);
+    double center, width;
+    if (! m_cal_xt->Find(det, gr_t2x, gr_t2dx)    || 
+        ! m_cal_int->Find(det, ele, center, width)  ) {
+      cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << " in CalibDriftDist.\n";
+      continue;
+      //return Fun4AllReturnCodes::ABORTEVENT;
     }
+    float t1 = center - width / 2;
+    float t0 = center + width / 2;
+    float   tdc_time = hit->get_tdc_time();
+    float drift_time = t0 - tdc_time;
+    float drift_dist = gr_t2x->Eval(drift_time);
+    if (drift_dist < 0) drift_dist = 0;
+    hit->set_in_time(t1 <= tdc_time && tdc_time <= t0);
+    hit->set_drift_distance(drift_dist);
+    /// No field for resolution in SQHit now.
   }
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int CalibXT::End(PHCompositeNode* topNode)
+int CalibDriftDist::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
