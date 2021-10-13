@@ -35,7 +35,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
 add_library(geom_svc SHARED ${sources} ${dicts})
-target_link_libraries(geom_svc -ldb_svc ${ROOT_LINK})
+target_link_libraries(geom_svc -ldb_svc -lphool ${ROOT_LINK})
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

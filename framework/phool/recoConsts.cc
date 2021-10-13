@@ -44,6 +44,8 @@ void recoConsts::set_defaults()
 
   //Following flags control the running mode and must be 
   //set to appropriate values in the configuration set
+  set_IntFlag("RUNNUMBER", 1);
+
   set_BoolFlag("KMAG_ON", true);
   set_BoolFlag("COARSE_MODE", false);
   set_BoolFlag("MC_MODE", false);
@@ -62,8 +64,8 @@ void recoConsts::set_defaults()
   set_CharFlag("AlignmentProp", "$E1039_RESOURCE/alignment/run6/alignment_prop.txt");
   set_CharFlag("Calibration", "$E1039_RESOURCE/alignment/run6/calibration.txt");
 
-  set_CharFlag("MySQLURL", "mysql://e906-db1.fnal.gov:3306");
-  set_CharFlag("Geometry", "user_e1039_geom_plane.param_G9_run5_2");
+  set_CharFlag("DB_SERVER", "DB1");
+  set_CharFlag("DB_USER"  , "seaguest");
 
   set_CharFlag("TRIGGER_Repo", "$TRIGGER_ROOT");
   set_CharFlag("TRIGGER_L1", "67");
@@ -87,8 +89,8 @@ void recoConsts::set_defaults()
 
   set_DoubleFlag("X_BEAM", 0.);
   set_DoubleFlag("Y_BEAM", 0.);
-  set_DoubleFlag("SIGX_BEAM", 2.);
-  set_DoubleFlag("SIGY_BEAM", 2.);
+  set_DoubleFlag("SIGX_BEAM", 0.3);
+  set_DoubleFlag("SIGY_BEAM", 0.3);
 
   set_DoubleFlag("X0_TARGET", 0.);
   set_DoubleFlag("Y0_TARGET", 0.);
@@ -166,6 +168,7 @@ void recoConsts::set_defaults()
 void recoConsts::init(int runNo, bool verbose)
 {
   //TODO: initialization based on run range
+  set_IntFlag("RUNNUMBER", runNo);
   return;
 }
 

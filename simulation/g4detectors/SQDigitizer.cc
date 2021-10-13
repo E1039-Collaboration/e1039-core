@@ -47,8 +47,6 @@ int SQDigitizer::Init(PHCompositeNode *topNode)
     detIDByName[detName] = i;
   }
 
-  //TODO: Load the detector realization setup
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 #endif
@@ -57,7 +55,8 @@ SQDigitizer::SQDigitizer(const std::string& name, const int verbose):
   SubsysReco(name), 
   p_geomSvc(nullptr),
   enableDC1(false),
-  enableDPHodo(true)
+  enableDPHodo(true),
+  digitize_secondaries(false)
 {
   detIDByName.clear();
   Verbosity(0);
@@ -160,7 +159,7 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     const PHG4Hit& g4hit = *(it->second);
 
     int track_id = g4hit.get_trkid();
-    if(track_id < 0) continue;         //only save primary track hits
+    if (! digitize_secondaries && track_id < 0) continue; //only save primary track hits
 
     //get average momentum and position
     double x  = 0.5*(g4hit.get_x(0)  + g4hit.get_x(1));
@@ -287,10 +286,4 @@ void SQDigitizer::digitizeEMCal(const std::string& detName)
     iter->second.set_hit_id(digits->size());
     digits->push_back(&(iter->second));
   }
-}
-
-bool SQDigitizer::realize(SQHit& dHit)
-{
-  //TODO: implement efficiency and calibration smearing
-  return true;
 }

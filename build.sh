@@ -58,8 +58,8 @@ if [ $mode = 'single' ] || [ $mode = 'increment' ]; then
 else # 'all' or 'resume'
   declare -a packages=(
     packages/global_consts
-    packages/db_svc
     framework/phool
+    packages/db_svc
     packages/geom_svc
     framework/ffaobjects
     framework/fun4all
@@ -75,7 +75,6 @@ else # 'all' or 'resume'
     generators/E906LegacyVtxGen
     generators/phhepmc
     generators/PHPythia8
-    simulation/g4decayer
     simulation/g4gdml
     simulation/g4main
     simulation/g4detectors

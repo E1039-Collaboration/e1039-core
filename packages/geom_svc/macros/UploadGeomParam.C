@@ -9,7 +9,6 @@ R__LOAD_LIBRARY(geom_svc)
 
 int UploadGeomParam(const std::string map_id="G9_run5_2")
 {
-  gSystem->Load("geom_svc.so");
   GeomParamPlane map;
   map.SetMapIDbyFile(map_id);
   map.ReadFromFile();
@@ -22,7 +21,6 @@ int UploadGeomParam(const std::string map_id="G9_run5_2")
 
 int CheckGeomParam(const int run=25000)
 {
-  gSystem->Load("libgeom_svc.so");
   GeomParamPlane map;
   map.SetMapIDbyDB(run);
   map.ReadFromDB();

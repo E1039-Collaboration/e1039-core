@@ -43,15 +43,3 @@ if (ROOT_VER GREATER 5)
    add_custom_target(install_pcm ALL COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/lib COMMAND cp -up *_rdict.pcm ${CMAKE_INSTALL_PREFIX}/lib)
    add_dependencies(install_pcm g4dst)
 endif()
-
-#add_library(g4dst SHARED
-#  g4dst.C
-#)
-#
-#add_custom_command(
-#  OUTPUT g4dst.C
-#  COMMAND echo
-#  ARGS "//*** this is a generated empty file. Do not commit, do not edit" > g4dst.C
-#)
-#
-#target_link_libraries(g4dst -lphg4hit -lg4detectors_io -lphgeom_io -lphhepmc_io -lphfield_io)

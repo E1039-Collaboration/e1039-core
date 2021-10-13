@@ -7,9 +7,11 @@
 
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/getClass.h>
-
+#include <phool/recoConsts.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
+#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQMCEvent_v1.h>
 
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4ParticleDefinition.hh>
@@ -58,7 +60,10 @@ PHG4SimpleEventGenerator::PHG4SimpleEventGenerator(const string &name):
 	_px_min(NAN), _px_max(NAN),
 	_py_min(NAN), _py_max(NAN),
 	_pz_min(NAN), _pz_max(NAN),
+  _eventcount(0),
   _ineve(NULL), 
+  _evt(NULL),
+  _mcevt(NULL),
   _legacy_vertexgenerator(false)
 {
 
@@ -190,15 +195,26 @@ int PHG4SimpleEventGenerator::InitRun(PHCompositeNode *topNode) {
     return Fun4AllReturnCodes::ABORTRUN;
   }
 
+  PHNodeIterator iter( topNode );
+  PHCompositeNode *dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+  if (!dstNode) {
+    cout << PHWHERE << "DST Node missing.  ABORTRUN." << endl;
+    return Fun4AllReturnCodes::ABORTRUN;
+  }
   _ineve = findNode::getClass<PHG4InEvent>(topNode, "PHG4INEVENT");
   if (!_ineve) {
-    PHNodeIterator iter( topNode );
-    PHCompositeNode *dstNode;
-    dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
-      
     _ineve = new PHG4InEvent();
-    PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject");
-    dstNode->addNode(newNode);
+    dstNode->addNode(new PHDataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject"));
+  }
+  _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
+  if (!_evt) {
+    _evt = new SQEvent_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
+  }
+  _mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
+  if (!_mcevt) {
+    _mcevt = new SQMCEvent_v1();
+    dstNode->addNode(new PHIODataNode<PHObject>(_mcevt, "SQMCEvent", "PHObject"));
   }
 
   if (verbosity > 0) {
@@ -246,7 +262,40 @@ int PHG4SimpleEventGenerator::InitRun(PHCompositeNode *topNode) {
     string pdgname = get_pdgname(pdgcode);
     _particle_names.push_back(make_pair(pdgname,count));
   }
-   _vertexGen->InitRun(topNode);//abi
+  _vertexGen->InitRun(topNode);//abi
+
+  recoConsts* rc = recoConsts::instance();
+  ostringstream oss;
+  for (unsigned int ii = 0; ii < _particle_names.size(); ++ii) {
+    string      name = _particle_names[ii].first;
+    unsigned int num = _particle_names[ii].second;
+    if (ii > 0) oss << ":";
+    oss << name << "*" << num;
+  }
+  rc->set_CharFlag("PHG4SEG_"+Name()+"_PARTICLES", oss.str());
+
+  if(! std::isnan(_px_min)) {
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PX_MIN", _px_min);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PX_MAX", _px_max);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PY_MIN", _py_min);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PY_MAX", _py_max);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PZ_MIN", _pz_min);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_PZ_MAX", _pz_max);
+  }
+  if (! _legacy_vertexgenerator) {
+    rc->set_IntFlag   ("PHG4SEG_"+Name()+"_VTX_FUNC_X"  , _vertex_func_x);
+    rc->set_IntFlag   ("PHG4SEG_"+Name()+"_VTX_FUNC_Y"  , _vertex_func_y);
+    rc->set_IntFlag   ("PHG4SEG_"+Name()+"_VTX_FUNC_Z"  , _vertex_func_z);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_X"       , _vertex_x);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_Y"       , _vertex_y);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_Z"       , _vertex_z);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_WIDTH_X" , _vertex_width_x);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_WIDTH_Y" , _vertex_width_y);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_WIDTH_Z" , _vertex_width_z);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_OFFSET_X", _vertex_offset_x);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_OFFSET_Y", _vertex_offset_y);
+    rc->set_DoubleFlag("PHG4SEG_"+Name()+"_VTX_OFFSET_Z", _vertex_offset_z);
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -257,23 +306,17 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
     cout <<"PHG4SimpleEventGenerator::process_event - reuse_existing_vertex = "<<reuse_existing_vertex<<endl;
   }
 
-  // vtx_x, vtx_y and vtx_z are doubles from the base class
-  // common methods modify those, please no private copies
-  // at some point we might rely on them being up to date
-  if (!ReuseExistingVertex(topNode))
-    {
-      // generate a new vertex point
-      vtx_x = smearvtx(_vertex_x,_vertex_width_x,_vertex_func_x);
-      vtx_y = smearvtx(_vertex_y,_vertex_width_y,_vertex_func_y);
-      vtx_z = smearvtx(_vertex_z,_vertex_width_z,_vertex_func_z);
-    } 
-   //! use vertex from E906 legacy generator
-   if ( _legacy_vertexgenerator)
-        {TVector3 vtx        = _vertexGen->generateVertex();
-        vtx_x = vtx.X();        
-        vtx_y = vtx.Y();
-        vtx_z = vtx.Z();
-        }
+  if (_legacy_vertexgenerator) {
+    TVector3 vtx = _vertexGen->generateVertex();
+    vtx_x = vtx.X();        
+    vtx_y = vtx.Y();
+    vtx_z = vtx.Z();
+  } else if (!ReuseExistingVertex(topNode)) { // vtx_x, vtx_y and vtx_z are doubles from the base class. common methods modify those, please no private copies. at some point we might rely on them being up to date.
+    // generate a new vertex point
+    vtx_x = smearvtx(_vertex_x,_vertex_width_x,_vertex_func_x);
+    vtx_y = smearvtx(_vertex_y,_vertex_width_y,_vertex_func_y);
+    vtx_z = smearvtx(_vertex_z,_vertex_width_z,_vertex_func_z);
+  } 
   
   vtx_x += _vertex_offset_x;
   vtx_y += _vertex_offset_y;
@@ -360,10 +403,24 @@ int PHG4SimpleEventGenerator::process_event(PHCompositeNode *topNode) {
     }
   }
 
+  _evt->set_run_id  (0);
+  _evt->set_spill_id(0);
+  _evt->set_event_id(++_eventcount);
+  _mcevt->set_cross_section(0.0);
+  _mcevt->set_weight       (1.0);
+
   if (verbosity > 0) {
     _ineve->identify();
     cout << "======================================================================================" << endl;
   } 
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int PHG4SimpleEventGenerator::End(PHCompositeNode *topNode)
+{
+  recoConsts* rc = recoConsts::instance();
+  rc->set_IntFlag("PHG4SEG_EVENT_COUNT", _eventcount); // Without "Name()" here to make this variable unique
 
   return Fun4AllReturnCodes::EVENT_OK;
 }

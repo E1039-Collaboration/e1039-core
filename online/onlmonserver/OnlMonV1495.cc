@@ -177,6 +177,7 @@ int OnlMonV1495::DrawMonitor()
   pad0->Divide(2, N_DET);
   for (int i_det = 0; i_det < N_DET; i_det++) {
     TVirtualPad* pad01 = pad0->cd(2*i_det+1);
+    pad01->SetGrid();
     h1_ele[i_det]->SetLineColor(kBlack);
     h1_ele[i_det]->Draw();
     h1_ele_in[i_det]->SetLineColor(kBlue);

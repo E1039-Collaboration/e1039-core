@@ -4,6 +4,7 @@
 #pragma link off all global;
 
 #pragma link C++ class TruthNodeMaker-!;
-#pragma link C++ class RequireParticlesInAcc-!;
+#pragma link C++ class SQGeomAcc-!;
+#pragma link C++ class SQGeomAccLoose-!;
 
 #endif
