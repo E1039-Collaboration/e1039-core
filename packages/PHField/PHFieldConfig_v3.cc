@@ -35,10 +35,12 @@ PHFieldConfig_v3::PHFieldConfig_v3(
 {
   if(filename1_.find("INVALID") == string::npos)  //suppress output when default ctor is called
   {
+#ifdef _DEBUG_ON
     cout << "PHFieldConfig_v3::PHFieldConfig_v3:" << endl;
     cout << " from file1 [" << filename1 << "]" << endl;
     cout << "  and file2 [" << filename2 << "]" << endl;
     cout << "scale1: " << setprecision(5) << scale1_ << ", scale2: " << setprecision(5) << scale2_ << ", targetmag_y: " << _taregetmag_y << endl;
+#endif
   }
 }
 
@@ -58,6 +60,7 @@ PHFieldConfig_v3::clone() const
  */
 void PHFieldConfig_v3::identify(std::ostream& os) const
 {
+#ifdef _DEBUG_ON
   os << "PHFieldConfig_v3::identify -";
   if (isValid())
   {
@@ -70,6 +73,7 @@ void PHFieldConfig_v3::identify(std::ostream& os) const
   else
     os << "Empty";
   os << endl;
+#endif
 }
 /// Clear Event
 void PHFieldConfig_v3::Reset()

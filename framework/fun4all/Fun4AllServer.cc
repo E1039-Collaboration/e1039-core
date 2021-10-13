@@ -861,7 +861,9 @@ int Fun4AllServer::BeginRun(const int runno)
     cout << "from your macro" << endl;
   }
   // print out all node trees
+#ifdef _DEBUG_ON
   Print("NODETREE");
+#endif
   return 0;
 }
 

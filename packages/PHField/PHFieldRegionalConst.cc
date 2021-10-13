@@ -18,7 +18,9 @@ PHFieldRegionalConst::PHFieldRegionalConst(const double field, const double magf
 		_maxr(6.*cm), _minr(-0.1*cm),
 		_field_val(field*tesla)
 {
+#ifdef _DEBUG_O
 	identify();
+#endif
 }
 
 void PHFieldRegionalConst::GetFieldValue(const double point[4], double *Bfield ) const

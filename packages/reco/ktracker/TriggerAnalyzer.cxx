@@ -62,10 +62,10 @@ bool TriggerAnalyzer::init()
     int H3BID = p_geomSvc->getDetectorID("H3B");
     int H4BID = p_geomSvc->getDetectorID("H4B");
 
-    std::string roadsPT = Form("%s/firmware/roads/L1/%s/roads_plus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
-    std::string roadsPB = Form("%s/firmware/roads/L1/%s/roads_plus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
-    std::string roadsMT = Form("%s/firmware/roads/L1/%s/roads_minus_top.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
-    std::string roadsMB = Form("%s/firmware/roads/L1/%s/roads_minus_bottom.txt", rc->get_CharFlag("TRIGGER_REPO").c_str(), rc->get_CharFlag("TRIGGER_L1").c_str());
+    std::string roadsPT = rc->get_CharFlag("TRIGGER_REPO") + "/firmware/roads/L1/" + rc->get_CharFlag("TRIGGER_L1") + "/roads_plus_top.txt";
+    std::string roadsPB = rc->get_CharFlag("TRIGGER_REPO") + "/firmware/roads/L1/" + rc->get_CharFlag("TRIGGER_L1") + "/roads_plus_bottom.txt";
+    std::string roadsMT = rc->get_CharFlag("TRIGGER_REPO") + "/firmware/roads/L1/" + rc->get_CharFlag("TRIGGER_L1") + "/roads_minus_top.txt";
+    std::string roadsMB = rc->get_CharFlag("TRIGGER_REPO") + "/firmware/roads/L1/" + rc->get_CharFlag("TRIGGER_L1") + "/roads_minus_bottom.txt";
 
     std::string fileNames[4] = {roadsPT, roadsPB, roadsMT, roadsMB};
     char buffer[300];

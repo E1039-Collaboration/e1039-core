@@ -732,15 +732,26 @@ double Tracklet::getMomentum() const
     return p;
 }
 
+/// Return the charge (+1 or -1) of this tracklet.
+/**
+ * This function should be as simple as possible, in order to reduce the
+ * computation time.  Therefore the condition of the charge determination
+ * uses only "x0" and "tx" (at St. 2+3).  The formula was obtained 
+ * practically by the study in DocDB 9505.  This function is valid for both 
+ * the parallel and anti-parallel FMag+KMag polarity combination.  But it 
+ * is _not_ guaranteed to be valid when the FMag and/or KMag field strength
+ * is changed largely.
+ */
 int Tracklet::getCharge() const
 {
   if(!_chargeSet){
-    return x0*KMAGSTR > tx ? 1 : -1;
+    return -3e-3 * copysign(1.0, FMAGSTR) * x0 < tx  ?  +1  :  -1;
   } else{
     return _charge;
   }
 }
 
+// set charge of the tracklet.
 void Tracklet::setCharge(int chrg)
 {
   _chargeSet = true;

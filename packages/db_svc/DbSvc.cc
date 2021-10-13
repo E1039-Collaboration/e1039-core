@@ -9,50 +9,20 @@
 #include <TSQLStatement.h>
 #include <TSQLResult.h>
 #include <TSQLRow.h>
+#include <phool/recoConsts.h>
 #include "DbSvc.h"
 
 #define LogInfo(message) std::cout << "DEBUG: " << __FILE__ << "  " << __LINE__ << "  " << __FUNCTION__ << " :::  " << message << std::endl
 
 using namespace std;
 
-bool FileExist(const std::string fileName)
-{
-    std::ifstream infile(fileName.c_str());
-    return infile.good();
-}
-
-std::string ExpandEnvironmentals( const std::string& input )
-{
-    // expand any environment variables in the file name
-    wordexp_t exp_result;
-    if(wordexp(input.c_str(), &exp_result, 0) != 0)
-    {
-        std::cout << "ExpandEnvironmentals - ERROR - Your string '" << input << "' cannot be understood!" << endl;
-        return "";
-    }
-
-    const string output( exp_result.we_wordv[0]);
-
-    return output;
-}
-
 DbSvc::DbSvc(const SvrId_t svr_id, const UsrId_t usr_id, const std::string my_cnf)
+  : m_svr_id(svr_id)
+  , m_usr_id(usr_id)
+  , m_my_cnf(my_cnf)
 {
-  m_svr_id = svr_id;
-  m_usr_id = usr_id;
-  if (my_cnf.length() > 0) {
-    m_my_cnf = my_cnf;
-  } else {
-    if (usr_id == Guest) {
-      m_my_cnf = ExpandEnvironmentals("$E1039_RESOURCE/db_conf/guest.cnf");
-      //LogInfo("Using "<< m_my_cnf);
-      if (!FileExist(m_my_cnf)) {
-        LogInfo("DB Conf. "<< m_my_cnf << " doesn't exist");
-      }
-    }
-    else /* == Prod */   m_my_cnf = "my.cnf"; // not supported yet.
-  }
   SelectServer();
+  SelectUser();
   ConnectServer();
 }
 
@@ -70,7 +40,7 @@ DbSvc::DbSvc(const SvrId_t svr_id, const std::string dbfile)
     return;
   }
 
-  m_svr = Form("sqlite://%s", m_dbfile.c_str());
+  m_svr = "sqlite://" + m_dbfile;
   m_con = new TSQLiteServer(m_svr.c_str());
 }
 
@@ -215,17 +185,59 @@ TSQLStatement* DbSvc::Process(const char* query)
   return stmt;
 }
 
+/**
+ * Select a DB server based on the constructor parameter or recoConsts.
+ * 'm_svr_id' is not much convenient since a string is expected from recoConsts now.
+ * We might better stop using 'm_svr_id' in a future.
+ */
 void DbSvc::SelectServer()
 {
-  if      (m_svr_id == DB1 ) m_svr = "e906-db1.fnal.gov";
-  else if (m_svr_id == DB2 ) m_svr = "e906-db2.fnal.gov";
-  else if (m_svr_id == DB3 ) m_svr = "e906-db3.fnal.gov";
-  else if (m_svr_id == DB01) m_svr = "seaquestdb01.fnal.gov:3310";
-  else if (m_svr_id == UIUC) m_svr = "seaquel.physics.illinois.edu:3283";
-  else if (m_svr_id == LOCAL) m_svr = "localhost";
-  else {
+  if (m_svr_id == AutoSvr) {
+    recoConsts* rc = recoConsts::instance();
+    string svr = rc->get_CharFlag("DB_SERVER");
+    if      (svr == "DB1"  ) m_svr_id = DB1  ;
+    else if (svr == "DB2"  ) m_svr_id = DB2  ;
+    else if (svr == "DB3"  ) m_svr_id = DB3  ;
+    else if (svr == "DB4"  ) m_svr_id = DB4  ;
+    else if (svr == "LOCAL") m_svr_id = LOCAL;
+    else {
+      cerr << "!!ERROR!!  DbSvc():  Unsupported DB_SERVER in recoConsts.  Abort.\n";
+      exit(1);
+    }
+  }
+  switch (m_svr_id)  {
+  case DB1  : m_svr = "e906-db1.fnal.gov";  break;
+  case DB2  : m_svr = "e906-db2.fnal.gov";  break;
+  case DB3  : m_svr = "e906-db3.fnal.gov";  break;
+  case DB4  : m_svr = "e906-db4.fnal.gov";  break;
+  case LOCAL: m_svr = "localhost"        ;  break;
+  default:
     cerr << "!!ERROR!!  DbSvc():  Unsupported server ID.  Abort.\n";
     exit(1);
+  }
+}
+
+void DbSvc::SelectUser()
+{
+  if (m_usr_id == AutoUsr) {
+    recoConsts* rc = recoConsts::instance();
+    string usr = rc->get_CharFlag("DB_USER");
+    if      (usr == "seaguest"  ) m_usr_id = Guest;
+    else if (usr == "production") m_usr_id = Prod ;
+    else {
+      cerr << "!!ERROR!!  DbSvc():  Unsupported DB_USER in recoConsts.  Abort.\n";
+      exit(1);
+    }
+  }
+
+  if (m_my_cnf.length() == 0) {
+    if (m_usr_id == Guest) m_my_cnf = "$E1039_RESOURCE/db_conf/guest.cnf";
+    else /* == Prod */     m_my_cnf = "$E1039_RESOURCE/db_conf/prod.cnf";
+  }
+  m_my_cnf = ExpandEnvironmentals(m_my_cnf);
+  //LogInfo("Using "<< m_my_cnf);
+  if (!FileExist(m_my_cnf)) {
+    LogInfo("DB Conf. "<< m_my_cnf << " doesn't exist");
   }
 }
 
@@ -233,13 +245,38 @@ void DbSvc::ConnectServer()
 {
   ostringstream oss;
   oss << "mysql://" << m_svr << "/?timeout=120&reconnect=1&cnf_file=" << m_my_cnf;
-
-  /// User and password must be given in my.cnf, not here.
-  m_con = TMySQLServer::Connect(oss.str().c_str(), 0, 0);
-  if (! (m_con && m_con->IsConnected())) {
-    cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
-    exit(1);
+  string url = oss.str();
+  
+  for (int i_try = 0; i_try < 5; i_try++) { // The connection sometimes fails even with "reconnect=1".  Thus let's try it 5 times.
+    m_con = TMySQLServer::Connect(url.c_str(), 0, 0); // User and password must be given in my.cnf, not here.
+    if (m_con && m_con->IsConnected()) {
+      if (i_try > 0) cout << "DbSvc::ConnectServer():  Succeeded at i_try=" << i_try << "." << endl;
+      return; // OK
+    }
+    sleep(10);
   }
+
+  cerr << "!!ERROR!!  DbSvc::ConnectServer():  Failed.  Abort." << endl;
+  exit(1);
+}
+
+bool DbSvc::FileExist(const std::string fileName)
+{
+  std::ifstream infile(fileName.c_str());
+  return infile.good();
+}
+
+std::string DbSvc::ExpandEnvironmentals( const std::string& input )
+{
+  // expand any environment variables in the file name
+  wordexp_t exp_result;
+  if(wordexp(input.c_str(), &exp_result, 0) != 0)
+  {
+    std::cout << "ExpandEnvironmentals - ERROR - Your string '" << input << "' cannot be understood!" << endl;
+    return "";
+  }
+  const string output( exp_result.we_wordv[0]);
+  return output;
 }
 
 void DbSvc::VarList::Add(const std::string name, const std::string type, const bool is_key)

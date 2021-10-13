@@ -6,10 +6,10 @@
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
-#include "RequireParticlesInAcc.h"
+#include "SQGeomAccLoose.h"
 using namespace std;
 
-RequireParticlesInAcc::RequireParticlesInAcc(const string& name)
+SQGeomAccLoose::SQGeomAccLoose(const string& name)
   : SubsysReco(name)
   , m_npl_per_par(4)
   , m_npar_per_evt(2)
@@ -17,24 +17,35 @@ RequireParticlesInAcc::RequireParticlesInAcc(const string& name)
   ;
 }
 
-RequireParticlesInAcc::~RequireParticlesInAcc()
+SQGeomAccLoose::~SQGeomAccLoose()
 {
   ;
 }
 
-int RequireParticlesInAcc::Init(PHCompositeNode* topNode)
+int SQGeomAccLoose::Init(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int RequireParticlesInAcc::InitRun(PHCompositeNode* topNode)
+int SQGeomAccLoose::InitRun(PHCompositeNode* topNode)
 {
-  int ret = GetNodes(topNode);
-  if (ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+  g4hc_h1t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H1T");
+  g4hc_h1b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H1B");
+  g4hc_h2t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H2T");
+  g4hc_h2b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H2B");
+  g4hc_h3t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H3T");
+  g4hc_h3b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H3B");
+  g4hc_h4t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H4T");
+  g4hc_h4b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H4B");
+
+  if (!g4hc_h1t || !g4hc_h1b || !g4hc_h2t || !g4hc_h2b ||
+      !g4hc_h3t || !g4hc_h3b || !g4hc_h4t || !g4hc_h4b   ) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int RequireParticlesInAcc::process_event(PHCompositeNode* topNode)
+int SQGeomAccLoose::process_event(PHCompositeNode* topNode)
 {
   /// Make lists of particle IDs
   vector<int> vec_id_h1 = ExtractParticleID(g4hc_h1t, g4hc_h1b);
@@ -58,30 +69,12 @@ int RequireParticlesInAcc::process_event(PHCompositeNode* topNode)
   return n_par_ok >= m_npar_per_evt ? Fun4AllReturnCodes::EVENT_OK : Fun4AllReturnCodes::ABORTEVENT;
 }
 
-int RequireParticlesInAcc::End(PHCompositeNode* topNode)
+int SQGeomAccLoose::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-int RequireParticlesInAcc::GetNodes(PHCompositeNode* topNode)
-{
-  g4hc_h1t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H1T");
-  g4hc_h1b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H1B");
-  g4hc_h2t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H2T");
-  g4hc_h2b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H2B");
-  g4hc_h3t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H3T");
-  g4hc_h3b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H3B");
-  g4hc_h4t  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H4T");
-  g4hc_h4b  = findNode::getClass<PHG4HitContainer>(topNode, "G4HIT_H4B");
-
-  if (!g4hc_h1t || !g4hc_h1b || !g4hc_h2t || !g4hc_h2b ||
-      !g4hc_h3t || !g4hc_h3b || !g4hc_h4t || !g4hc_h4b   ) {
-    return Fun4AllReturnCodes::ABORTEVENT;
-  }
-  return Fun4AllReturnCodes::EVENT_OK;
-}
-
-void RequireParticlesInAcc::ExtractParticleID(const PHG4HitContainer* g4hc, vector<int>& vec_par_id)
+void SQGeomAccLoose::ExtractParticleID(const PHG4HitContainer* g4hc, vector<int>& vec_par_id)
 {
   PHG4HitContainer::ConstRange range = g4hc->getHits();
   for (PHG4HitContainer::ConstIterator it = range.first; it != range.second; it++) {
@@ -90,7 +83,7 @@ void RequireParticlesInAcc::ExtractParticleID(const PHG4HitContainer* g4hc, vect
   }
 }
 
-vector<int> RequireParticlesInAcc::ExtractParticleID(const PHG4HitContainer* g4hc_t, const PHG4HitContainer* g4hc_b)
+vector<int> SQGeomAccLoose::ExtractParticleID(const PHG4HitContainer* g4hc_t, const PHG4HitContainer* g4hc_b)
 {
   vector<int> vec;
   ExtractParticleID(g4hc_t, vec);
@@ -100,7 +93,7 @@ vector<int> RequireParticlesInAcc::ExtractParticleID(const PHG4HitContainer* g4h
   return vec;
 }
 
-void RequireParticlesInAcc::CountHitPlanesPerParticle(const vector<int> vec_id, map<int, int>& map_nhit)
+void SQGeomAccLoose::CountHitPlanesPerParticle(const vector<int> vec_id, map<int, int>& map_nhit)
 {
   for (vector<int>::const_iterator it = vec_id.begin(); it != vec_id.end(); it++) {
     int id = *it;

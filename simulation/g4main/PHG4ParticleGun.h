@@ -9,6 +9,11 @@
 class PHG4Particle;
 class SQPrimaryVertexGen;
 
+/// [Obsolete] A simple event generator.
+/**
+ * It generates events that contain a single particle.
+ * You had better use `PHG4SimpleEventGenerator` since it is upward compatible.
+ */
 class PHG4ParticleGun: public PHG4ParticleGeneratorBase
 {
  public:

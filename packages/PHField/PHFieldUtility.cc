@@ -45,8 +45,10 @@ PHFieldUtility::BuildFieldMap(const PHFieldConfig *field_config, const int verbo
 
   if (verbosity)
   {
+#ifdef _DEBUG_ON
     cout << "PHFieldUtility::BuildFieldMap - construction field with configuration: ";
     field_config->identify();
+#endif
   }
 
   PHField *field(nullptr);

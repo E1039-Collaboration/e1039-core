@@ -468,6 +468,8 @@ public:
 
     ///Clear everything
     void clear();
+    void clearTracks();
+    void clearDimuons();
 
 private:
     ///Reconstruction status

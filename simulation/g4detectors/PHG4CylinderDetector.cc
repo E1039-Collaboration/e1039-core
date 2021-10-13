@@ -78,7 +78,9 @@ void PHG4CylinderDetector::Construct(G4LogicalVolume *logicWorld)
 
 		TrackerMaterial = Target;
 
+#ifdef _DEBUG_ON
 		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
+#endif
 	} else if (params->get_string_param("material").find("Coil")
 			!= std::string::npos) {
 		G4double z;
@@ -107,7 +109,9 @@ void PHG4CylinderDetector::Construct(G4LogicalVolume *logicWorld)
 
 		TrackerMaterial = Coil;
 
+#ifdef _DEBUG_ON
 		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
+#endif
 	} else {
 		TrackerMaterial = G4Material::GetMaterial(
 				params->get_string_param("material"));
@@ -157,8 +161,10 @@ void PHG4CylinderDetector::Construct(G4LogicalVolume *logicWorld)
   rotm->rotateX(params->get_double_param("rot_x")*deg);
   rotm->rotateY(params->get_double_param("rot_y")*deg);
   rotm->rotateZ(params->get_double_param("rot_z")*deg);
+#ifdef _DEBUG_ON
   params->Print();
   rotm->print(std::cout);
+#endif
   cylinder_physi = new G4PVPlacement(rotm, G4ThreeVector(params->get_double_param("place_x") * cm,
                                                       params->get_double_param("place_y") * cm,
                                                       params->get_double_param("place_z") * cm),
