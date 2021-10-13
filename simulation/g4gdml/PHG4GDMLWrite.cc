@@ -112,8 +112,9 @@ void PHG4GDMLWrite::UserinfoWrite(xercesc::DOMElement* gdmlElement)
 {
   if(auxList.size()>0)
   {
+#ifdef _DEBUG_ON
     G4cout << "PHG4GDML: Writing userinfo..." << G4endl;
-
+#endif
     userinfoElement = NewElement("userinfo");
     gdmlElement->appendChild(userinfoElement);
     AddAuxInfo(&auxList, userinfoElement);
@@ -172,8 +173,10 @@ G4Transform3D PHG4GDMLWrite::Write(const G4String& fname,
    SchemaLocation = setSchemaLocation;
    addPointerToName = refs;
 
+#ifdef _DEBUG_ON
    if (depth==0) { G4cout << "PHG4GDML: Writing '" << fname << "'..." << G4endl; }
    else   { G4cout << "PHG4GDML: Writing module '" << fname << "'..." << G4endl; }
+#endif
 
    if (FileExists(fname))
    {
@@ -266,6 +269,7 @@ G4Transform3D PHG4GDMLWrite::Write(const G4String& fname,
    delete myFormTarget;
    writer->release();
 
+#ifdef _DEBUG_ON
    if (depth==0)
    {
      G4cout << "PHG4GDML: Writing '" << fname << "' done !" << G4endl;
@@ -274,6 +278,7 @@ G4Transform3D PHG4GDMLWrite::Write(const G4String& fname,
    {
      G4cout << "PHG4GDML: Writing module '" << fname << "' done !" << G4endl;
    }
+#endif
 
    return R;
 }

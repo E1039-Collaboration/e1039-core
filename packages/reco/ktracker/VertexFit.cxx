@@ -184,8 +184,9 @@ int VertexFit::InitRun(PHCompositeNode* topNode) {
 
 int VertexFit::process_event(PHCompositeNode* topNode) {
 
-  _recEvent->identify();
-
+  if (verbosity > 1){
+    _recEvent->identify();
+  }
   int ret = -99;
   try {
     ret = setRecEvent(_recEvent);

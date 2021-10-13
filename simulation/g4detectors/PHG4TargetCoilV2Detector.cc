@@ -294,16 +294,18 @@ void PHG4TargetCoilV2Detector::Construct(G4LogicalVolume *logicWorld)
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Nb"), 45 * perCent);
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Ti"), 45 * perCent);
 	Coil->AddMaterial(G4Material::GetMaterial("G4_Cu"), 10 * perCent);
+#ifdef _DEBUG_ON
 	std::cout<< "PHG4TargetCoilV2Detector::Construct: " << Coil << std::endl;
-
+#endif
 	// 1/(0.6/7.87+0.2/7.18+0.15/8.902+0.05/10.22) = 7.95 g/cm3
 	G4Material* SS316L = new G4Material(name = "SS316L", density = 7.95*g/cm3, ncomponents = 4);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Fe"), 60 * perCent);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Cr"), 20 * perCent);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Ni"), 15 * perCent);
 	SS316L->AddMaterial(G4Material::GetMaterial("G4_Mo"),  5 * perCent);
+#ifdef _DEBUG_ON
 	std::cout<< "PHG4TargetCoilV2Detector::Construct: " << SS316L << std::endl;
-
+#endif
   G4VisAttributes *cylinder_vis = new G4VisAttributes();
 	PHG4Utils::SetColour(cylinder_vis, "G4_He");
 	cylinder_vis->SetVisibility(true);
@@ -342,8 +344,10 @@ void PHG4TargetCoilV2Detector::Construct(G4LogicalVolume *logicWorld)
   rotm->rotateX(params->get_double_param("rot_x")*deg);
   rotm->rotateY(params->get_double_param("rot_y")*deg);
   rotm->rotateZ(params->get_double_param("rot_z")*deg);
+#ifdef _DEBUG_ON
   params->Print();
   rotm->print(std::cout);
+#endif
   cylinder_physi = new G4PVPlacement(
   		rotm,
   		G4ThreeVector(

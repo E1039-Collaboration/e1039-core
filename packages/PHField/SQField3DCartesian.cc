@@ -26,11 +26,12 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   , ystepsize(-1.)
   , zstepsize(-1.)
 {
+#ifdef _DEBUG_ON
   std::cout << "\n================ Begin Construct Mag Field =====================" << std::endl;
   std::cout << "\n-----------------------------------------------------------"
             << "\n      Magnetic field Module - Verbosity:"
             << "\n-----------------------------------------------------------\n";
-
+#endif
   //load from input file first
   fpoints.clear();
   if(filename.find(".root") != std::string::npos) 
@@ -41,8 +42,9 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
       std::cout << "SQField3DCartesian: cannot find the input ROOT field map, abort " << filename << std::endl;
       exit(EXIT_FAILURE);
     }
+#ifdef _DEBUG_ON
     std::cout << "SQField3DCartesian: loading field map from ROOT file " << filename << std::endl;
-
+#endif
     float x, y, z, Bx, By, Bz;
     TTree* inputTree = (TTree*)inputFile->Get("fieldmap");
     inputTree->SetBranchAddress("x", &x);
@@ -78,8 +80,9 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
       std::cout << "SQField3DCartesian: cannot find the input ASCII field map, abort " << filename << std::endl;
       exit(EXIT_FAILURE);
     }
+#ifdef _DEBUG_ON
     std::cout << "SQField3DCartesian: loading field map from ASCII file " << filename << std::endl;
-
+#endif
     std::string line;
     getline(fin, line);  //header line
     while(getline(fin, line))
@@ -123,12 +126,14 @@ SQField3DCartesian::SQField3DCartesian(const std::string& fname, const float mag
   //{ return (int((a.z-zmin)/zstepsize) + zsteps*(int((a.y-ymin)/ystepsize)) + ysteps*(int((a.x-xmin)/xstepsize))) < 
   //         (int((b.z-zmin)/zstepsize) + zsteps*(int((b.y-ymin)/ystepsize)) + ysteps*(int((b.x-xmin)/xstepsize))); })
 
-  std::cout << "  its demensions and ranges of the field: " << fpoints.size() << std::endl;
+#ifdef _DEBUG_ON
+  std::cout << "  its dimensions and ranges of the field: " << fpoints.size() << std::endl;
   std::cout << "    X: " << xsteps << " bins, " << xmin/cm << " cm -- " << xmax/cm << " cm, step size = " << xstepsize/cm << " cm." << std::endl;
   std::cout << "    Y: " << ysteps << " bins, " << ymin/cm << " cm -- " << ymax/cm << " cm, step size = " << ystepsize/cm << " cm." << std::endl;
   std::cout << "    Z: " << zsteps << " bins, " << zmin/cm << " cm -- " << zmax/cm << " cm, step size = " << zstepsize/cm << " cm." << std::endl;
 
   std::cout << "\n================= End Construct Mag Field ======================\n" << std::endl;
+#endif
 }
 
 SQField3DCartesian::~SQField3DCartesian()
