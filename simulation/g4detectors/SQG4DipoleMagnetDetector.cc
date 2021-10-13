@@ -48,7 +48,9 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
 {
   std::string dbfile = params->get_string_param("geomdb");
   std::string vName  = params->get_string_param("magname");
-  std::cout << "SQDipoleMagnet - begin construction of " << vName << " from " << dbfile << std::endl;
+  if(Verbosity() > 1){
+    std::cout << "SQDipoleMagnet - begin construction of " << vName << " from " << dbfile << std::endl;
+  }
 
   DbSvc* db_svc = new DbSvc(DbSvc::LITE, dbfile.c_str());
   std::unique_ptr<TSQLStatement> stmt;

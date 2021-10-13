@@ -102,8 +102,10 @@ void RunParamBase::ReadFromDB()
   }
   string name_schema =   SchemaName();
   string name_table  = MapTableName();
+#ifdef _DEBUG_ON
   cout << "Read channel map from "
        << name_schema << "." << name_table << ".\n";
+#endif
   //cout <<   "  Schema = " << name_schema
   //     << "\n  Table  = " << name_table << "\n";
 
