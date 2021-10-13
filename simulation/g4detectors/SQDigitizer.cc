@@ -159,7 +159,7 @@ void SQDigitizer::digitizePlane(const std::string& detName)
     const PHG4Hit& g4hit = *(it->second);
 
     int track_id = g4hit.get_trkid();
-    if (! digitize_secondaries && track_id < 0) continue; //only save primary track hits
+    if (! digitize_secondaries && track_id < 0) continue; //only save primary track hits if digitize_secondaries is False
 
     //get average momentum and position
     double x  = 0.5*(g4hit.get_x(0)  + g4hit.get_x(1));

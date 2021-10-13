@@ -411,6 +411,7 @@ public:
       os
       << " SRecEvent: { " << fRunID << ", " << fSpillID << ", " << fEventID << " } "
       << " NTracks: " << fAllTracks.size()
+      << " and NSt3Tracklets: " << fAllSt3Tracklets.size()
       << std::endl;
     }
     void         Reset() {*this = SRecEvent();}
@@ -446,6 +447,8 @@ public:
     ///Get tracks
     Int_t getNTracks() { return fAllTracks.size(); }
     SRecTrack& getTrack(Int_t i) { return fAllTracks[i]; }
+    Int_t getNSt3Tracklets() { return fAllSt3Tracklets.size(); }
+    SRecTrack& getSt3Tracklet(Int_t i) { return fAllSt3Tracklets[i]; }
 
     ///Get track IDs
     std::vector<Int_t> getChargedTrackIDs(Int_t charge);
@@ -457,6 +460,8 @@ public:
     ///Insert tracks
     void insertTrack(SRecTrack trk) { fAllTracks.push_back(trk); }
     void reIndex() { sort(fAllTracks.begin(), fAllTracks.end()); }
+    void insertSt3Tracklet(SRecTrack trk) { fAllSt3Tracklets.push_back(trk); }
+    void reIndexSt3() { sort(fAllSt3Tracklets.begin(), fAllSt3Tracklets.end()); }
 
     ///Insert dimuon
     void insertDimuon(SRecDimuon dimuon) { fDimuons.push_back(dimuon); }
@@ -483,6 +488,7 @@ private:
 
     ///Container of SRecTrack
     std::vector<SRecTrack> fAllTracks;
+    std::vector<SRecTrack> fAllSt3Tracklets;
 
     ///Dimuons reconstructed
     std::vector<SRecDimuon> fDimuons;

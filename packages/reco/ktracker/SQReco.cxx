@@ -74,6 +74,7 @@ SQReco::SQReco(const std::string& name):
   _rawEvent(nullptr),
   _recEvent(nullptr),
   _recTrackVec(nullptr),
+  _recSt3TrackletVec(nullptr),
   _use_geom_io_node(false),
   _geom_file_name(""),
   _t_geo_manager(nullptr)
@@ -380,6 +381,36 @@ int SQReco::process_event(PHCompositeNode* topNode)
   }
   LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
 
+
+
+  std::list<Tracklet>& rec_trackletsSt3 = _fastfinder->getTrackletList(2);
+  for(auto iter = rec_trackletsSt3.begin(); iter != rec_trackletsSt3.end(); ++iter)
+  {
+    iter->calcChisq();
+    if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) iter->print();
+
+    bool fitOK = false;
+    if(_enable_KF)
+    {
+      if(_fitter_type == SQReco::LEGACY){
+        fitOK = fitSt3TrackletCand(*iter, _kfitter);
+	std::cout<<"it was legacy"<<std::endl;
+      } else{
+        fitOK = fitSt3TrackletCand(*iter, _gfitter);
+	std::cout<<"it wasn't legacy"<<std::endl;
+      }
+    }
+
+    if(!fitOK)
+    {
+      SRecTrack recTrack = iter->getSRecTrack(_enable_KF && (_fitter_type == SQReco::LEGACY));
+      recTrack.setKalmanStatus(-1);
+      
+      fillRecSt3Tracklet(recTrack);
+    }
+  }
+
+
   //add additional eval information if applicable
   if(is_eval_enabled() || is_eval_dst_enabled())
   {
@@ -394,7 +425,10 @@ int SQReco::process_event(PHCompositeNode* topNode)
           ++nTracklets;
         }
 
-        if(is_eval_dst_enabled()) _tracklet_vector->push_back(&(*iter));
+        if(is_eval_dst_enabled()){
+	  iter->print();
+	  _tracklet_vector->push_back(&(*iter));
+	}
       }
     }
   }
@@ -459,6 +493,39 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
   return true;
 }
 
+bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter)
+{
+  KalmanTrack kmtrk;
+  kmtrk.setTracklet(tracklet);
+
+  if(kmtrk.getNodeList().empty()) 
+  {
+    LogDebug("kmtrk nodelist empty");
+    return false;
+  }
+
+  if(_kfitter->processOneTrack(kmtrk) == 0)
+  {
+    LogDebug("kFitter failed to converge");
+    return false;
+  }
+
+  _kfitter->updateTrack(kmtrk);//update after fitting
+
+  SRecTrack strack = kmtrk.getSRecTrack();
+
+  //Set trigger road ID
+  TriggerRoad road(tracklet);
+  strack.setTriggerRoad(road.getRoadID());
+
+  //Set prop tube slopes
+  strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
+  strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
+  strack.setKalmanStatus(1);
+  fillRecSt3Tracklet(strack);
+  return true;
+}
+
 bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
 {
   SQGenFit::GFTrack gftrk;
@@ -493,6 +560,42 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
   return true;
 }
 
+
+bool SQReco::fitSt3TrackletCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
+{
+  SQGenFit::GFTrack gftrk;
+  gftrk.setTracklet(tracklet);
+
+  int fitOK = _gfitter->processTrack(gftrk);
+  if(fitOK != 0)
+  {
+    LogDebug("gFitter failed to converge.");
+    return false;
+  }
+
+  if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT)
+  {
+    gftrk.postFitUpdate();
+    gftrk.print(2);
+  }
+
+  //TODO: A gtrack quality cut?
+
+  SRecTrack strack = gftrk.getSRecTrack();
+
+  //Set trigger road ID
+  TriggerRoad road(tracklet);
+  strack.setTriggerRoad(road.getRoadID());
+
+  //Set prop tube slopes
+  strack.setNHitsInPT(tracklet.seg_x.getNHits(), tracklet.seg_y.getNHits());
+  strack.setPTSlope(tracklet.seg_x.a, tracklet.seg_y.a);
+
+  fillRecSt3Tracklet(strack);
+  return true;
+}
+
+
 int SQReco::InitEvalTree() 
 {
   PHTFileServer::get().open(_eval_file_name.Data(), "RECREATE");
@@ -521,6 +624,14 @@ void SQReco::fillRecTrack(SRecTrack& recTrack)
     _recTrackVec->push_back(&recTrack);
 }
 
+void SQReco::fillRecSt3Tracklet(SRecTrack& recTrack)
+{
+  if(_legacy_rec_container)
+    _recEvent->insertSt3Tracklet(recTrack);
+  else
+    _recSt3TrackletVec->push_back(&recTrack);
+}
+
 int SQReco::MakeNodes(PHCompositeNode* topNode) 
 {
   PHNodeIterator iter(topNode);
@@ -546,6 +657,9 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
     _recTrackVec = new SQTrackVector_v1();
     PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject");
     eventNode->addNode(recEventNode);
+    _recSt3TrackletVec = new SQTrackVector_v1();
+    PHIODataNode<PHObject>* recEventNodeSt3 = new PHIODataNode<PHObject>(_recSt3TrackletVec, "SQRecSt3TrackletVector", "PHObject");
+    eventNode->addNode(recEventNodeSt3);
     if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
   }
 

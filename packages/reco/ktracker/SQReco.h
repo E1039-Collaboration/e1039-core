@@ -93,9 +93,12 @@ private:
   int updateHitInfo(SRawEvent* sraw_event);
 
   bool fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter);
+  bool fitSt3TrackletCand(Tracklet& tracklet, KalmanFitter* fitter);
   bool fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter);
+  bool fitSt3TrackletCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter);
 
   void fillRecTrack(SRecTrack& recTrack);
+  void fillRecSt3Tracklet(SRecTrack& recTrack);
 
   SQReco::INPUT_TYPE  _input_type;
   SQReco::FITTER_TYPE _fitter_type;
@@ -139,6 +142,7 @@ private:
   SRawEvent* _rawEvent;
   SRecEvent* _recEvent;
   SQTrackVector* _recTrackVec;
+  SQTrackVector* _recSt3TrackletVec;
 
   bool _use_geom_io_node;
   std::string  _geom_file_name;

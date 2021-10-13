@@ -728,6 +728,7 @@ std::vector<Int_t> SRecEvent::getChargedTrackIDs(Int_t charge)
 void SRecEvent::clear()
 {
     fAllTracks.clear();
+    fAllSt3Tracklets.clear();
     fLocalID.clear();
     fDimuons.clear();
 

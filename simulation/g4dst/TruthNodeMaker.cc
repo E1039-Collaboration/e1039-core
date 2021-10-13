@@ -124,7 +124,7 @@ int TruthNodeMaker::process_event(PHCompositeNode* topNode)
   for (auto it = g4true->GetPrimaryParticleRange().first; it != g4true->GetPrimaryParticleRange().second; ++it) {
     PHG4Particle* par = it->second;
     int pid = par->get_pid();
-    if (abs(pid) != 13) continue; // not muon
+    if (abs(pid) != 13 && abs(pid) != 11) continue; // not muon or electron
     int trk_id = par->get_track_id();
     int vtx_id = par->get_vtx_id();
     PHG4VtxPoint* vtx = g4true->GetVtx(vtx_id);

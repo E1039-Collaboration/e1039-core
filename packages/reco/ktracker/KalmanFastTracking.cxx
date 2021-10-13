@@ -78,6 +78,8 @@ namespace
 
     //if displaced, skip fit to the target/vertex
     static bool NOT_DISPLACED;
+  static bool TRACK_ELECTRONS; //please see comment in framework/phool/recoConsts.cc
+  static bool TRACK_DISPLACED; //please see comment in framework/phool/recoConsts.cc
 
     //initialize global variables
     void initGlobalVariables()
@@ -93,6 +95,8 @@ namespace
             COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
 
             NOT_DISPLACED = rc->get_BoolFlag("NOT_DISPLACED");
+            TRACK_ELECTRONS = rc->get_BoolFlag("TRACK_ELECTRONS");
+            TRACK_DISPLACED = rc->get_BoolFlag("TRACK_DISPLACED");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -690,7 +694,7 @@ void KalmanFastTracking::buildBackPartialTracks()
                     }
                     if(nPropHits > 0) break;
                 }
-                if(nPropHits == 0) continue;
+                if(!TRACK_ELECTRONS && nPropHits == 0) continue; //Turned off by Patrick for electron tracks
             }
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
@@ -771,17 +775,17 @@ void KalmanFastTracking::buildGlobalTracks()
         for(int i = 0; i < 2; ++i) //for two station-1 chambers
         {
             trackletsInSt[0].clear();
-
-            //Calculate the window in station 1
-            if(KMAG_ON)
-            {
-                getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
-            }
-            else
-            {
-                getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
-            }
-
+	    if(!TRACK_DISPLACED){
+	      //Calculate the window in station 1
+	      if(KMAG_ON)
+		{
+		  getSagittaWindowsInSt1(*tracklet23, pos_exp, window, i+1);
+		}
+	      else
+		{
+		  getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
+		}
+	    }
 #ifdef _DEBUG_ON
             LogInfo("Using this back partial: ");
             tracklet23->print();
@@ -789,7 +793,12 @@ void KalmanFastTracking::buildGlobalTracks()
 #endif
 
             _timers["global_st1"]->restart();
-            buildTrackletsInStation(i+1, 0, pos_exp, window);
+            if(!TRACK_DISPLACED){
+	      buildTrackletsInStation(i+1, 0, pos_exp, window);
+	    }
+	    if(TRACK_DISPLACED){
+	      buildTrackletsInStation(i+1, 0);
+	    }
             _timers["global_st1"]->stop();
 
             _timers["global_link"]->restart();
@@ -812,7 +821,22 @@ void KalmanFastTracking::buildGlobalTracks()
                     resolveLeftRight(tracklet_global, 150.);
                     resolveSingleLeftRight(tracklet_global);
                 }
-
+		if(TRACK_DISPLACED){
+		  double firstChiSq = tracklet_global.calcChisq();
+		  Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1);
+		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); /**By default, the value returned by getCharge is based on the x0 of the tracklet.  For a particle produced at the target, this is a valid way to extract charge.  However, for a displaced particle, the x0 does not tell you anything useful about the charge of the particle, which is why we need to check both possible charge values.  getCharge is used later on when extracting certain track quality values, so using the wrong charge leads to tracks getting rejected due to poor quality values*/
+		  if(!COARSE_MODE)
+		    {
+		      resolveLeftRight(tracklet_global2, 75.);
+		      resolveLeftRight(tracklet_global2, 150.);
+		      resolveSingleLeftRight(tracklet_global2);
+		    }
+		  double secondChiSq = tracklet_global2.calcChisq();
+		  if(secondChiSq < firstChiSq){
+		    tracklet_global = tracklet_global2;
+		  }
+		}
+		
                 ///Remove bad hits if needed
                 removeBadHits(tracklet_global);
 
@@ -1363,8 +1387,11 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     //For back partials, require projection inside KMAG, and muon id in prop. tubes
     if(tracklet.stationID > nStations-2)
     {
-        if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
-        if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false;
+      if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
+      if(!TRACK_ELECTRONS && !(muonID_comp(tracklet) || muonID_search(tracklet))) return false; //Muon check for 2-3 connected tracklets.  This needs to be off for electron tracks
+      if(TRACK_ELECTRONS && !(muonID_comp(tracklet) || muonID_search(tracklet) || tracklet.stationID > 5)){
+	return false;
+      }
     }
 
     //If everything is fine ...
@@ -1377,6 +1404,7 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
 bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
 {
     //LogInfo(tracklet.stationID);
+  if(TRACK_ELECTRONS && (tracklet.stationID == 4 || tracklet.stationID == 5)) return true; //Patrick's skip of hodoscope checks for station 3 tracks in the electron-tracking setup
     int nHodoHits = 0;
     for(std::vector<int>::iterator stationID = stationIDs_mask[tracklet.stationID-1].begin(); stationID != stationIDs_mask[tracklet.stationID-1].end(); ++stationID)
     {
@@ -1411,6 +1439,8 @@ bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
             {
                 nHodoHits++;
                 masked = true;
+
+		if(TRACK_ELECTRONS && tracklet.stationID > 5) return true; //Once the first hodoscope hit is found (at z=1420cm), the combined tracklet passes for electron tracks
 
                 break;
             }
