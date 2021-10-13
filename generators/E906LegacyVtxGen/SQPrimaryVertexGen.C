@@ -73,9 +73,9 @@ SQPrimaryVertexGen::SQPrimaryVertexGen():
   inited(false),
   topNode(nullptr),
   targetOnlyMode(false),
-  dumpOnlyMode(false),
-  z_start(-800.),
-  z_stop(503.)
+  material_mode("All"),
+  z_start(Z_MIN),
+  z_stop (Z_MAX)
 {
 }
 
@@ -123,15 +123,39 @@ void SQPrimaryVertexGen::init()
   //If inited from a root file, then skip this step, so that it can be used independent of the Fun4All
   if(geoManager == nullptr) geoManager = PHGeomUtility::GetTGeoManager(topNode);
 
-  // initialize target/dump only mode
+  // initialize special material modes
   if(rc->get_BoolFlag("TARGETONLY"))
   {
-    set_targetOnlyMode();
+    rc->set_CharFlag("VTX_GEN_MATERIAL_MODE", "Target");
+    std::cout << "Warning: TARGETONLY will be obsolete soon.  Use VTX_GEN_MATERIAL_MODE instead." << std::endl;
   }
   else if(rc->get_BoolFlag("DUMPONLY"))
   {
-    set_dumpOnlyMode();
+    rc->set_CharFlag("VTX_GEN_MATERIAL_MODE", "Dump");
+    std::cout << "Warning: DUMPONLY will be obsolete soon.  Use VTX_GEN_MATERIAL_MODE instead." << std::endl;
   }
+  if (rc->FlagExist("VTX_GEN_MATERIAL_MODE")) {
+    material_mode = rc->get_CharFlag("VTX_GEN_MATERIAL_MODE");
+    if (material_mode == "All") {
+      ; // Do nothing
+    } else if (material_mode == "Target") {
+      FindMaterialRange(z_start, z_stop, "Target");
+      targetOnlyMode = true;
+    } else if (material_mode == "Dump") {
+      FindMaterialRange(z_start, z_stop, "fmag_body", 10, 10); // Any (x, y) outside the dump hole.
+    } else if (material_mode == "TargetDumpGap") {
+      double z_tmp;
+      FindMaterialRange(z_tmp , z_start, "Target"   );
+      FindMaterialRange(z_stop, z_tmp  , "fmag_body");
+    } else if (material_mode == "Manual") {
+      z_start = rc->get_DoubleFlag("VTX_GEN_Z_START");
+      z_stop  = rc->get_DoubleFlag("VTX_GEN_Z_STOP" );
+    } else {
+      std::cout << "SQPrimaryVertexGen::init():  '" << material_mode << "' is not supported.  Abort." << std::endl;
+      exit(1);
+    }
+  }
+  std::cout << "SQPrimaryVertexGen::init(): mode = " << material_mode << ", z = " << z_start << "..." << z_stop << "." << std::endl;  
 
   //Read the default 
   defaultMatProf = new MaterialProfile;
@@ -140,35 +164,15 @@ void SQPrimaryVertexGen::init()
   inited = true;
 }
 
-void SQPrimaryVertexGen::set_targetOnlyMode()
+void SQPrimaryVertexGen::FindMaterialBoundaries(const double xpos, const double ypos, const double z_min, const double z_max, int& n_b, double* z_b)
 {
-  targetOnlyMode = true;
-  z_start = -304;
-  z_stop  = -296;
-}
-
-void SQPrimaryVertexGen::set_dumpOnlyMode() 
-{
-  dumpOnlyMode = true;
-  z_start = -100.;
-  z_stop = 503.;
-}
-
-void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx)
-{
-  //std::cout << xvtx << "  " << yvtx << std::endl;
-  //retrieve the z position of all geometry boundaries
-  recoConsts* rc = recoConsts::instance();
-
-  double z[100];
-  int nBoundaries = 0;
-
-  double eps = 1.E-6;
-  double z_curr = z_start;  //not beyond collimator(z= -602.36 cm, lenth=121.92 cm) @Abi //-500.;
-  z[0] = z_curr;
-  while(z_curr < z_stop)
+  n_b = 0;
+  const double eps = 1.E-6;
+  double z_curr = z_min;  //not beyond collimator(z= -602.36 cm, lenth=121.92 cm) @Abi //-500.;
+  z_b[0] = z_curr;
+  while(z_curr < z_max)
   {
-    geoManager->IsSameLocation(xvtx, yvtx, z_curr, true);
+    geoManager->IsSameLocation(xpos, ypos, z_curr, true);
     geoManager->SetCurrentDirection(0., 0., 1.);
 
     TGeoNode* node = geoManager->FindNextBoundary(600.);
@@ -177,13 +181,46 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
     if(z_step > eps)
     {
       z_curr += z_step;
-      z[++nBoundaries] = z_curr; 
+      z_b[++n_b] = z_curr;
     }
     else
     {
       z_curr += eps;
     }
   }
+}
+
+void SQPrimaryVertexGen::FindMaterialRange(double& z1, double& z2, const std::string name, const double xpos, const double ypos)
+{
+  int n_b;
+  double z_b[100];
+  FindMaterialBoundaries(xpos, ypos, Z_MIN, Z_MAX, n_b, z_b);
+
+  z1 = Z_MAX;
+  z2 = Z_MIN;
+  for (int i_b = 0; i_b < n_b; ++i_b) {
+    double z_lo = z_b[i_b  ];
+    double z_hi = z_b[i_b+1];
+    TGeoVolume* vol = geoManager->FindNode(xpos, ypos, (z_lo+z_hi)/2)->GetVolume();
+    TString vol_name = vol->GetName();
+    //TString vol_mat  = vol->GetMaterial()->GetName();
+    //std::cout << "  " << vol_name << "   " << vol_mat << "   " << z_lo << "..." << z_hi << "   " << z_hi-z_lo << std::endl;
+    if (vol_name.Contains(name.c_str())) {
+      if (z_lo < z1) z1 = z_lo;
+      if (z_hi > z2) z2 = z_hi;
+    }
+  }
+  if (z1 > z2) {
+    std::cout << "SQPrimaryVertexGen::FindMaterialRange():  Failed.  Wrong material name?  Abort." << std::endl;
+    exit(1);
+  }
+}
+
+void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx, double yvtx)
+{
+  double z[100];
+  int nBoundaries = 0;
+  FindMaterialBoundaries(xvtx, yvtx, z_start, z_stop, nBoundaries, z);
 
   //use the z boundaries to create interactibles
   for(int i = 0; i < nBoundaries; ++i)
@@ -203,14 +240,8 @@ void SQPrimaryVertexGen::fillMaterialProfile(MaterialProfile* prof, double xvtx,
 
   //calculate all related properties
   prof->calcProb();
-
-  // for(int i = 0; i < prof->nPieces; ++i)
-  // {
-  //   std::cout << prof->interactables[i] << std::endl;
-  // }
-  // return 0;
+  // for(int i = 0; i < prof->nPieces; ++i) std::cout << prof->interactables[i] << std::endl;
 }
-
 
 TVector3 SQPrimaryVertexGen::generateVertex()
 {
@@ -275,7 +306,7 @@ double SQPrimaryVertexGen::funcBeamProfile(double* val, double* par)
   double y_nr = (y - y_c)/y_s; // normalized relative y
   double r2_nr = x_nr*x_nr + y_nr*y_nr;
   double r_nr  = sqrt(r2_nr);
-  if(r_nr < r_boun*r_boun) {
+  if(r_nr < r_boun) {
     return exp(-0.5*r2_nr);
   } else { // >= r_boun
     return exp(-0.5*r_boun*r_boun)*r_boun/r_nr;

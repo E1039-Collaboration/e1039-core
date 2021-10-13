@@ -689,14 +689,13 @@ SRecEvent::SRecEvent()
 
 void SRecEvent::setRawEvent(SRawEvent *rawEvent)
 {
+    clear();
     setEventInfo(rawEvent);
 
     for(Int_t i = 0; i < rawEvent->getNHitsAll(); i++)
     {
         fLocalID.insert(std::map<Int_t, Int_t>::value_type(rawEvent->getHit(i).index, i));
     }
-
-    fAllTracks.clear();
 }
 
 void SRecEvent::setEventInfo(SRawEvent* rawEvent)
@@ -733,4 +732,22 @@ void SRecEvent::clear()
     fDimuons.clear();
 
     fRecStatus = 0;
+}
+
+void SRecEvent::clearTracks()
+{
+    fAllTracks.clear();
+    fLocalID.clear();
+    fRecStatus = 0;
+}
+
+/// Clear the dimuon list.
+/**
+ * It should be called when only the vertexing is re-done.
+ * But probably `fRecStatus` will be messed up.
+ * We had better separate `fRecStatus` into `fRecStatusTracking` and `fRecStatusVertexing`.
+ */
+void SRecEvent::clearDimuons()
+{
+    fDimuons.clear();
 }

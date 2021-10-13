@@ -57,6 +57,8 @@ class HepMCNodeReader : public SubsysReco
   void set_particle_filter_on(const bool a) {_particle_filter_on = a;}
   void insert_particle_filter_pid(const int a) {_particle_filter_pid.push_back(a);}
 
+  void enable_position_filter(const double x_min, const double x_max, const double y_min, const double y_max, const double z_min, const double z_max);
+
   bool PassParticleFilter(HepMC::GenParticle * p);
 
  private:
@@ -75,6 +77,13 @@ class HepMCNodeReader : public SubsysReco
   bool _particle_filter_on;
   std::vector<int> _particle_filter_pid;
 
+  bool _position_filter_on;
+  double _pos_filter_x_min;
+  double _pos_filter_x_max;
+  double _pos_filter_y_min;
+  double _pos_filter_y_max;
+  double _pos_filter_z_min;
+  double _pos_filter_z_max;
 
 #ifndef __CINT__
   gsl_rng *RandomGenerator;

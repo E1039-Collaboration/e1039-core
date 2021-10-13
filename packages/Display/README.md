@@ -27,7 +27,7 @@ It contains only sampled events (typically a few events per spill)
 and its tree header is updated every event (via TTree::AutoSave())
 so that it is readable even when being written.
 It is managed by `Fun4AllDstOutputManager` named `DSTOUT2`
-and is saved under `/data2/e1039/onlmon/evt_disp`.
+and is saved under `/data2/e1039/online/evt_disp`.
 The event sampling is controlled by `EvtDispFilter`.
 
 A macro for this input mode is

@@ -221,6 +221,8 @@ public:
 
     ///only empty the hit list, leave other information untouched
     void empty() { fAllHits.clear(); fTriggerHits.clear(); }
+    void emptyHits() { fAllHits.clear(); }
+    void emptyTriggerHits() { fTriggerHits.clear(); }
 
     ///Print for debugging purposes
     void print (std::ostream& os = std::cout) const;

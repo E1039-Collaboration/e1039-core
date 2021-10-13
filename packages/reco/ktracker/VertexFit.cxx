@@ -186,9 +186,10 @@ int VertexFit::InitRun(PHCompositeNode* topNode) {
 
 int VertexFit::process_event(PHCompositeNode* topNode) {
 
-  if (verbosity > 1){
-    _recEvent->identify();
-  }
+  if(verbosity > 0) _recEvent->identify();
+
+  _recEvent->clearDimuons(); // In case the vertexing is re-done.
+
   int ret = -99;
   try {
     ret = setRecEvent(_recEvent);

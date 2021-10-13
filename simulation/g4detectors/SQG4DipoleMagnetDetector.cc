@@ -64,7 +64,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   std::map<int, G4VSolid*> solids;
 
   /// Read all box shapes from Table SolidBoxes
-  stmt.reset(db_svc->Process(Form("SELECT sID, sName, xLength, yLength, zLength FROM SolidBoxes WHERE sName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT sID, sName, xLength, yLength, zLength FROM SolidBoxes WHERE sName like '" + vName + "%'"));
   while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
@@ -86,7 +86,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   }
 
   /// Read all tube shapes from Table SolidTubes
-  stmt.reset(db_svc->Process(Form("SELECT sID, sName, length, radiusMin, radiusMax FROM SolidTubes WHERE sName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT sID, sName, length, radiusMin, radiusMax FROM SolidTubes WHERE sName like '" + vName + "%'"));
   while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
@@ -108,7 +108,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   }
 
   /// Perform subtraction using Table SubtractionSolids
-  stmt.reset(db_svc->Process(Form("SELECT sID, sName, shellID, holeID, rotX, rotY, rotZ, posX, posY, posZ FROM SubtractionSolids WHERE sName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT sID, sName, shellID, holeID, rotX, rotY, rotZ, posX, posY, posZ FROM SubtractionSolids WHERE sName like '" + vName + "%'"));
   while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int sID = stmt->GetInt(0);
@@ -147,7 +147,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
 
   // Create logical volumes using Table LogicalVolumes
   std::map<int, G4LogicalVolume*> logicals;
-  stmt.reset(db_svc->Process(Form("SELECT lvID, lvName, sID, mName FROM LogicalVolumes WHERE lvName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT lvID, lvName, sID, mName FROM LogicalVolumes WHERE lvName like '" + vName + "%'"));
   while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     int lvID = stmt->GetInt(0);
@@ -179,7 +179,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   int topLVID = -1;
   int topPVID = -1;
   std::string topPVName;
-  stmt.reset(db_svc->Process(Form("SELECT pvID, pvName, lvID FROM PhysicalVolumes WHERE motherID=0 AND depth=1 AND pvName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT pvID, pvName, lvID FROM PhysicalVolumes WHERE motherID=0 AND depth=1 AND pvName like '" + vName + "%'"));
   while(stmt->NextResultRow())
   {
     ++nTopPV;
@@ -221,7 +221,7 @@ void SQG4DipoleMagnetDetector::Construct(G4LogicalVolume* logicWorld)
   ++lvRefCount[topLVID];
 
   // The rest of the physical volumes
-  stmt.reset(db_svc->Process(Form("SELECT pvName, lvID, motherID, xRel, yRel, zRel, rotX, rotY, rotZ FROM PhysicalVolumes WHERE motherID>0 AND pvName like '%s%'", vName.c_str())));
+  stmt.reset(db_svc->Process(     "SELECT pvName, lvID, motherID, xRel, yRel, zRel, rotX, rotY, rotZ FROM PhysicalVolumes WHERE motherID>0 AND pvName like '" + vName + "%'"));
   while(stmt->NextResultRow() && (!stmt->IsNull(0)))
   {
     //may need to check duplicate pvID?

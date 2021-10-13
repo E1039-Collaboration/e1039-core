@@ -79,7 +79,7 @@ PHG4DSTReader::Init(PHCompositeNode*)
 
       const string & nodenam = *it;
 
-      string hname = Form("G4HIT_%s", nodenam.c_str());
+      string hname = "G4HIT_" + nodenam;
 //      _node_name.push_back(hname);
       cout << "PHG4DSTReader::Init - saving hits from node: " << hname << " - "
           << class_name << endl;
