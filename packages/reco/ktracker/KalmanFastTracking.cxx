@@ -78,8 +78,8 @@ namespace
 
     //if displaced, skip fit to the target/vertex
     static bool NOT_DISPLACED;
-    static bool TRACK_ELECTRONS;
-    static bool TRACK_DISPLACED;
+  static bool TRACK_ELECTRONS; //please see comment in framework/phool/recoConsts.cc
+  static bool TRACK_DISPLACED; //please see comment in framework/phool/recoConsts.cc
 
     //initialize global variables
     void initGlobalVariables()
@@ -824,7 +824,7 @@ void KalmanFastTracking::buildGlobalTracks()
 		if(TRACK_DISPLACED){
 		  double firstChiSq = tracklet_global.calcChisq();
 		  Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1);
-		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //setCharge is found in packages/reco/interface/FastTracklet.cxx.  the getCharge() function retrieves the charge expected from the initial information in tracklet_global2, which is equivalent to tracklet_global.  Then the setCharge() function reverses the charge associated with the tracklet.  By default, the value returned by getCharge is based on the x0 of the tracklet.  For a particle produced at the target, this is a valid way to extract charge.  However, for a displaced particle, the x0 does not tell you anything useful about the charge of the particle, which is why we need to check both possible charge values.  getCharge is used later on when extracting certain track quality values, so using the wrong charge leads to tracks getting rejected due to poor quality values
+		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); /**By default, the value returned by getCharge is based on the x0 of the tracklet.  For a particle produced at the target, this is a valid way to extract charge.  However, for a displaced particle, the x0 does not tell you anything useful about the charge of the particle, which is why we need to check both possible charge values.  getCharge is used later on when extracting certain track quality values, so using the wrong charge leads to tracks getting rejected due to poor quality values*/
 		  if(!COARSE_MODE)
 		    {
 		      resolveLeftRight(tracklet_global2, 75.);
