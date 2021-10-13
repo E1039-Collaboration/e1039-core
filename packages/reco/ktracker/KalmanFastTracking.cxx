@@ -824,7 +824,7 @@ void KalmanFastTracking::buildGlobalTracks()
 		if(TRACK_DISPLACED){
 		  double firstChiSq = tracklet_global.calcChisq();
 		  Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1);
-		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge());
+		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //setCharge is found in packages/reco/interface/FastTracklet.cxx.  the getCharge() function retrieves the charge expected from the initial information in tracklet_global2, which is equivalent to tracklet_global.  Then the setCharge() function reverses the charge associated with the tracklet
 		  if(!COARSE_MODE)
 		    {
 		      resolveLeftRight(tracklet_global2, 75.);
