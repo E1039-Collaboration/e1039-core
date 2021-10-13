@@ -824,7 +824,7 @@ void KalmanFastTracking::buildGlobalTracks()
 		if(TRACK_DISPLACED){
 		  double firstChiSq = tracklet_global.calcChisq();
 		  Tracklet tracklet_global2 = (*tracklet23) * (*tracklet1);
-		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //setCharge is found in packages/reco/interface/FastTracklet.cxx.  the getCharge() function retrieves the charge expected from the initial information in tracklet_global2, which is equivalent to tracklet_global.  Then the setCharge() function reverses the charge associated with the tracklet
+		  tracklet_global2.setCharge(-1*tracklet_global2.getCharge()); //setCharge is found in packages/reco/interface/FastTracklet.cxx.  the getCharge() function retrieves the charge expected from the initial information in tracklet_global2, which is equivalent to tracklet_global.  Then the setCharge() function reverses the charge associated with the tracklet.  By default, the value returned by getCharge is based on the x0 of the tracklet.  For a particle produced at the target, this is a valid way to extract charge.  However, for a displaced particle, the x0 does not tell you anything useful about the charge of the particle, which is why we need to check both possible charge values.  getCharge is used later on when extracting certain track quality values, so using the wrong charge leads to tracks getting rejected due to poor quality values
 		  if(!COARSE_MODE)
 		    {
 		      resolveLeftRight(tracklet_global2, 75.);
