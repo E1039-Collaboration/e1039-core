@@ -394,10 +394,8 @@ int SQReco::process_event(PHCompositeNode* topNode)
     {
       if(_fitter_type == SQReco::LEGACY){
         fitOK = fitSt3TrackletCand(*iter, _kfitter);
-	std::cout<<"it was legacy"<<std::endl;
       } else{
         fitOK = fitSt3TrackletCand(*iter, _gfitter);
-	std::cout<<"it wasn't legacy"<<std::endl;
       }
     }
 
@@ -426,9 +424,10 @@ int SQReco::process_event(PHCompositeNode* topNode)
         }
 
         if(is_eval_dst_enabled()){
-	  iter->print();
-	  _tracklet_vector->push_back(&(*iter));
-	}
+          if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT)
+	        iter->print();
+          _tracklet_vector->push_back(&(*iter));
+        }
       }
     }
   }
