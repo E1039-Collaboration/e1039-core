@@ -128,6 +128,12 @@ void UtilDimuon::Lab2CollinsSoper(const SQDimuon* dim, double& costh, double& ph
 }
 
 /// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
+void UtilDimuon::Lab2CollinsSoper(const TLorentzVector& p1, const TLorentzVector& p2, double& costh, double& phi)
+{
+  Lab2CollinsSoper(p1.Vect(), p2.Vect(), costh, phi);
+}
+
+/// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
 void UtilDimuon::Lab2CollinsSoper(const TVector3& p1, const TVector3& p2, double& costh, double& phi)
 {
   Lab2CollinsSoper(p1.X(), p1.Y(), p1.Z(),  p2.X(), p2.Y(), p2.Z(),  costh, phi);

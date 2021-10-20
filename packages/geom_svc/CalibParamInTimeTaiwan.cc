@@ -125,6 +125,8 @@ bool CalibParamInTimeTaiwan::Find(const short det, const short ele, double& cent
     center = val->first;
     width  = val->second;
     return true;
+  } else if (ele != 0) { // Try to find an entry common to all elements.
+    return Find(det, 0, center, width);
   }
   center = width = 0;
   return false;

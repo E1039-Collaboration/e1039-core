@@ -15,7 +15,7 @@ class SQHitVector;
  *
  * The drift distance of one SQHit object is converted to its TDC time,
  * by using the X-T relation and the T0 value given by CalibParamXT and CalibParamInTimeTaiwan.
- * User has to use (i.e. register) `CalibXT` to derive the (realistic) drift distance from the TDC time,
+ * User has to use (i.e. register) `CalibDriftDist` to derive the (realistic) drift distance from the TDC time,
  * because this module does _not_ modify the drift distance itself.
  */
 class SQChamberRealization: public SubsysReco
