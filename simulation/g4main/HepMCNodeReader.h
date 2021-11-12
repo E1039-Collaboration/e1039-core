@@ -61,6 +61,9 @@ class HepMCNodeReader : public SubsysReco
 
   bool PassParticleFilter(HepMC::GenParticle * p);
 
+  void Set_bkg_mode(){_bkg_mode = true;}
+  void Set_pxy2pz_rat (const double rat){_pxy2pz_rat = rat;}
+
  private:
   double smeargauss(const double width);
   double smearflat(const double width);
@@ -76,6 +79,9 @@ class HepMCNodeReader : public SubsysReco
 
   bool _particle_filter_on;
   std::vector<int> _particle_filter_pid;
+
+  bool _bkg_mode;
+  double _pxy2pz_rat;
 
   bool _position_filter_on;
   double _pos_filter_x_min;

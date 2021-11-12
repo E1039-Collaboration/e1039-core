@@ -21,6 +21,8 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
+#include <TRandom3.h>
+
 #include <cassert>
 #include <list>
 
@@ -60,6 +62,8 @@ HepMCNodeReader::HepMCNodeReader(const std::string &name)
   , width_vx(0.0)
   , width_vy(0.0)
   , width_vz(0.0)
+  , _bkg_mode(false)
+  , _pxy2pz_rat(0.25)
   , _particle_filter_on(false)
   , _position_filter_on(false)
   , _pos_filter_x_min(0.0)
@@ -253,6 +257,11 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
           cout << "Particles" << endl;
         }
 
+	if(_bkg_mode){
+	  if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
+	      fabs(zpos) > worldsizez / 2) continue;
+	}
+
         if (_position_filter_on &&
             (xpos < _pos_filter_x_min || xpos > _pos_filter_x_max ||
              ypos < _pos_filter_y_min || ypos > _pos_filter_y_max ||
@@ -306,6 +315,96 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
           particle->set_py((*fiter)->momentum().py() * mom_factor);
           particle->set_pz((*fiter)->momentum().pz() * mom_factor);
           particle->set_barcode((*fiter)->barcode());
+
+	  if(_bkg_mode){//@                                                                                                                                                                                                                                             
+	    // cout<<"coll vtx, prod. vtx, final vtx: "<<(*v)->position().z() * length_factor<<", "<<genevt->get_collision_vertex().z()<<" ,"<<zpos<<endl;                                                                                                              
+	    ///Filter related to z-position of the decay                                                                                                                                                                                                                
+	    double FMAG_hole_R = 2.5;//circular hole of diameter 5 cm and length 25 cm at FMAG                                                                                                                                                                          
+	    double FMAG_hole_L = 25.;
+	    
+	    double Transverse_pos = sqrt(pow(xpos,2)+pow(ypos,2));
+	    double FMAG_X = 160.; ///Dimemsion of FMAG: (43.2x160x503.) multiple slbas                                                                                                                                                                                  
+	    double FMAG_Y = 160.; //                                                                                                                                                                                                                                    
+	    double FMAG_Z = 503.;
+
+	    double pion_lambda_Fe = 20.42+5.;//pion interaction length for Fe                                                                                                                                                                                           
+	    double pion_lambda_Cu = 18.51+5.;//pion interaction length for Cu                                                                                                                                                                                           
+	    double pion_lambda_B = 48.75;//pion interaction length of Target                                                                                                                                                                                            
+	    double pion_lambda_sh = 55.92+5.;//pion interaction lenght of Shielding (concrete)                                                                                                                                                                          
+
+	    //Filter for transverse momentum of decay muons                                                                                                                                                                                                             
+	    if(fabs((*fiter)->momentum().px()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+	    if(fabs((*fiter)->momentum().py()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+	    if((*fiter)->momentum().pz()<0) continue;
+
+	    //Fmag fucidual cut                                                                                                                                                                                                                                         
+	    if(fabs(xpos)>FMAG_X/2.) continue;
+	    if(fabs(ypos)>FMAG_Y/2.) continue;
+
+	    //Collimaator hole dimension (7.8 x 3.48 cm)                                                                                                                                                                                                                    
+	    double coll_x = 7.8;// cm                                                                                                                                                                                                                                   
+	    double coll_y = 3.48;
+	    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));
+	    
+	    ///Collimator contribution                                                                                                                                                                                                                                      
+	    if(genevt->get_collision_vertex().z()>-664.&&genevt->get_collision_vertex().z()<-542. && (fabs(xpos)>coll_x/2.||fabs(ypos)>coll_y/2.) )
+	      {
+		if(zpos<-542.)
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()+zpos)/(pion_lambda_Cu))) continue;
+		  }
+		else
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()-542.)/(pion_lambda_Cu))) continue;
+		  }
+	      }
+	    
+	    ///Shielding contribution
+	    if(genevt->get_collision_vertex().z()>-171.5&& genevt->get_collision_vertex().z()<-0.001)
+	      {
+		if(zpos<-0.001)
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()+zpos)/pion_lambda_sh)) continue;
+		  }
+		else
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(171.5)/pion_lambda_sh)) continue;
+		  }
+	      }
+	    if(genevt->get_collision_vertex().z()<-171.5 && Transverse_pos<7.62 )
+	      {
+		if(zpos>-171.5 && zpos<-0.001)
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(171.5+zpos)/pion_lambda_sh)) continue;
+		  }
+		if(zpos>-.001)
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(171.5)/pion_lambda_sh)) continue;
+		  }
+		
+	      }
+	    
+	    //Dump contribution
+	    if (genevt->get_collision_vertex().z()>=0.)
+	      {
+		if (gRandom->Uniform(0,1)> exp (-(zpos-genevt->get_collision_vertex().z())/pion_lambda_Fe)) continue;//decay length cut                                                                                                                                 
+	      }	    
+	    if (genevt->get_collision_vertex().z()<0. && zpos>0.)
+	      {
+		if (Transverse_pos> FMAG_hole_R)
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-zpos/pion_lambda_Fe)) continue;
+		  }
+		else
+		  {
+		    if (gRandom->Uniform(0,1) > exp (-(zpos-FMAG_hole_L)/pion_lambda_Fe)) continue;
+		  }
+	      }
+
+	    if (zpos<0. && totMom/(FMAG_Z)<0.01) continue;
+	    if (zpos>0. && totMom/(FMAG_Z-zpos)<0.01) continue;
+	    //Filter to get decay muons having enough energy to pass trough FMAG                                                                                                                                                                                        
+	  }//@  
 
           ineve->AddParticle(vtxindex, particle);
 
