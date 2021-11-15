@@ -21,6 +21,8 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
+#include <TRandom3.h>
+
 #include <cassert>
 #include <list>
 
@@ -304,28 +306,107 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		  particle->set_barcode((*fiter)->barcode());
 
 	  
-		  if(_bkg_mode){//@
+		  if(_bkg_mode){//@ Filters for the background candidates 
 
 		    ///Filter related to z-position of the decay 
-		    float FMAG_hole_R = 2.5;//circular hole of 5 cm of length 25 cm at FMAG
-		    float FMAG_hole_L = 25.;
-		    if(sqrt(pow(xpos,2)+pow(ypos,2))> pow(FMAG_hole_R,2))
+		    double FMAG_hole_R = 2.5;//circular hole of diameter 5 cm and length 25 cm at FMAG
+		    double FMAG_hole_L = 25.;
+
+	            double Transverse_pos = sqrt(pow(xpos,2)+pow(ypos,2));
+		    double FMAG_X = 160.; ///Dimemsion of FMAG: (43.2x160x503.) multiple slbas
+		    double FMAG_Y = 160.; //
+		    double FMAG_Z = 503.;    
+
+		    double pion_lambda_Fe = 20.42; ///pion interaction length for Fe
+	            double pion_lambda_Cu = 18.51; ///pion interaction length for Cu
+		    double pion_lambda_B = 48.75; ///pion interaction length of Target
+		    double pion_lambda_sh = 55.92; ///pion interaction lenght of Shielding (concrete) 
+		
+		    ///Filters for transverse momentum of decay muons
+		    if(fabs((*fiter)->momentum().px()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+		    if(fabs((*fiter)->momentum().py()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
+		    if((*fiter)->momentum().pz()<0) continue;
+	
+		    ///Fmag fucidual cut
+		    if(fabs(xpos)>FMAG_X/2.) continue;
+		    if(fabs(ypos)>FMAG_Y/2.) continue; 
+
+
+		    ///Collimaator hole dimension (7.8 x 3.48 cm)
+		    double coll_x = 7.8;// cm
+		    double coll_y = 3.48;
+                    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));    
+
+		    ///Collimator contribution
+	
+		    if(genevt->get_collision_vertex().z()>-664.&&genevt->get_collision_vertex().z()<-542. && (fabs(xpos)>coll_x/2.||fabs(ypos)>coll_y/2.) )
+                      {
+                        if(zpos<-542.)
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()+zpos)/(pion_lambda_Cu))) continue;                   
+			  }
+                        else
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()-542.)/(pion_lambda_Cu))) continue;
+			  }
+                      }
+
+		
+		    ///Shielding contribution
+		
+		    if(genevt->get_collision_vertex().z()>-171.5&& genevt->get_collision_vertex().z()<-0.001)
 		      {
-			if(zpos>0.) continue;
-		      } 
-		    else
-		      {
-			if (zpos>FMAG_hole_L) continue;
+			if(zpos<-0.001)
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()+zpos)/pion_lambda_sh)) continue;
+			  }
+			else
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(171.5)/pion_lambda_sh)) continue;
+			  }
+
 		      }
 
-		    //Filter for transverse momentum of decay muons
-		    if (fabs((*fiter)->momentum().px()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
-		    if (fabs((*fiter)->momentum().py()* mom_factor/((*fiter)->momentum().pz()* mom_factor))>_pxy2pz_rat) continue;
 
+		    if(genevt->get_collision_vertex().z()<-171.5 && Transverse_pos<7.62 )
+		      {
+			if(zpos>-171.5 && zpos<-0.001)
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(171.5+zpos)/pion_lambda_sh)) continue;
+			  }
+			if(zpos>-.001)
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(171.5)/pion_lambda_sh)) continue;
+			  }
+
+		      }
+                      
+		      
+		  
+		    /// Dump contribution
+		    if (genevt->get_collision_vertex().z()>=0.)
+		      {
+			if (gRandom->Uniform(0,1)> exp (-(zpos-genevt->get_collision_vertex().z())/pion_lambda_Fe)) continue;//decay length cut
+		      }
+
+
+		    if (genevt->get_collision_vertex().z()<0. && zpos>0.)
+		      {
+			if (Transverse_pos> FMAG_hole_R)
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-zpos/pion_lambda_Fe)) continue;
+			  }	
+			else 
+			  {
+			    if (gRandom->Uniform(0,1) > exp (-(zpos-FMAG_hole_L)/pion_lambda_Fe)) continue;
+			  }
+		      }
+		   
+	            
 		    //Filter to get decay muons having enough energy to pass trough FMAG
-		    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));             	      if (totMom/(502.92-zpos)<0.01) continue; 
-		  }
-		  //@
+		    if (zpos<0. && totMom/(FMAG_Z)<0.01) continue;
+		    if (zpos>0. && totMom/(FMAG_Z-zpos)<0.01) continue;
+	          }//@
 
 		  ineve->AddParticle(vtxindex, particle);
 
