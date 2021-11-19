@@ -25,6 +25,8 @@ Created: 10-19-2011
 #include <TRotation.h>
 #include <TMatrixD.h>
 
+#include <phool/recoConsts.h>
+
 #include "GeomParamPlane.h"
 #include "GeomSvc.h"
 
@@ -374,10 +376,13 @@ void GeomSvc::init()
     if (use_dbsvc) initPlaneDbSvc();
     else           initPlaneDirect();
 
-    /////Here starts the user-defined part
-    //load alignment parameterss
+    // Alignment and calibration
     calibration_loaded = false;
-    if(!rc->get_BoolFlag("OnlineAlignment") && (!rc->get_BoolFlag("IdealGeom")))
+    if(rc->get_BoolFlag("OnlineAlignment"))
+    {
+      loadOnlineAlignment(rc->get_CharFlag("AlignmentMille"));
+    }
+    else if(!rc->get_BoolFlag("IdealGeom"))
     {
         loadAlignment("NULL", rc->get_CharFlag("AlignmentHodo"), rc->get_CharFlag("AlignmentProp"));
         loadMilleAlignment(rc->get_CharFlag("AlignmentMille"));
@@ -404,171 +409,23 @@ void GeomSvc::init()
 }
 
 void GeomSvc::initPlaneDirect() {
-    using namespace std;
-
-    ///Initialize the geometrical variables which should be from MySQL database
-    //Connect server
-    TSQLServer* con = TSQLServer::Connect(rc->get_CharFlag("MySQLURL").c_str(), "seaguest","qqbar2mu+mu-");
-
-    //Make query to Planes table
-    char query[300];
-    const char* buf_planes = "SELECT detectorName,spacing,cellWidth,overlap,numElements,angleFromVert,"
-                             "xPrimeOffset,x0,y0,z0,planeWidth,planeHeight,theta_x,theta_y,theta_z from %s.Planes WHERE"
-                             " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR "
-                             "detectorName LIKE 'P____'";
-    sprintf(query, buf_planes, rc->get_CharFlag("Geometry").c_str());
-    TSQLResult* res = con->Query(query);
-
-    unsigned int nRows = res->GetRowCount();
-    int dummy = 0;
-    for(unsigned int i = 0; i < nRows; ++i)
-    {
-        TSQLRow* row = res->Next();
-        std::string detectorName(row->GetField(0));
-        toLocalDetectorName(detectorName, dummy);
-
-        int detectorID = map_detectorID[detectorName];
-        planes[detectorID].detectorID = detectorID;
-        planes[detectorID].detectorName = detectorName;
-        planes[detectorID].spacing = atof(row->GetField(1));
-        planes[detectorID].cellWidth = atof(row->GetField(2));
-        planes[detectorID].overlap = atof(row->GetField(3));
-        planes[detectorID].angleFromVert = atof(row->GetField(5));
-        planes[detectorID].xoffset = atof(row->GetField(6));
-        planes[detectorID].thetaX = atof(row->GetField(12));
-        planes[detectorID].thetaY = atof(row->GetField(13));
-        planes[detectorID].thetaZ = atof(row->GetField(14));
-
-        //Following items need to be sumed or averaged over all modules
-        planes[detectorID].nElements += atoi(row->GetField(4));
-        double x0_i = atof(row->GetField(7));
-        double y0_i = atof(row->GetField(8));
-        double z0_i = atof(row->GetField(9));
-        double width_i = atof(row->GetField(10));
-        double height_i = atof(row->GetField(11));
-
-        double x1_i = x0_i - 0.5*width_i;
-        double x2_i = x0_i + 0.5*width_i;
-        double y1_i = y0_i - 0.5*height_i;
-        double y2_i = y0_i + 0.5*height_i;
-
-        planes[detectorID].x0 += x0_i;
-        planes[detectorID].y0 += y0_i;
-        planes[detectorID].z0 += z0_i;
-        if(planes[detectorID].x1 > x1_i) planes[detectorID].x1 = x1_i;
-        if(planes[detectorID].x2 < x2_i) planes[detectorID].x2 = x2_i;
-        if(planes[detectorID].y1 > y1_i) planes[detectorID].y1 = y1_i;
-        if(planes[detectorID].y2 < y2_i) planes[detectorID].y2 = y2_i;
-
-        //Calculated value
-        planes[detectorID].resolution = planes[detectorID].cellWidth/sqrt(12.);
-        planes[detectorID].update();
-
-        //Set the plane type
-        if(detectorName.find("X") != string::npos || detectorName.find("T") != string::npos || detectorName.find("B") != string::npos)
-        {
-            planes[detectorID].planeType = 1;
-        }
-        else if((detectorName.find("U") != string::npos || detectorName.find("V") != string::npos) && planes[detectorID].angleFromVert > 0)
-        {
-            planes[detectorID].planeType = 2;
-        }
-        else if((detectorName.find("U") != string::npos || detectorName.find("V") != string::npos) && planes[detectorID].angleFromVert < 0)
-        {
-            planes[detectorID].planeType = 3;
-        }
-        else if(detectorName.find("Y") != string::npos || detectorName.find("L") != string::npos || detectorName.find("R") != string::npos)
-        {
-            planes[detectorID].planeType = 4;
-        }
-
-        delete row;
-    }
-    delete res;
-
-    //For prop. tube only, average over 9 modules
-    for(int i = nChamberPlanes+nHodoPlanes+1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; i++)
-    {
-        planes[i].x0 = planes[i].x0/9.;
-        planes[i].y0 = planes[i].y0/9.;
-        planes[i].z0 = planes[i].z0/9.;
-
-        planes[i].update();
-    }
-
-    //Set the depth of the plane for Geant4 simulation simplification
-    for(int i = 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
-    {
-        if(i <= nChamberPlanes)  //For drift chambers the depth equals the wire spacing
-        {
-            planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
-            planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
-        }
-        else if(i <= nChamberPlanes+nHodoPlanes) //For hodos the depth is hard-coded
-        {
-            planes[i].z1 = planes[i].z0 - 0.635/2.;
-            planes[i].z2 = planes[i].z0 + 0.635/2.;
-        }
-        else if(i <= nChamberPlanes+nHodoPlanes+nPropPlanes) //For prop. tubes the depth is defined by the equivalent gas volume
-        {
-            planes[i].z1 = planes[i].z0 - planes[i].cellWidth*TMath::Pi()/8.;
-            planes[i].z2 = planes[i].z0 + planes[i].cellWidth*TMath::Pi()/8.;
-        }
-        else //For dark photon hodos the depth equals the cell width
-        {
-            planes[i].z1 = planes[i].z0 - planes[i].cellWidth/2.;
-            planes[i].z2 = planes[i].z0 + planes[i].cellWidth/2.;
-        }
-    }
-    cout << "GeomSvc: loaded basic spectrometer setup from geometry schema " << rc->get_CharFlag("Geometry") << endl;
-
-    //load the initial value in the planeOffsets table
-    if(rc->get_BoolFlag("OnlineAlignment"))
-    {
-        loadMilleAlignment(rc->get_CharFlag("AlignmentMille"));    //final chance of overwrite resolution numbers in online mode
-        const char* buf_offsets = "SELECT detectorName,deltaX,deltaY,deltaZ,rotateAboutZ FROM %s.PlaneOffsets WHERE"
-                                  " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR detectorName LIKE 'P____'";
-        sprintf(query, buf_offsets, rc->get_CharFlag("Geometry").c_str());
-        res = con->Query(query);
-
-        nRows = res->GetRowCount();
-        if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << rc->get_CharFlag("Geometry") << endl;
-        for(unsigned int i = 0; i < nRows; ++i)
-        {
-            TSQLRow* row = res->Next();
-            string detectorName(row->GetField(0));
-            toLocalDetectorName(detectorName, dummy);
-
-            int detectorID = map_detectorID[detectorName];
-            if(detectorID > nChamberPlanes) // ?? WTF?
-            {
-                delete row;
-                continue;
-            }
-
-            planes[detectorID].deltaX = atof(row->GetField(1));
-            planes[detectorID].deltaY = atof(row->GetField(2));
-            planes[detectorID].deltaZ = atof(row->GetField(3));
-            planes[detectorID].rotZ = atof(row->GetField(4));
-
-            planes[detectorID].update();
-            planes[detectorID].deltaW = planes[detectorID].getW(planes[detectorID].deltaX, planes[detectorID].deltaY);
-
-            delete row;
-        }
-        delete res;
-    }
-
-    delete con;
+  std::cerr << "!! ERROR !!\n"
+            << "!! GeomSvc::initPlaneDirect() is called but no longer available.\n"
+            << "!! Probably you have 'GeomSvc::UseDbSvc(false)' in your macro.\n"
+            << "!! Please delete it.  Abort for now." << std::endl;
+  exit(1);
 }
 
 void GeomSvc::initPlaneDbSvc() {
   using namespace std;
-  const int run = 1; // todo: need adjustable in the future
-  cout << "GeomSvc:  Load the plane geometry info via DbSvc for run = " << run << "." << endl;
+  recoConsts* rc = recoConsts::instance();
+  int run = rc->get_IntFlag("RUNNUMBER");
+  cout << "GeomSvc:  Load the plane geometry info for run = " << run << "." << endl;
 
   GeomParamPlane* geom = new GeomParamPlane();
   geom->SetMapIDbyDB(run);
+  rc->get_CharFlag("GeomPlane", geom->GetMapID());
+
   geom->ReadFromDB();
   int dummy = 0;
   for (int ii = 0; ii < geom->GetNumPlanes(); ii++) {
@@ -861,11 +718,16 @@ void GeomSvc::getWireEndPoints(int detectorID, int elementID, double& x_min, dou
     x_max = planes[detectorID].xc + dw*cos(planes[detectorID].rZ) + fabs(0.5*planes[detectorID].tantheta*(y_max - y_min));
 }
 
+/**
+ * Convert, for example, "P1H1f" to "P1Y1" and element ID accordingly.
+ * The input arguments are kept unchanged when they are not "local" name.
+ * The local name is used only in the channel mapping of the prop tube as of 2021-10-03.
+ */
 void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
 {
     using namespace std;
 
-    if(detectorName[0] == 'P')
+    if(detectorName[0] == 'P' && (detectorName[2] == 'H' || detectorName[2] == 'V'))
     {
         string XY = detectorName[2] == 'H' ? "Y" : "X";
         string FB = (detectorName[3] == 'f' || detectorName[4] == 'f') ? "1" : "2"; //temporary solution
@@ -891,6 +753,46 @@ void GeomSvc::toLocalDetectorName(std::string& detectorName, int& eID)
     //        detectorName.replace(5, detectorName.length(), "");
     //    }
     //}
+}
+
+bool GeomSvc::isChamber(const int detectorID) const
+{
+  return isChamber(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isChamber(const std::string detectorName) const
+{
+  return detectorName[0] == 'D' && '0' <= detectorName[1] && detectorName[1] <= '3';
+}
+
+bool GeomSvc::isHodo(const int detectorID) const
+{
+  return isHodo(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isHodo(const std::string detectorName) const
+{
+  return detectorName[0] == 'H' && '1' <= detectorName[1] && detectorName[1] <= '4';
+}
+
+bool GeomSvc::isPropTube(const int detectorID) const
+{
+  return isPropTube(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isPropTube(const std::string detectorName) const
+{
+  return detectorName[0] == 'P' && '1' <= detectorName[1] && detectorName[1] <= '2';
+}
+
+bool GeomSvc::isDPHodo(const int detectorID) const
+{
+  return isDPHodo(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isDPHodo(const std::string detectorName) const
+{
+  return detectorName.substr(0, 2) == "DP";
 }
 
 int GeomSvc::getHodoStation(const int detectorID) const
@@ -950,6 +852,51 @@ double GeomSvc::getDCA(int detectorID, int elementID, double tx, double ty, doub
     return (ep1 - trkp0).Dot(norm);
 }
 
+/// Load parameters used in the online-alignment mode.
+/**
+ * The major part of this function is not implemented yet because we are 
+ * not sure if we store the alignment parameters in DB table.  We might 
+ * use the text file ("align_mille.txt") during the online-alignment mode.
+ */
+void GeomSvc::loadOnlineAlignment(const std::string& alignmentFile_mille)
+{
+  loadMilleAlignment(alignmentFile_mille);    //final chance of overwrite resolution numbers in online mode
+
+  //TSQLServer* con = TSQLServer::Connect(rc->get_CharFlag("MySQLURL").c_str(), "seaguest","qqbar2mu+mu-");
+  //char query[300];
+  //const char* buf_offsets = "SELECT detectorName,deltaX,deltaY,deltaZ,rotateAboutZ FROM %s.PlaneOffsets WHERE"
+  //  " detectorName LIKE 'D%%' OR detectorName LIKE 'H__' OR detectorName LIKE 'H____' OR detectorName LIKE 'P____'";
+  //sprintf(query, buf_offsets, rc->get_CharFlag("Geometry").c_str());
+  //TSQLResult* res = con->Query(query);
+  //unsigned int nRows = res->GetRowCount();
+  //if(nRows >= nChamberPlanes) cout << "GeomSvc: loaded chamber alignment parameters from database: " << rc->get_CharFlag("Geometry") << endl;
+  //for(unsigned int i = 0; i < nRows; ++i)
+  //{
+  //  TSQLRow* row = res->Next();
+  //  string detectorName(row->GetField(0));
+  //  toLocalDetectorName(detectorName, dummy);
+  //  
+  //  int detectorID = map_detectorID[detectorName];
+  //  if(detectorID > nChamberPlanes) // ?? WTF?
+  //  {
+  //    delete row;
+  //    continue;
+  //  }
+  //  
+  //  planes[detectorID].deltaX = atof(row->GetField(1));
+  //  planes[detectorID].deltaY = atof(row->GetField(2));
+  //  planes[detectorID].deltaZ = atof(row->GetField(3));
+  //  planes[detectorID].rotZ = atof(row->GetField(4));
+  //  
+  //  planes[detectorID].update();
+  //  planes[detectorID].deltaW = planes[detectorID].getW(planes[detectorID].deltaX, planes[detectorID].deltaY);
+  //  
+  //  delete row;
+  //}
+  //delete res;
+  //delete con;
+}
+
 void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std::string& alignmentFile_hodo, const std::string& alignmentFile_prop)
 {
     using namespace std;
@@ -977,8 +924,8 @@ void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std:
         for(int i = 1; i <= nChamberPlanes; i += 2)
         {
             double resol = planes[i].resolution > planes[i+1].resolution ? planes[i].resolution : planes[i+1].resolution;
-            planes[i].resolution = resol;
-            planes[i].resolution = resol;
+            planes[i  ].resolution = resol;
+            planes[i+1].resolution = resol;
         }
 
         cout << "GeomSvc: loaded chamber alignment parameters from " << alignmentFile_chamber << endl;

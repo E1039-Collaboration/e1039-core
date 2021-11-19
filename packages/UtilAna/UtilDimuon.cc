@@ -21,6 +21,7 @@ SQDimuon* UtilDimuon::FindDimuonByID(const SQDimuonVector* vec, const int id_dim
   return 0;
 }
 
+/// OBSOLETE: Use `CalcVar()` instead.
 void UtilDimuon::GetX1X2(const SQDimuon* dim, double& x1, double& x2)
 {
   const double M_P    = 0.938;
@@ -33,6 +34,7 @@ void UtilDimuon::GetX1X2(const SQDimuon* dim, double& x1, double& x2)
   x2 = (p_beam  *p_sum)/(p_beam  *p_cms);
 }
 
+/// OBSOLETE: Use `CalcVar()` instead.
 void UtilDimuon::GetX1X2(const SQDimuon* dim, float& x1, float& x2)
 {
   double x1d, x2d;
@@ -41,6 +43,7 @@ void UtilDimuon::GetX1X2(const SQDimuon* dim, float& x1, float& x2)
   x2 = x2d;
 }
 
+/// OBSOLETE: Use `CalcVar()` instead.
 double UtilDimuon::GetX1(const SQDimuon* dim)
 {
   double x1, x2;
@@ -48,6 +51,7 @@ double UtilDimuon::GetX1(const SQDimuon* dim)
   return x1;
 }
 
+/// OBSOLETE: Use `CalcVar()` instead.
 double UtilDimuon::GetX2(const SQDimuon* dim)
 {
   double x1, x2;
@@ -59,22 +63,24 @@ double UtilDimuon::GetX2(const SQDimuon* dim)
 /**
  * Typical usage:
  * @code
- *   double mass, pT, x1, x2, xF, costh, phi;
- *   UtilDimuon::CalcVar(dim, mass, pT, x1, x2, xF, costh, phi);
+ *   double mass, pT, x1, x2, xF;
+ *   UtilDimuon::CalcVar(dim, mass, pT, x1, x2, xF);
  * @endcode
- *
- * The costh and phi values are of the Collins-Soper frame.
- * Please look into this function to check the formulae used.
- * The formulae were taken from SQMCDimuon::calcVariable() on 2020-11-05.
  */
-void UtilDimuon::CalcVar(const SQDimuon* dim, double& mass, double& pT, double& x1, double& x2, double& xF, double& costh, double& phi)
+void UtilDimuon::CalcVar(const SQDimuon* dim, double& mass, double& pT, double& x1, double& x2, double& xF)
 {
-  CalcVar(dim->get_mom_pos(), dim->get_mom_neg(),
-          mass, pT, x1, x2, xF, costh, phi);
+  CalcVar(dim->get_mom_pos(), dim->get_mom_neg(), mass, pT, x1, x2, xF);
 }
 
 /// Calculate the key kinematic variables of dimuon.
-void UtilDimuon::CalcVar(const TLorentzVector& p_pos, const TLorentzVector& p_neg, double& mass, double& pT, double& x1, double& x2, double& xF, double& costh, double& phi)
+/**
+ * Typical usage:
+ * @code
+ *   double mass, pT, x1, x2, xF;
+ *   UtilDimuon::CalcVar(mom_pos, mom_neg, mass, pT, x1, x2, xF);
+ * @endcode
+ */
+void UtilDimuon::CalcVar(const TLorentzVector& p_pos, const TLorentzVector& p_neg, double& mass, double& pT, double& x1, double& x2, double& xF)
 {
   const Double_t mp = 0.938;
   const Double_t ebeam = 120.;
@@ -92,8 +98,96 @@ void UtilDimuon::CalcVar(const TLorentzVector& p_pos, const TLorentzVector& p_ne
   Double_t sqrts = p_cms.M();
   TVector3 bv_cms = p_cms.BoostVector();
   p_sum.Boost(-bv_cms);
-
   xF = 2 * p_sum.Pz() / sqrts / (1 - pow(mass,2) / s);
-  costh = 2 * (p_neg.E() * p_pos.Pz() - p_pos.E() * p_neg.Pz()) / mass / TMath::Sqrt(pow(mass,2) + pow(pT,2));
-  phi = TMath::ATan(2*TMath::Sqrt(pow(mass,2) + pow(pT,2)) / mass * (p_neg.Px()*p_pos.Py() - p_pos.Px()*p_neg.Py()) / (p_pos.Px()*p_pos.Px() - p_neg.Px()*p_neg.Px() + p_pos.Py()*p_pos.Py() - p_neg.Py()*p_neg.Py()));
 }
+
+/// OBSOLETE:  Use `CalcVar(dim, mass, pT, x1, x2, xF)` and `Lab2CollinsSoper(dim, costh, phi)` instead.
+/**
+ * Typical usage:
+ * @code
+ *   double mass, pT, x1, x2, xF, costh, phi;
+ *   UtilDimuon::CalcVar(dim, mass, pT, x1, x2, xF, costh, phi);
+ * @endcode
+ */
+void UtilDimuon::CalcVar(const SQDimuon* dim, double& mass, double& pT, double& x1, double& x2, double& xF, double& costh, double& phi)
+{
+  CalcVar(dim->get_mom_pos(), dim->get_mom_neg(), mass, pT, x1, x2, xF, costh, phi);
+}
+
+/// OBSOLETE:  Use `CalcVar(dim, mass, pT, x1, x2, xF)` and `Lab2CollinsSoper(dim, costh, phi)` instead.
+void UtilDimuon::CalcVar(const TLorentzVector& p_pos, const TLorentzVector& p_neg, double& mass, double& pT, double& x1, double& x2, double& xF, double& costh, double& phi)
+{
+  CalcVar(p_pos, p_neg, mass, pT, x1, x2, xF);
+  Lab2CollinsSoper(p_pos.Vect(), p_neg.Vect(), costh, phi);
+}
+
+/// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
+void UtilDimuon::Lab2CollinsSoper(const SQDimuon* dim, double& costh, double& phi)
+{
+  Lab2CollinsSoper(dim->get_mom_pos().Vect(), dim->get_mom_neg().Vect(), costh, phi);
+}
+
+/// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
+void UtilDimuon::Lab2CollinsSoper(const TLorentzVector& p1, const TLorentzVector& p2, double& costh, double& phi)
+{
+  Lab2CollinsSoper(p1.Vect(), p2.Vect(), costh, phi);
+}
+
+/// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
+void UtilDimuon::Lab2CollinsSoper(const TVector3& p1, const TVector3& p2, double& costh, double& phi)
+{
+  Lab2CollinsSoper(p1.X(), p1.Y(), p1.Z(),  p2.X(), p2.Y(), p2.Z(),  costh, phi);
+}
+
+/// Convert the momenta of muon pair from Lab frame to Collins-Soper frame.
+/** 
+ * The code was written originally by Suguru Tamamushi.
+ * Only the cos(theta) and phi are returned at present.
+ */
+void UtilDimuon::Lab2CollinsSoper(const double px1, const double py1, const double pz1,
+                      const double px2, const double py2, const double pz2, double& costh, double& phi)
+{
+  const double m_mu = 0.1056;
+  TLorentzVector mom1;
+  TLorentzVector mom2;
+  mom1.SetXYZM(px1, py1, pz1, m_mu); //Momentum of muon 1 at Laboratory Frame
+  mom2.SetXYZM(px2, py2, pz2, m_mu); //Momentum of muon 2 at Laboratory Frame
+  
+  //Lorentz Boost to Hadron Rest Frame
+  const double m_p  = 0.938;
+  const double E_p  = 120.0;
+  const double p_p  = sqrt(E_p*E_p - m_p*m_p);
+  const double beta = p_p/E_p;
+  mom1.Boost(0,0,-beta);  //mom1.Pz is now boosted
+  mom2.Boost(0,0,-beta);  //mom2.Pz is now boosted
+
+  //Calculate costheta
+  TLorentzVector Q = mom1 + mom2;
+  double k1p = mom1.E() + mom1.Pz();
+  double k2p = mom2.E() + mom2.Pz();
+  double k1m = mom1.E() - mom1.Pz();
+  double k2m = mom2.E() - mom2.Pz();
+  costh = 1.0/Q.M()/sqrt(Q*Q + Q.Px()*Q.Px() + Q.Py()*Q.Py())*(k1p*k2m - k1m*k2p);
+
+  //Calculate tanphi
+  TVector3 Delta(mom1.Px() - mom2.Px(), mom1.Py() - mom2.Py(), mom1.Pz() - mom2.Pz());
+  TVector3 Q3(Q.Px(),Q.Py(),Q.Pz());
+  TVector3 PA(0, 0, p_p);
+  TVector3 R = PA.Cross(Q3);
+  TVector3 RHat = R.Unit();
+  TVector3 QT = Q3;
+  QT.SetZ(0);
+  double tanphi = sqrt(Q*Q + Q.Px()*Q.Px() + Q.Py()*Q.Py()) / Q.M() * (Delta.X()*RHat.X() + Delta.Y()*RHat.Y()) / (Delta.X()*QT.Unit().X() + Delta.Y()*QT.Unit().Y());
+
+  //Calculate Phi Quadrant
+  double sinth = sin( acos(costh) );
+  double sinphi = (Delta.X()*RHat.X() + Delta.Y()*RHat.Y())/(Q.M()*sinth);
+
+  //Calculate Phi
+  phi = atan(tanphi);
+  if      (tanphi >= 0 && sinphi >= 0) {;} // phi  = phi;}
+  else if (tanphi <  0 && sinphi >  0) {phi +=   TMath::Pi();}
+  else if (tanphi >  0 && sinphi <  0) {phi +=   TMath::Pi();}
+  else if (tanphi <  0 && sinphi <  0) {phi += 2*TMath::Pi();}
+}
+

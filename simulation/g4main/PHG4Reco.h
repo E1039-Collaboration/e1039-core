@@ -1,8 +1,6 @@
 #ifndef PHG4Reco_h
 #define PHG4Reco_h
 
-#include <g4decayer/EDecayType.hh>
-
 #include <fun4all/SubsysReco.h>
 
 #include <phfield/PHFieldConfig.h>
@@ -93,14 +91,6 @@ class PHG4Reco : public SubsysReco
   //! set default scaling factor for input magnetic field map. If available, Field map setting on DST take higher priority.
   void set_field_rescale(const float rescale) { magfield_rescale = rescale; }
 
-  void set_decayer_active(bool b) { active_decayer_ = b; }
-  void set_force_decay(EDecayType force_decay_type)
-  {
-    active_decayer_ = true;
-    active_force_decay_ = true;
-    force_decay_type_ = force_decay_type;
-  }
-
   //! speed-up options setters
   void set_optical_photon(bool b) { optical_photon_ = b; }
   void set_energy_threshold(double t) { energy_threshold_ = t; }
@@ -180,11 +170,6 @@ class PHG4Reco : public SubsysReco
   std::string worldshape;
   std::string worldmaterial;
   std::string physicslist;
-
-  // settings for the external Pythia6 decayer
-  bool active_decayer_;          //< turn on/off decayer
-  bool active_force_decay_;      //< turn on/off force decay channels
-  EDecayType force_decay_type_;  //< forced decay channel setting
 
   bool save_DST_geometry_;
 

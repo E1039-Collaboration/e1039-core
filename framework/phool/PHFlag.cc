@@ -358,33 +358,33 @@ void PHFlag::WriteToFile(const string &name)
   map<string, int>::const_iterator intiter;
   for (intiter = intflag.begin(); intiter != intflag.end(); ++intiter)
   {
-    outFile << "I" << intiter->first << "\t" << intiter->second << endl;
+    outFile << "I\t" << intiter->first << "\t" << intiter->second << endl;
   }
 
   map<string, float>::const_iterator floatiter;
   for (floatiter = floatflag.begin(); floatiter != floatflag.end(); ++floatiter)
   {
-    outFile << "F" << floatiter->first << "\t" << floatiter->second << endl;
+    outFile << "F\t" << floatiter->first << "\t" << floatiter->second << endl;
   }
 
   int oldprecision = outFile.precision(15);
   map<string, double>::const_iterator doubleiter;
   for (doubleiter = doubleflag.begin(); doubleiter != doubleflag.end(); ++doubleiter)
   {
-    outFile << "D" << doubleiter->first << "\t" << doubleiter->second << endl;
+    outFile << "D\t" << doubleiter->first << "\t" << doubleiter->second << endl;
   }
   outFile.precision(oldprecision);
 
   map<string, string>::const_iterator chariter;
   for (chariter = charflag.begin(); chariter != charflag.end(); ++chariter)
   {
-    outFile << "C" << chariter->first << "\t" << chariter->second << endl;
+    outFile << "C\t" << chariter->first << "\t" << chariter->second << endl;
   }
 
   map<string, bool>::const_iterator booliter;
   for (booliter = boolflag.begin(); booliter != boolflag.end(); ++booliter)
   {
-    outFile << "B" << booliter->first << "\t" << booliter->second << endl;
+    outFile << "B\t" << booliter->first << "\t" << booliter->second << endl;
   }
 
   outFile.close();

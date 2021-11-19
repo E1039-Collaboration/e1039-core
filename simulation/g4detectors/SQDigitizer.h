@@ -42,9 +42,6 @@ public:
   //!digitize the emcal hits
   void digitizeEMCal(const std::string& detName);
 
-  //!realization process 
-  bool realize(SQHit& dHit);
-
   //!Get the trigger level by detectorID
   int getTriggerLv(int detectorID) { return p_geomSvc->getTriggerLv(detectorID); }
 
@@ -54,6 +51,8 @@ public:
   //!enable/disable certain detectors
   void set_enable_st1dc(const bool en)  { enableDC1 = en; }
   void set_enable_dphodo(const bool en) { enableDPHodo = en; }
+
+  void set_digitize_secondaries(const bool val) { digitize_secondaries = val; }
 
 private:
   //!GeomSvc
@@ -71,6 +70,7 @@ private:
   //!flags to toggle station-1 DC and dark photon dp
   bool enableDC1;
   bool enableDPHodo;
+  bool digitize_secondaries;
 };
 
 #endif

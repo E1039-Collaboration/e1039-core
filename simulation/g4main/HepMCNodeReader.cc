@@ -65,6 +65,13 @@ HepMCNodeReader::HepMCNodeReader(const std::string &name)
   , _bkg_mode(false)//Abi
   , _pxy2pz_rat(0.25)
   , _particle_filter_on(false)
+  , _position_filter_on(false)
+  , _pos_filter_x_min(0.0)
+  , _pos_filter_x_max(0.0)
+  , _pos_filter_y_min(0.0)
+  , _pos_filter_y_max(0.0)
+  , _pos_filter_z_min(0.0)
+  , _pos_filter_z_max(0.0)
 {
   RandomGenerator = gsl_rng_alloc(gsl_rng_mt19937);
   _particle_filter_pid.clear();
@@ -250,7 +257,11 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		  cout << "Particles" << endl;
 		}
 
-
+        if (_position_filter_on &&
+            (xpos < _pos_filter_x_min || xpos > _pos_filter_x_max ||
+             ypos < _pos_filter_y_min || ypos > _pos_filter_y_max ||
+             zpos < _pos_filter_z_min || zpos > _pos_filter_z_max   )) continue;
+        
 	      if (ishape == ShapeG4Tubs)
 		{
 		  if (sqrt(xpos * xpos + ypos * ypos) > worldsizey / 2 ||
@@ -415,6 +426,7 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 
     }  // For pile-up simulation: loop end for PHHepMC event map
 
+
   if (verbosity > 0) ineve->identify();
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -424,6 +436,18 @@ double HepMCNodeReader::smeargauss(const double width)
 {
   if (width == 0) return 0;
   return gsl_ran_gaussian(RandomGenerator, width);
+}
+
+/// Enable and define a position filter.  The x,y,z limits are in cm.
+void HepMCNodeReader::enable_position_filter(const double x_min, const double x_max, const double y_min, const double y_max, const double z_min, const double z_max)
+{
+  _position_filter_on = true;
+  _pos_filter_x_min = x_min;
+  _pos_filter_x_max = x_max;
+  _pos_filter_y_min = y_min;
+  _pos_filter_y_max = y_max;
+  _pos_filter_z_min = z_min;
+  _pos_filter_z_max = z_max;
 }
 
 bool HepMCNodeReader::PassParticleFilter(HepMC::GenParticle* p) {

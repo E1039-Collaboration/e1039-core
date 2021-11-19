@@ -39,8 +39,8 @@ int Fun4MainDaqE906(const int run=28700, const int nevent=0)
 
   se->registerSubsystem(new DbUpRun());
   se->registerSubsystem(new DbUpSpill());
-  se->registerSubsystem(new CalibInTime());
-  se->registerSubsystem(new CalibXT());
+  se->registerSubsystem(new CalibHodoInTime());
+  se->registerSubsystem(new CalibDriftDist());
 
   if (use_onlmon) { // Register the online-monitoring clients
     se->StartServer();

@@ -139,6 +139,7 @@ public:
     void initPlaneDbSvc();
     void initWireLUT();
     void loadCalibration(const std::string& calibrateFile);
+    void loadOnlineAlignment(const std::string& alignmentFile_mille);
     void loadAlignment(const std::string& alignmentFile_chamber, const std::string& alignmentFile_hodo, const std::string& alignmentFile_prop);
     void loadMilleAlignment(const std::string& alignmentFile_mille);
 
@@ -225,8 +226,17 @@ public:
     int getPlaneNElements(int detectorID) const { return planes[detectorID].nElements; }
     int getPlaneType(int detectorID)      const { return planes[detectorID].planeType; }
 
-    int getHodoStation(const int detectorID) const; //< Return a station number (1-4) for hodo planes or "0" for others.
-    int getHodoStation(const std::string detectorName) const; //< Return a station number (1-4) for hodo planes or "0" for others.
+    bool isChamber(const int detectorID) const; ///< Return "true" for chamber planes.
+    bool isChamber(const std::string detectorName) const; ///< Return "true" for chamber planes.
+    bool isHodo(const int detectorID) const; ///< Return "true" for hodo planes.
+    bool isHodo(const std::string detectorName) const; ///< Return "true" for hodo planes.
+    bool isPropTube(const int detectorID) const; ///< Return "true" for prop tube planes.
+    bool isPropTube(const std::string detectorName) const; ///< Return "true" for prop tube planes.
+    bool isDPHodo(const int detectorID) const; ///< Return "true" for DP hodo planes.
+    bool isDPHodo(const std::string detectorName) const; ///< Return "true" for DP hodo planes.
+
+    int getHodoStation(const int detectorID) const; ///< Return a station number (1-4) for hodo planes or "0" for others.
+    int getHodoStation(const std::string detectorName) const; ///< Return a station number (1-4) for hodo planes or "0" for others.
 
     int getTriggerLv(int detectorID)   { return map_detid_triggerlv[detectorID]; }
 

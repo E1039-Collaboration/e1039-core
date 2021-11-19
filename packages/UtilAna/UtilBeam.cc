@@ -38,12 +38,12 @@ void UtilBeam::ListOfRfValues(int& n_value, int*& list_values)
 /**
  * This function uses an array of "double", instead of "int".
  * It is suitable for the constructors of the TH1 classes.
- * ```
+ * @code
  * int num_inte;
  * double* list_inte;
  * UtilBeam::ListOfRfValues(num_inte, list_inte);
  * TH1* h1_rf_inte = new TH1D("h1_rf_inte", "", num_inte - 1, list_inte);
- * ```
+ * @endcode
  */
 void UtilBeam::ListOfRfValues(int& n_value, double*& list_values)
 {

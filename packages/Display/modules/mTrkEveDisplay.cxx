@@ -235,7 +235,7 @@ mTrkEveDisplay::draw_hits()
 
       _hit_wires[det_id]->AddLine(x, y, dx, dy);
 
-      _hit_wires[det_id]->QuadId(new TNamed(Form("%d",elm_id),"element id"));
+      _hit_wires[det_id]->QuadId(new TNamed(TString::Format("%d",elm_id).Data(),"element id"));
 
       if(det_id<31)      _hit_wires[det_id]->DigitColor(kBlue);
       else if(det_id<47) _hit_wires[det_id]->DigitColor(kGreen);

@@ -9,7 +9,6 @@ R__LOAD_LIBRARY(geom_svc)
 
 int UploadCalibParam(const std::string type="xt_curve", const std::string map_id="e906run28740")
 {
-  gSystem->Load("libgeom_svc.so");
   CalibParamBase* map;
   if      (type == "xt_curve"     ) map = new CalibParamXT();
   else if (type == "intime_taiwan") map = new CalibParamInTimeTaiwan();
@@ -29,7 +28,6 @@ int UploadCalibParam(const std::string type="xt_curve", const std::string map_id
 
 int CheckCalibParam(const std::string type="xt_curve", const int run=25000)
 {
-  gSystem->Load("libgeom_svc.so");
   CalibParamBase* map;
   if      (type == "xt_curve"     ) map = new CalibParamXT();
   else if (type == "intime_taiwan") map = new CalibParamInTimeTaiwan();

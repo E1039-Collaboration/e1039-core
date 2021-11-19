@@ -81,10 +81,10 @@ void PHG4EMCalDetector::Construct(G4LogicalVolume* logicWorld)
   double xLength_enve = m_tower_size_x*m_ntowers_x*cm;
   double yLength_enve = m_tower_size_y*m_ntowers_y*cm;
   double zLength_enve = m_tower_size_z*cm;
-  G4VSolid* emcal_enve_solid = new G4Box(Form("%s_enve_solid", name.c_str()), xLength_enve/2., yLength_enve/2., zLength_enve/2.);
+  G4VSolid* emcal_enve_solid = new G4Box(name+"_enve_solid", xLength_enve/2., yLength_enve/2., zLength_enve/2.);
 
   G4Material* mat_Air = G4Material::GetMaterial("G4_AIR");
-  G4LogicalVolume* emcal_enve_logic = new G4LogicalVolume(emcal_enve_solid, mat_Air, Form("%s_enve_logic", name.c_str()));
+  G4LogicalVolume* emcal_enve_logic = new G4LogicalVolume(emcal_enve_solid, mat_Air, name+"_enve_logic");
 
   G4RotationMatrix rot_enve;
   rot_enve.rotateX(m_Params->get_double_param("rot_x")*rad);
@@ -96,7 +96,7 @@ void PHG4EMCalDetector::Construct(G4LogicalVolume* logicWorld)
   loc_enve.setY(m_Params->get_double_param("place_y")*cm);
   loc_enve.setZ(m_Params->get_double_param("place_z")*cm);
 
-  new G4PVPlacement(G4Transform3D(rot_enve, loc_enve), emcal_enve_logic, Form("%s_enve_phys", name.c_str()), logicWorld, false, 0, overlapcheck);
+  new G4PVPlacement(G4Transform3D(rot_enve, loc_enve), emcal_enve_logic, name+"_enve_phys", logicWorld, false, 0, overlapcheck);
 
   // Construct a single tower
   G4LogicalVolume* singleTower_logic = ConstructSingleTower();
@@ -114,8 +114,8 @@ G4LogicalVolume* PHG4EMCalDetector::ConstructSingleTower()
 
   // create logical volume for single tower
   G4Material* mat_Air = G4Material::GetMaterial("G4_AIR");
-  G4VSolid* singleTower_solid = new G4Box(Form("%s_singleTower_solid", name.c_str()), m_tower_size_x/2., m_tower_size_y/2., m_tower_size_z/2.);
-  G4LogicalVolume* singleTower_logic = new G4LogicalVolume(singleTower_solid, mat_Air, Form("%s_singleTower_logic", name.c_str()));
+  G4VSolid* singleTower_solid = new G4Box(name+"_singleTower_solid", m_tower_size_x/2., m_tower_size_y/2., m_tower_size_z/2.);
+  G4LogicalVolume* singleTower_logic = new G4LogicalVolume(singleTower_solid, mat_Air, name+"_singleTower_logic");
 
   /* create geometry volumes for scintillator and absorber plates to place inside single_tower */
   // PHENIX EMCal JGL 3/27/2016
@@ -124,25 +124,25 @@ G4LogicalVolume* PHG4EMCalDetector::ConstructSingleTower()
   double thickness_scint     = 4.0*mm;   
   double thickness_airgap    = thickness_layer - thickness_absorber - thickness_scint;
 
-  G4VSolid* absorber_solid = new G4Box(Form("%_absorberplate_solid", name.c_str()), m_tower_size_x/2., m_tower_size_y/2., thickness_absorber/2.);
-  G4VSolid* scint_solid    = new G4Box(Form("%_scintplate_solid", name.c_str()), m_tower_size_x/2., m_tower_size_y/2., thickness_scint/2.);
+  G4VSolid* absorber_solid = new G4Box(name+"_absorberplate_solid", m_tower_size_x/2., m_tower_size_y/2., thickness_absorber/2.);
+  G4VSolid* scint_solid    = new G4Box(name+"_scintplate_solid", m_tower_size_x/2., m_tower_size_y/2., thickness_scint/2.);
 
   G4Material* mat_absorber = G4Material::GetMaterial("G4_Pb");
   G4Material* mat_scint    = G4Material::GetMaterial("G4_POLYSTYRENE");
-  m_absorberLogical = new G4LogicalVolume(absorber_solid, mat_absorber, Form("%s_absorberplate_logic", name.c_str()));
-  m_scintLogical    = new G4LogicalVolume(scint_solid, mat_scint, Form("%s_scintplace_logic", name.c_str()));
+  m_absorberLogical = new G4LogicalVolume(absorber_solid, mat_absorber, name+"_absorberplate_logic");
+  m_scintLogical    = new G4LogicalVolume(scint_solid, mat_scint, name+"_scintplace_logic");
 
   /* place physical volumes for absorber and scintillator plates */
   double zpos_i = -m_tower_size_z/2. + thickness_absorber/2.;
   for(int i = 0; i < m_npbsc_layers; ++i)
   {
     //Absorber plate first
-    new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_absorberLogical, Form("%s_absplate_%d", name.c_str(), i), singleTower_logic, false, i, overlapcheck);
+    new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_absorberLogical, TString::Format("%s_absplate_%d", name.c_str(), i).Data(), singleTower_logic, false, i, overlapcheck);
     //std::cout << " -- creating absorber plate at z = " << zpos_i/cm << std::endl;
 
     //Scintilator plate second
     zpos_i += (thickness_absorber/2. + thickness_airgap/2. + thickness_scint/2.);
-    new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_scintLogical, Form("%s_sciplate_%d", name.c_str(), i), singleTower_logic, false, i, overlapcheck);
+    new G4PVPlacement(0, G4ThreeVector(0., 0., zpos_i), m_scintLogical, TString::Format("%s_sciplate_%d", name.c_str(), i).Data(), singleTower_logic, false, i, overlapcheck);
     //std::cout << " -- creating scintillator plate at z = " << zpos_i/cm << std::endl;
 
     //move to the next layer
@@ -166,7 +166,7 @@ void PHG4EMCalDetector::PlaceTower(G4LogicalVolume* envelope_Logic, G4LogicalVol
         std::cout << "  -- Placing tower (" << i << ", " << j << ") at x = " << x_pos/cm << " cm, y = " << y_pos/cm << " cm" << std::endl;
       }
 
-      new G4PVPlacement(0, G4ThreeVector(x_pos, y_pos, 0.), singleTower_logic, Form("%s_tower_%d_%d", name.c_str(), i, j), envelope_Logic, false, copyNo++, overlapcheck);
+      new G4PVPlacement(0, G4ThreeVector(x_pos, y_pos, 0.), singleTower_logic, TString::Format("%s_tower_%d_%d", name.c_str(), i, j).Data(), envelope_Logic, false, copyNo++, overlapcheck);
     }
   }
 }

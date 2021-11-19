@@ -1,8 +1,8 @@
 R__LOAD_LIBRARY(libSQPrimaryGen)
 using namespace std;
 
-/// Macro to check the cross-section value computed by SQPrimaryParticleGen.
-int CheckParticleGen()
+/// Macro to check the cross-section value of D-Y computed by SQPrimaryParticleGen.
+int CheckParticleGenDrellYan()
 {
   const double xF       = 0.3;
   const int    n_mass   = 20;
@@ -29,7 +29,7 @@ int CheckParticleGen()
   ofs.close();
 
   ostringstream oss;
-  oss << "Drell-Yan @ x_{F} = " << xF << ";Mass (GeV);M^{3} d^{2}#sigma/dMdx_{F} (nb GeV^{2})";
+  oss << "Drell-Yan @ x_{F} = " << xF << ";Mass (GeV);M^{3} d^{2}#sigma/dMdx_{F} (pb GeV^{2})";
   gr->SetTitle(oss.str().c_str());
   gr->SetLineWidth(2);
   gr->SetMarkerStyle(8);

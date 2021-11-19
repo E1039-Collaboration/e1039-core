@@ -5,7 +5,7 @@ using namespace std;
 SQMCEvent_v1::SQMCEvent_v1()
   : _proc_id(0)
   , _xsec(.0)
-  , _weight(.0)
+  , _weight(1.0)
 {
   for (int ii = 0; ii < 4; ii++) {
     _par_id [ii] = 0;
