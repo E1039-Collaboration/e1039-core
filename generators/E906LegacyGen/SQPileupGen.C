@@ -126,15 +126,28 @@ int SQPileupGen::InitRun(PHCompositeNode* topNode)
 
 int SQPileupGen::process_event(PHCompositeNode* topNode)
 {
+  double QIEcount;
+
   if(_beam_intensity_profile) 
     {
-      setBucketSize((int)_beam_intensity_profile->GetRandom()/_proton_coeff);//if the function describes dN/dI vs I   
+      //setBucketSize((int)_beam_intensity_profile->GetRandom()/_proton_coeff);//if the function describes dN/dI vs I   
+      do {
+       QIEcount = _beam_intensity_profile->GetRandom();
+      } while (QIEcount>_inhibit_threshold);
+      
+      int  bucket_size = (int)QIEcount/_proton_coeff;
+      setBucketSize(bucket_size);      
     }
 
   if(_beam_intensity_profile_histo)
     {
-      double QIEcount = _beam_intensity_profile_histo->GetRandom();
-      if (QIEcount>_inhibit_threshold) return Fun4AllReturnCodes::ABORTEVENT;
+      //double QIEcount = _beam_intensity_profile_histo->GetRandom();
+      //if (QIEcount>_inhibit_threshold) return Fun4AllReturnCodes::ABORTEVENT;
+    
+      do {
+       QIEcount = _beam_intensity_profile_histo->GetRandom();
+      } while (QIEcount>_inhibit_threshold);
+
       int  bucket_size = (int)QIEcount/_proton_coeff;
       setBucketSize(bucket_size);       
     }
@@ -178,7 +191,8 @@ int SQPileupGen::process_event(PHCompositeNode* topNode)
 
 bool SQPileupGen::readExtTree(int nEvents)
 {
-  std::cout<<"nEvents: "<<nEvents<<std::endl;
+
+  if(Verbosity()>0)  std::cout<<"nEvents: "<<nEvents<<std::endl;
   _extParticles.clear();
   if(nEvents + _readIdx > _extTree->GetEntries()) return false;
 
