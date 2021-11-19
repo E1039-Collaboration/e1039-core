@@ -60,7 +60,9 @@ class HepMCNodeReader : public SubsysReco
   bool PassParticleFilter(HepMC::GenParticle * p);
 
   ///@some added filter interface for bkg decay study
+  //! Sets the inclusive background generation filters on
   void Set_bkg_mode(){_bkg_mode = true;}// abi
+  //! Sets the minimum Px(y)/Pz cut for inclusvie background generation 
   void Set_pxy2pz_rat (const double rat){_pxy2pz_rat = rat;}
   ///@
 

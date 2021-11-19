@@ -251,16 +251,12 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		}
 
 
-	      if(_bkg_mode){
-		if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
-		    fabs(zpos) > worldsizez / 2) continue;
-	      }
-
 	      if (ishape == ShapeG4Tubs)
 		{
 		  if (sqrt(xpos * xpos + ypos * ypos) > worldsizey / 2 ||
 		      fabs(zpos) > worldsizez / 2)
 		    {
+		      if (Verbosity()>0)
 		      cout << "vertex x/y/z" << xpos << "/" << ypos << "/" << zpos
 			   << " outside world volume radius/z (+-) " << worldsizex / 2
 			   << "/" << worldsizez / 2 << ", dropping it and its particles"
@@ -273,6 +269,7 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		  if (fabs(xpos) > worldsizex / 2 || fabs(ypos) > worldsizey / 2 ||
 		      fabs(zpos) > worldsizez / 2)
 		    {
+		      if (Verbosity()>0)
 		      cout << "Vertex x/y/z " << xpos << "/" << ypos << "/" << zpos
 			   << " outside world volume x/y/z (+-) " << worldsizex / 2 << "/"
 			   << worldsizey / 2 << "/" << worldsizez / 2
