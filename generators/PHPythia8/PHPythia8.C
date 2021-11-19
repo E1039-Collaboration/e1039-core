@@ -51,7 +51,7 @@ PHPythia8::PHPythia8(const std::string &name)
 
   std::string thePath(charPath);
   thePath += "/xmldoc/";
-  _pythia = new Pythia8::Pythia(thePath.c_str());
+  // _pythia = new Pythia8::Pythia(thePath.c_str());
   ppGen = new Pythia8::Pythia(thePath.c_str());
   pnGen = new Pythia8::Pythia(thePath.c_str());
 
@@ -280,11 +280,24 @@ int PHPythia8::process_event(PHCompositeNode *topNode)
   // save statistics
   if (_integral_node)
     {
-      _integral_node->set_N_Generator_Accepted_Event(_pythia->info.nAccepted());
-      _integral_node->set_N_Processed_Event(_eventcount);
-      _integral_node->set_Sum_Of_Weight(_pythia->info.weightSum());
-      _integral_node->set_Integrated_Lumi(_pythia->info.nAccepted() / (_pythia->info.sigmaGen() * 1e9));
-    
+      if(_legacy_vertexgenerator)
+            
+	{
+	  _integral_node->set_N_Generator_Accepted_Event(ppGen->info.nAccepted()+pnGen->info.nAccepted());
+	  _integral_node->set_N_Processed_Event(_eventcount);
+	  _integral_node->set_Sum_Of_Weight(ppGen->info.weightSum()+pnGen->info.weightSum());
+	  _integral_node->set_Integrated_Lumi((ppGen->info.nAccepted()+pnGen->info.nAccepted()) / ((ppGen->info.sigmaGen()+pnGen->info.sigmaGen()) * 1e9));
+
+	}
+      else
+	{     
+	  _integral_node->set_N_Generator_Accepted_Event(_pythia->info.nAccepted());
+	  _integral_node->set_N_Processed_Event(_eventcount);
+	  _integral_node->set_Sum_Of_Weight(_pythia->info.weightSum());
+	  _integral_node->set_Integrated_Lumi(_pythia->info.nAccepted() / (_pythia->info.sigmaGen() * 1e9));
+	}
+      //cout << "Event Count: " << _eventcount
+      //     << " _pythia->info.nAccepted(): " << _pythia->info.nAccepted()<<" pnGen->info.nAccepted(): " << pnGen->info.nAccepted()<<" ppGen->info.nAccepted(): " << ppGen->info.nAccepted()<<endl;   
     }
 
   return Fun4AllReturnCodes::EVENT_OK;
