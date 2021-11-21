@@ -7,7 +7,6 @@
 #include <phhepmc/PHHepMCGenEventMap.h>
 
 #include <fun4all/Fun4AllReturnCodes.h>
-#include <phool/recoConsts.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
 #include <phool/PHRandomSeed.h>
@@ -75,7 +74,9 @@ int PHPythia8::Init(PHCompositeNode *topNode)
   if (!_configFile.empty()) read_config();
   for (unsigned int j = 0; j < _commands.size(); j++)
     {
-      _pythia->readString(_commands[j]);
+     // _pythia->readString(_commands[j]);
+     ppGen->readString(_commands[j]);
+     pnGen->readString(_commands[j]);
     }
 
   create_node_tree(topNode);
@@ -111,8 +112,6 @@ int PHPythia8::Init(PHCompositeNode *topNode)
       exit(1);
     }
 
-  //if(! _legacy_vertexgenerator) _pythia->init();
-  //else
   {
     ppGen->readString("Beams:idB = 2212");
     pnGen->readString("Beams:idB = 2112");
@@ -128,8 +127,6 @@ int PHPythia8::End(PHCompositeNode *topNode)
 {
   if (verbosity >= VERBOSITY_MORE) cout << "PHPythia8::End - I'm here!" << endl;
 
-  recoConsts::instance()->set_IntFlag("PYTHIA8_EVENT_COUNT", _eventcount);
-
   if (verbosity >= VERBOSITY_SOME)
     {
       //-* dump out closing info (cross-sections, etc)
@@ -141,8 +138,8 @@ int PHPythia8::End(PHCompositeNode *topNode)
       cout << "                         PHPythia8::End - " << _eventcount
 	   << " events passed trigger" << endl;
       cout << "                         Fraction passed: " << _eventcount
-	   << "/" << _pythia->info.nAccepted()
-	   << " = " << _eventcount / float(_pythia->info.nAccepted()) << endl;
+	   << "/" << ppGen->info.nAccepted()+pnGen->info.nAccepted()
+	   << " = " << _eventcount / float(ppGen->info.nAccepted()+pnGen->info.nAccepted()) << endl;
       cout << " *-------  End PYTHIA Trigger Statistics  ------------------------"
 	   << "-------------------------------------------------* " << endl;
 
@@ -177,8 +174,6 @@ int PHPythia8::read_config(const char *cfg_file)
   
   ppGen->readFile(_configFile.c_str());
   pnGen->readFile(_configFile.c_str());
-
-  recoConsts::instance()->set_CharFlag("PYTHIA8_CONFIG_FILE", _configFile);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -285,14 +280,12 @@ int PHPythia8::process_event(PHCompositeNode *topNode)
   // save statistics
   if (_integral_node)
     {
-      if(_legacy_vertexgenerator)
-            
+      if(_legacy_vertexgenerator)           
 	{
 	  _integral_node->set_N_Generator_Accepted_Event(ppGen->info.nAccepted()+pnGen->info.nAccepted());
 	  _integral_node->set_N_Processed_Event(_eventcount);
 	  _integral_node->set_Sum_Of_Weight(ppGen->info.weightSum()+pnGen->info.weightSum());
-	  _integral_node->set_Integrated_Lumi((ppGen->info.nAccepted()+pnGen->info.nAccepted()) / ((ppGen->info.sigmaGen()+pnGen->info.sigmaGen()) * 1e9));
-
+	  _integral_node->set_Integrated_Lumi((ppGen->info.nAccepted()/ppGen->info.sigmaGen()+pnGen->info.nAccepted()/pnGen->info.sigmaGen()) * 1./1e9);
 	}
       else
 	{     

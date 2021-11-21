@@ -257,10 +257,10 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		  cout << "Particles" << endl;
 		}
 
-        if (_position_filter_on &&
-            (xpos < _pos_filter_x_min || xpos > _pos_filter_x_max ||
-             ypos < _pos_filter_y_min || ypos > _pos_filter_y_max ||
-             zpos < _pos_filter_z_min || zpos > _pos_filter_z_max   )) continue;
+	      if (_position_filter_on &&
+		  (xpos < _pos_filter_x_min || xpos > _pos_filter_x_max ||
+		   ypos < _pos_filter_y_min || ypos > _pos_filter_y_max ||
+		   zpos < _pos_filter_z_min || zpos > _pos_filter_z_max   )) continue;
         
 	      if (ishape == ShapeG4Tubs)
 		{
@@ -268,10 +268,12 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		      fabs(zpos) > worldsizez / 2)
 		    {
 		      if (Verbosity()>0)
-		      cout << "vertex x/y/z" << xpos << "/" << ypos << "/" << zpos
-			   << " outside world volume radius/z (+-) " << worldsizex / 2
-			   << "/" << worldsizez / 2 << ", dropping it and its particles"
-			   << endl;
+			{
+			  cout << "vertex x/y/z" << xpos << "/" << ypos << "/" << zpos
+			       << " outside world volume radius/z (+-) " << worldsizex / 2
+			       << "/" << worldsizez / 2 << ", dropping it and its particles"
+			       << endl;
+			}			   
 		      continue;
 		    }
 		}
@@ -281,10 +283,12 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		      fabs(zpos) > worldsizez / 2)
 		    {
 		      if (Verbosity()>0)
-		      cout << "Vertex x/y/z " << xpos << "/" << ypos << "/" << zpos
-			   << " outside world volume x/y/z (+-) " << worldsizex / 2 << "/"
-			   << worldsizey / 2 << "/" << worldsizez / 2
-			   << ", dropping it and its particles" << endl;
+			{
+			  cout << "Vertex x/y/z " << xpos << "/" << ypos << "/" << zpos
+			       << " outside world volume x/y/z (+-) " << worldsizex / 2 << "/"
+			       << worldsizey / 2 << "/" << worldsizez / 2
+			       << ", dropping it and its particles" << endl;
+			}
 		      continue;
 		    }
 		}
@@ -320,13 +324,13 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		    double FMAG_hole_R = 2.5;//circular hole of diameter 5 cm and length 25 cm at FMAG
 		    double FMAG_hole_L = 25.;
 
-	            double Transverse_pos = sqrt(pow(xpos,2)+pow(ypos,2));
+		    double Transverse_pos = sqrt(pow(xpos,2)+pow(ypos,2));
 		    double FMAG_X = 160.; ///Dimemsion of FMAG: (43.2x160x503.) multiple slbas
 		    double FMAG_Y = 160.; //
 		    double FMAG_Z = 503.;    
 
 		    double pion_lambda_Fe = 20.42; ///pion interaction length for Fe
-	            double pion_lambda_Cu = 18.51; ///pion interaction length for Cu
+		    double pion_lambda_Cu = 18.51; ///pion interaction length for Cu
 		    double pion_lambda_B = 48.75; ///pion interaction length of Target
 		    double pion_lambda_sh = 55.92; ///pion interaction lenght of Shielding (concrete) 
 		
@@ -343,21 +347,21 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		    ///Collimaator hole dimension (7.8 x 3.48 cm)
 		    double coll_x = 7.8;// cm
 		    double coll_y = 3.48;
-                    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));    
+		    double totMom =sqrt(pow((*fiter)->momentum().px() * mom_factor,2)+pow((*fiter)->momentum().py() * mom_factor,2)+pow((*fiter)->momentum().pz() * mom_factor,2));    
 
 		    ///Collimator contribution
 	
 		    if(genevt->get_collision_vertex().z()>-664.&&genevt->get_collision_vertex().z()<-542. && (fabs(xpos)>coll_x/2.||fabs(ypos)>coll_y/2.) )
-                      {
-                        if(zpos<-542.)
+		      {
+			if(zpos<-542.)
 			  {
 			    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()+zpos)/(pion_lambda_Cu))) continue;                   
 			  }
-                        else
+			else
 			  {
 			    if (gRandom->Uniform(0,1) > exp (-(-genevt->get_collision_vertex().z()-542.)/(pion_lambda_Cu))) continue;
 			  }
-                      }
+		      }
 
 		
 		    ///Shielding contribution
@@ -414,7 +418,7 @@ int HepMCNodeReader::process_event(PHCompositeNode *topNode)
 		    //Filter to get decay muons having enough energy to pass trough FMAG
 		    if (zpos<0. && totMom/(FMAG_Z)<0.01) continue;
 		    if (zpos>0. && totMom/(FMAG_Z-zpos)<0.01) continue;
-	          }//@
+		  }//@
 
 		  ineve->AddParticle(vtxindex, particle);
 
@@ -464,7 +468,7 @@ double HepMCNodeReader::smearflat(const double width)
 }
 
 void HepMCNodeReader::VertexPosition(const double v_x, const double v_y,
-                                     const double v_z)
+				     const double v_z)
 {
   cout << "HepMCNodeReader::VertexPosition - WARNING - this function is depreciated. "
        << "HepMCNodeReader::VertexPosition() move all HEPMC subevents to a new vertex location. "
@@ -479,7 +483,7 @@ void HepMCNodeReader::VertexPosition(const double v_x, const double v_y,
 }
 
 void HepMCNodeReader::SmearVertex(const double s_x, const double s_y,
-                                  const double s_z)
+				  const double s_z)
 {
   cout << "HepMCNodeReader::SmearVertex - WARNING - this function is depreciated. "
        << "HepMCNodeReader::SmearVertex() smear each HEPMC subevents to a new vertex location. "
