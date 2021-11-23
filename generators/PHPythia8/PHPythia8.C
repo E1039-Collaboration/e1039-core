@@ -127,6 +127,8 @@ int PHPythia8::End(PHCompositeNode *topNode)
 {
   if (verbosity >= VERBOSITY_MORE) cout << "PHPythia8::End - I'm here!" << endl;
 
+  recoConsts::instance()->set_IntFlag("PYTHIA8_EVENT_COUNT", _eventcount);
+
   if (verbosity >= VERBOSITY_SOME)
     {
       //-* dump out closing info (cross-sections, etc)
@@ -174,6 +176,8 @@ int PHPythia8::read_config(const char *cfg_file)
   
   ppGen->readFile(_configFile.c_str());
   pnGen->readFile(_configFile.c_str());
+
+  recoConsts::instance()->set_CharFlag("PYTHIA8_CONFIG_FILE", _configFile);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
