@@ -14,7 +14,7 @@
 class PHHepMCGenEvent;
 class PHCompositeNode;
 namespace HepMC {
-	class GenParticle;
+  class GenParticle;
 }
 
 //! HepMCNodeReader take input from all subevents from PHHepMCGenEventMap and send them to simulation in Geant4
@@ -61,6 +61,13 @@ class HepMCNodeReader : public SubsysReco
 
   bool PassParticleFilter(HepMC::GenParticle * p);
 
+  ///@some added filter interface for bkg decay study
+  //! Sets the inclusive background generation filters on
+  void Set_bkg_mode(){_bkg_mode = true;}// abi
+  //! Sets the minimum Px(y)/Pz cut for inclusvie background generation 
+  void Set_pxy2pz_rat (const double rat){_pxy2pz_rat = rat;}
+  ///@
+
  private:
   double smeargauss(const double width);
   double smearflat(const double width);
@@ -76,6 +83,11 @@ class HepMCNodeReader : public SubsysReco
 
   bool _particle_filter_on;
   std::vector<int> _particle_filter_pid;
+  
+  ///@some added interface for inclusive bkg study
+  bool _bkg_mode; 
+  double _pxy2pz_rat;//Abi
+  ///@
 
   bool _position_filter_on;
   double _pos_filter_x_min;
