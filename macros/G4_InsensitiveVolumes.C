@@ -67,6 +67,19 @@ void SetupInsensitiveVolumes(
     g4Reco->registerSubsystem(shielding);
   }
 
+  if(false) { // false by default at present.  Change to true manually when necessary
+    const double inch = 2.54;
+    PHG4BlockSubsystem* shielding_behind_fmag = new PHG4BlockSubsystem("ShieldingBehindFmag", 0);
+    shielding_behind_fmag->set_double_param("place_x",   0.0); // Place and size are preliminary.  See DocDB 9732
+    shielding_behind_fmag->set_double_param("place_y",   0.0);
+    shielding_behind_fmag->set_double_param("place_z", 562.0);
+    shielding_behind_fmag->set_double_param("size_x", 108.*inch);
+    shielding_behind_fmag->set_double_param("size_y", 144.*inch);
+    shielding_behind_fmag->set_double_param("size_z",  18.*inch);
+    shielding_behind_fmag->set_string_param("material", "G4_CONCRETE");
+    g4Reco->registerSubsystem(shielding_behind_fmag);
+  }
+
   if(toggle_fmag) {
     SQG4DipoleMagnetSubsystem* fmag = new SQG4DipoleMagnetSubsystem("fmag");
     fmag->set_string_param("geomdb", "$E1039_RESOURCE/geometry/magnetic_fields/magnet_geom.db");
