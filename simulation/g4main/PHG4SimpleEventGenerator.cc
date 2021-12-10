@@ -204,7 +204,7 @@ int PHG4SimpleEventGenerator::InitRun(PHCompositeNode *topNode) {
   _ineve = findNode::getClass<PHG4InEvent>(topNode, "PHG4INEVENT");
   if (!_ineve) {
     _ineve = new PHG4InEvent();
-    dstNode->addNode(new PHDataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject"));
+    dstNode->addNode(new PHIODataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject"));
   }
   _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (!_evt) {

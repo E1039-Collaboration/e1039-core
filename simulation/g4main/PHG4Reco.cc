@@ -687,7 +687,7 @@ int PHG4Reco::setupInputEventNodeReader(PHCompositeNode *topNode)
     dstNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "DST"));
 
     ineve = new PHG4InEvent();
-    PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
+    PHIODataNode<PHObject> *newNode = new PHIODataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject");
     dstNode->addNode(newNode);
   }
   generatorAction_ = new PHG4PrimaryGeneratorAction();
