@@ -79,7 +79,7 @@ int SQPileupGen::InitRun(PHCompositeNode* topNode)
       PHCompositeNode* dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
       
       _ineve = new PHG4InEvent();
-      dstNode->addNode(new PHDataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject"));
+      dstNode->addNode(new PHIODataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject"));
     }
 
   _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");

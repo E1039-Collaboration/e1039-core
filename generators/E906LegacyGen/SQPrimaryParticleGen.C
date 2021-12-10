@@ -152,7 +152,7 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
   ineve = findNode::getClass<PHG4InEvent>(topNode,"PHG4INEVENT");
   if (!ineve) {
     ineve = new PHG4InEvent();
-    dstNode->addNode(new PHDataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject"));
+    dstNode->addNode(new PHIODataNode<PHObject>(ineve, "PHG4INEVENT", "PHObject"));
   }
   _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (! _evt) {

@@ -74,7 +74,7 @@ int SQCosmicGen::InitRun(PHCompositeNode* topNode)
     dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
       
     _ineve = new PHG4InEvent();
-    PHDataNode<PHObject> *newNode = new PHDataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject");
+    PHIODataNode<PHObject> *newNode = new PHIODataNode<PHObject>(_ineve, "PHG4INEVENT", "PHObject");
     dstNode->addNode(newNode);
   }
 
