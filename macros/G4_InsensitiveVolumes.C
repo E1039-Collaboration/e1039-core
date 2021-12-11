@@ -71,9 +71,9 @@ void SetupInsensitiveVolumes(
     const double inch = 2.54;
     PHG4BlockSubsystem* shielding_behind_fmag = new PHG4BlockSubsystem("ShieldingBehindFmag", 0);
     shielding_behind_fmag->set_double_param("place_x",   0.0); // Place and size are preliminary.  See DocDB 9732
-    shielding_behind_fmag->set_double_param("place_y",   0.0);
+    shielding_behind_fmag->set_double_param("place_y", -6.*inch);
     shielding_behind_fmag->set_double_param("place_z", 562.0);
-    shielding_behind_fmag->set_double_param("size_x", 108.*inch);
+    shielding_behind_fmag->set_double_param("size_x", 144.*inch);
     shielding_behind_fmag->set_double_param("size_y", 144.*inch);
     shielding_behind_fmag->set_double_param("size_z",  18.*inch);
     shielding_behind_fmag->set_string_param("material", "G4_CONCRETE");
