@@ -1,3 +1,4 @@
+/// Macro to configure the beamline objects.
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4CollimatorSubsystem.h>
@@ -5,6 +6,10 @@ class SubsysReco;
 R__LOAD_LIBRARY(libg4detectors)
 #endif
 
+/// Macro function to configure the beamline objects.
+/**
+ * t.b.w.
+ */
 void SetupBeamline(
   PHG4Reco* g4Reco,
   const bool toggle_collimator = true,
