@@ -1,3 +1,4 @@
+/// Macro to configure the insensitive volumes.
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4BlockSubsystem.h>
@@ -7,15 +8,15 @@ class SubsysReco;
 R__LOAD_LIBRARY(libg4detectors)
 #endif
 
-/*
-This macro implements the all the volumes that are not sensitive - i.e. do not need to generate G4Hits
-The insensitive volumes implemented here are:
-    1. concrete shielding in front of FMag
-    2. FMag/beam dump
-    3. KMag
-    4. Muon absorber between station-3 and -4
-*/
-
+/// Macro function to configure the insensitive volumes.
+/**
+ * This macro implements the all the volumes that are not sensitive - i.e. do not need to generate G4Hits.
+ * The insensitive volumes implemented here are:
+ *     1. concrete shielding in front of FMag
+ *     2. FMag/beam dump
+ *     3. KMag
+ *     4. Muon absorber between station-3 and -4
+ */
 void SetupInsensitiveVolumes(
   PHG4Reco* g4Reco,
   const bool toggle_shielding = true,
