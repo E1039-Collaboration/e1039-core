@@ -1,3 +1,8 @@
+/** @file
+ * @brief Macro to configure the insensitive volumes.
+ *
+ * The usage is similar to `G4_SensitiveDetectors.C`.
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4BlockSubsystem.h>
@@ -7,15 +12,15 @@ class SubsysReco;
 R__LOAD_LIBRARY(libg4detectors)
 #endif
 
-/*
-This macro implements the all the volumes that are not sensitive - i.e. do not need to generate G4Hits
-The insensitive volumes implemented here are:
-    1. concrete shielding in front of FMag
-    2. FMag/beam dump
-    3. KMag
-    4. Muon absorber between station-3 and -4
-*/
-
+/// Macro function to configure the insensitive volumes.
+/**
+ * This macro implements the all the volumes that are not sensitive - i.e. do not need to generate G4Hits.
+ * The insensitive volumes implemented here are:
+ *     1. concrete shielding in front of FMag
+ *     2. FMag/beam dump
+ *     3. KMag
+ *     4. Muon absorber between station-3 and -4
+ */
 void SetupInsensitiveVolumes(
   PHG4Reco* g4Reco,
   const bool toggle_shielding = true,
@@ -65,6 +70,19 @@ void SetupInsensitiveVolumes(
     shielding->set_double_param("inner_size_y", 6.*inch);
     shielding->set_string_param("material", "G4_CONCRETE");
     g4Reco->registerSubsystem(shielding);
+  }
+
+  if(false) { // false by default at present.  Change to true manually when necessary
+    const double inch = 2.54;
+    PHG4BlockSubsystem* shielding_behind_fmag = new PHG4BlockSubsystem("ShieldingBehindFmag", 0);
+    shielding_behind_fmag->set_double_param("place_x",   0.0); // Place and size are preliminary.  See DocDB 9732
+    shielding_behind_fmag->set_double_param("place_y", -6.*inch);
+    shielding_behind_fmag->set_double_param("place_z", 562.0);
+    shielding_behind_fmag->set_double_param("size_x", 144.*inch);
+    shielding_behind_fmag->set_double_param("size_y", 144.*inch);
+    shielding_behind_fmag->set_double_param("size_z",  18.*inch);
+    shielding_behind_fmag->set_string_param("material", "G4_CONCRETE");
+    g4Reco->registerSubsystem(shielding_behind_fmag);
   }
 
   if(toggle_fmag) {

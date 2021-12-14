@@ -1,3 +1,8 @@
+/** @file
+ * @brief Macro to configure the target objects.
+ *
+ * The usage is similar to `G4_SensitiveDetectors.C`.
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4TargetCoilV2Subsystem.h>
@@ -7,6 +12,10 @@ class SubsysReco;
 R__LOAD_LIBRARY(libg4detectors)
 #endif
 
+/// Macro function to configure the target objects.
+/**
+ * t.b.w.
+ */
 void SetupTarget(
   PHG4Reco* g4Reco,
   const double target_coil_pos_z = -300,

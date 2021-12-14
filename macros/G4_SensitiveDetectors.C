@@ -1,3 +1,23 @@
+/** @file
+ * @brief Macro to configure the sensitive volumes.
+ *
+ * You first include this macro in main macro like `Fun4All.C`;
+ * @code
+ * #include <top/G4_SensitiveDetectors.C>
+ * @endcode
+ *
+ * You then call the macro function;
+ * @code
+ * SetupSensitiveDetectors(g4Reco);
+ * @endcode
+ * You can give function arguments to change the behavior.
+ *
+ * If you want to modify the macro function itself,
+ * you can copy the macro file to your local directory, modify it and include it via;
+ * @code
+ * #include "G4_SensitiveDetectors.C"
+ * @endcode
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4BlockSubsystem.h>
@@ -8,6 +28,10 @@ class SubsysReco;
 #include <g4detectors/SQDigitizer.h>
 typedef SQDigitizer DPDigitizer;  //so that the naming DPDigitizer is still avaiable for backward compatibility
 
+/// Macro function to configure the sensitive volumes.
+/**
+ * This macro implements the all the volumes that are sensitive, which generate G4Hits.
+ */
 void SetupSensitiveDetectors(
   PHG4Reco*   g4Reco,
   bool        toggle_dphodo = true,

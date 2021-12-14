@@ -1,17 +1,21 @@
+/** @file
+ * @brief Macro to save the geometry info on ROOT file, `geom.root`.
+ */
 #include <TSystem.h>
-
 #include "G4_Beamline.C"
 #include "G4_Target.C"
 #include "G4_InsensitiveVolumes.C"
 #include "G4_SensitiveDetectors.C"
-
 R__LOAD_LIBRARY(libfun4all)
 R__LOAD_LIBRARY(libgeom_svc)
 R__LOAD_LIBRARY(libg4detectors)
 R__LOAD_LIBRARY(libg4dst)
-
 using namespace std;
 
+/// Macro function to save the geometry info on ROOT file, `geom.root`.
+/**
+ * t.b.w.
+ */
 int Fun4DumpGeom(const bool display = true)
 {
   // geometry setup
