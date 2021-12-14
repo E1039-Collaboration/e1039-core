@@ -1,4 +1,6 @@
-/// Macro to save the geometry info on ROOT file, `geom.root`.
+/** @file
+ * @brief Macro to save the geometry info on ROOT file, `geom.root`.
+ */
 #include <TSystem.h>
 #include "G4_Beamline.C"
 #include "G4_Target.C"

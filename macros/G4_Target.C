@@ -1,4 +1,8 @@
-/// Macro to configure the target objects.
+/** @file
+ * @brief Macro to configure the target objects.
+ *
+ * The usage is similar to `G4_SensitiveDetectors.C`.
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4TargetCoilV2Subsystem.h>

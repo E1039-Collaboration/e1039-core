@@ -1,4 +1,8 @@
-/// Macro to configure the insensitive volumes.
+/** @file
+ * @brief Macro to configure the insensitive volumes.
+ *
+ * The usage is similar to `G4_SensitiveDetectors.C`.
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4BlockSubsystem.h>

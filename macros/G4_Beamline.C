@@ -1,4 +1,8 @@
-/// Macro to configure the beamline objects.
+/** @file
+ * @brief Macro to configure the beamline objects.
+ *
+ * The usage is similar to `G4_SensitiveDetectors.C`.
+ */
 #pragma once
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 #include <g4detectors/PHG4CollimatorSubsystem.h>

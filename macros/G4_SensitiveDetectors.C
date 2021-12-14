@@ -1,5 +1,6 @@
-/// Macro to configure the sensitive volumes.
-/**
+/** @file
+ * @brief Macro to configure the sensitive volumes.
+ *
  * You first include this macro in main macro like `Fun4All.C`;
  * @code
  * #include <top/G4_SensitiveDetectors.C>
@@ -12,7 +13,7 @@
  * You can give function arguments to change the behavior.
  *
  * If you want to modify the macro function itself,
- * you can copy the macro file to your local directory and include it via;
+ * you can copy the macro file to your local directory, modify it and include it via;
  * @code
  * #include "G4_SensitiveDetectors.C"
  * @endcode
