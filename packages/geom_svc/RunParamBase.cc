@@ -62,12 +62,14 @@ void RunParamBase::WriteToFile()
 
 void RunParamBase::ReadFromLocalFile(const string fn_tsv)
 {
-  cout << "  RunParamBase::ReadFromFile(): " << fn_tsv << "...";
-  ifstream ifs(fn_tsv.c_str());
+  char* path = gSystem->ExpandPathName(fn_tsv.c_str());
+  cout << "  RunParamBase::ReadFromFile(): " << path << "...";
+  ifstream ifs(path);
   if (! ifs) {
-    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
+    cerr << "\n!!ERROR!!  Cannot open the map file '" << path << "'." << endl;
     exit(1);
   } 
+  delete path;
 
   LineList lines;
   string buffer;
@@ -82,12 +84,15 @@ void RunParamBase::ReadFromLocalFile(const string fn_tsv)
 
 void RunParamBase::WriteToLocalFile(const string fn_tsv)
 {
-  cout << "  RunParamBase::WriteToFile(): " << fn_tsv << "...";
-  ofstream ofs(fn_tsv.c_str());
+  char* path = gSystem->ExpandPathName(fn_tsv.c_str());
+  cout << "  RunParamBase::WriteToFile(): " << path << "...";
+  ofstream ofs(path);
   if (! ofs) {
-    cerr << "\n!!ERROR!!  Cannot open the map file '" << fn_tsv << "'." << endl;
+    cerr << "\n!!ERROR!!  Cannot open the map file '" << path << "'." << endl;
     exit(1);
   }
+  delete path;
+
   ofs << "#" << m_header << "\n";
   int nn = WriteFileCont(ofs);
   ofs.close();

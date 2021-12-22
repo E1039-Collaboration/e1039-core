@@ -21,6 +21,7 @@ class MainDaqParser {
 
   // Handlers of CODA Event
   int ProcessCodaPrestart   (int* words);
+  int ProcessCodaEnd        (int* words);
   int ProcessCodaFee        (int* words);
   int ProcessCodaFeeBoard   (int* words);
   int ProcessCodaFeePrescale(int* words);

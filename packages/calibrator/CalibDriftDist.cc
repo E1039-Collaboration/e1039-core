@@ -16,6 +16,9 @@ using namespace std;
 
 CalibDriftDist::CalibDriftDist(const std::string& name)
   : SubsysReco(name)
+  , m_manual_map_selection(false)
+  , m_fn_int("")
+  , m_fn_xt("")
   , m_vec_hit(0)
   , m_cal_xt (0)
   , m_cal_int(0)
@@ -31,6 +34,15 @@ CalibDriftDist::~CalibDriftDist()
 
 int CalibDriftDist::Init(PHCompositeNode* topNode)
 {
+  if (m_manual_map_selection) {
+    m_cal_xt = new CalibParamXT();
+    m_cal_xt->SetMapID(m_fn_xt);
+    m_cal_xt->ReadFromLocalFile(m_fn_xt);
+    
+    m_cal_int = new CalibParamInTimeTaiwan();
+    m_cal_int->SetMapID(m_fn_int);
+    m_cal_int->ReadFromLocalFile(m_fn_int);
+  }
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -40,13 +52,15 @@ int CalibDriftDist::InitRun(PHCompositeNode* topNode)
   m_vec_hit         = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if (!run_header || !m_vec_hit) return Fun4AllReturnCodes::ABORTEVENT;
 
-  m_cal_xt = new CalibParamXT();
-  m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
-  m_cal_xt->ReadFromDB();
-
-  m_cal_int = new CalibParamInTimeTaiwan();
-  m_cal_int->SetMapIDbyDB(run_header->get_run_id());
-  m_cal_int->ReadFromDB();
+  if (! m_manual_map_selection) {
+    m_cal_xt = new CalibParamXT();
+    m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
+    m_cal_xt->ReadFromDB();
+    
+    m_cal_int = new CalibParamInTimeTaiwan();
+    m_cal_int->SetMapIDbyDB(run_header->get_run_id());
+    m_cal_int->ReadFromDB();
+  }
 
   SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
   if (param_deco) {
@@ -78,8 +92,8 @@ int CalibDriftDist::process_event(PHCompositeNode* topNode)
     TGraphErrors* gr_t2x;
     TGraphErrors* gr_t2dx;
     double center, width;
-    if (! m_cal_xt->Find(det, gr_t2x, gr_t2dx)    || 
-        ! m_cal_int->Find(det, ele, center, width)  ) {
+    if (! m_cal_xt ->Find(det, gr_t2x, gr_t2dx) || 
+        ! m_cal_int->Find(det, ele, center, width) ) {
       cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << " in CalibDriftDist.\n";
       continue;
       //return Fun4AllReturnCodes::ABORTEVENT;
@@ -100,4 +114,11 @@ int CalibDriftDist::process_event(PHCompositeNode* topNode)
 int CalibDriftDist::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+void CalibDriftDist::ReadParamFromFile(const char* fn_in_time, const char* fn_xt_curve)
+{
+  m_manual_map_selection = true;
+  m_fn_int = fn_in_time;
+  m_fn_xt  = fn_xt_curve;
 }

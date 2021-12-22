@@ -89,6 +89,7 @@ int MainDaqParser::ParseOneSpill()
       case GO_EVENT: // do nothing
         break;
       case END_EVENT:
+        ret = ProcessCodaEnd(event_words);
         coda->ForceEnd(); //if (dec_par.verbose) printf ("End Event Processed\n");
         break;
       default:
@@ -162,6 +163,18 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
     coda->SetRunNumber(dec_par.runID);
 
     return 0;
+}
+
+/**
+ * Process one Coda End event.
+ *  - words[0] = Word length.
+ *  - words[1] = Event type (End).
+ */
+int MainDaqParser::ProcessCodaEnd(int* words)
+{
+  run_data.utime_e = words[2];
+  cout << "  ProcessCodaEnd " << run_data.utime_e << endl;
+  return 0;
 }
 
 int MainDaqParser::ProcessCodaFee(int* words)
