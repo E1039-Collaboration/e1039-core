@@ -48,10 +48,14 @@ class OnlMonParam {
   void DoAssert(const bool val) { m_do_assert = val; }
   bool DoAssert() const  { return m_do_assert; }
 
-  std::string GetCharParam  (const std::string name);
-  double      GetDoubleParam(const std::string name);
-  int         GetIntParam   (const std::string name);
-  bool        GetBoolParam  (const std::string name);
+  std::string GetCharParam  (const std::string par_name);
+  double      GetDoubleParam(const std::string par_name);
+  int         GetIntParam   (const std::string par_name);
+  bool        GetBoolParam  (const std::string par_name);
+
+ protected:
+  std::string FindParamInDir(const std::string par_name);
+  bool FindParamInFile(const std::string file_name, const int run, const std::string par_name, std::string& par_value);
 };
 
 #endif // _ONL_MON_PARAM__H_

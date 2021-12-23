@@ -11,7 +11,7 @@ using namespace std;
 
 OnlMonParam::OnlMonParam(const OnlMonClient* omc)
   : m_name(omc->Name())
-  , m_dir_base("/data2/e1039/onlmon/param")
+  , m_dir_base("$E1039_ROOT/onlmon/param")
   , m_run_id(0)
   , m_verb(2) // High default verbosity for now
   , m_do_assert(true)
@@ -21,7 +21,7 @@ OnlMonParam::OnlMonParam(const OnlMonClient* omc)
 
 OnlMonParam::OnlMonParam(const std::string name)
   : m_name(name)
-  , m_dir_base("/data2/e1039/onlmon/param")
+  , m_dir_base("$E1039_ROOT/onlmon/param")
   , m_run_id(0)
   , m_verb(2) // High default verbosity for now
   , m_do_assert(true)
@@ -34,101 +34,114 @@ OnlMonParam::~OnlMonParam()
   ;
 }
 
-std::string OnlMonParam::GetCharParam(const std::string name)
+std::string OnlMonParam::GetCharParam(const std::string par_name)
 {
+  string value = FindParamInDir(par_name);
+  if (m_verb > 0) cout << "  par_value = " << value << " as string." << endl;
+  return value;
+}
+
+double OnlMonParam::GetDoubleParam(const std::string par_name)
+{
+  istringstream iss(FindParamInDir(par_name));
+  double value = 0;
+  if (!(iss >> value) && m_do_assert) {
+    cerr << "ERROR:  '" << par_name << "' is not double.\n"
+         << "Abort." << endl;
+    exit(1);
+  }
+  if (m_verb > 0) cout << "  par_value = " << value << " as double." << endl;
+  return value;
+}
+
+int OnlMonParam::GetIntParam(const std::string par_name)
+{
+  istringstream iss(FindParamInDir(par_name));
+  int value = 0;
+  if (!(iss >> value) && m_do_assert) {
+    cerr << "ERROR:  '" << par_name << "' is not int.\n"
+         << "Abort." << endl;
+    exit(1);
+  }
+  if (m_verb > 0) cout << "  par_value = " << value << " as int." << endl;
+  return value;
+}
+
+bool OnlMonParam::GetBoolParam(const std::string par_name)
+{
+  istringstream iss(FindParamInDir(par_name));
+  bool value = false;
+  if (!(iss >> value) && m_do_assert) {
+    cerr << "ERROR:  '" << par_name << "' is not bool.\n"
+         << "Abort." << endl;
+    exit(1);
+  }
+  if (m_verb > 0) cout << "  par_value = " << value << " as bool." << endl;
+  return value;
+}
+
+std::string OnlMonParam::FindParamInDir(const std::string par_name)
+{
+  char* path = gSystem->ExpandPathName(m_dir_base.c_str());
+  string dir_name = path;
+  delete path;
+  dir_name += "/" + m_name;
   int run = m_run_id>0 ? m_run_id : recoConsts::instance()->get_IntFlag("RUNNUMBER");
-  string dir_name = m_dir_base + "/" + m_name;
   if (m_verb > 0) {
-    cout << "OnlMonParam: name = " << name << " run = " << run << ".\n"
+    cout << "OnlMonParam: par_name = " << par_name << " run = " << run << ".\n"
          << "  Directory = " << dir_name << endl;
   }
-  string value = "";
+
+  string par_value = "";
   bool not_found = true;
   void* dirp = gSystem->OpenDirectory(dir_name.c_str());
   if (dirp) {
-    const char* name_char;
-    while (not_found && (name_char = gSystem->GetDirEntry(dirp))) {
-      if (m_verb > 0) {
-        cout << "  File = " << name_char << endl;
-      }
-      string name = name_char;
-      int length = name.length();
-      if (length > 4 && name.substr(length-4, 4) == ".tsv") {
-        ifstream ifs(name);
-        string line;
-        while (not_found && getline(ifs, line)) {
-          if (m_verb > 1) {
-            cout << "    Line = " << line << endl;
-          }
-          istringstream iss(line);
-          string name0, value0;
-          int run_b, run_e;
-          if (! (iss >> name0 >> value0 >> run_b >> run_e)) {
-            if (name == name0 && run_b <= run && (run_e == 0 || run <= run_e)) {
-              if (m_verb > 1) {
-                cout << "    Matched." << endl;
-              }
-              value = value0;
-              not_found = false;
-              break;
-            }
-          }
-        }
-        ifs.close();
+    const char* file_name_char;
+    while (not_found && (file_name_char = gSystem->GetDirEntry(dirp))) {
+      string file_name = file_name_char;
+      int length = file_name.length();
+      if (length >= 4 &&
+          file_name.substr(length-4, 4) == ".tsv" &&
+          FindParamInFile(dir_name+"/"+file_name, run, par_name, par_value) ) {
+        not_found = false;
+        break;
       }
     }
     gSystem->FreeDirectory(dirp);
   }
   if (not_found && m_do_assert) {
-    cerr << "ERROR:  OnlMonParam cannot find '" << name << "' for run " << run << ".\n"
+    cerr << "ERROR:  OnlMonParam cannot find '" << par_name << "' for run " << run << ".\n"
          << "Abort." << endl;
     exit(1);
   }
-  return value;
+  return par_value;
 }
 
-double OnlMonParam::GetDoubleParam(const std::string name)
+bool OnlMonParam::FindParamInFile(const std::string file_name, const int run, const std::string par_name, std::string& par_value)
 {
-  istringstream iss(GetCharParam(name));
-  double value;
-  if (!(iss >> value) && m_do_assert) {
-    cerr << "ERROR:  OnlMonParam found '" << name << "' but not 'double'.\n"
-         << "Abort." << endl;
-    exit(1);
-  }
   if (m_verb > 0) {
-    cout << "  " << value << " as double." << endl;
+    cout << "  File = " << file_name << endl;
   }
-  return value;
+  bool do_found = false;
+  ifstream ifs(file_name);
+  string line;
+  while (getline(ifs, line)) {
+    if (line.length() == 0 || line[0] == '#') continue;
+    if (m_verb > 1) {
+      cout << "    Line = " << line << endl;
+    }
+    istringstream iss(line);
+    string name, value;
+    int run_b, run_e;
+    if ((iss >> name >> value >> run_b >> run_e) &&
+        par_name == name &&
+        run_b <= run &&
+        (run_e == 0 || run <= run_e) ) {
+      par_value = value;
+      do_found = true;
+      break;
+    }
+  }
+  ifs.close();
+  return do_found;
 }
-
-int OnlMonParam::GetIntParam(const std::string name)
-{
-  istringstream iss(GetCharParam(name));
-  int value;
-  if (!(iss >> value) && m_do_assert) {
-    cerr << "ERROR:  OnlMonParam found '" << name << "' but not 'int'.\n"
-         << "Abort." << endl;
-    exit(1);
-  }
-  if (m_verb > 0) {
-    cout << "  " << value << " as int." << endl;
-  }
-  return value;
-}
-
-bool OnlMonParam::GetBoolParam(const std::string name)
-{
-  istringstream iss(GetCharParam(name));
-  bool value;
-  if (!(iss >> value) && m_do_assert) {
-    cerr << "ERROR:  OnlMonParam found '" << name << "' but not 'bool'.\n"
-         << "Abort." << endl;
-    exit(1);
-  }
-  if (m_verb > 0) {
-    cout << "  " << value << " as bool." << endl;
-  }
-  return value;
-}
-

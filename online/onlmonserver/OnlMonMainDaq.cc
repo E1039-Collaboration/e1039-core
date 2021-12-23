@@ -176,7 +176,7 @@ int OnlMonMainDaq::DrawMonitor()
   double n_ttdc_mean = h1_n_taiwan->GetMean();
   if (fabs(n_ttdc_mean - n_ttdc) > 0.1) {
     can->SetWorseStatus(OnlMonCanvas::ERROR);
-    can->AddMessage(TString::Format("N of Taiwan TDCs = %f, not %d.", n_ttdc_mean, n_ttdc).Data());
+    can->AddMessage(TString::Format("N of Taiwan TDCs = %.1f, not %d.", n_ttdc_mean, n_ttdc).Data());
   }
 
   pad->cd(3);
