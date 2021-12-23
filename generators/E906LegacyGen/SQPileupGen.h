@@ -14,7 +14,7 @@ class TFile;
 class TTree;
 class TClonesArray;
 class TF1;
-class TH1D;
+class TH1;
 
 class SQMCEvent;
 class SQPrimaryVertexGen;
@@ -53,7 +53,7 @@ class SQPileupGen: public PHG4ParticleGeneratorBase
     return _beam_intensity_profile;
   }
 
-  TH1D* get_beam_intensity_profile_histo() const ///< Return beam intensity profile histogram for pileup
+  TH1* get_beam_intensity_profile_histo() const ///< Return beam intensity profile histogram for pileup
   {
     return _beam_intensity_profile_histo;
   }
@@ -63,7 +63,7 @@ class SQPileupGen: public PHG4ParticleGeneratorBase
     _beam_intensity_profile = beamIntensityProfile;
   }
 
-  void set_beam_intensity_profile_histo(TH1D* beamIntensityProfile_histo)
+  void set_beam_intensity_profile_histo(TH1* beamIntensityProfile_histo)
   {
     _beam_intensity_profile_histo = beamIntensityProfile_histo;
   }
@@ -83,7 +83,7 @@ class SQPileupGen: public PHG4ParticleGeneratorBase
 
 
   TF1* _beam_intensity_profile;
-  TH1D* _beam_intensity_profile_histo;
+  TH1* _beam_intensity_profile_histo;
   //! internal container for quick particle cache
   std::vector<ExtParticle> _extParticles;
 

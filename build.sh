@@ -21,7 +21,7 @@ install=$MY_INSTALL
 mode=all
 OPTIND=1
 cmake_args=""
-while getopts ":s:r:i:c:b:" OPT ; do
+while getopts ":s:r:i:c:b:B" OPT ; do
     case $OPT in
         s ) mode='single'
             package=$OPTARG
@@ -39,6 +39,9 @@ while getopts ":s:r:i:c:b:" OPT ; do
             echo " - pass additional args $cmake_args to cmake"
             ;;
         b ) build=$OPTARG
+            echo "Build directory = $build"
+            ;;
+        B ) build=$src/../core-build
             echo "Build directory = $build"
             ;;
         * ) echo 'Unsupported option.  Abort.'

@@ -10,19 +10,19 @@
 # without manual setting.
 
 if [ $(hostname -s) != 'e1039prod1' ] ; then
-    echo "!!ERROR!!  This script must be run on seaquestdaq01.  Abort."
+    echo "!!ERROR!!  This script must be run on e1039prod1.  Abort."
     exit
 fi
 
-CORE_VER=default
+E1039_CORE_VERSION=default
 IS_ONLINE=false
 DECO_MODE=devel
 
 OPTIND=1
 while getopts ":v:osd" OPT ; do
     case $OPT in
-        v ) CORE_VER=$OPTARG
-            echo "  E1039_CORE version: $CORE_VER"
+        v ) E1039_CORE_VERSION=$OPTARG
+            echo "  E1039_CORE version: $E1039_CORE_VERSION"
             ;;
         o ) IS_ONLINE=true
             echo "  Online mode: $IS_ONLINE"
@@ -44,7 +44,7 @@ fi
 
 DIR_SCRIPT=$(dirname $(readlink -f $0))
 if [ $DIR_SCRIPT = '/data2/e1039/script' ] ; then
-    source /data2/e1039/this-e1039.sh $CORE_VER
+    source /data2/e1039/this-e1039.sh
 elif [ -z "$E1039_CORE" ] ; then
     echo '!!ERROR!!  "E1039_CORE" has not been set.  Abort.'
     exit
