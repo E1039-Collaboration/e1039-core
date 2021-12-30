@@ -38,7 +38,7 @@ while getopts ":s:r:i:c:b:B" OPT ; do
         c ) cmake_args=$OPTARG
             echo " - pass additional args $cmake_args to cmake"
             ;;
-        b ) build=$OPTARG
+        b ) build=$(readlink -e $OPTARG)
             echo "Build directory = $build"
             ;;
         B ) build=$src/../core-build

@@ -11,6 +11,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <UtilAna/UtilHist.h>
+#include "OnlMonParam.h"
 #include "OnlMonMainDaq.h"
 using namespace std;
 
@@ -134,6 +135,9 @@ int OnlMonMainDaq::FindAllMonHist()
 
 int OnlMonMainDaq::DrawMonitor()
 {
+  OnlMonParam param(this);
+  int n_ttdc = param.GetIntParam("N_TAIWAN_TDC");
+
   UtilHist::AutoSetRange(h1_n_taiwan);
 
   OnlMonCanvas* can = GetCanvas();
@@ -169,6 +173,11 @@ int OnlMonMainDaq::DrawMonitor()
   pad22->cd();
   pad22->SetGrid();
   h1_n_taiwan->Draw();
+  double n_ttdc_mean = h1_n_taiwan->GetMean();
+  if (fabs(n_ttdc_mean - n_ttdc) > 0.1) {
+    can->SetWorseStatus(OnlMonCanvas::ERROR);
+    can->AddMessage(TString::Format("N of Taiwan TDCs = %.1f, not %d.", n_ttdc_mean, n_ttdc).Data());
+  }
 
   pad->cd(3);
   TPaveText* pate = new TPaveText(.02, .02, .98, .98);

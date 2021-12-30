@@ -6,6 +6,7 @@
 #pragma link C++ class OnlMonServer-!;
 #pragma link C++ class OnlMonClient-!;
 #pragma link C++ class OnlMonUI-!;
+#pragma link C++ class OnlMonParam-!;
 #pragma link C++ typedef OnlMonClientList_t;
 
 #pragma link C++ class AnaWait-!;
