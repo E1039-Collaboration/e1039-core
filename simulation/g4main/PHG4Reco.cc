@@ -305,6 +305,19 @@ int PHG4Reco::InitField(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
+void PHG4Reco::set_field_map()
+{
+  recoConsts *rc = recoConsts::instance();
+  ostringstream oss;
+  oss << rc->get_CharFlag("fMagFile") << " "
+      << rc->get_CharFlag("kMagFile") << " "
+      << rc->get_DoubleFlag("FMAGSTR") << " "
+      << rc->get_DoubleFlag("KMAGSTR") << " "
+      << rc->get_DoubleFlag("TMAGSTR");
+  if (verbosity > 0) cout << "PHG4Reco::set_field_map(): " << oss.str() << "." << endl;
+  set_field_map(oss.str(), PHFieldConfig::RegionalConst);
+}
+
 int PHG4Reco::InitRun(PHCompositeNode *topNode)
 {
   // this is a dumb protection against executing this twice.

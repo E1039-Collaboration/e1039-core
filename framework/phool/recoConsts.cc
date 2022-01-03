@@ -41,6 +41,7 @@ void recoConsts::set_defaults()
   //Following constants are shared between simulation and reconstruction
   set_DoubleFlag("KMAGSTR", 1.0);
   set_DoubleFlag("FMAGSTR", 1.0);
+  set_DoubleFlag("TMAGSTR", 5.0); // Target magnetic field strength, in Tesla
 
   //Following flags control the running mode and must be 
   //set to appropriate values in the configuration set
