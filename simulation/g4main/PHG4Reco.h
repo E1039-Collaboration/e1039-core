@@ -88,6 +88,12 @@ class PHG4Reco : public SubsysReco
     mapdim = dim;
   }
 
+  /// Set the magnetic field maps/strengths.
+  //! This will be the default setting method in E1039.
+  //! It takes the parameter values from recoConsts.  Thus you can change
+  //! parameters by calling recoConsts::set_DoubleFlag() etc. beforehand.
+  void set_field_map();
+  
   //! set default scaling factor for input magnetic field map. If available, Field map setting on DST take higher priority.
   void set_field_rescale(const float rescale) { magfield_rescale = rescale; }
 

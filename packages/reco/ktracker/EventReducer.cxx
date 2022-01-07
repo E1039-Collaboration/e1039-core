@@ -3,7 +3,7 @@
 
 #include "EventReducer.h"
 
-EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), outoftime(false), decluster(false), mergehodo(false), triggermask(false), sagitta(false), hough(false), externalpar(false), realization(false), difnim(false)
+EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), outoftime(false), decluster(false), mergehodo(false), triggermask(false), sagitta(false), hough(false), realization(false), difnim(false)
 {
     //parse the reducer setup
     options.ToLower();
@@ -15,9 +15,13 @@ EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), 
     if(options.Contains("t")) triggermask = true;
     if(options.Contains("s")) sagitta = true;
     if(options.Contains("g")) hough = true;
-    if(options.Contains("e")) externalpar = true;
     if(options.Contains("r")) realization = true;
     if(options.Contains("n")) difnim = true;
+
+    if(options.Contains("e")) {
+      std::cout << "EventReducer: !!ERROR!!  Option 'e' is no longer available.  Use 'CalibDriftDist'.  Abort." << std::endl;
+      exit(1);
+    }
 
     rc = recoConsts::instance();
     timeOffset = rc->get_DoubleFlag("TDCTimeOffset");
@@ -45,7 +49,6 @@ EventReducer::EventReducer(TString options) : afterhit(false), hodomask(false), 
     if(triggermask)   std::cout << "EventReducer: trigger road masking enabled. " << std::endl;
     if(sagitta)       std::cout << "EventReducer: sagitta reducer enabled. " << std::endl;
     if(hough)         std::cout << "EventReducer: hough transform reducer enabled. " << std::endl;
-    if(externalpar)   std::cout << "EventReducer: will reset the alignment/calibration parameters. " << std::endl;
     if(realization)   std::cout << "EventReducer: realization enabled. " << std::endl;
     if(difnim)        std::cout << "EventReducer: trigger masking will be disabled in NIM events. " << std::endl;
     if(fabs(timeOffset) > 0.01) std::cout << "EventReducer: " << timeOffset << " ns will be added to tdcTime. " << std::endl;
@@ -101,13 +104,6 @@ int EventReducer::reduceEvent(SRawEvent* rawEvent)
         {
             // if trigger masking is enabled, all the X hodos are discarded
             if(triggermask_local && p_geomSvc->getPlaneType(iter->detectorID) == 1) continue;
-        }
-
-        if(externalpar)
-        {
-            iter->pos = p_geomSvc->getMeasurement(iter->detectorID, iter->elementID);
-            iter->driftDistance = p_geomSvc->getDriftDistance(iter->detectorID, iter->tdcTime + timeOffset); // this is OK because hodoscopes don't have R-T curve anyways
-            //iter->setInTime(p_geomSvc->isInTime(iter->detectorID, iter->tdcTime));
         }
 
         if(realization && iter->detectorID <= nChamberPlanes) iter->driftDistance += rndm.Gaus(0., chamResol);

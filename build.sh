@@ -15,7 +15,7 @@ test -z "$OFFLINE_MAIN" && echo "Need set 'OFFLINE_MAIN'.  Abort." && exit
 test -z "$MY_INSTALL"   && echo   "Need set 'MY_INSTALL'.  Abort." && exit
 
 src=$(dirname $(readlink -f $0))
-build=`pwd`/build
+build=$src/../core-build
 install=$MY_INSTALL
 
 mode=all
@@ -39,9 +39,6 @@ while getopts ":s:r:i:c:b:B" OPT ; do
             echo " - pass additional args $cmake_args to cmake"
             ;;
         b ) build=$(readlink -e $OPTARG)
-            echo "Build directory = $build"
-            ;;
-        B ) build=$src/../core-build
             echo "Build directory = $build"
             ;;
         * ) echo 'Unsupported option.  Abort.'

@@ -353,7 +353,7 @@ int SQPrimaryParticleGen::generateDrellYan(const TVector3& vtx, const double pAR
   UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
 
   double xsec   = CrossSectionDrellYan(dim_mass, dim_xF, dim_x1, dim_x2, pARatio);
-  double weight = xsec * luminosity;
+  double weight = xsec * luminosity * (massMax - massMin) * (xfMax - xfMin);
   InsertEventInfo(xsec, weight, vtx);
 
   return 0;
@@ -366,7 +366,7 @@ int SQPrimaryParticleGen::generateJPsi(const TVector3& vtx, const double pARatio
   if(!generateDimuon(DPGEN::mjpsi, xF)) return 1;
   InsertMuonPair(vtx);
   double xsec   = CrossSectionJPsi(xF);
-  double weight = xsec * luminosity;
+  double weight = xsec * luminosity * (xfMax - xfMin);
   InsertEventInfo(xsec, weight, vtx);
   return 0;
 }
@@ -378,7 +378,7 @@ int SQPrimaryParticleGen::generatePsip(const TVector3& vtx, const double pARatio
   if(!generateDimuon(DPGEN::mpsip, xF)) return 1;
   InsertMuonPair(vtx);
   double xsec   = CrossSectionPsip(xF);
-  double weight = xsec * luminosity;
+  double weight = xsec * luminosity * (xfMax - xfMin);
   InsertEventInfo(xsec, weight, vtx);
   return 0;
 }

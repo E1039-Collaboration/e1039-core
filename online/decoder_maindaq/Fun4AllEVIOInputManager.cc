@@ -346,6 +346,8 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_element_id (hd->ele );
     hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
+    hit->set_drift_distance(0);
+    hit->set_pos           (0);
     hit_vec->push_back(hit);
     delete hit;
   }
@@ -358,6 +360,8 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     hit->set_element_id (hd->ele );
     hit->set_level      (hd->lvl );
     hit->set_tdc_time   (hd->time);
+    hit->set_drift_distance(0);
+    hit->set_pos           (0);
     trig_hit_vec->push_back(hit);
     delete hit;
   }
