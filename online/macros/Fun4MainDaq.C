@@ -105,9 +105,11 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerOutputManager(om_eddst);
   }
 
-  Fun4AllSRawEventOutputManager *om_sraw = new Fun4AllSRawEventOutputManager("/data2/e1039/online");
-  om_sraw->Verbosity(10);
-  se->registerOutputManager(om_sraw);
+  if (is_online) {
+    Fun4AllSRawEventOutputManager *om_sraw = new Fun4AllSRawEventOutputManager("/data2/e1039/online");
+    om_sraw->Verbosity(10);
+    se->registerOutputManager(om_sraw);
+  }
 
   se->run(nevent);
   se->End();

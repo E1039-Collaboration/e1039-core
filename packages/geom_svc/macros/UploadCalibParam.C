@@ -20,7 +20,7 @@ int UploadCalibParam(const std::string type="xt_curve", const std::string map_id
   map->SetMapIDbyFile(map_id);
   map->ReadFromFile();
   //map->Print(cout);
-  map->WriteToLocalFile("output_for_check.tsv");
+  //map->WriteToLocalFile("output_for_check.tsv");
   map->WriteToDB();
   map->WriteRangeToDB();
   return 0;

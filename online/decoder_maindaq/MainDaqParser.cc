@@ -299,7 +299,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     //PrintCodaEventSummary(words);
     if (! dec_par.has_1st_bos) break;
     run_data.n_flush_evt++;
-    ret = ProcessPhysFlush(words);
+    ret = ProcessPhysStdAndFlush(words, FLUSH_EVENTS);
     if (dec_err.GetFlushError()) run_data.n_flush_evt_bad++;
     break;
   case SLOW_CONTROL:
@@ -308,12 +308,11 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
   case PRESTART_INFO:
     ret = ProcessPhysPrestart(words);
     break;
-  case STANDARD_PHYSICS:
-    /// Ignore this for now; on 2019-05-30 by Kenichi
+  case STANDARD_PHYSICS: /// Ignore as of 2022-01-28
     //if (! dec_par.has_1st_bos) break;
     //dec_par.eventIDstd++;
     //SetEventInfo(&(*list_ed)[dec_par.eventIDstd].event, dec_par.eventIDstd);
-    //ret = ProcessPhysFlush(words); // This function handles STANDARD_PHYSICS as well.
+    //ret = ProcessPhysStdAndFlush(words, STANDARD_PHYSICS);
     break;
   case SPILL_COUNTER:
     ret = ProcessPhysSpillCounter(words);
@@ -322,10 +321,10 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     ret = ProcessPhysRunDesc(words);
     break;
   case BEGIN_SPILL:
-    ret = ProcessPhysBOSEOS(words, TYPE_BOS);
+    ret = ProcessPhysBOSEOS(words, BEGIN_SPILL);
     break;
   case END_SPILL:
-    ret = ProcessPhysBOSEOS(words, TYPE_EOS);
+    ret = ProcessPhysBOSEOS(words, END_SPILL);
     break;
   default: // Awaiting further event types
     ret = -1;
@@ -491,10 +490,11 @@ int MainDaqParser::ProcessPhysSpillCounter(int* words)
   return 0;
 }
 
-int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
+int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
 {
-  string type_str = (type == TYPE_BOS ? "BOS" : "EOS");
-  if (type == TYPE_BOS) {
+  int    spill_type     = (event_type == BEGIN_SPILL ? TYPE_BOS : TYPE_EOS);
+  string spill_type_str = (event_type == BEGIN_SPILL ? "BOS"    : "EOS"   );
+  if (spill_type == TYPE_BOS) {
     dec_par.has_1st_bos = true;
     dec_par.at_bos      = true;
     if (PackOneSpillData() != 0) { // if (SubmitEventData() != 0) {
@@ -523,9 +523,9 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
   }
 
   if (dec_par.verbose) {
-    cout << type_str << " @ coda " << dec_par.codaID << ": spill " << dec_par.spillID << "." << endl;
+    cout << spill_type_str << " @ coda " << dec_par.codaID << ": spill " << dec_par.spillID << "." << endl;
   }
-  dec_par.spillType = type;
+  dec_par.spillType = spill_type;
 
   int idx = 7;
   int evLength = words[0];
@@ -544,7 +544,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
     idx++;
     if (rocID == 2) {
       SpillData* data = &(*list_sd)[dec_par.spillID];
-      if (type == TYPE_BOS) {
+      if (spill_type == TYPE_BOS) {
 	data->bos_coda_id  = dec_par.codaID;
 	data->bos_vme_time = codaEvVmeTime;
 	data->n_bos_spill++;
@@ -553,10 +553,10 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 	data->eos_vme_time = codaEvVmeTime;
 	data->n_eos_spill++;
       }
-      if (dec_par.verbose > 2) cout << "  " << type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << endl;
+      if (dec_par.verbose > 2) cout << "  " << spill_type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << endl;
     }
     /// Skip ROC 25 in END_SPILL since unknown words are placed for debug by Xinkun(?).
-    if (type != TYPE_BOS && rocID == 25) idx = idx_roc_end + 1;
+    if (spill_type != TYPE_BOS && rocID == 25) idx = idx_roc_end + 1;
 
     /// Skip this ROC without looking at board data since it's too small (was "< 5")
     /// (as also done in "case FLUSH_EVENTS").
@@ -564,22 +564,23 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int type)
 
     while (idx <= idx_roc_end) {
       int e906flag = words[idx];
-      //cout << "  " << type_str << " " << idx << " 0x" << hex << e906flag << dec << endl;
+      //cout << "  " << spill_type_str << " " << idx << " 0x" << hex << e906flag << dec << endl;
       idx++;
-      idx = ProcessBoardData (words, idx, idx_roc_end, e906flag);
+      idx = ProcessBoardData (words, idx, idx_roc_end, e906flag, event_type);
       if (idx == -1) return 0;
     }
   }
   return 0;
 }
 
-/** Process one FLUSH_EVENTS event.
+/** Process one FLUSH_EVENTS or STANDARD_PHYSICS event.
  *
  * @param[in] words  The word array of one Coda event.
+ * @param[in] event_type  FLUSH_EVENTS or STANDARD_PHYSICS
  * @return  "0" if OK.  "-1" if NG.
  *
  */
-int MainDaqParser::ProcessPhysFlush(int* words)
+int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
 {
   const bool print_event = false; ///< If "true", print out ROCs & boards found.
   int evLength = words[0];
@@ -621,10 +622,7 @@ int MainDaqParser::ProcessPhysFlush(int* words)
     
     idx++; // go to next position to get ROCID
     int rocID = get_hex_bits (words[idx], 5, 2);
-    if (rocID == 25) { // Skip this ROC temporarily, during development of CRL code
-      idx = idx_roc_end;
-      continue; // Move to next ROC
-    } else if (rocID > 32) {
+    if (rocID > 32) {
       dec_err.SetFlushError(true);
       cerr << "ERROR: rocID > 32." << endl;
       ret = -1;
@@ -640,9 +638,8 @@ int MainDaqParser::ProcessPhysFlush(int* words)
     idx++; // move to the 1st word of board data
     while (idx < idx_roc_end) { // Loop over boards
       int e906flag = words[idx];
-      //cout << "  board " << idx << " " << e906flag << endl;
       if (get_hex_bits(e906flag, 7, 4) != (int)0xe906) {
-	cerr << "Seems not e906flag (0x" << hex << e906flag << dec << ")" << endl;
+	cerr << "Seems not e906flag (0x" << hex << e906flag << dec << ") " << event_type << endl;
         if (dec_par.verbose > 1) {
           cout << "  At idx = " << idx << " / " << evLength << ".\n";
           PrintWords(words, 0, idx + 20);
@@ -658,7 +655,7 @@ int MainDaqParser::ProcessPhysFlush(int* words)
       int board_id = get_hex_bits(words[idx], 6, 1);
       int n_wd_bd  = get_hex_bits(words[idx], 3, 4);
       if (print_event) cout << hex << " " << (e906flag&0xFFFF) << "@" << board_id << dec << "(" << n_wd_bd << ")";
-      idx = ProcessBoardData(words, idx, idx_roc_end, e906flag);
+      idx = ProcessBoardData(words, idx, idx_roc_end, e906flag, event_type);
       if (idx == -1) {
         if (dec_par.verbose > 1) cout << "  ProcessBoardData() returned -1:  0x" << hex  << e906flag << dec << " " << board_id << " " << rocID << " " << dec_par.codaID << endl;
         return 0;
@@ -676,6 +673,7 @@ int MainDaqParser::ProcessPhysFlush(int* words)
 /** Process the word set of one board.
  * @param[in] idx  The 1st index of the target board (i.e. next to the e906flag).
  * @param[in] idx_roc_end  The last index of the current ROC (not board).  This index itself is not included in the word set of the current ROC, i.e. excluded endpoint.
+ * @param[in] event_type  FLUSH_EVENTS or STANDARD_PHYSICS
  * @return  The index that points to the e906flag of the next board (not the last word of the current board).  Or "-1" in case of word overflow (i.e. N of words/board > N of words/ROC).
  *
  * The sub-functions called by this function (like "ProcessBoardJyTDC2()") must return
@@ -686,24 +684,24 @@ int MainDaqParser::ProcessPhysFlush(int* words)
  *
  *
  */
-int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e906flag)
+int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e906flag, const int event_type)
 {
-  if      ( e906flag == (int)0xE906F003 ) idx = ProcessBoardScaler  (words, idx);
-  else if ( e906flag == (int)0xE906F005 ) idx = ProcessBoardV1495TDC(words, idx);
-  else if ( e906flag == (int)0xE906F018 ) idx = ProcessBoardJyTDC2  (words, idx, idx_roc_end);
-  else if ( e906flag == (int)0xE906F019 ) return -1;
-  else if ( e906flag == (int)0xe906f01b ) idx = ProcessBoardFeeQIE      (words, idx);
-  else if ( e906flag == (int)0xE906F014 ) idx = ProcessBoardTriggerCount(words, idx);
-  else if ( e906flag == (int)0xE906F00F ) idx = ProcessBoardTriggerBit  (words, idx);
-
-  // todo: "0xE906F999" below must be changed together with the hardware setting.
-  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdV1495TDC(words, idx);
-  else if ( e906flag == (int)0xE906F010 ) idx = ProcessBoardStdJyTDC2  (words, idx, idx_roc_end);
-  else if ( e906flag == (int)0xe906f013 ) idx = ProcessBoardStdFeeQIE      (words, idx);
-  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdTriggerCount(words, idx);
-  else if ( e906flag == (int)0xE906F999 ) idx = ProcessBoardStdTriggerBit  (words, idx);
-
-  else {
+  if        (e906flag == (int)0xE906F003) { idx = ProcessBoardScaler  (words, idx);
+  } else if (e906flag == (int)0xE906F005) {
+    if (event_type == FLUSH_EVENTS)         idx = ProcessBoardV1495TDC   (words, idx);
+    else                                    idx = ProcessBoardStdV1495TDC(words, idx);
+  } else if (e906flag == (int)0xE906F018) { idx = ProcessBoardJyTDC2     (words, idx, idx_roc_end);
+  } else if (e906flag == (int)0xE906F019) { return -1;
+  } else if (e906flag == (int)0xe906f01b) { idx = ProcessBoardFeeQIE      (words, idx);
+  } else if (e906flag == (int)0xE906F014) { 
+    if (event_type == FLUSH_EVENTS)         idx = ProcessBoardTriggerCount   (words, idx);
+    else                                    idx = ProcessBoardStdTriggerCount(words, idx);
+  } else if (e906flag == (int)0xE906F00F) { 
+    if (event_type == FLUSH_EVENTS)         idx = ProcessBoardTriggerBit   (words, idx, idx_roc_end);
+    else                                    idx = ProcessBoardStdTriggerBit(words, idx);
+  } else if (e906flag == (int)0xE906F010) { idx = ProcessBoardStdJyTDC2    (words, idx, idx_roc_end);
+  } else if (e906flag == (int)0xe906f013) { idx = ProcessBoardStdFeeQIE    (words, idx);
+  } else {
     cerr << "Unexpected board flag in CODA Event " << dec_par.codaID << " ROC " << (int)dec_par.rocID 
 	 << ": e906flag = " << e906flag << " @ " << idx-1 << "\n";
     PrintWords(words, idx-10, idx+40);
@@ -743,7 +741,7 @@ int MainDaqParser::ProcessBoardScaler (int* words, int idx)
     return idx;
 }
 
-int MainDaqParser::ProcessBoardTriggerBit (int* words, int j)
+int MainDaqParser::ProcessBoardTriggerBit (int* words, int j, int idx_roc_end)
 {
    int n_words = words[j]; // N of words including this word itself (with an exception).
    if (n_words == 0) return j+1; // Exception: n_words = 0 (not 1) in case of no event.
@@ -778,9 +776,6 @@ int MainDaqParser::ProcessBoardTriggerBit (int* words, int j)
 
 int MainDaqParser::ProcessBoardTriggerCount (int* words, int j)
 {
-  // KN: Do we need to check this as done in the previous version???  14 means STANDARD_PHYSICS
-  //if (get_hex_bits (words[1], 7, 4) == 14)
-
    int n_words = words[j]; // N of words including this word itself (with an exception).
    if (n_words == 0) return j+1; // Exception: n_words = 0 (not 1) in case of no event.
    j++; // Move to the 1st event word.
@@ -934,11 +929,10 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	int evt_id      =  words[idx+2]; ///< Stored in CPU
 	/// The two words (idx+3 & idx+4) mean event ID stored in FPGA, but
 	/// is temporarily fixed to "0" as of 2017-Jan-11.  Thus not checked for now.
-	//int evt_id_fpga = (words[idx+3]<<15) + words[idx+4];
-	//if (evt_id != evt_id_fpga) {
-	//  list_event[i_evt]->dataQuality |= EVT_ERR_V1495;
-	//  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA in " << dec_par.codaID << ":" << i_evt << endl;
-	//}
+	int evt_id_fpga = (words[idx+3]<<15) + words[idx+4];
+	if (evt_id != evt_id_fpga) {
+	  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA in " << dec_par.codaID << ":" << i_evt << endl;
+	}
 	
 	EventData* ed = &(*list_ed)[evt_id];
 	ed->n_v1495++;
@@ -973,7 +967,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	idx += 5;
 	i_evt++;
       } else { // start signal
-	/// 0xxxyy where xx is the channel and yy is the channel time
+	/// 0xAABB where AA is the channel and BB is the channel time
 	list_chan.push_back( get_hex_bits (words[idx], 3, 2) );
 	list_time.push_back( get_hex_bits (words[idx], 1, 2) );
 	idx++;
@@ -1109,28 +1103,28 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   return idx_events_end;
 }
 
+/**
+ * The STANDARD_PHYSICS output is enabled, according to vme_ts_tir_scale.crl as of 2022-01-28,
+ * but the contents seem not valid.  Thus they are skipped in this function.
+ */
 int MainDaqParser::ProcessBoardStdTriggerBit (int* words, int idx)
 {
-  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
-  ed->n_trig_b++;
-  EventInfo* evt = &ed->event;
-
-  int triggerBits = words[idx];
-  evt->trigger_bits = triggerBits;
-  for (int i = 0; i <  5; i++) {
-    // This function doesn't support the bit order for old runs (# < 4923).
-    evt->MATRIX[i] = get_bin_bit (triggerBits, i  );
-    evt->NIM   [i] = get_bin_bit (triggerBits, i+5);
-  }
-  
-  return idx + 1;
+//  int evt_id      = words[idx];
+//  int triggerBits = words[idx+1];
+//  EventData* ed = &(*list_ed)[dec_par.eventIDstd];
+//  ed->n_trig_b++;
+//  EventInfo* evt = &ed->event;
+//  evt->trigger_bits = triggerBits;
+//  for (int i = 0; i <  5; i++) {
+//    // This function doesn't support the bit order for old runs (# < 4923).
+//    evt->MATRIX[i] = get_bin_bit (triggerBits, i  );
+//    evt->NIM   [i] = get_bin_bit (triggerBits, i+5);
+//  }
+  return idx + 2;
 }
 
 int MainDaqParser::ProcessBoardStdTriggerCount (int* words, int idx)
 {
-  // KN: Do we need to check this as done in the previous version???  14 means STANDARD_PHYSICS
-  //if (get_hex_bits (words[1], 7, 4) == 14)
-
   EventData* ed = &(*list_ed)[dec_par.eventIDstd];
   ed->n_trig_c++;
   EventInfo* evt = &ed->event;
