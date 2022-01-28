@@ -931,7 +931,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	/// is temporarily fixed to "0" as of 2017-Jan-11.  Thus not checked for now.
 	int evt_id_fpga = (words[idx+3]<<15) + words[idx+4];
 	if (evt_id != evt_id_fpga) {
-	  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA in " << dec_par.codaID << ":" << i_evt << endl;
+	  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA at event " << dec_par.codaID << ":" << i_evt << " board 0x" << hex << boardID << dec << endl;
 	}
 	
 	EventData* ed = &(*list_ed)[evt_id];
