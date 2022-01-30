@@ -2,7 +2,6 @@
 #define SQChamberRealization_H
 #include <fun4all/SubsysReco.h>
 class CalibParamXT;
-class CalibParamInTimeTaiwan;
 class SQRun;
 class SQHitVector;
 
@@ -14,7 +13,7 @@ class SQHitVector;
  * We might better have another flag like 'is_efficient' in future.
  *
  * The drift distance of one SQHit object is converted to its TDC time,
- * by using the X-T relation and the T0 value given by CalibParamXT and CalibParamInTimeTaiwan.
+ * by using the X-T relation given by CalibParamXT.
  * User has to use (i.e. register) `CalibDriftDist` to derive the (realistic) drift distance from the TDC time,
  * because this module does _not_ modify the drift distance itself.
  */
@@ -43,7 +42,6 @@ private:
   double m_eff_p2x;
   double m_eff_p2y;
   CalibParamXT* m_cal_xt;
-  CalibParamInTimeTaiwan* m_cal_int;
 
   SQRun*       m_run;
   SQHitVector* m_hit_vec;

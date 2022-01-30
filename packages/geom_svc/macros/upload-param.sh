@@ -20,4 +20,4 @@ case $CATEGORY in
 esac
 
 source /data2/e1039/this-e1039.sh
-root.exe -b "$DIR_SCRIPT/$MACRO(\"$PARAM_TYPE\", \"$PARAM_ID\")"
+root.exe -b -q "$DIR_SCRIPT/$MACRO(\"$PARAM_TYPE\", \"$PARAM_ID\")"

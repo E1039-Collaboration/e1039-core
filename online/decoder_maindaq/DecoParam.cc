@@ -7,7 +7,7 @@ using namespace std;
 DecoParam::DecoParam() :
   fn_in(""), dir_param(""), is_online(false), sampling(0), verbose(0), time_wait(0), 
   runID(0), spillID(0), spillID_cntr(0), spillID_slow(0),
-  targPos(0), targPos_slow(0), codaID(0), rocID(0), eventIDstd(0), hitID(0), 
+  targPos(0), targPos_slow(0), event_count(0), codaID(0), rocID(0), eventIDstd(0), hitID(0), 
   has_1st_bos(false), at_bos(false), turn_id_max(0)
 {
   ;

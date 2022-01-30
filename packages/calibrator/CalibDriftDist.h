@@ -3,7 +3,6 @@
 #include <fun4all/SubsysReco.h>
 class SQHitVector;
 class CalibParamXT;
-class CalibParamInTimeTaiwan;
 
 /// SubsysReco module to calibrate the drift distance and also the in-time window of the chambers and the prop tube.
 /**
@@ -12,11 +11,9 @@ class CalibParamInTimeTaiwan;
  */
 class CalibDriftDist: public SubsysReco {
   bool m_manual_map_selection;
-  std::string m_fn_int;
   std::string m_fn_xt;
   SQHitVector* m_vec_hit;
   CalibParamXT* m_cal_xt;
-  CalibParamInTimeTaiwan* m_cal_int;
 
  public:
   CalibDriftDist(const std::string &name = "CalibDriftDist");
@@ -26,9 +23,8 @@ class CalibDriftDist: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
 
-  void ReadParamFromFile(const char* fn_in_time, const char* fn_xt_curve);
-  CalibParamXT*           GetParamXT    () { return m_cal_xt ; }
-  CalibParamInTimeTaiwan* GetParamInTime() { return m_cal_int; }
+  void ReadParamFromFile(const char* fn_xt_curve);
+  CalibParamXT* GetParamXT() { return m_cal_xt; }
 };
 
 #endif // __CALIB_DRIFT_DIST_H__

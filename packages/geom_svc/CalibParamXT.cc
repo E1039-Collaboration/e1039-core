@@ -158,12 +158,6 @@ void CalibParamXT::Add(
   gr_x2t ->SetPointError(n_pt, 0, dt);
 }
 
-/// To be obsolete.  Use `FindT2X()`.
-bool CalibParamXT::Find(const short det, TGraphErrors*& gr_t2x, TGraphErrors*& gr_t2dx)
-{
-  return FindT2X(det, gr_t2x, gr_t2dx);
-}
-
 bool CalibParamXT::FindT2X(const short det, TGraphErrors*& gr_t2x, TGraphErrors*& gr_t2dx)
 {
   if (m_map_t2x.find(det) != m_map_t2x.end()) {
@@ -195,4 +189,38 @@ void CalibParamXT::Print(std::ostream& os)
   //  n_ent++;
   //}
   //cout << "  n = " << n_ent << endl;
+}
+
+/// Find T1 and T0 (T1 < T0) from the t2x graph.
+bool CalibParamXT::FindT1T0FromT2X(const TGraph* gr_t2x, double& t1, double &t0)
+{
+  if (gr_t2x == 0 || gr_t2x->GetN() == 0) {
+    t1 = t0 = 0;
+    return false;
+  }
+  t1 = gr_t2x->GetX()[0];
+  t0 = gr_t2x->GetX()[gr_t2x->GetN() - 1];
+  if (t1 > t0) { // Need be flipped
+    double value = t1;
+    t1 = t0;
+    t0 = value;
+  }
+  return true;
+}
+
+/// Find T1 and T0 (T1 < T0) from the x2t graph.
+bool CalibParamXT::FindT1T0FromX2T(const TGraph* gr_x2t, double& t1, double &t0)
+{
+  if (gr_x2t == 0 || gr_x2t->GetN() == 0) {
+    t1 = t0 = 0;
+    return false;
+  }
+  t1 = gr_x2t->GetY()[0];
+  t0 = gr_x2t->GetY()[gr_x2t->GetN() - 1];
+  if (t1 > t0) { // Need be flipped
+    double value = t1;
+    t1 = t0;
+    t0 = value;
+  }
+  return true;
 }

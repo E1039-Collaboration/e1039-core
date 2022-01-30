@@ -54,6 +54,7 @@ public:
   virtual       SQHit* at(const size_t idkey) {return NULL;}
   virtual       void   push_back(const SQHit *hit) {}
   virtual       size_t erase(const size_t idkey) {return 0;}
+  virtual       Iter   erase(Iter pos) {return HitVector().end();}
 
   virtual ConstIter begin()                   const {return HitVector().end();}
   virtual ConstIter   end()                   const {return HitVector().end();}

@@ -70,8 +70,8 @@ int MainDaqParser::ParseOneSpill()
 
   dec_par.at_bos = false;
   int* event_words = 0;
-  while (coda->NextCodaEvent(dec_par.codaID, event_words)) {
-    //cout << "NextCodaEvent(): " << dec_par.codaID << " 0x" << hex <<  event_words[1] << dec << endl;
+  while (coda->NextCodaEvent(dec_par.event_count, event_words)) {
+    //cout << "NextCodaEvent(): " << dec_par.event_count << " 0x" << hex <<  event_words[1] << dec << endl;
     int ret = 0;
     int evt_type_id = event_words[1];
     
@@ -101,10 +101,10 @@ int MainDaqParser::ParseOneSpill()
       ret = ProcessCodaFee(event_words);
       break;
     case 0: // Special case which requires waiting and retrying.  Purpose??  Still needed??
-      cout << "Case '0' @ coda " << dec_par.codaID << "." << endl;
+      cout << "Case '0' @ event count " << dec_par.event_count << "." << endl;
       ret = coda->OpenFile(dec_par.fn_in, m_file_size_min, m_sec_wait, m_n_wait);
       if (ret == 0) {
-        ret = coda->JumpCodaEvent(dec_par.codaID, event_words, dec_par.codaID - 1) ? 0 : 2;
+        ret = coda->JumpCodaEvent(dec_par.event_count, event_words, dec_par.event_count - 1) ? 0 : 2;
       }
       break;
     default: // If no match to any given case, print it and exit.
@@ -155,9 +155,11 @@ int MainDaqParser::ProcessCodaPrestart(int* words)
     // int prestartCode = words[1];
     run_data.utime_b = words[2];
     dec_par.runID = run_data.run_id = words[3];
-    // int runType = words[4];
+    int run_type = words[4];
 
-    cout << "  ProcessCodaPrestart " << dec_par.runID << " " << run_data.utime_b << " " << dec_par.sampling << endl;
+    if (dec_par.verbose > 0) {
+      cout << "ProcessCodaPrestart: run " << dec_par.runID << ", utime " << run_data.utime_b << ", type " << run_type << ", sampling " << dec_par.sampling << endl;
+    }
 
     dec_par.InitMapper();
     coda->SetRunNumber(dec_par.runID);
@@ -187,7 +189,7 @@ int MainDaqParser::ProcessCodaFee(int* words)
     if (words[3] == (int)0xe906f011) {
       return ProcessCodaFeeBoard(words);
     } else if (words[3] == (int)0xe906f012) {
-      if (dec_par.verbose) cout << "feePrescale: codaEventID = " << dec_par.codaID << endl;
+      if (dec_par.verbose) cout << "feePrescale: event " << dec_par.event_count << endl;
       return ProcessCodaFeePrescale(words);
     }
   }
@@ -196,7 +198,7 @@ int MainDaqParser::ProcessCodaFee(int* words)
 
 int MainDaqParser::ProcessCodaFeeBoard(int* words)
 {
-  if (dec_par.verbose > 1) cout << "CodaFeeBoard: coda = " << dec_par.codaID << endl;
+  if (dec_par.verbose > 1) cout << "CodaFeeBoard: event " << dec_par.event_count << endl;
 
     FeeData data;
     int size = words[0];
@@ -250,7 +252,7 @@ int MainDaqParser::ProcessCodaFeeBoard(int* words)
 
 int MainDaqParser::ProcessCodaFeePrescale(int* words)
 {
-  if (dec_par.verbose > 1) cout << "CodaFeePrescale: coda = " << dec_par.codaID << endl;
+  if (dec_par.verbose > 1) cout << "CodaFeePrescale: event " << dec_par.event_count << endl;
   int feeTriggerBits = words[4];
   /// 10 bits = FPGA1, ..., FPGA5, NIM1, ..., NIM5
   for (int ii = 0; ii < 10; ii++) {
@@ -280,7 +282,7 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
 /** Process one Coda STANDARD_PHYSICS event.
  *
  *  Format of words:
- *    { 0:evLength, 1:eventCode, 2:headerLength, 3:headerCode, 4:codaEventID-4, 5:eventType, 6:"0", {roc data #1}, {roc data #2},,, {roc data #n} }
+ *    { 0:evLength, 1:eventCode, 2:headerLength, 3:headerCode, 4:codaEventID, 5:eventType, 6:"0", {roc data #1}, {roc data #2},,, {roc data #n} }
  *
  *   - {roc data #*} = { rocEvLength, rocID, X, X, vmeTime, {board data #1}...{board data #n}, [e906c0da] }
  *   - rocEvLength = N of words on this ROC, excluding the word "rocEvLength" itself.
@@ -291,6 +293,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
 {
   run_data.n_phys_evt++;
   int eventCode = words[1];
+  dec_par.codaID = words[4];
   int ret = 0;
   switch (get_hex_bits(eventCode, 7, 4) ) {
   case FLUSH_EVENTS:
@@ -639,7 +642,7 @@ int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
     while (idx < idx_roc_end) { // Loop over boards
       int e906flag = words[idx];
       if (get_hex_bits(e906flag, 7, 4) != (int)0xe906) {
-	cerr << "Seems not e906flag (0x" << hex << e906flag << dec << ") " << event_type << endl;
+	cerr << "ERROR: Not e906flag (0x" << hex << e906flag << dec << ") " << event_type << endl;
         if (dec_par.verbose > 1) {
           cout << "  At idx = " << idx << " / " << evLength << ".\n";
           PrintWords(words, 0, idx + 20);
@@ -657,11 +660,14 @@ int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
       if (print_event) cout << hex << " " << (e906flag&0xFFFF) << "@" << board_id << dec << "(" << n_wd_bd << ")";
       idx = ProcessBoardData(words, idx, idx_roc_end, e906flag, event_type);
       if (idx == -1) {
-        if (dec_par.verbose > 1) cout << "  ProcessBoardData() returned -1:  0x" << hex  << e906flag << dec << " " << board_id << " " << rocID << " " << dec_par.codaID << endl;
+        if (dec_par.verbose > 1) cout << "ERROR: ProcessBoardData() returned -1 @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.codaID << endl;
         return 0;
       }
     }
-    if (idx != idx_roc_end) Abort("idx != idx_roc_end");
+    if (idx != idx_roc_end) {
+      cout << "ERROR: idx(" << idx << ") != idx_roc_end(" << idx_roc_end << ") @ roc " << rocID << ", coda " << dec_par.codaID << endl;
+      return 0;
+    }
   }
   if (print_event) cout << endl;
 
@@ -702,8 +708,7 @@ int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e
   } else if (e906flag == (int)0xE906F010) { idx = ProcessBoardStdJyTDC2    (words, idx, idx_roc_end);
   } else if (e906flag == (int)0xe906f013) { idx = ProcessBoardStdFeeQIE    (words, idx);
   } else {
-    cerr << "Unexpected board flag in CODA Event " << dec_par.codaID << " ROC " << (int)dec_par.rocID 
-	 << ": e906flag = " << e906flag << " @ " << idx-1 << "\n";
+    cerr << "ERROR: Unknown board flag (0x" << hex << e906flag << dec << ") at coda " << dec_par.codaID << ", roc " << (int)dec_par.rocID << ", idx " << idx << endl;
     PrintWords(words, idx-10, idx+40);
     return -1; // Temporary solution.  Skip all boards and move to the next ROC.
     Abort("Unexpected board type.");

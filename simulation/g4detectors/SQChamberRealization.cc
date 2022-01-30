@@ -10,7 +10,6 @@
 #include <phool/recoConsts.h>
 #include <geom_svc/GeomSvc.h>
 #include <geom_svc/CalibParamXT.h>
-#include <geom_svc/CalibParamInTimeTaiwan.h>
 #include "SQChamberRealization.h"
 using namespace std;
 
@@ -26,7 +25,6 @@ SQChamberRealization::SQChamberRealization(const std::string& name)
   , m_eff_p2x(1.)
   , m_eff_p2y(1.)
   , m_cal_xt (0)
-  , m_cal_int(0)
   , m_run    (0)
   , m_hit_vec(0)
 {
@@ -36,7 +34,6 @@ SQChamberRealization::SQChamberRealization(const std::string& name)
 SQChamberRealization::~SQChamberRealization() 
 {
   if (m_cal_xt ) delete m_cal_xt ;
-  if (m_cal_int) delete m_cal_int;
 }
 
 int SQChamberRealization::Init(PHCompositeNode *topNode)
@@ -63,17 +60,13 @@ int SQChamberRealization::InitRun(PHCompositeNode* topNode)
   m_cal_xt->ReadFromDB();
   recoConsts::instance()->set_CharFlag("CHAM_REAL_XT", m_cal_xt->GetMapID());
 
-  m_cal_int = new CalibParamInTimeTaiwan();
-  m_cal_int->SetMapIDbyDB(m_run->get_run_id());
-  m_cal_int->ReadFromDB();
-  recoConsts::instance()->set_CharFlag("CHAM_REAL_INTIME", m_cal_int->GetMapID());
-
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int SQChamberRealization::process_event(PHCompositeNode* topNode) 
 {
-  for (SQHitVector::Iter it = m_hit_vec->begin(); it != m_hit_vec->end(); it++) {
+  SQHitVector::Iter it = m_hit_vec->begin();
+  while (it != m_hit_vec->end()) {
     SQHit* hit = *it;
     int    det_id   = hit->get_detector_id();
     string det_name = GeomSvc::instance()->getDetectorName(det_id);
@@ -83,11 +76,15 @@ int SQChamberRealization::process_event(PHCompositeNode* topNode)
     else if (det_name.substr(0, 2) == "D1" ) is_eff = (gRandom->Rndm() < m_eff_d1 );
     else if (det_name.substr(0, 2) == "D2" ) is_eff = (gRandom->Rndm() < m_eff_d2 );
     else if (det_name.substr(0, 3) == "D3p") is_eff = (gRandom->Rndm() < m_eff_d3p);
+    else if (det_name.substr(0, 3) == "D3m") is_eff = (gRandom->Rndm() < m_eff_d3m);
     else if (det_name.substr(0, 3) == "P1X") is_eff = (gRandom->Rndm() < m_eff_p1x);
     else if (det_name.substr(0, 3) == "P1Y") is_eff = (gRandom->Rndm() < m_eff_p1y);
     else if (det_name.substr(0, 3) == "P2X") is_eff = (gRandom->Rndm() < m_eff_p2x);
     else if (det_name.substr(0, 3) == "P2Y") is_eff = (gRandom->Rndm() < m_eff_p2y);
-    hit->set_in_time(is_eff); // Temporary solution!!
+    if (! is_eff) {
+      it = m_hit_vec->erase(it);
+      continue;
+    }
 
     TGraphErrors* gr_x2t;
     TGraphErrors* gr_x2dt;
@@ -96,23 +93,24 @@ int SQChamberRealization::process_event(PHCompositeNode* topNode)
       double dist    = hit->get_drift_distance();
       double mean_t  = gr_x2t ->Eval(fabs(dist));
       double width_t = gr_x2dt->Eval(fabs(dist));
-      double drift_time = -1;
-      for (int i_try = 0; i_try < 10000; i_try++) {
-        drift_time = gRandom->Gaus(mean_t, width_t);
-        if (drift_time >= 0) break;
+
+      double t1, t0;
+      CalibParamXT::FindT1T0FromX2T(gr_x2t, t1, t0);
+
+      double tdc_time;
+      int n_try = 10000;
+      while (n_try > 0) {
+        tdc_time = gRandom->Gaus(mean_t, width_t);
+        if (t1 <= tdc_time && tdc_time <= t0) break;
+        n_try--;
       }
-      if (drift_time < 0) {
-        cout << PHWHERE << " Failed at generating a positive drift time.  Something unexpected.  Abort." << endl;
+      if (n_try == 0) {
+        cout << PHWHERE << " Failed at generating an in-range drift time.  Something unexpected.  Abort." << endl;
         exit(1);
       }
-
-      double t0 = 0;
-      double center_int, width_int;
-      if (m_cal_int->Find(det_id, ele_id, center_int, width_int)) t0 = center_int + width_int / 2;
-      float tdc_time = t0 - drift_time;
-
       hit->set_tdc_time(tdc_time);
     }
+    it++;
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }
