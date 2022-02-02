@@ -1,5 +1,6 @@
 #ifndef SQChamberRealization_H
 #define SQChamberRealization_H
+#include <GlobalConsts.h>
 #include <fun4all/SubsysReco.h>
 class CalibParamXT;
 class SQRun;
@@ -31,16 +32,20 @@ public:
   void SetChamEff(const double eff_d0, const double eff_d1, const double eff_d2, const double eff_d3p, const double eff_d3m);
   void SetPropTubeEff(const double eff_p1x, const double eff_p1y, const double eff_p2x, const double eff_p2y);
 
+  void ScaleChamReso(const double scale_d0, const double scale_d1, const double scale_d2, const double scale_d3p, const double scale_d3m);
+
+  void FixChamReso(const double reso_d0, const double reso_d1, const double reso_d2, const double reso_d3p, const double reso_d3m);
+
 private:
-  double m_eff_d0;
-  double m_eff_d1;
-  double m_eff_d2;
-  double m_eff_d3p;
-  double m_eff_d3m;
-  double m_eff_p1x;
-  double m_eff_p1y;
-  double m_eff_p2x;
-  double m_eff_p2y;
+  struct PlaneParam {
+    bool   on;
+    double eff;
+    double reso_scale;
+    double reso_fixed;
+    PlaneParam() : on(false), eff(1.0), reso_scale(1.0), reso_fixed(-1) {;}
+  };
+  PlaneParam list_param[nChamberPlanes+nHodoPlanes+nPropPlanes+1];
+
   CalibParamXT* m_cal_xt;
 
   SQRun*       m_run;

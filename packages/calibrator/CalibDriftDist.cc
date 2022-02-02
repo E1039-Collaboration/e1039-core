@@ -40,26 +40,28 @@ int CalibDriftDist::Init(PHCompositeNode* topNode)
 
 int CalibDriftDist::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
-  m_vec_hit         = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  if (!run_header || !m_vec_hit) return Fun4AllReturnCodes::ABORTEVENT;
+  //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  m_vec_hit = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  if (!m_vec_hit) return Fun4AllReturnCodes::ABORTEVENT;
+
+  recoConsts* rc = recoConsts::instance();
 
   if (! m_manual_map_selection) {
+    int run_id = rc->get_IntFlag("RUNNUMBER");
     m_cal_xt = new CalibParamXT();
-    m_cal_xt->SetMapIDbyDB(run_header->get_run_id());
+    m_cal_xt->SetMapIDbyDB(run_id); // (run_header->get_run_id());
     m_cal_xt->ReadFromDB();
   }
 
   SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
   if (param_deco) {
-    param_deco->set_variable(m_cal_xt ->GetParamID(), m_cal_xt ->GetMapID());
+    param_deco->set_variable(m_cal_xt->GetParamID(), m_cal_xt->GetMapID());
   }
 
-  recoConsts* rc = recoConsts::instance();
-  rc->set_CharFlag(m_cal_xt ->GetParamID(), m_cal_xt ->GetMapID());
-
+  rc->set_CharFlag(m_cal_xt->GetParamID(), m_cal_xt->GetMapID());
   if (Verbosity() > 0) {
-    cout << Name() << ": " << m_cal_xt ->GetParamID() << " = " << m_cal_xt ->GetMapID() << "\n";
+    cout << Name() << ": " << m_cal_xt->GetParamID() << " = " << m_cal_xt->GetMapID() << "\n";
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
