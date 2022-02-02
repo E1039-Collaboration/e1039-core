@@ -1,5 +1,6 @@
 #ifndef __CALIB_PARAM_XT_H__
 #define __CALIB_PARAM_XT_H__
+#include <TGraphErrors.h>
 #include "RunParamBase.h"
 class TGraph;
 class TGraphErrors;
@@ -10,6 +11,24 @@ class TGraphErrors;
  * This class carries the in-time range of the chambers, since the minimum and maximum of 't' are T1 and T0.
  */
 class CalibParamXT : public CalibParamBase {
+ public:
+  /// A set of parameters for one detector (plane).
+  struct Set {
+    double X0; ///< Minimum X.  Usually zero.
+    double X1; ///< Maximim X.  Half cell width.
+    double T0; ///< T at X0.  T0 > T1.
+    double T1; ///< T at X1.
+    TGraphErrors t2x;
+    TGraph       t2dx;
+    TGraph       t2dt;
+    TGraphErrors x2t;
+    TGraph       x2dt;
+    TGraph       x2dx;
+    void Add(const double t, const double x, const double dt, const double dx);
+  };
+
+ private:
+  /// A parameter item in TSV or MySQL DB.
   struct ParamItem {
     std::string det_name;
     short  det;
@@ -21,11 +40,8 @@ class CalibParamXT : public CalibParamBase {
   typedef std::vector<ParamItem> List_t;
   List_t m_list; ///< Used to keep all information in the added order.
 
-  typedef std::map<short, TGraphErrors*> Map_t;
-  Map_t m_map_t2x;
-  Map_t m_map_t2dx;
-  Map_t m_map_x2t;
-  Map_t m_map_x2dt;
+  typedef std::map<short, Set> SetMap_t; // [det_id] = Set
+  SetMap_t m_map_sets;
 
  public:
   CalibParamXT();
@@ -34,12 +50,9 @@ class CalibParamXT : public CalibParamBase {
   void Add(const std::string det     ,                     const double t, const double x, const double dt, const double dx);
   void Add(const std::string det_name, const short det_id, const double t, const double x, const double dt, const double dx);
 
-  bool FindT2X(const short det, TGraphErrors*& gr_t2x, TGraphErrors*& gr_t2dx);
-  bool FindX2T(const short det, TGraphErrors*& gr_x2t, TGraphErrors*& gr_x2dt);
-  void Print(std::ostream& os);
+  Set* GetParam(const short det); ///< Return a set of parameters for `det`.  Return 0 if `det` is invalid.
 
-  static bool FindT1T0FromT2X(const TGraph* gr_t2x, double& t1, double &t0);
-  static bool FindT1T0FromX2T(const TGraph* gr_x2t, double& t1, double &t0);
+  void Print(std::ostream& os);
 
  protected:
   int  ReadFileCont(LineList& lines);

@@ -75,23 +75,20 @@ int CalibDriftDist::process_event(PHCompositeNode* topNode)
     int det = hit->get_detector_id();
     if (!geom->isChamber(det) && !geom->isPropTube(det)) continue;
 
-    int ele = hit->get_element_id();
-    TGraphErrors* gr_t2x;
-    TGraphErrors* gr_t2dx;
-    if (! m_cal_xt->FindT2X(det, gr_t2x, gr_t2dx)) {
-      cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << " in CalibDriftDist.\n";
+    CalibParamXT::Set* xt = m_cal_xt->GetParam(det);
+    if (! det) {
+      cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " in CalibDriftDist.\n";
       continue;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
-    double t1, t0;
-    CalibParamXT::FindT1T0FromT2X(gr_t2x, t1, t0);
     float   tdc_time = hit->get_tdc_time();
-    float drift_dist = gr_t2x->Eval(tdc_time);
+    float drift_dist = xt->t2x.Eval(tdc_time);
     if (drift_dist < 0) drift_dist = 0;
     hit->set_drift_distance(drift_dist);
-    hit->set_in_time(t1 <= tdc_time && tdc_time <= t0);
+    hit->set_in_time(xt->T1 <= tdc_time && tdc_time <= xt->T0);
     /// No field for resolution in SQHit now.
 
+    int ele = hit->get_element_id();
     hit->set_pos(geom->getMeasurement(det, ele));
   }
   return Fun4AllReturnCodes::EVENT_OK;

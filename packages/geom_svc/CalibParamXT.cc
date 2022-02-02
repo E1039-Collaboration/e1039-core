@@ -11,6 +11,25 @@
 #include "CalibParamXT.h"
 using namespace std;
 
+void CalibParamXT::Set::Add(const double t, const double x, const double dt, const double dx)
+{
+  int n_pt = t2x.GetN();
+  t2x .SetPoint     (n_pt, t, x);
+  t2dx.SetPoint     (n_pt, t, dx);
+  t2dt.SetPoint     (n_pt, t, dt);
+  t2x .SetPointError(n_pt, 0, dx);
+  x2t .SetPoint     (n_pt, x, t);
+  x2dt.SetPoint     (n_pt, x, dt);
+  x2dx.SetPoint     (n_pt, x, dx);
+  x2t .SetPointError(n_pt, 0, dt);
+  if (n_pt == 0 || X0 > x) X0 = x;
+  if (n_pt == 0 || X1 < x) X1 = x;
+  if (n_pt == 0 || T0 < t) T0 = t;
+  if (n_pt == 0 || T1 > t) T1 = t;
+}
+
+////////////////////////////////////////////////////////////////
+
 CalibParamXT::CalibParamXT() :
   CalibParamBase("xt_curve", "det\tt\tx\tdt\tdx")
 {
@@ -19,10 +38,7 @@ CalibParamXT::CalibParamXT() :
 
 CalibParamXT::~CalibParamXT()
 {
-  for (Map_t::iterator it = m_map_t2x .begin(); it != m_map_t2x .end(); it++) delete it->second;
-  for (Map_t::iterator it = m_map_t2dx.begin(); it != m_map_t2dx.end(); it++) delete it->second;
-  for (Map_t::iterator it = m_map_x2t .begin(); it != m_map_x2t .end(); it++) delete it->second;
-  for (Map_t::iterator it = m_map_x2dt.begin(); it != m_map_x2dt.end(); it++) delete it->second;
+  ;
 }
 
 int CalibParamXT::ReadFileCont(LineList& lines)
@@ -134,50 +150,13 @@ void CalibParamXT::Add(
   item.dt       = dt;
   item.dx       = dx;
   m_list.push_back(item);
-  TGraphErrors* gr_t2x;
-  TGraphErrors* gr_t2dx;
-  TGraphErrors* gr_x2t;
-  TGraphErrors* gr_x2dt;
-  if (m_map_t2x.find(det_id) == m_map_t2x.end()) {
-    m_map_t2x [det_id] = gr_t2x  = new TGraphErrors();
-    m_map_t2dx[det_id] = gr_t2dx = new TGraphErrors();
-    m_map_x2t [det_id] = gr_x2t  = new TGraphErrors();
-    m_map_x2dt[det_id] = gr_x2dt = new TGraphErrors();
-  } else {
-    gr_t2x  = m_map_t2x [det_id];
-    gr_t2dx = m_map_t2dx[det_id];
-    gr_x2t  = m_map_x2t [det_id];
-    gr_x2dt = m_map_x2dt[det_id];
-  }
-  int n_pt = gr_t2x->GetN();
-  gr_t2x ->SetPoint(n_pt, t, x);
-  gr_t2dx->SetPoint(n_pt, t, dx);
-  gr_t2x ->SetPointError(n_pt, 0, dx);
-  gr_x2t ->SetPoint(n_pt, x, t);
-  gr_x2dt->SetPoint(n_pt, x, dt);
-  gr_x2t ->SetPointError(n_pt, 0, dt);
+
+  m_map_sets[det_id].Add(t, x, dt, dx);
 }
 
-bool CalibParamXT::FindT2X(const short det, TGraphErrors*& gr_t2x, TGraphErrors*& gr_t2dx)
+CalibParamXT::Set* CalibParamXT::GetParam(const short det)
 {
-  if (m_map_t2x.find(det) != m_map_t2x.end()) {
-    gr_t2x  = m_map_t2x [det];
-    gr_t2dx = m_map_t2dx[det];
-    return true;
-  }
-  gr_t2x = gr_t2dx = 0;
-  return false;
-}
-
-bool CalibParamXT::FindX2T(const short det, TGraphErrors*& gr_x2t, TGraphErrors*& gr_x2dt)
-{
-  if (m_map_x2t.find(det) != m_map_x2t.end()) {
-    gr_x2t  = m_map_x2t [det];
-    gr_x2dt = m_map_x2dt[det];
-    return true;
-  }
-  gr_x2t = gr_x2dt = 0;
-  return false;
+  return m_map_sets.find(det) != m_map_sets.end()  ?  &m_map_sets[det]  :  0;
 }
 
 void CalibParamXT::Print(std::ostream& os)
@@ -189,38 +168,4 @@ void CalibParamXT::Print(std::ostream& os)
   //  n_ent++;
   //}
   //cout << "  n = " << n_ent << endl;
-}
-
-/// Find T1 and T0 (T1 < T0) from the t2x graph.
-bool CalibParamXT::FindT1T0FromT2X(const TGraph* gr_t2x, double& t1, double &t0)
-{
-  if (gr_t2x == 0 || gr_t2x->GetN() == 0) {
-    t1 = t0 = 0;
-    return false;
-  }
-  t1 = gr_t2x->GetX()[0];
-  t0 = gr_t2x->GetX()[gr_t2x->GetN() - 1];
-  if (t1 > t0) { // Need be flipped
-    double value = t1;
-    t1 = t0;
-    t0 = value;
-  }
-  return true;
-}
-
-/// Find T1 and T0 (T1 < T0) from the x2t graph.
-bool CalibParamXT::FindT1T0FromX2T(const TGraph* gr_x2t, double& t1, double &t0)
-{
-  if (gr_x2t == 0 || gr_x2t->GetN() == 0) {
-    t1 = t0 = 0;
-    return false;
-  }
-  t1 = gr_x2t->GetY()[0];
-  t0 = gr_x2t->GetY()[gr_x2t->GetN() - 1];
-  if (t1 > t0) { // Need be flipped
-    double value = t1;
-    t1 = t0;
-    t0 = value;
-  }
-  return true;
 }

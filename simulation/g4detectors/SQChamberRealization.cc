@@ -81,33 +81,31 @@ int SQChamberRealization::process_event(PHCompositeNode* topNode)
       continue;
     }
 
-    TGraphErrors* gr_x2t;
-    TGraphErrors* gr_x2dt;
-    if (m_cal_xt->FindX2T(det_id, gr_x2t, gr_x2dt)) {
-      double dist    = hit->get_drift_distance();
-      double mean_t  = gr_x2t ->Eval(fabs(dist));
-      double width_t = gr_x2dt->Eval(fabs(dist));
-      if (param->reso_fixed >= 0) width_t  = param->reso_fixed;
-      if (param->reso_scale >= 0) width_t *= param->reso_scale;
+    CalibParamXT::Set* xt = m_cal_xt->GetParam(det_id);
+    if (xt) {
+      double dist = hit->get_drift_distance();
+      int dist_sign = dist > 0  ?  +1  :  -1;
+      dist *= dist_sign; // Made positive.
 
-      double t1, t0;
-      CalibParamXT::FindT1T0FromX2T(gr_x2t, t1, t0);
-      if (Verbosity() >= 2) cout << "       dd=" << dist << " t=" << mean_t << " dt=" << width_t << " t1=" << t1 << " t0=" << t0 << endl;
-      if      (mean_t < t1) mean_t = t1; // This sometimes happens when dist > cell_width...
-      else if (mean_t > t0) mean_t = t0;
+      double dx;
+      if (param->reso_fixed >= 0) dx  = param->reso_fixed;
+      else                        dx  = xt->x2dx.Eval(dist);
+      if (param->reso_scale >= 0) dx *= param->reso_scale;
+      if (Verbosity() >= 2) cout << "       dist=" << dist << " dx=" << dx << " X0=" << xt->X0 << " X1=" << xt->X1 << endl;
 
-      double tdc_time;
+      double dist_new;
       int n_try = 10000;
       while (n_try > 0) {
-        tdc_time = gRandom->Gaus(mean_t, width_t);
-        if (t1 <= tdc_time && tdc_time <= t0) break;
+        dist_new = gRandom->Gaus(dist, dx);
+        if (xt->X0 <= dist_new && dist_new <= xt->X1) break;
         n_try--;
       }
       if (n_try == 0) {
         cout << PHWHERE << " Failed at generating an in-range drift time.  Something unexpected.  Abort." << endl;
         exit(1);
       }
-      hit->set_tdc_time(tdc_time);
+      hit->set_drift_distance(dist_new * dist_sign);
+      hit->set_tdc_time(xt->x2t.Eval(dist_new));
     }
     it++;
   }
