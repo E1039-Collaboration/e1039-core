@@ -41,6 +41,7 @@ public:
 	  _vector.erase(_vector.begin() + idkey);
 	  return _vector.size();
 	}
+  Iter erase(Iter pos) { return _vector.erase(pos); }
 
   ConstIter begin()                   const {return _vector.begin();}
   ConstIter   end()                   const {return _vector.end();}

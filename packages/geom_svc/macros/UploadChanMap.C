@@ -1,4 +1,4 @@
-/// UploadChanMap.C:  Macro to upload the channel mapping from tsv file to MySQL DB.
+/// UploadChanMap.C:  Macro to upload the channel mapping from TSV file to MySQL DB.
 /**
  * Usage:
  * .L UploadChanMap.C
@@ -20,7 +20,7 @@ int UploadChanMap(const std::string type="taiwan", const std::string map_id="201
   map->SetMapIDbyFile(map_id);
   map->ReadFromFile();
   //map->Print(cout);
-  map->WriteToLocalFile("output_for_check.tsv");
+  //map->WriteToLocalFile("output_for_check.tsv");
   map->WriteToDB();
   map->WriteRangeToDB();
   return 0;

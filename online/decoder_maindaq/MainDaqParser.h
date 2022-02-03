@@ -32,13 +32,13 @@ class MainDaqParser {
   int ProcessPhysPrestart    (int* words);
   int ProcessPhysSlow        (int* words);
   int ProcessPhysSpillCounter(int* words);
-  int ProcessPhysBOSEOS      (int* words, const int type);
-  int ProcessPhysFlush       (int* words);
+  int ProcessPhysBOSEOS      (int* words, const int event_type);
+  int ProcessPhysStdAndFlush (int* words, const int event_type);
 
   // Handlers of Board data in flush event
-  int ProcessBoardData        (int* words, int idx, int idx_roc_end, int e906flag);
+  int ProcessBoardData        (int* words, int idx, int idx_roc_end, int e906flag, const int event_type);
   int ProcessBoardScaler      (int* words, int j);
-  int ProcessBoardTriggerBit  (int* words, int j);
+  int ProcessBoardTriggerBit  (int* words, int j, int idx_roc_end);
   int ProcessBoardTriggerCount(int* words, int j);
   int ProcessBoardFeeQIE      (int* words, int j);
   int ProcessBoardV1495TDC    (int* words, int idx);

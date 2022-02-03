@@ -17,9 +17,10 @@ fi
 E1039_CORE_VERSION=default
 IS_ONLINE=false
 DECO_MODE=devel
+N_EVT=0
 
 OPTIND=1
-while getopts ":v:osd" OPT ; do
+while getopts ":v:osde:" OPT ; do
     case $OPT in
         v ) E1039_CORE_VERSION=$OPTARG
             echo "  E1039_CORE version: $E1039_CORE_VERSION"
@@ -32,6 +33,9 @@ while getopts ":v:osd" OPT ; do
             ;;
         d ) DECO_MODE=devel
             echo "  Decoder mode: $DECO_MODE"
+            ;;
+	e ) N_EVT=$OPTARG
+            echo "  N of events: $N_EVT"
             ;;
     esac
 done
@@ -60,7 +64,6 @@ if [ $1 = 'daemon' ] ; then
     root.exe -b -q "$E1039_CORE/macros/online/Daemon4MainDaq.C" &>$FN_LOG &
 else
     RUN=$1
-    N_EVT=0
     echo "Single-run decoding."
     root.exe -b -l <<-EOF
 	.L $E1039_CORE/macros/online/Daemon4MainDaq.C

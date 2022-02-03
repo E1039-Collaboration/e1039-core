@@ -73,10 +73,10 @@ int CodaInputManager::CloseFile()
   return ret;
 }
 
-bool CodaInputManager::JumpCodaEvent(unsigned int& coda_id, int*& words, const int n_evt)
+bool CodaInputManager::JumpCodaEvent(unsigned int& event_count, int*& event_words, const unsigned int n_evt)
 {
-  for (int i_evt = 0; i_evt < n_evt; i_evt++) {
-    if (! NextCodaEvent(coda_id, words)) {
+  for (unsigned int i_evt = 0; i_evt < n_evt; i_evt++) {
+    if (! NextCodaEvent(event_count, event_words)) {
       cout << "CodaInputManager::SkipCodaEvent():  Failed at i=" << i_evt << " (n=" << n_evt << ")." << endl;
       return false;
     }
@@ -84,13 +84,13 @@ bool CodaInputManager::JumpCodaEvent(unsigned int& coda_id, int*& words, const i
   return true;
 }
 
-bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
+bool CodaInputManager::NextCodaEvent(unsigned int& event_count, int*& event_words)
 {
   if (m_go_end) return false;
   int ret = evRead(m_handle, m_event_words, buflen);
   if (ret == 0) {
-    coda_id = m_event_count++;
-    words   = m_event_words;
+    event_count = m_event_count++;
+    event_words = m_event_words;
     return true;
   }
 
@@ -108,10 +108,10 @@ bool CodaInputManager::NextCodaEvent(unsigned int& coda_id, int*& words)
       return false;
     }
     // Re-open the file, requring a larger file size
-    int event_count = m_event_count;
     ret = OpenFile(m_fname, m_file_size + 32768, 10, 20);
     if (ret == 0) {
-      return JumpCodaEvent(coda_id, words, event_count + 1);
+      unsigned int event_count_jump = m_event_count + 1;
+      return JumpCodaEvent(event_count, event_words, event_count_jump);
     } else {
       cout << "OpenFile() returned " << ret << "." << endl;
     }

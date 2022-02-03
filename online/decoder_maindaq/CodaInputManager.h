@@ -30,8 +30,8 @@ class CodaInputManager {
 
   int OpenFile(const std::string fname, const long file_size_min=0, const int sec_wait=10, const int n_wait=0);
   int CloseFile();
-  bool JumpCodaEvent(unsigned int& coda_id, int*& event_words, const int n_evt);
-  bool NextCodaEvent(unsigned int& coda_id, int*& event_words);
+  bool JumpCodaEvent(unsigned int& event_count, int*& event_words, const unsigned int n_evt);
+  bool NextCodaEvent(unsigned int& event_count, int*& event_words);
 
  private:
   bool file_exists(const std::string fname);

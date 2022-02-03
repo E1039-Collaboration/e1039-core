@@ -36,17 +36,21 @@ int CalibHodoInTime::Init(PHCompositeNode* topNode)
 
 int CalibHodoInTime::InitRun(PHCompositeNode* topNode)
 {
-  SQRun* run_header = findNode::getClass<SQRun      >(topNode, "SQRun");
-  m_vec_hit         = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  m_vec_trhit       = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-  if (!run_header || !m_vec_hit || !m_vec_trhit) return Fun4AllReturnCodes::ABORTEVENT;
+  //SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
+  //if (!run_header) return Fun4AllReturnCodes::ABORTEVENT;
+  m_vec_hit   = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  m_vec_trhit = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+  if (!m_vec_hit || !m_vec_trhit) return Fun4AllReturnCodes::ABORTEVENT;
+
+  recoConsts* rc = recoConsts::instance();
+  int run_id = rc->get_IntFlag("RUNNUMBER");
 
   m_cal_taiwan = new CalibParamInTimeTaiwan();
-  m_cal_taiwan->SetMapIDbyDB(run_header->get_run_id());
+  m_cal_taiwan->SetMapIDbyDB(run_id); // (run_header->get_run_id());
   m_cal_taiwan->ReadFromDB();
 
   m_cal_v1495 = new CalibParamInTimeV1495();
-  m_cal_v1495->SetMapIDbyDB(run_header->get_run_id());
+  m_cal_v1495->SetMapIDbyDB(run_id); // (run_header->get_run_id());
   m_cal_v1495->ReadFromDB();
 
   SQParamDeco* param_deco = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
@@ -55,7 +59,6 @@ int CalibHodoInTime::InitRun(PHCompositeNode* topNode)
     param_deco->set_variable(m_cal_v1495 ->GetParamID(), m_cal_v1495 ->GetMapID());
   }
 
-  recoConsts* rc = recoConsts::instance();
   rc->set_CharFlag(m_cal_taiwan->GetParamID(), m_cal_taiwan->GetMapID());
   rc->set_CharFlag(m_cal_v1495 ->GetParamID(), m_cal_v1495 ->GetMapID());
 
