@@ -13,12 +13,12 @@ class UtilOnline {
  public:
   static void UseOutputLocationForDevel();
 
-  static void SetEndFileDir   (const std::string dir) { m_dir_end     = dir; }
-  static void SetCodaFileDir  (const std::string dir) { m_dir_coda    = dir; }
-  static void SetDstFileDir   (const std::string dir) { m_dir_dst     = dir; }
-  static void SetEDDstFileDir (const std::string dir) { m_dir_eddst   = dir; }
-  static void SetOnlMonDir    (const std::string dir) { m_dir_onlmon  = dir; }
-  static void SetSchemaMainDaq(const std::string sch) { m_sch_maindaq = sch; }
+  static void SetEndFileDir   (const std::string dir);
+  static void SetCodaFileDir  (const std::string dir);
+  static void SetDstFileDir   (const std::string dir);
+  static void SetEDDstFileDir (const std::string dir);
+  static void SetOnlMonDir    (const std::string dir);
+  static void SetSchemaMainDaq(const std::string sch);
 
   static std::string GetEndFileDir   () { return m_dir_end    ; }
   static std::string GetCodaFileDir  () { return m_dir_coda   ; }
