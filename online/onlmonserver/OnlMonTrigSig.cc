@@ -46,9 +46,9 @@ int OnlMonTrigSig::InitOnlMon(PHCompositeNode* topNode)
 int OnlMonTrigSig::InitRunOnlMon(PHCompositeNode* topNode)
 {
   const double DT = 40/9.0; // 4/9 ns per single count of Taiwan TDC
-  const int NT    = 100;
+  const int NT    = 200;
   const double T0 = 100.5*DT;
-  const double T1 = 200.5*DT;
+  const double T1 = 300.5*DT;
   h2_bi_fpga = new TH2D("h2_bi_fpga", "FPGA Before Inhibit;tdcTime;", NT, T0, T1,  5, 0.5, 5.5);
   h2_ai_fpga = new TH2D("h2_ai_fpga",  "FPGA After Inhibit;tdcTime;", NT, T0, T1,  5, 0.5, 5.5);
   h2_bi_nim  = new TH2D("h2_bi_nim" ,  "NIM Before Inhibit;tdcTime;", NT, T0, T1,  5, 0.5, 5.5);
