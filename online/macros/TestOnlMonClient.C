@@ -4,16 +4,15 @@ R__LOAD_LIBRARY(libonlmonserver)
 int TestOnlMonClient(const int run_id=3620, const int n_evt=0)
 {
   gSystem->Umask(0002);
-
   string fn_in = UtilOnline::GetDstFilePath(run_id);
   cout << "DST = " << fn_in << endl;
-
-  //UtilOnline::UseOutputLocationForDevel();
   UtilOnline::SetOnlMonDir("/dev/shm/$USER/onlmon/plots");
-
   OnlMonServer* se = OnlMonServer::instance();
   se->SetOnline(false);
 
+  ///
+  /// Enable only what you want to test
+  ///
   se->registerSubsystem(new OnlMonMainDaq());
   se->registerSubsystem(new OnlMonTrigSig());
   //se->registerSubsystem(new OnlMonTrigNim());
@@ -47,13 +46,12 @@ int TestOnlMonClient(const int run_id=3620, const int n_evt=0)
   //se->registerSubsystem(new OnlMonProp (OnlMonProp::P1));
   //se->registerSubsystem(new OnlMonProp (OnlMonProp::P2));
 
+
   Fun4AllInputManager* in = new Fun4AllDstInputManager("DSTIN");
   se->registerInputManager(in);
-
   in->fileopen(fn_in);
   se->run(n_evt);
   se->End();
-  
   delete se;
   cout << "\nAll finished.\n"
        << "OnlMon output dir = " << UtilOnline::GetOnlMonDir() << endl;
