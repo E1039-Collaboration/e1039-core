@@ -21,7 +21,8 @@ class DecoError {
     START_WO_STOP   = 4,
     START_NOT_RISE  = 5,
     DIRTY_FINISH    = 6,
-    N_TDC_ERROR     = 7
+    N_TDC_ERROR     = 7,
+    V1495_0BAD      = 8
   } TdcError_t;
 
  private:

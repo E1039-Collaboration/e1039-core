@@ -29,6 +29,7 @@
 #include <phool/PHDataNode.h>
 #include <phool/recoConsts.h>
 #include <cstdlib>
+#include <iomanip>
 #include <memory>
 
 //#include <boost/tokenizer.hpp>
@@ -36,6 +37,17 @@
 //#include <boost/lexical_cast.hpp>
 
 using namespace std;
+
+const std::vector<std::string> Fun4AllEVIOInputManager::LIST_TIMERS = {
+  "run_open"          , 
+  "run_get_node"      , 
+  "run_get_event"     , 
+  "run_set_param"     , 
+  "run_set_run_data"  , 
+  "run_set_spill_data", 
+  "run_set_event_data", 
+  "run_set_hit_data"
+};
 
 Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const string &topnodename) :
  Fun4AllInputManager(name, ""),
@@ -92,6 +104,12 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
   //    topNode->addNode(newNode);
   //  }
   syncobject = new SyncObjectv2();
+
+  for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
+    string name = *it;
+    m_timers[name] = new PHTimer(name);
+  }
+
   return ;
 }
 
@@ -103,6 +121,7 @@ Fun4AllEVIOInputManager::~Fun4AllEVIOInputManager()
     }
   if (parser) delete parser;
   delete syncobject;
+  for (auto it = m_timers.begin(); it != m_timers.end(); it++) delete it->second;
 }
 
 int Fun4AllEVIOInputManager::fileopen(const string &filenam)
@@ -124,7 +143,7 @@ int Fun4AllEVIOInputManager::fileopen(const string &filenam)
     }
 
   events_thisfile = 0;
-  parser->dec_par.verbose = Verbosity();
+  parser->dec_par.verb = Verbosity();
   int status = parser->OpenCodaFile(fname);
   if (status!=0) {
     cout << PHWHERE << ThisName << ": could not open file " << fname << " with status = " << status << "." << endl;
@@ -142,6 +161,8 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 {
   //cout << "Fun4AllEVIOInputManager::run(): " << nevents << endl;
   readagain:
+
+  m_timers["run_open"]->restart();
   if (!isopen)
     {
       if (filelist.empty())
@@ -162,10 +183,10 @@ int Fun4AllEVIOInputManager::run(const int nevents)
             }
         }
     }
-  if (verbosity > 3)
-    {
-      cout << "Getting Event from " << Name() << endl;
-    }
+  m_timers["run_open"]->stop();
+
+  m_timers["run_get_node"]->restart();
+  if (verbosity > 3) cout << "Getting Event from " << Name() << endl;
   //  cout << "running event " << nevents << endl;
   //PHNodeIterator iter(topNode);
   SQRun* run_header = findNode::getClass<SQRun>(topNode, "SQRun");
@@ -190,7 +211,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   if (!trig_hit_vec) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
-  
+  m_timers["run_get_node"]->stop();
+
+  m_timers["run_get_event"]->restart();
   //PHDataNode<Event> *PrdfNode = dynamic_cast<PHDataNode<Event> *>(iter.findFirst("PHDataNode","EVIO"));
   EventData* ed = 0;
   SpillData* sd = 0;
@@ -211,27 +234,30 @@ int Fun4AllEVIOInputManager::run(const int nevents)
       //  evt = new EVIO_Event(data_ptr);
       parser->NextPhysicsEvent(ed, sd, rd);
     }
+  m_timers["run_get_event"]->stop();
+
   if (!ed)
     {
       fileclose();
       goto readagain;
     }
-  if (verbosity > 3)
-    {
-      cout << ThisName << ":  run " << rd->run_id << ", spill " << sd->spill_id << ", event " << ed->event.eventID << endl;
-    }
+  if (verbosity > 3) cout << ThisName << ":  run " << rd->run_id << ", spill " << sd->spill_id << ", event " << ed->event.eventID << endl;
 
   if (events_total == 0) {
+    m_timers["run_set_param"]->restart();
     SQParamDeco* sqpd = findNode::getClass<SQParamDeco>(topNode, "SQParamDeco");
     if (!sqpd) return Fun4AllReturnCodes::ABORTEVENT;
     DecoParam* dp = &parser->dec_par;
     sqpd->set_variable(dp->chan_map_taiwan.GetParamID(), dp->chan_map_taiwan.GetMapID());
     sqpd->set_variable(dp->chan_map_v1495 .GetParamID(), dp->chan_map_v1495 .GetMapID());
     sqpd->set_variable(dp->chan_map_scaler.GetParamID(), dp->chan_map_scaler.GetMapID());
+    m_timers["run_set_param"]->stop();
   }
 
   events_total++;
   events_thisfile++;
+
+  m_timers["run_set_run_data"]->restart();
 
   SetRunNumber                (rd->run_id);
   mySyncManager->PrdfEvents   (events_thisfile);
@@ -272,7 +298,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   run_header->set_n_v1495_d1ad   (rd->n_v1495_d1ad);
   run_header->set_n_v1495_d2ad   (rd->n_v1495_d2ad);
   run_header->set_n_v1495_d3ad   (rd->n_v1495_d3ad);
+  m_timers["run_set_run_data"]->stop();
 
+  m_timers["run_set_spill_data"]->restart();
   SQSpill* spill = spill_map->get(sd->spill_id);
   if (! spill) {
     spill = new SQSpill_v2();
@@ -305,7 +333,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
     spill_map->insert(spill);
   }
+  m_timers["run_set_spill_data"]->stop();
 
+  m_timers["run_set_event_data"]->restart();
   event_header->set_run_id       (ed->event.runID  );
   event_header->set_spill_id     (ed->event.spillID);
   event_header->set_event_id     (ed->event.eventID);
@@ -337,7 +367,9 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   event_header->set_n_board_taiwan    (ed->n_tdc   );
   event_header->set_n_board_trig_bit  (ed->n_trig_b);
   event_header->set_n_board_trig_count(ed->n_trig_c);
+  m_timers["run_set_event_data"]->stop();
 
+  m_timers["run_set_hit_data"]->restart();
   for (HitDataList::iterator it = ed->list_hit.begin(); it != ed->list_hit.end(); it++) {
     HitData* hd = &*it;
     SQHit* hit = new SQHit_v1();
@@ -365,6 +397,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     trig_hit_vec->push_back(hit);
     delete hit;
   }
+  m_timers["run_set_hit_data"]->stop();
 
   // check if the local SubsysReco discards this event
   if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK)
@@ -384,8 +417,18 @@ int Fun4AllEVIOInputManager::fileclose()
     }
 
   parser->End();
-  //delete parser;
-  //parser = NULL;
+  cout << "Fun4AllEVIOInputManager: Timer:\n";
+  for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
+    string   name  = *it;
+    PHTimer* timer = m_timers[name];
+    unsigned int num = timer->get_ncycle();
+    double      time = timer->get_accumulated_time();
+    cout << "  "  << setw(25) << left << name << right
+         << " "   << setw(15) << time/num << " ms"
+         << " * " << setw( 8) << num
+         << " = " << setw( 8) << (int)round(time/1000) << " s" << endl;
+  }
+
   isopen = 0;
   // if we have a file list, move next entry to top of the list
   // or repeat the same entry again
