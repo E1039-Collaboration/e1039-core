@@ -7,11 +7,14 @@
 #include <map>
 
 class PHCompositeNode;
+class PHTimer;
 class SyncObject;
 class MainDaqParser;
 
 class Fun4AllEVIOInputManager : public Fun4AllInputManager
 {
+  static const std::vector<std::string> LIST_TIMERS;
+
  public:
   Fun4AllEVIOInputManager(const std::string &name = "DUMMY", const std::string &topnodename = "TOP");
   virtual ~Fun4AllEVIOInputManager();
@@ -41,6 +44,7 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   PHCompositeNode *topNode;
   SyncObject* syncobject;
   MainDaqParser* parser;
+  std::map<std::string, PHTimer*> m_timers; // [timer name]
 };
 
 #endif /* __Fun4AllEVIOInputManager_H_ */

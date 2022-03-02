@@ -108,9 +108,10 @@ bool CodaInputManager::NextCodaEvent(unsigned int& event_count, int*& event_word
       return false;
     }
     // Re-open the file, requring a larger file size
-    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20);
+    unsigned int event_count_jump = m_event_count + 1;
+    ret = OpenFile(m_fname, m_file_size + 32768, 10, 20); // m_event_count is reset
     if (ret == 0) {
-      unsigned int event_count_jump = m_event_count + 1;
+      cout << "Jumping over " << event_count_jump << " events." << endl;
       return JumpCodaEvent(event_count, event_words, event_count_jump);
     } else {
       cout << "OpenFile() returned " << ret << "." << endl;
@@ -239,7 +240,8 @@ void Abort(const char* message)
 void PrintWords(int* words, int idx_begin, int idx_end, int idx_atte)
 {
   cout << "  PrintWords[" << idx_begin << "-" << idx_end << "]:\n";
-  for (int idx = idx_begin; idx < idx_end; idx++) {
+  int idx_b5 = (idx_begin / 5) * 5;
+  for (int idx = idx_b5; idx < idx_end; idx++) {
     if (idx % 5 == 0) cout << "\n  " << setw(6) << idx << ": ";
     cout << " " << hex << setw(8) << words[idx] << dec;
     if (idx == idx_atte) cout << "!";

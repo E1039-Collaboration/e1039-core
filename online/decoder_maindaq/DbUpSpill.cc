@@ -153,7 +153,8 @@ void DbUpSpill::UploadToScalerTable(SQSpill* spi, const std::string boseos)
   oss.str("");
   oss << "delete from " << table_name << " where run_id = " << run_id << " and spill_id = " << spill_id;
   if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  DbUpSpill::UploadToScalerTable()." << endl;
+    cerr << "!!ERROR!!  DbUpSpill::UploadToScalerTable().\n"
+         << "  Query: " << oss.str() << endl;
     return;
   }
   oss.str("");
@@ -166,7 +167,8 @@ void DbUpSpill::UploadToScalerTable(SQSpill* spi, const std::string boseos)
   oss.seekp(-1, oss.cur);
   oss << " "; // Erase the last ',' char.
   if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  DbUpSpill::UploadToScalerTable()." << endl;
+    cerr << "!!ERROR!!  DbUpSpill::UploadToScalerTable().\n"
+         << "  Query: " << oss.str() << endl;
     return;
   }
 }
@@ -212,7 +214,8 @@ void DbUpSpill::UploadToSlowContTable(SQSpill* spi)
     oss.str("");
     oss << "delete from " << table_name << " where run_id = " << run_id << " and spill_id = " << spill_id;
     if (! db.Con()->Exec(oss.str().c_str())) {
-      cerr << "!!ERROR!!  DbUpSpill::UploadToSlowContTable()." << endl;
+      cerr << "!!ERROR!!  DbUpSpill::UploadToSlowContTable().\n"
+           << "  Query: " << oss.str() << endl;
       continue;
     }
     oss.str("");
@@ -220,7 +223,8 @@ void DbUpSpill::UploadToSlowContTable(SQSpill* spi)
     oss.seekp(-1, oss.cur);
     oss << " "; // Erase the last ',' char.
     if (! db.Con()->Exec(oss.str().c_str())) {
-      cerr << "!!ERROR!!  DbUpSpill::UploadToSlowContTable()." << endl;
+      cerr << "!!ERROR!!  DbUpSpill::UploadToSlowContTable().\n"
+           << "  Query: " << oss.str() << endl;
       continue;
     }
   }

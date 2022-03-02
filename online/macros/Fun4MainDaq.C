@@ -40,7 +40,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   se->SetOnline(is_online);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
-  in->Verbosity(2);
+  in->Verbosity(3);
   in->SetOnline(is_online);
   //if (is_online) in->PretendSpillInterval(20);
   in->fileopen(fn_in);
