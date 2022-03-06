@@ -54,6 +54,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   if (use_onlmon) { // Register the online-monitoring clients
     if (is_online) se->StartServer();
+    //OnlMonComm::instance()->SetMaxNumSelSpills(600); // default = 600
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonTrigNim());
