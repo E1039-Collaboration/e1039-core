@@ -10,8 +10,10 @@ class OnlMonMainDaq: public OnlMonClient {
   TH1* h1_evt_qual;
   TH1* h1_flag_v1495;
   TH1* h1_cnt;
-  TH1* h1_nevt_sp;
   TH2* h2_nhit_pl;
+  TH1* h1_nevt_sp;
+  TH1* h1_time_deco;
+  TH1* h1_time_ana;
 
  public:
   OnlMonMainDaq();
@@ -24,6 +26,9 @@ class OnlMonMainDaq: public OnlMonClient {
   int EndOnlMon(PHCompositeNode *topNode);
   int FindAllMonHist();
   int DrawMonitor();
+
+ protected:
+  double EvalAverageOfFilledBins(TH1* h1) const;
 };
 
 #endif /* _ONL_MON_MAIN_DAQ__H_ */

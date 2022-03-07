@@ -54,10 +54,21 @@ ScalerData::ScalerData() :
   ;
 }
 
-SpillData::SpillData() : 
-  spill_id(0), spill_id_slow(0), run_id(0), targ_pos(0), 
-  bos_coda_id(0), bos_vme_time(0), eos_coda_id(0), eos_vme_time(0), 
-  n_bos_spill(0), n_eos_spill(0), n_slow(0), n_scaler(0)
+SpillData::SpillData()
+  : spill_id     (0)
+  , spill_id_slow(0)
+  , run_id       (0)
+  , targ_pos     (0)
+  , bos_coda_id  (0)
+  , bos_vme_time (0)
+  , eos_coda_id  (0)
+  , eos_vme_time (0)
+  , n_bos_spill  (0)
+  , n_eos_spill  (0)
+  , n_slow       (0)
+  , n_scaler     (0)
+  , ts_deco_begin(TTimeStamp(0, 0))
+  , ts_deco_end  (TTimeStamp(0, 0))
 {
   ;
 }

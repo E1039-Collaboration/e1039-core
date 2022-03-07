@@ -8,10 +8,13 @@
 #include <interface_main/SQParamDeco_v1.h>
 #include <interface_main/SQHit_v1.h>
 #include <interface_main/SQHitVector_v1.h>
-#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQEvent_v2.h>
+#include <interface_main/SQHardEvent_v1.h>
 #include <interface_main/SQRun_v1.h>
 #include <interface_main/SQSpill_v2.h>
 #include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQHardSpill_v1.h>
+#include <interface_main/SQIntMap_v1.h>
 #include <interface_main/SQStringMap.h>
 #include <interface_main/SQScaler_v1.h>
 #include <interface_main/SQSlowCont_v1.h>
@@ -78,6 +81,9 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
   PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(new SQSpillMap_v1(), "SQSpillMap", "PHObject");
   runNode->addNode(spillNode);
 
+  PHIODataNode<PHObject>* hardSpillNode = new PHIODataNode<PHObject>(new SQIntMap_v1(), "SQHardSpillMap", "PHObject");
+  runNode->addNode(hardSpillNode);
+
   PHIODataNode<PHObject>* paramDecoNode = new PHIODataNode<PHObject>(new SQParamDeco_v1(), "SQParamDeco", "PHObject");
   runNode->addNode(paramDecoNode);
 
@@ -88,8 +94,11 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
     topNode->addNode(eventNode);
   }
   
-  PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(new SQEvent_v1(),"SQEvent", "PHObject");
+  PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(new SQEvent_v2(),"SQEvent", "PHObject");
   eventNode->addNode(eventHeaderNode);
+
+  PHIODataNode<PHObject>* hardEventNode = new PHIODataNode<PHObject>(new SQHardEvent_v1(),"SQHardEvent", "PHObject");
+  eventNode->addNode(hardEventNode);
 
   PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(new SQHitVector_v1(), "SQHitVector", "PHObject");
   eventNode->addNode(hitNode);
@@ -197,10 +206,18 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   if (!spill_map) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+  SQIntMap* hard_spill_map = findNode::getClass<SQIntMap>(topNode, "SQHardSpillMap");
+  if (!hard_spill_map) {
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+
   SQEvent* event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (!event_header) {
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+
+  SQHardEvent* hard_evt = findNode::getClass<SQHardEvent>(topNode, "SQHardEvent");
+  if (!hard_evt) return Fun4AllReturnCodes::ABORTEVENT;
 
   SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if (!hit_vec) {
@@ -307,10 +324,6 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     spill->set_spill_id    (sd->spill_id);
     spill->set_run_id      (sd->run_id  );
     spill->set_target_pos  (sd->targ_pos);
-    spill->set_bos_coda_id (sd->bos_coda_id );
-    spill->set_bos_vme_time(sd->bos_vme_time);
-    spill->set_eos_coda_id (sd->eos_coda_id );
-    spill->set_eos_vme_time(sd->eos_vme_time);
     for (ScalerDataList::iterator it = sd->list_scaler.begin(); it != sd->list_scaler.end(); it++) {
       SQScaler_v1 obj;
       obj.set_name (it->name );
@@ -333,15 +346,24 @@ int Fun4AllEVIOInputManager::run(const int nevents)
     }
     spill_map->insert(spill);
   }
+  SQHardSpill* hard_spill = (SQHardSpill*)hard_spill_map->get(sd->spill_id);
+  if (! hard_spill) {
+    SQHardSpill_v1 obj;
+    obj.set_bos_coda_id         (sd->bos_coda_id );
+    obj.set_bos_vme_time        (sd->bos_vme_time);
+    obj.set_eos_coda_id         (sd->eos_coda_id );
+    obj.set_eos_vme_time        (sd->eos_vme_time);
+    obj.set_timestamp_deco_begin(sd->ts_deco_begin);
+    obj.set_timestamp_deco_end  (sd->ts_deco_end  );
+    hard_spill = (SQHardSpill*)hard_spill_map->insert(sd->spill_id, &obj);
+  }
   m_timers["run_set_spill_data"]->stop();
 
   m_timers["run_set_event_data"]->restart();
   event_header->set_run_id       (ed->event.runID  );
   event_header->set_spill_id     (ed->event.spillID);
   event_header->set_event_id     (ed->event.eventID);
-  event_header->set_coda_event_id(ed->event.codaEventID);
   event_header->set_data_quality (ed->event.dataQuality);
-  event_header->set_vme_time     (ed->event.vmeTime);
   event_header->set_trigger      (SQEvent::MATRIX1, ed->event.MATRIX[0]);
   event_header->set_trigger      (SQEvent::MATRIX2, ed->event.MATRIX[1]);
   event_header->set_trigger      (SQEvent::MATRIX3, ed->event.MATRIX[2]);
@@ -352,21 +374,24 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   event_header->set_trigger      (SQEvent::NIM3   , ed->event.NIM   [2]);
   event_header->set_trigger      (SQEvent::NIM4   , ed->event.NIM   [3]);
   event_header->set_trigger      (SQEvent::NIM5   , ed->event.NIM   [4]);
-  for (int ii=0; ii<5; ii++) {
-    event_header->set_raw_matrix      (ii, ed->event.RawMATRIX     [ii]);
-    event_header->set_after_inh_matrix(ii, ed->event.AfterInhMATRIX[ii]);
-  }
   for (int ii=0; ii<4; ii++) event_header->set_qie_presum(ii, ed->event.sums[ii]);
   event_header->set_qie_trigger_count(ed->event.triggerCount);
   event_header->set_qie_turn_id      (ed->event.turnOnset);
   event_header->set_qie_rf_id        (ed->event.rfOnset);
   for (int ii=0; ii<33; ii++) event_header->set_qie_rf_intensity(ii-16, ed->event.rf[ii]);
-  event_header->set_flag_v1495        (ed->event.flag_v1495);
-  event_header->set_n_board_qie       (ed->n_qie   );
-  event_header->set_n_board_v1495     (ed->n_v1495 );
-  event_header->set_n_board_taiwan    (ed->n_tdc   );
-  event_header->set_n_board_trig_bit  (ed->n_trig_b);
-  event_header->set_n_board_trig_count(ed->n_trig_c);
+
+  hard_evt->set_coda_event_id(ed->event.codaEventID);
+  hard_evt->set_vme_time     (ed->event.vmeTime);
+  for (int ii=0; ii<5; ii++) {
+    hard_evt->set_raw_matrix      (ii, ed->event.RawMATRIX     [ii]);
+    hard_evt->set_after_inh_matrix(ii, ed->event.AfterInhMATRIX[ii]);
+  }
+  hard_evt->set_flag_v1495        (ed->event.flag_v1495);
+  hard_evt->set_n_board_qie       (ed->n_qie   );
+  hard_evt->set_n_board_v1495     (ed->n_v1495 );
+  hard_evt->set_n_board_taiwan    (ed->n_tdc   );
+  hard_evt->set_n_board_trig_bit  (ed->n_trig_b);
+  hard_evt->set_n_board_trig_count(ed->n_trig_c);
   m_timers["run_set_event_data"]->stop();
 
   m_timers["run_set_hit_data"]->restart();

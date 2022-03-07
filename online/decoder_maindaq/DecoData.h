@@ -8,6 +8,7 @@
 #include <map>
 #include <algorithm>
 #include <TObject.h>
+#include <TTimeStamp.h>
 
 /* ================================================================
  DecoData
@@ -151,6 +152,9 @@ struct SpillData {
   unsigned int n_eos_spill;
   unsigned int n_slow;
   unsigned int n_scaler;
+
+  TTimeStamp ts_deco_begin;
+  TTimeStamp ts_deco_end;
 
   SlowControlDataList list_slow_cont;
   ScalerDataList list_scaler;

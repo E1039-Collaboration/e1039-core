@@ -381,6 +381,7 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     run_data.n_flush_evt++;
     m_timers["process_phys_flush"]->restart();
     ret = ProcessPhysStdAndFlush(words, FLUSH_EVENTS);
+    dec_par.ts_deco_end = TTimeStamp(); // The time of the last FLUSH event will be used.
     m_timers["process_phys_flush"]->stop();
     if (dec_err.GetFlushError()) run_data.n_flush_evt_bad++;
     break;
@@ -610,6 +611,8 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
     /// initialize
     dec_par.spillID_cntr = dec_par.spillID_slow = 0; 
     dec_par.turn_id_max  = 0;
+  } else { // EOS
+    dec_par.ts_deco_begin = TTimeStamp();
   }
 
   if (dec_par.verb) {
@@ -823,7 +826,7 @@ int MainDaqParser::ProcessBoardScaler (int* words, int idx)
       data.value = value;
       //if (! dec_par.map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
       if (! dec_par.chan_map_scaler.Find(data.roc, data.board, data.chan, data.name)) {
-	if (dec_par.verb > 2) cout << "  Unmapped Scaler: " << data.roc << " " << data.board << " " << data.chan << "\n";
+	if (dec_par.verb > 3) cout << "  Unmapped Scaler: " << data.roc << " " << data.board << " " << data.chan << "\n";
 	continue;
       }
       if (dec_par.verb > 2) cout << "  scaler " << dec_par.spillID << " " << data.type << " " << data.name << " " << data.value << "\n";
@@ -1436,6 +1439,9 @@ int MainDaqParser::PackOneSpillData()
   sd_now = &(*list_sd)[dec_par.spillID];
   run_data.n_evt_all += list_ed->size();
 
+  sd_now->ts_deco_begin = dec_par.ts_deco_begin;
+  sd_now->ts_deco_end   = dec_par.ts_deco_end  ;
+
   /// A part (most?) of lines in this loop had better be moved to
   /// a SubsysReco module for better function separation.
   for (EventDataMap::iterator it = list_ed->begin(); it != list_ed->end(); ) {
@@ -1462,13 +1468,13 @@ int MainDaqParser::PackOneSpillData()
     for (unsigned int ih = 0; ih < n_taiwan; ih++) {
       HitData* hd = &ed->list_hit[ih];
       if (! dec_par.chan_map_taiwan.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele)) {
-        if (dec_par.verb > 2) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+        if (dec_par.verb > 3) cout << "  Unmapped Taiwan: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
     for (unsigned int ih = 0; ih < n_v1495; ih++) {
       HitData* hd = &ed->list_hit_trig[ih];
       if (! dec_par.chan_map_v1495.Find(hd->roc, hd->board, hd->chan, hd->det, hd->ele, hd->lvl)) {
-        if (dec_par.verb > 2) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
+        if (dec_par.verb > 3) cout << "  Unmapped v1495: " << hd->roc << " " << hd->board << " " << hd->chan << "\n";
       }
     }
     m_timers["map_chan"]->stop();

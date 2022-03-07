@@ -2,6 +2,7 @@
 #define _DB_UP_SPILL__H_
 #include <fun4all/SubsysReco.h>
 class SQSpill;
+class SQHardSpill;
 
 class DbUpSpill: public SubsysReco {
  public:
@@ -14,10 +15,10 @@ class DbUpSpill: public SubsysReco {
 
  private:
   void ClearTable(const char* table_name, const int run_id);
-  void UploadToSpillTable(SQSpill* spi);
+  void UploadToSpillTable(SQSpill* spi, SQHardSpill* hspi);
   void UploadToScalerTable(SQSpill* spi, const std::string boseos);
   void UploadToSlowContTable(SQSpill* spi);
-  void PrintSpill(SQSpill* spi);
+  void PrintSpill(SQSpill* spi, SQHardSpill* hspi);
 };
 
 #endif /* _DB_UP_SPILL__H_ */
