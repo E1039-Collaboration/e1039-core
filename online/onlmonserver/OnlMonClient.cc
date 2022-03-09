@@ -308,15 +308,27 @@ int OnlMonClient::SendHist(TSocket* sock, int sp_min, int sp_max)
   return 0;
 }
 
+/// Clear the contents of all spill-by-spill histograms.
+/**
+ * This function deletes "N_spills * N_types" of histograms per client.
+ * But the memory usage usually does not go down promptly.
+ * It should be fine (i.e. not memory leak) as the memory will be released later when needed by other processes.
+ * Such delay could happen when a huge number of small memory blocks are deleted, as done in this function.
+ */
 void OnlMonClient::ClearSpillHist()
 {
+  int n_type = 0;
+  int n_hist = 0;
   for (Name2SpillHistMap_t::iterator it1 = m_map_hist_sp.begin(); it1 != m_map_hist_sp.end(); it1++) {
     SpillHistMap_t* map_hist = &it1->second;
     for (SpillHistMap_t::iterator it2 = map_hist->begin(); it2 != map_hist->end(); it2++) {
       delete it2->second;
+      n_hist++;
     }
+    n_type++;
   }
   m_map_hist_sp.clear();
+  cout << Name() << ": Cleared " << n_hist << " hists for " << n_type << " types." << endl;
 }
 
 /**
