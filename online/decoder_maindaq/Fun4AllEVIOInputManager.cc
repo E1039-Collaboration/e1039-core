@@ -287,7 +287,6 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 
   run_header->set_run_id         (rd->run_id);
   run_header->set_unix_time_begin(rd->utime_b);
-  run_header->set_unix_time_end  (rd->utime_e);
   for (int ii = 0; ii < 5; ii++) {
     run_header->set_fpga_enabled (ii, rd->fpga_enabled [ii]);
     run_header->set_fpga_prescale(ii, rd->fpga_prescale[ii]);
@@ -440,6 +439,12 @@ int Fun4AllEVIOInputManager::fileclose()
       cout << Name() << ": fileclose: No Input file open" << endl;
       return -1;
     }
+
+  SQRun* sqrun = findNode::getClass<SQRun>(topNode, "SQRun");
+  if (sqrun) {
+    RunData* rd = parser->GetRunData();
+    sqrun->set_unix_time_end(rd->utime_e);
+  }
 
   parser->End();
   cout << "Fun4AllEVIOInputManager: Timer:\n";
