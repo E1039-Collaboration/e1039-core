@@ -4,6 +4,8 @@
 #include <interface_main/SQRun.h>
 #include <interface_main/SQSpillMap.h>
 #include <interface_main/SQSpill.h>
+#include <interface_main/SQIntMap.h>
+#include <interface_main/SQHardSpill.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQStringMap.h>
 #include <interface_main/SQScaler.h>
@@ -46,16 +48,18 @@ int DbUpSpill::InitRun(PHCompositeNode* topNode)
 
 int DbUpSpill::process_event(PHCompositeNode* topNode)
 {
-  SQSpillMap*     spill_map = findNode::getClass<SQSpillMap >(topNode, "SQSpillMap");
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
-  if (!spill_map || !event_header) return Fun4AllReturnCodes::ABORTEVENT;
+  SQSpillMap* map_sp  = findNode::getClass<SQSpillMap>(topNode, "SQSpillMap");
+  SQIntMap*   map_hsp = findNode::getClass<SQIntMap  >(topNode, "SQHardSpillMap");
+  SQEvent*    evt     = findNode::getClass<SQEvent   >(topNode, "SQEvent");
+  if (!map_sp || !map_hsp || !evt) return Fun4AllReturnCodes::ABORTEVENT;
 
   static int spill_id_pre = -1;
-  if (event_header->get_spill_id() != spill_id_pre) {
-    spill_id_pre = event_header->get_spill_id();
-    SQSpill* spi = spill_map->get(spill_id_pre);
-    //PrintSpill(spi);
-    UploadToSpillTable(spi);
+  if (evt->get_spill_id() != spill_id_pre) {
+    spill_id_pre = evt->get_spill_id();
+    SQSpill*      spi = map_sp ->get(spill_id_pre);
+    SQHardSpill* hspi = (SQHardSpill*)map_hsp->get(spill_id_pre);
+    //PrintSpill(spi, hspi);
+    UploadToSpillTable (spi, hspi);
     UploadToScalerTable(spi, "bos");
     UploadToScalerTable(spi, "eos");
     UploadToSlowContTable(spi);
@@ -82,7 +86,7 @@ void DbUpSpill::ClearTable(const char* table_name, const int run_id)
   }
 }
 
-void DbUpSpill::UploadToSpillTable(SQSpill* spi)
+void DbUpSpill::UploadToSpillTable(SQSpill* spi, SQHardSpill* hspi)
 {
   const char* table_name = "spill";
   DbSvc db(DbSvc::DB1);
@@ -108,13 +112,13 @@ void DbUpSpill::UploadToSpillTable(SQSpill* spi)
   }
   oss.str("");
   oss << "insert into " << table_name << " values"
-      << " (" << spi->get_run_id      () 
-      << ", " << spi->get_spill_id    ()
-      << ", " << spi->get_target_pos  ()
-      << ", " << spi->get_bos_coda_id ()
-      << ", " << spi->get_bos_vme_time()
-      << ", " << spi->get_eos_coda_id ()
-      << ", " << spi->get_eos_vme_time()
+      << " (" <<  spi->get_run_id      () 
+      << ", " <<  spi->get_spill_id    ()
+      << ", " <<  spi->get_target_pos  ()
+      << ", " << hspi->get_bos_coda_id ()
+      << ", " << hspi->get_bos_vme_time()
+      << ", " << hspi->get_eos_coda_id ()
+      << ", " << hspi->get_eos_vme_time()
       << ")";
   if (! db.Con()->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DbUpSpill::UploadToSpillTable()." << endl;
@@ -230,16 +234,16 @@ void DbUpSpill::UploadToSlowContTable(SQSpill* spi)
   }
 }
 
-void DbUpSpill::PrintSpill(SQSpill* spi)
+void DbUpSpill::PrintSpill(SQSpill* spi, SQHardSpill* hspi)
 {
   cout << "SQSpill:  "
-       << "  " << spi->get_spill_id    ()
-       << "  " << spi->get_run_id      ()
-       << "  " << spi->get_target_pos  ()
-       << "  " << spi->get_bos_coda_id ()
-       << "  " << spi->get_bos_vme_time()
-       << "  " << spi->get_eos_coda_id ()
-       << "  " << spi->get_eos_vme_time()
+       << "  " <<  spi->get_spill_id    ()
+       << "  " <<  spi->get_run_id      ()
+       << "  " <<  spi->get_target_pos  ()
+       << "  " << hspi->get_bos_coda_id ()
+       << "  " << hspi->get_bos_vme_time()
+       << "  " << hspi->get_eos_coda_id ()
+       << "  " << hspi->get_eos_vme_time()
        << "  \nBOS Scaler:  " << spi->get_bos_scaler_list()->size() << "\n";
   for (SQStringMap::ConstIter it = spi->get_bos_scaler_list()->begin(); it != spi->get_bos_scaler_list()->end(); it++) {
     string name = it->first;

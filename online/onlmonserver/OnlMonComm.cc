@@ -27,7 +27,7 @@ OnlMonComm::OnlMonComm()
   , m_sp_min(0)
   , m_sp_max(0)
   , m_sp_sel(true)
-  , m_n_sp_sel_max(900)
+  , m_n_sp_sel_max(600)
 {
   ;
 }

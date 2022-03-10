@@ -9,6 +9,7 @@
 #include <TLegend.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQEvent.h>
+#include <interface_main/SQHardEvent.h>
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
@@ -61,13 +62,14 @@ int OnlMonQie::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonQie::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
-  SQRun*   run   = findNode::getClass<SQRun  >(topNode, "SQRun");
-  SQEvent* event = findNode::getClass<SQEvent>(topNode, "SQEvent");
-  if (! run || ! event) return Fun4AllReturnCodes::ABORTEVENT;
+  SQRun*        run = findNode::getClass<SQRun      >(topNode, "SQRun");
+  SQEvent*      evt = findNode::getClass<SQEvent    >(topNode, "SQEvent");
+  SQHardEvent* hevt = findNode::getClass<SQHardEvent>(topNode, "SQHardEvent");
+  if (! run || ! evt || ! hevt) return Fun4AllReturnCodes::ABORTEVENT;
 
   h1_evt_status->Fill(ALL);
 
-  int n_brd = event->get_n_board_qie();
+  int n_brd = hevt->get_n_board_qie();
   if (n_brd == 0) {
     h1_evt_status->Fill(NO_DATA);
     return Fun4AllReturnCodes::EVENT_OK;
@@ -76,19 +78,19 @@ int OnlMonQie::ProcessEventOnlMon(PHCompositeNode* topNode)
     return Fun4AllReturnCodes::EVENT_OK;
   }
 
-  //h1_trig_cnt->Fill(event->get_qie_trigger_count());
+  //h1_trig_cnt->Fill(evt->get_qie_trigger_count());
   //for (int ii = 0; ii < N_PRESUM; ii++) {
-  //  h2_presum->Fill(event->get_qie_presum(ii), ii);
+  //  h2_presum->Fill(evt->get_qie_presum(ii), ii);
   //}
-  int turn_id = event->get_qie_turn_id();
-  int   rf_id = event->get_qie_rf_id();
+  int turn_id = evt->get_qie_turn_id();
+  int   rf_id = evt->get_qie_rf_id();
   h2_turn_rf->Fill(turn_id, rf_id);
   if (turn_id <= 0 || rf_id <= 0) h1_evt_status->Fill(TURN_RF_ID_ZERO);
 
   bool found_zero_pm13 = false;
   bool found_zero_pm08 = false;
   for (int ii = -N_RF_INTE/2; ii <= N_RF_INTE/2; ii++) {
-    int inte = event->get_qie_rf_intensity(ii);
+    int inte = evt->get_qie_rf_intensity(ii);
     h2_inte_rf->Fill(inte, ii);
     if (inte == 0) {
       if (abs(ii) <= 13) found_zero_pm13 = true;

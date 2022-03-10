@@ -2,7 +2,7 @@
 #define _CALIB_EVT_QUAL_H_
 #include <fun4all/SubsysReco.h>
 class SQEvent;
-class TH1;
+class SQHardEvent;
 
 class CalibEvtQual: public SubsysReco {
   /** Error flags to be inserted to the "Event.dataQuality" field.
@@ -32,7 +32,7 @@ class CalibEvtQual: public SubsysReco {
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
  private:
-  void PrintEvent(SQEvent* evt);
+  void PrintEvent(SQEvent* evt, SQHardEvent* hevt);
 };
 
 #endif /* _CALIB_EVT_QUAL_H_ */

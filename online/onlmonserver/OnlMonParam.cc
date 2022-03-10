@@ -87,7 +87,7 @@ std::string OnlMonParam::FindParamInDir(const std::string par_name)
   delete path;
   dir_name += "/" + m_name;
   int run = m_run_id>0 ? m_run_id : recoConsts::instance()->get_IntFlag("RUNNUMBER");
-  if (m_verb > 0) {
+  if (m_verb > 1) {
     cout << "OnlMonParam: par_name = " << par_name << " run = " << run << ".\n"
          << "  Directory = " << dir_name << endl;
   }
@@ -119,7 +119,7 @@ std::string OnlMonParam::FindParamInDir(const std::string par_name)
 
 bool OnlMonParam::FindParamInFile(const std::string file_name, const int run, const std::string par_name, std::string& par_value)
 {
-  if (m_verb > 0) {
+  if (m_verb > 1) {
     cout << "  File = " << file_name << endl;
   }
   bool do_found = false;
@@ -127,7 +127,7 @@ bool OnlMonParam::FindParamInFile(const std::string file_name, const int run, co
   string line;
   while (getline(ifs, line)) {
     if (line.length() == 0 || line[0] == '#') continue;
-    if (m_verb > 1) {
+    if (m_verb > 2) {
       cout << "    Line = " << line << endl;
     }
     istringstream iss(line);

@@ -29,31 +29,42 @@ public:
   virtual int          isValid() const {return 0;}
   virtual SQSpill*        Clone() const {return NULL;}
 
-  virtual int  get_run_id() const {return std::numeric_limits<int>::max();} ///< Return the run ID when this spill was taken.
+  /// Return the run ID when this spill was taken.
+  virtual int  get_run_id() const {return std::numeric_limits<int>::max();}
   virtual void set_run_id(const int a) {}
 
-  virtual int  get_spill_id() const {return std::numeric_limits<int>::max();} ///< Return the spill ID.
+  /// Return the spill ID.
+  virtual int  get_spill_id() const {return std::numeric_limits<int>::max();}
   virtual void set_spill_id(const int a) {}
 
-  virtual short get_target_pos() const {return std::numeric_limits<short>::max();} ///< Return the target position in this spill.
+  /// Return the target position in this spill.
+  virtual short get_target_pos() const {return std::numeric_limits<short>::max();}
   virtual void  set_target_pos(const short a) {}
 
-  virtual int  get_bos_coda_id() const {return std::numeric_limits<int>::max();} ///< Return the Coda ID at BOS of this spill.
+  /// [Obsolete] Use `SQHardSpill` instead.
+  virtual int  get_bos_coda_id() const {return std::numeric_limits<int>::max();}
   virtual void set_bos_coda_id(const int a) {};
 
-  virtual int  get_bos_vme_time() const {return std::numeric_limits<int>::max();} ///< Return the VME time at BOS of this spill.
+  /// [Obsolete] Use `SQHardSpill` instead.
+  virtual int  get_bos_vme_time() const {return std::numeric_limits<int>::max();}
   virtual void set_bos_vme_time(const int a) {};
 
-  virtual int  get_eos_coda_id() const {return std::numeric_limits<int>::max();} ///< Return the Coda ID at EOS of this spill.
+  /// [Obsolete] Use `SQHardSpill` instead.
+  virtual int  get_eos_coda_id() const {return std::numeric_limits<int>::max();}
   virtual void set_eos_coda_id(const int a) {};
 
-  virtual int  get_eos_vme_time() const {return std::numeric_limits<int>::max();} ///< Return the VME time at EOS of this spill.
+  /// [Obsolete] Use `SQHardSpill` instead.
+  virtual int  get_eos_vme_time() const {return std::numeric_limits<int>::max();}
   virtual void set_eos_vme_time(const int a) {};
 
-  virtual SQStringMap* get_bos_scaler_list() { return 0; } ///< Return the list of scaler variables read out at BOS.
-  virtual SQStringMap* get_eos_scaler_list() { return 0; } ///< Return the list of scaler variables read out at EOS.
+  /// Return the list of scaler variables read out at BOS.
+  virtual SQStringMap* get_bos_scaler_list() { return 0; }
 
-  virtual SQStringMap* get_slow_cont_list() { return 0; } ///< Return the list of slow control variables.
+  /// Return the list of scaler variables read out at EOS.
+  virtual SQStringMap* get_eos_scaler_list() { return 0; }
+
+  /// Return the list of slow control variables.
+  virtual SQStringMap* get_slow_cont_list() { return 0; }
   
 protected:
   SQSpill() {}

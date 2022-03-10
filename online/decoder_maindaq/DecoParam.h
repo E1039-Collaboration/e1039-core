@@ -1,5 +1,6 @@
 #ifndef __DECO_PARAM_H__
 #define __DECO_PARAM_H__
+#include <TTimeStamp.h>
 #include <geom_svc/ChanMapTaiwan.h>
 #include <geom_svc/ChanMapV1495.h>
 #include <geom_svc/ChanMapScaler.h>
@@ -36,6 +37,9 @@ struct DecoParam {
   int spillID_slow; // spillID from slow-control event
   short targPos;
   short targPos_slow; // from slow-control event
+
+  TTimeStamp ts_deco_begin; // Time when the decoding of one spill begins.  Set in EOS event.
+  TTimeStamp ts_deco_end;   // Time when the decoding of one spill ends.  Set in FLUSH events.
 
   unsigned int event_count; ///< current event count
   unsigned int codaID; ///< current Coda event ID
