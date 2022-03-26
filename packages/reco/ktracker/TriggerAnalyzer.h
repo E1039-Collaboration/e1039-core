@@ -19,18 +19,18 @@
 
 typedef std::vector<std::set<int> > DataMatrix;
 
-class TNode
+class SQTNode
 {
 public:
     //constructor
-    TNode(int uID);
+    SQTNode(int uID);
 
     //add child
-    void add(TNode* child);
+    void add(SQTNode* child);
 
 public:
     int uniqueID;
-    std::list<TNode*> children;
+    std::list<SQTNode*> children;
 };
 
 class TriggerAnalyzer
@@ -72,14 +72,14 @@ public:
     bool buildData(int nHits, int detectorIDs[], int elementIDs[]);
 
     //find all possible matched road in data
-    void search(TNode* root, DataMatrix& data, int level, int charge);
+    void search(SQTNode* root, DataMatrix& data, int level, int charge);
 
     //print/clear prefix tree
     void print(int charge) { roads_temp.clear(); printTree(root[(-charge+1)/2]); }
     void clear(int charge) { roads_temp.clear(); clearTree(root[(-charge+1)/2]); }
 
-    void printTree(TNode* root);
-    void clearTree(TNode* root);
+    void printTree(SQTNode* root);
+    void clearTree(SQTNode* root);
 
     void printRoadFound();
     void printData(DataMatrix& data);
@@ -106,7 +106,7 @@ private:
     DataMatrix data;
 
     //root node of the trigger tree for mu+/-
-    TNode* root[2];
+    SQTNode* root[2];
 
     //container of roads found
     std::list<TriggerRoad> roads_found[2];

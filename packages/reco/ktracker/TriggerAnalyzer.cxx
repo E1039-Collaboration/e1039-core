@@ -13,13 +13,13 @@
 
 #define REQUIRE_TB
 
-TNode::TNode(int uID)
+SQTNode::SQTNode(int uID)
 {
     uniqueID = uID;
     children.clear();
 }
 
-void TNode::add(TNode* child)
+void SQTNode::add(SQTNode* child)
 {
     children.push_back(child);
 }
@@ -371,7 +371,7 @@ bool TriggerAnalyzer::acceptEvent(int nHits, int detectorIDs[], int elementIDs[]
     return false;
 }
 
-void TriggerAnalyzer::search(TNode* root, DataMatrix& data, int level, int charge)
+void TriggerAnalyzer::search(SQTNode* root, DataMatrix& data, int level, int charge)
 {
     roads_temp.push_back(root->uniqueID);
     if(root->children.empty())
@@ -384,7 +384,7 @@ void TriggerAnalyzer::search(TNode* root, DataMatrix& data, int level, int charg
         return;
     }
 
-    for(std::list<TNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
+    for(std::list<SQTNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
     {
         if(data[level+1].find((*iter)->uniqueID) == data[level+1].end()) continue;
         search(*iter, data, level+1, charge);
@@ -392,7 +392,7 @@ void TriggerAnalyzer::search(TNode* root, DataMatrix& data, int level, int charg
     roads_temp.pop_back();
 }
 
-void TriggerAnalyzer::printTree(TNode* root)
+void TriggerAnalyzer::printTree(SQTNode* root)
 {
     if(root == nullptr) return;
 
@@ -405,14 +405,14 @@ void TriggerAnalyzer::printTree(TNode* root)
         return;
     }
 
-    for(std::list<TNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
+    for(std::list<SQTNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
     {
         clearTree(*iter);
     }
     roads_temp.pop_back();
 }
 
-void TriggerAnalyzer::clearTree(TNode* root)
+void TriggerAnalyzer::clearTree(SQTNode* root)
 {
     if(root == nullptr) return;
     if(root->children.empty())
@@ -421,7 +421,7 @@ void TriggerAnalyzer::clearTree(TNode* root)
         return;
     }
 
-    for(std::list<TNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
+    for(std::list<SQTNode*>::iterator iter = root->children.begin(); iter != root->children.end(); ++iter)
     {
         clearTree(*iter);
     }
@@ -432,18 +432,18 @@ void TriggerAnalyzer::buildTriggerTree()
 {
     for(int i = 0; i < 2; i++)
     {
-        root[i] = new TNode(-1);
+        root[i] = new SQTNode(-1);
         for(std::map<int, TriggerRoad>::iterator iter = roads_enabled[i].begin(); iter != roads_enabled[i].end(); ++iter)
         {
             if(!iter->second.isEnabled()) continue;
 
-            TNode* parentNode[5]; //note: index 4 is useless, just to keep the following code simpler
+            SQTNode* parentNode[5]; //note: index 4 is useless, just to keep the following code simpler
             parentNode[0] = root[i];
             for(int j = 0; j < 4; j++)
             {
                 int uniqueID = iter->second.getDetectorID(j)*100 + iter->second.getElementID(j);
                 bool isNewNode = true;
-                for(std::list<TNode*>::iterator jter = parentNode[j]->children.begin(); jter != parentNode[j]->children.end(); ++jter)
+                for(std::list<SQTNode*>::iterator jter = parentNode[j]->children.begin(); jter != parentNode[j]->children.end(); ++jter)
                 {
                     if(uniqueID == (*jter)->uniqueID)
                     {
@@ -456,7 +456,7 @@ void TriggerAnalyzer::buildTriggerTree()
 
                 if(isNewNode)
                 {
-                    TNode* node_new = new TNode(uniqueID);
+                    SQTNode* node_new = new SQTNode(uniqueID);
                     parentNode[j]->add(node_new);
 
                     parentNode[j+1] = node_new;
