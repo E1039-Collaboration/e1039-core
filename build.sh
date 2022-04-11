@@ -88,6 +88,7 @@ else # 'all' or 'resume'
     packages/reco/SQGenFit
     packages/reco/kfitter
     packages/reco/ktracker
+    packages/kTThreads
     packages/embedding
     simulation/g4dst
     online/onlmonserver
