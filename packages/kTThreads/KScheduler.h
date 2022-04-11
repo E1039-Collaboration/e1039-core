@@ -130,6 +130,8 @@ class KScheduler{
     Int_t startWorkerThread(unsigned threadId);
     Int_t startWorkerThreads();
 
+    // e1039 data format converter
+    static SRawEvent* BuildSRawEvent(SQEvent* sqevent, SQHitVector* sqhitvector, SQHitVector* sqtrighitvector);
 
 
 // stuff
@@ -233,6 +235,7 @@ public:
 
     SRecEvent* recEvData;
     KJobStatus p_JobStatus;
+
 
 private:
 

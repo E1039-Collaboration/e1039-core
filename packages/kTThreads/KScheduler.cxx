@@ -498,7 +498,7 @@ void KScheduler::postCompletedEvent(){
  */
 
 // converter from e1039 SQHitVector to SRawEvent for ktracker
-SRawEvent* BuildSRawEvent(SQEvent* sqevent, SQHitVector* sqhitvector, SQHitVector* sqtrighitvector){
+SRawEvent* KScheduler::BuildSRawEvent(SQEvent* sqevent, SQHitVector* sqhitvector, SQHitVector* sqtrighitvector){
     SRawEvent* SRawEv = new SRawEvent();
     
     if(!UtilSRawEvent::SetEvent( SRawEv, sqevent)){
@@ -587,7 +587,7 @@ void* KScheduler::fReaderThread(void* readerArgPtr){
         // convert SQHitVector to SRawEvent
         // TODO memory leak from new alloc in BuildSRawEvent?
         if(!E906DATA){
-            localEventPtr = BuildSRawEvent(SQEvPtr, SQHitVecPtr, SQTrigHitVecPtr);    
+            localEventPtr = KScheduler::BuildSRawEvent(SQEvPtr, SQHitVecPtr, SQTrigHitVecPtr);    
             copy = false;
         }
 
