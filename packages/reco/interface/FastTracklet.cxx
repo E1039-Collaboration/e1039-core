@@ -923,6 +923,9 @@ void Tracklet::addDummyHits()
     sortHits();
 }
 
+/**
+ * The drift distance of a hit is ignored if the drift sign of the hit is not fixed.
+ */
 double Tracklet::calcChisq()
 {
     chisq = 0.;

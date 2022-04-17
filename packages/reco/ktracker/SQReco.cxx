@@ -50,6 +50,7 @@ SQReco::SQReco(const std::string& name):
   SubsysReco(name),
   _input_type(SQReco::E1039),
   _fitter_type(SQReco::KFREF),
+  _output_list_idx(0),
   _enable_eval(false),
   _eval_file_name("eval.root"),
   _eval_tree(nullptr),
@@ -110,10 +111,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
   ret = InitGeom(topNode);
   if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
-  //Init track finding
-  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
-
-  _fastfinder->Verbosity(Verbosity());
+  InitFastTracking();
 
   if(_evt_reducer_opt == "none")  //Meaning we disable the event reducer
   {
@@ -238,6 +236,16 @@ int SQReco::InitGeom(PHCompositeNode* topNode)
 
   _t_geo_manager = PHGeomUtility::GetTGeoManager(topNode);
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int SQReco::InitFastTracking()
+{
+  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
+
+  _fastfinder->Verbosity(Verbosity());
+
+  if (_output_list_idx > 0) _fastfinder->setOutputListIndex(_output_list_idx);
+  return 0;
 }
 
 int SQReco::updateHitInfo(SRawEvent* sraw_event) 
