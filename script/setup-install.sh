@@ -45,7 +45,8 @@ mkdir -p $DIR_INST
 if   [ ${HOSTNAME:0:11} = 'seaquestdaq' -o \
        ${HOSTNAME:0:9}  = 'e1039gat1' -o \
        ${HOSTNAME:0:10} = 'e1039prod1' -o \
-       ${HOSTNAME:0:12} = 'spinquestana' ] ; then
+       ${HOSTNAME:0:12} = 'spinquestana' -o \
+       ${HOSTNAME:0:13} = 'e1039trackcpu' ] ; then
     echo "Use the environment for seaquestdaq/spinquestana."
     {
 	echo 'export  E1039_ROOT=/data2/e1039'
