@@ -4,6 +4,11 @@
 
 class KalmanFastTrackletting : public KalmanFastTracking
 {
+  double TX_MAX;
+  double TY_MAX;
+  double X0_MAX;
+  double Y0_MAX;
+
 public:
     explicit KalmanFastTrackletting(const PHField* field, const TGeoManager *geom, bool flag = true);
     virtual ~KalmanFastTrackletting();

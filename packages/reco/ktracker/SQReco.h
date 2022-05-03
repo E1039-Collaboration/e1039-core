@@ -93,6 +93,8 @@ protected:
   int InitEvalTree();
   int ResetEvalVars();
 
+  void ProcessEventPrep();
+  void ProcessEventFinish();
   SRawEvent* BuildSRawEvent();
   int updateHitInfo(SRawEvent* sraw_event);
 

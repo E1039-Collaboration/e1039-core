@@ -9,7 +9,11 @@ using namespace std;
 KalmanFastTrackletting::KalmanFastTrackletting(const PHField* field, const TGeoManager* geom, bool flag)
   : KalmanFastTracking(field, geom, flag)
 {
-  ;
+  recoConsts* rc = recoConsts::instance();
+  TX_MAX = rc->get_DoubleFlag("TX_MAX");
+  TY_MAX = rc->get_DoubleFlag("TY_MAX");
+  X0_MAX = rc->get_DoubleFlag("X0_MAX");
+  Y0_MAX = rc->get_DoubleFlag("Y0_MAX");
 }
 
 KalmanFastTrackletting::~KalmanFastTrackletting()
@@ -19,51 +23,8 @@ KalmanFastTrackletting::~KalmanFastTrackletting()
 
 int KalmanFastTrackletting::setRawEvent(SRawEvent* event_input)
 {
-  //reset timer
-  for(auto iter=_timers.begin(); iter != _timers.end(); ++iter) 
-  {
-    iter->second->reset();
-  }
-
-  //Initialize tracklet lists
-  for(int i = 0; i < 5; i++) trackletsInSt[i].clear();
-  stracks.clear();
-
-  //pre-tracking cuts
-  rawEvent = event_input;
-  if(!acceptEvent(rawEvent)) return TFEXIT_FAIL_MULTIPLICITY;
-  hitAll = event_input->getAllHits();
-  if(verbosity >= 3) {
-    for(std::vector<Hit>::iterator iter = hitAll.begin(); iter != hitAll.end(); ++iter) iter->print();
-  }
-
-  //Initialize hodo and masking IDs
-  for(int i = 0; i < 4; i++)
-  {
-    hitIDs_mask[i].clear();
-    hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_maskX[i]);
-  }
-  
-  //Initialize prop. tube IDs
-  for(int i = 0; i < 2; ++i)
-  {
-    for(int j = 0; j < 4; ++j)
-    {
-      hitIDs_muid[i][j].clear();
-      hitIDs_muid[i][j] = rawEvent->getHitsIndexInDetector(detectorIDs_muid[i][j]);
-    }
-    hitIDs_muidHodoAid[i].clear();
-    hitIDs_muidHodoAid[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_muidHodoAid[i]);
-  }
-  
-  buildPropSegments();
-  if(propSegs[0].empty() || propSegs[1].empty())
-  {
-    if(verbosity >= 3) {
-      LogInfo("Failed in prop tube segment building: " << propSegs[0].size() << ", " << propSegs[1].size());
-    }
-    //return TFEXIT_FAIL_ROUGH_MUONID;
-  }
+  int ret = setRawEventPrep(event_input);
+  if (ret != 0) return ret;
   
   //Build tracklets in station 2, 3+, 3-
   _timers["st2"]->restart();
@@ -77,9 +38,11 @@ int KalmanFastTrackletting::setRawEvent(SRawEvent* event_input)
   _timers["st3"]->stop();
   if(verbosity >= 2) LogInfo("NTracklets in St3: " << trackletsInSt[2].size());
 
-  // Build tracklets in station 0
-  // Do this here??
-  
+  _timers["global_st1"]->restart(); // Not global but be diverted
+  buildTrackletsInStation(1, 0); // 1 for D0
+  _timers["global_st1"]->stop();
+  if(verbosity >= 2) LogInfo("NTracklets in St1: " << trackletsInSt[0].size());
+
   //Build back partial tracks in station 2, 3+ and 3-
   _timers["st23"]->restart();
   buildBackPartialTracks();
@@ -104,11 +67,6 @@ int KalmanFastTrackletting::setRawEvent(SRawEvent* event_input)
 
 void KalmanFastTrackletting::buildTrackletsInStation(int stationID, int listID, double* pos_exp, double* window)
 {
-  const double TX_MAX=    1.; /// Define the necessary constants here for now
-  const double TY_MAX=    1.;
-  const double X0_MAX= 1000.;
-  const double Y0_MAX= 1000.;
-
   //actuall ID of the tracklet lists
   int sID = stationID - 1;
 
@@ -133,19 +91,20 @@ void KalmanFastTrackletting::buildTrackletsInStation(int stationID, int listID, 
   //X-U combination first, then add V pairs
   for(std::list<SRawEvent::hit_pair>::iterator xiter = pairs_X.begin(); xiter != pairs_X.end(); ++xiter)
   {
-    //U projections from X plane
-    double x_pos = xiter->second >= 0 ? 0.5*(hitAll[xiter->first].pos + hitAll[xiter->second].pos) : hitAll[xiter->first].pos;
+    bool has_x_2nd = xiter->second >= 0;
+    double x_pos = has_x_2nd ? 0.5*(hitAll[xiter->first].pos + hitAll[xiter->second].pos) : hitAll[xiter->first].pos;
     double u_min = x_pos*u_costheta[sID] - u_win[sID];
     double u_max = u_min + 2.*u_win[sID];
     
     for(std::list<SRawEvent::hit_pair>::iterator uiter = pairs_U.begin(); uiter != pairs_U.end(); ++uiter)
     {
-      double u_pos = uiter->second >= 0 ? 0.5*(hitAll[uiter->first].pos + hitAll[uiter->second].pos) : hitAll[uiter->first].pos;
+      bool has_u_2nd = uiter->second >= 0;
+      double u_pos = has_u_2nd ? 0.5*(hitAll[uiter->first].pos + hitAll[uiter->second].pos) : hitAll[uiter->first].pos;
       if(u_pos < u_min || u_pos > u_max) continue;
       
       //V projections from X and U plane
-      double z_x = xiter->second >= 0 ? z_plane_x[sID] : z_plane[hitAll[xiter->first].detectorID];
-      double z_u = uiter->second >= 0 ? z_plane_u[sID] : z_plane[hitAll[uiter->first].detectorID];
+      double z_x = has_x_2nd ? z_plane_x[sID] : z_plane[hitAll[xiter->first].detectorID];
+      double z_u = has_u_2nd ? z_plane_u[sID] : z_plane[hitAll[uiter->first].detectorID];
       double z_v = z_plane_v[sID];
       double v_win1 = spacing_plane[hitAll[uiter->first].detectorID]*2.*u_costheta[sID];
       double v_win2 = fabs((z_u + z_v - 2.*z_x)*u_costheta[sID]*TX_MAX);
@@ -156,43 +115,40 @@ void KalmanFastTrackletting::buildTrackletsInStation(int stationID, int listID, 
 
       for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
       {
-        double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
+        bool has_v_2nd = viter->second >= 0;
+        double v_pos = has_v_2nd ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
         if(v_pos < v_min || v_pos > v_max) continue;
 
-        //Now add the tracklet
-
-        for (int LR_X1 = -1; LR_X1 <= +1; LR_X1 += 2) {
-        for (int LR_X2 = -1; LR_X2 <= +1; LR_X2 += 2) {
-        for (int LR_U1 = -1; LR_U1 <= +1; LR_U1 += 2) {
-        for (int LR_U2 = -1; LR_U2 <= +1; LR_U2 += 2) {
-        for (int LR_V1 = -1; LR_V1 <= +1; LR_V1 += 2) {
-        for (int LR_V2 = -1; LR_V2 <= +1; LR_V2 += 2) {
+        //Now add the tracklet, using all L-R combinations.
+        for (int LR_X1 =              -1      ; LR_X1 <= +1; LR_X1 += 2) {
+        for (int LR_X2 = (has_x_2nd ? -1 : +1); LR_X2 <= +1; LR_X2 += 2) {
+        for (int LR_U1 =              -1      ; LR_U1 <= +1; LR_U1 += 2) {
+        for (int LR_U2 = (has_u_2nd ? -1 : +1); LR_U2 <= +1; LR_U2 += 2) {
+        for (int LR_V1 =              -1      ; LR_V1 <= +1; LR_V1 += 2) {
+        for (int LR_V2 = (has_v_2nd ? -1 : +1); LR_V2 <= +1; LR_V2 += 2) {
           Tracklet tracklet_new;
           tracklet_new.stationID = stationID;
         
-          if(xiter->first >= 0) {
-            tracklet_new.hits.push_back(SignedHit(hitAll[xiter->first], LR_X1));
-            tracklet_new.nXHits++;
-          }
-          if(xiter->second >= 0) {
+          tracklet_new.hits.push_back(SignedHit(hitAll[xiter->first], LR_X1));
+          tracklet_new.nXHits++;
+
+          if(has_x_2nd) {
             tracklet_new.hits.push_back(SignedHit(hitAll[xiter->second], LR_X2));
             tracklet_new.nXHits++;
           }
         
-          if(uiter->first >= 0) {
-            tracklet_new.hits.push_back(SignedHit(hitAll[uiter->first], LR_U1));
-            tracklet_new.nUHits++;
-          }
-          if(uiter->second >= 0) {
+          tracklet_new.hits.push_back(SignedHit(hitAll[uiter->first], LR_U1));
+          tracklet_new.nUHits++;
+
+          if(has_u_2nd) {
             tracklet_new.hits.push_back(SignedHit(hitAll[uiter->second], LR_U2));
             tracklet_new.nUHits++;
           }
         
-          if(viter->first >= 0) {
-            tracklet_new.hits.push_back(SignedHit(hitAll[viter->first], LR_V1));
-            tracklet_new.nVHits++;
-          }
-          if(viter->second >= 0) {
+          tracklet_new.hits.push_back(SignedHit(hitAll[viter->first], LR_V1));
+          tracklet_new.nVHits++;
+
+          if(has_v_2nd) {
             tracklet_new.hits.push_back(SignedHit(hitAll[viter->second], LR_V2));
             tracklet_new.nVHits++;
           }
@@ -200,24 +156,15 @@ void KalmanFastTrackletting::buildTrackletsInStation(int stationID, int listID, 
           tracklet_new.sortHits();
           if(tracklet_new.isValid() == 0) {
             fitTracklet(tracklet_new);
-            if(acceptTracklet(tracklet_new)) trackletsInSt[listID].push_back(tracklet_new);
+            trackletsInSt[listID].push_back(tracklet_new);
           }
         }}}}}}
       }
     }
   }
   
-  //Reduce the tracklet list and add dummy hits
-  //reduceTrackletList(trackletsInSt[listID]);
   for(std::list<Tracklet>::iterator iter = trackletsInSt[listID].begin(); iter != trackletsInSt[listID].end(); ++iter)
   {
     iter->addDummyHits();
   }
-  
-  //Only retain the best 200 tracklets if exceeded
-  //if(trackletsInSt[listID].size() > 200)
-  //{
-  //  trackletsInSt[listID].sort();
-  //  trackletsInSt[listID].resize(200);
-  //}
 }

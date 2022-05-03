@@ -425,9 +425,9 @@ void KalmanFastTracking::setRawEventDebug(SRawEvent* event_input)
     hitAll = event_input->getAllHits();
 }
 
-int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
+int KalmanFastTracking::setRawEventPrep(SRawEvent* event_input)
 {
-	//reset timer
+    //reset timer
     for(auto iter=_timers.begin(); iter != _timers.end(); ++iter) 
     {
         iter->second->reset();
@@ -486,6 +486,13 @@ int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
             //return TFEXIT_FAIL_ROUGH_MUONID;
         }
     }
+    return 0;
+}
+
+int KalmanFastTracking::setRawEvent(SRawEvent* event_input)
+{
+  int ret = setRawEventPrep(event_input);
+  if (ret != 0) return ret;
 
     //Build tracklets in station 2, 3+, 3-
     _timers["st2"]->restart();

@@ -9,6 +9,7 @@
 
 SQTrackletReco::SQTrackletReco(const std::string& name)
   : SQReco(name)
+  , _drop_empty_event(false)
 {
   ;
 }
@@ -20,42 +21,7 @@ SQTrackletReco::~SQTrackletReco()
 
 int SQTrackletReco::process_event(PHCompositeNode* topNode) 
 {
-  if(is_eval_enabled()) ResetEvalVars();
-  if(is_eval_dst_enabled()) _tracklet_vector->clear();
-
-  if(_input_type == SQReco::E1039)
-  {
-    if(!_hit_vector) 
-    {
-      if(Verbosity() > 2) LogDebug("!_hit_vector");
-      return Fun4AllReturnCodes::ABORTEVENT;
-    }
-  }
-
-  std::unique_ptr<SRawEvent> up_raw_event;
-  if(_input_type == SQReco::E1039) 
-  {
-    up_raw_event = std::unique_ptr<SRawEvent>(BuildSRawEvent());
-    _rawEvent = up_raw_event.get();
-  }
-
-  if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
-  {
-    LogInfo("SRawEvent before the Reducer");
-    _rawEvent->identify();
-  }
-
-  if(_eventReducer != nullptr) 
-  {
-    _eventReducer->reduceEvent(_rawEvent);
-    if(_input_type == SQReco::E1039) updateHitInfo(_rawEvent);
-  }
-
-  if(Verbosity() > Fun4AllBase::VERBOSITY_A_LOT) 
-  {
-    LogInfo("SRawEvent after the Reducer");
-    _rawEvent->identify();
-  }
+  ProcessEventPrep();
 
   int finderstatus = _fastfinder->setRawEvent(_rawEvent);
   if(_legacy_rec_container) 
@@ -79,10 +45,12 @@ int SQTrackletReco::process_event(PHCompositeNode* topNode)
       }
     }
   }
-  
+
   if(is_eval_enabled() && nTracklets > 0) _eval_tree->Fill();
 
-  ++_event;
+  ProcessEventFinish();
+
+  if (_drop_empty_event && nTracklets == 0) return Fun4AllReturnCodes::ABORTEVENT;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

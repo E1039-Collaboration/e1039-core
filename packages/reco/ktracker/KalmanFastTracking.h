@@ -212,6 +212,8 @@ protected:
 
     //Timer
     std::map<std::string, PHTimer*> _timers;
+
+    int setRawEventPrep(SRawEvent* event_input);
 };
 
 #endif

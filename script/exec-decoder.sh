@@ -17,10 +17,11 @@ fi
 E1039_CORE_VERSION=default
 IS_ONLINE=false
 DECO_MODE=devel
+LAUNCHER=no
 N_EVT=0
 
 OPTIND=1
-while getopts ":v:osde:" OPT ; do
+while getopts ":v:osdle:" OPT ; do
     case $OPT in
         v ) E1039_CORE_VERSION=$OPTARG
             echo "  E1039_CORE version: $E1039_CORE_VERSION"
@@ -34,17 +35,15 @@ while getopts ":v:osde:" OPT ; do
         d ) DECO_MODE=devel
             echo "  Decoder mode: $DECO_MODE"
             ;;
+        l ) LAUNCHER=yes
+            echo "  Launcher mode: $LAUNCHER"
+            ;;
 	e ) N_EVT=$OPTARG
             echo "  N of events: $N_EVT"
             ;;
     esac
 done
 shift $((OPTIND - 1))
-
-if [ -z "$1" ] ; then
-    echo "!!ERROR!!  The 1st argument must be run number or 'daemon'.  Abort."
-    exit
-fi
 
 DIR_SCRIPT=$(dirname $(readlink -f $0))
 if [ $DIR_SCRIPT = '/data2/e1039/script' ] ; then
@@ -57,14 +56,18 @@ fi
 umask 0002
 export E1039_DECODER_MODE=$DECO_MODE
 
-if [ $1 = 'daemon' ] ; then
+if [ $LAUNCHER = yes ] ; then
     FN_LOG=/dev/shm/log-decoder-daemon.txt
     echo "Launch a daemon process."
     echo "  Log file = $FN_LOG"
-    root.exe -b -q "$E1039_CORE/macros/online/Daemon4MainDaq.C" &>$FN_LOG &
+    root.exe -b -q "$E1039_CORE/macros/online/Daemon4MainDaq.C" &>$FN_LOG
 else
+    if [ -z "$1" ] ; then
+	echo "The 1st argument must be a run number.  Abort."
+	exit
+    fi
     RUN=$1
-    echo "Single-run decoding."
+    echo "Single-run decoding for run = $RUN."
     root.exe -b -l <<-EOF
 	.L $E1039_CORE/macros/online/Daemon4MainDaq.C
 	StartDecoder($RUN, $N_EVT, $IS_ONLINE);
