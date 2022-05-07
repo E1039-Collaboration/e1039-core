@@ -287,6 +287,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 
   run_header->set_run_id         (rd->run_id);
   run_header->set_unix_time_begin(rd->utime_b);
+  run_header->set_unix_time_end  (rd->utime_e);
   for (int ii = 0; ii < 5; ii++) {
     run_header->set_fpga_enabled (ii, rd->fpga_enabled [ii]);
     run_header->set_fpga_prescale(ii, rd->fpga_prescale[ii]);

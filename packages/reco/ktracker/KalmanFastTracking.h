@@ -35,7 +35,7 @@ class KalmanFastTracking
 {
 public:
     explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
-    ~KalmanFastTracking();
+    virtual ~KalmanFastTracking();
 
     //set/get verbosity
     void Verbosity(const int a) {verbosity = a;}
@@ -43,7 +43,7 @@ public:
     void printTimers();
 
     //Set the input event
-    int setRawEvent(SRawEvent* event_input);
+    virtual int setRawEvent(SRawEvent* event_input);
     void setRawEventDebug(SRawEvent* event_input);
 
     //Event quality cut
@@ -51,13 +51,13 @@ public:
 
     ///Tracklet finding stuff
     //Build tracklets in a station
-    void buildTrackletsInStation(int stationID, int listID, double* pos_exp = nullptr, double* window = nullptr);
+    virtual void buildTrackletsInStation(int stationID, int listID, double* pos_exp = nullptr, double* window = nullptr);
 
     //Build back partial tracks using tracklets in station 2 & 3
-    void buildBackPartialTracks();
+    virtual void buildBackPartialTracks();
 
     //Build global tracks by connecting station 23 tracklets and station 1 tracklets
-    void buildGlobalTracks();
+    virtual void buildGlobalTracks();
 
     //Fit tracklets
     int fitTracklet(Tracklet& tracklet);
@@ -106,13 +106,17 @@ public:
     std::list<SRecTrack>& getSRecTracks() { return stracks; }
     std::list<PropSegment>& getPropSegments(int i) { return propSegs[i]; }
 
-    ///Set the index of the final output tracklet list
-    void setOutputListID(unsigned int i) { outputListIdx = i; }
+    ///Set the index of the final output tracklet list.
+    /**
+     * If it is 1, 2, 3 or 4; D2, D3, D2+3 or Global tracklets are outputted (as SRecTrack),
+     * where the track reconstruction is terminated as soon as the requested tracklet type is found empty.
+     */
+    void setOutputListIndex(unsigned int i) { outputListIdx = i; }
 
     ///Tool, a simple-minded chi square fit
     void chi2fit(int n, double x[], double y[], double& a, double& b);
 
-private:
+protected:
     //verbosity following Fun4All convention
     int verbosity;
 
@@ -208,6 +212,8 @@ private:
 
     //Timer
     std::map<std::string, PHTimer*> _timers;
+
+    int setRawEventPrep(SRawEvent* event_input);
 };
 
 #endif

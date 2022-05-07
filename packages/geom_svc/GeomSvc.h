@@ -197,6 +197,7 @@ public:
 
     const Plane& getPlane(int detectorID) const { return planes[detectorID]; }
     Plane getPlane(int detectorID)              { return planes[detectorID]; }
+    Plane* getPlanePtr(int detectorID)         { return &planes[detectorID]; }
 
     double getPlanePosition(int detectorID)   const { return planes[detectorID].zc; }
     double getPlaneSpacing(int detectorID)    const { return planes[detectorID].spacing; }

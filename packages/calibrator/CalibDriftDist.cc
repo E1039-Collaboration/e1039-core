@@ -19,6 +19,11 @@ CalibDriftDist::CalibDriftDist(const std::string& name)
   , m_fn_xt("")
   , m_vec_hit(0)
   , m_cal_xt (0)
+  , m_reso_d0 (0)
+  , m_reso_d1 (0)
+  , m_reso_d2 (0)
+  , m_reso_d3p(0)
+  , m_reso_d3m(0)
 {
   ;
 }
@@ -64,6 +69,25 @@ int CalibDriftDist::InitRun(PHCompositeNode* topNode)
     cout << Name() << ": " << m_cal_xt->GetParamID() << " = " << m_cal_xt->GetMapID() << "\n";
   }
 
+  if (m_reso_d0 > 0) {
+    if (Verbosity() > 0) cout << "CalibDriftDist: Set the plane resolution.\n";
+    GeomSvc* geom = GeomSvc::instance();
+    for (int ii = 1; ii <= nChamberPlanes; ii++) {
+      Plane* plane = geom->getPlanePtr(ii);
+      string name = plane->detectorName;
+      double reso = -1;
+      if      (name.substr(0, 2) == "D0" ) reso = m_reso_d0;
+      else if (name.substr(0, 2) == "D1" ) reso = m_reso_d1;
+      else if (name.substr(0, 2) == "D2" ) reso = m_reso_d2;
+      else if (name.substr(0, 3) == "D3p") reso = m_reso_d3p;
+      else if (name.substr(0, 3) == "D3m") reso = m_reso_d3m;
+      if (reso > 0) {
+        plane->resolution = reso;
+        if (Verbosity() > 0) cout << "  " << setw(2) << ii << ":" << setw(5) << name << " = " << reso << endl;
+      }
+    }
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -97,6 +121,19 @@ int CalibDriftDist::process_event(PHCompositeNode* topNode)
 int CalibDriftDist::End(PHCompositeNode* topNode)
 {
   return Fun4AllReturnCodes::EVENT_OK;
+}
+
+/**
+ * The resolution values are passed to `GeomSvc` in `InitRun()` later.
+ * They will be used in `Tracklet::calcChisq()` of `FastTracklet.cxx` for example.
+ */
+void CalibDriftDist::SetResolution(const double reso_d0, const double reso_d1, const double reso_d2, const double reso_d3p, const double reso_d3m)
+{
+  m_reso_d0  = reso_d0 ;
+  m_reso_d1  = reso_d1 ;
+  m_reso_d2  = reso_d2 ;
+  m_reso_d3p = reso_d3p;
+  m_reso_d3m = reso_d3m;
 }
 
 void CalibDriftDist::ReadParamFromFile(const char* fn_xt_curve)

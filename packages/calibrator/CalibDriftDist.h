@@ -15,6 +15,12 @@ class CalibDriftDist: public SubsysReco {
   SQHitVector* m_vec_hit;
   CalibParamXT* m_cal_xt;
 
+  double m_reso_d0;
+  double m_reso_d1;
+  double m_reso_d2;
+  double m_reso_d3p;
+  double m_reso_d3m;
+
  public:
   CalibDriftDist(const std::string &name = "CalibDriftDist");
   virtual ~CalibDriftDist();
@@ -22,6 +28,9 @@ class CalibDriftDist: public SubsysReco {
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
+
+  /// Set the plane resolutions in cm.
+  void SetResolution(const double reso_d0, const double reso_d1, const double reso_d2, const double reso_d3p, const double reso_d3m);
 
   void ReadParamFromFile(const char* fn_xt_curve);
   CalibParamXT* GetParamXT() { return m_cal_xt; }
