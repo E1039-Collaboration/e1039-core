@@ -87,7 +87,7 @@ void Fun4AllSpillDstOutputManager::EnableDB(const bool refresh_db, const std::st
     list.Add("run_id"        , "INT", true);
     list.Add("spill_id_first", "INT", true);
     list.Add("spill_id_last" , "INT", true);
-    list.Add("file_name"     , "VARCHAR(256)", true);
+    list.Add("file_name"     , "VARCHAR(256)");
     list.Add("status"        , "INT");
     list.Add("utime_b"       , "INT");
     list.Add("utime_e"       , "INT");
@@ -102,7 +102,7 @@ void Fun4AllSpillDstOutputManager::DstStarted(const int run, const int spill_f, 
   ostringstream oss;
   oss << "insert into " << m_name_table
       << " values(" << run << ", " << spill_f << ", " << spill_l << ", '" << file_name << "', 1, " << utime << ", 0)"
-      << " on duplicate key update status = 1, utime_b = " << utime << ", utime_e = 0";
+      << " on duplicate key update file_name = '" << file_name << "', status = 1, utime_b = " << utime << ", utime_e = 0";
   if (! m_db->Con()->Exec(oss.str().c_str())) {
     cerr << "!!ERROR!!  DecoStatusDb::RunStarted()." << endl;
     return;

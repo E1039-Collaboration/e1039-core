@@ -38,7 +38,7 @@ echo "  $DIR_INST"
 ##
 mkdir -p $DIR_INST/script
 \cp $DIR_SCRIPT/this-core-org.sh $DIR_INST/this-core.sh
-\cp $DIR_SCRIPT/exec-decoder.sh $DIR_INST/script
+\cp $DIR_SCRIPT/exec-decoder.sh $DIR_INST/script/
 
 ##
 ## Check and set up the parent environments.

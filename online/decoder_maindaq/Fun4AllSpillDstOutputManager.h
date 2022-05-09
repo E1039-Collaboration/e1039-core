@@ -18,9 +18,9 @@ class DbSvc;
  */
 class Fun4AllSpillDstOutputManager: public Fun4AllDstOutputManager {
   std::string m_dir_base;
-  int m_sp_step;
-  int m_run_id;
-  int m_sp_id_f;
+  int m_sp_step; ///< Step size to switch to next DST file, i.e. N of spills per DST.
+  int m_run_id; ///< Current run ID.
+  int m_sp_id_f; ///< First spill ID of current DST.  The last spill ID is `m_sp_id_f + m_sp_step - 1`.
 
   DbSvc* m_db;
   std::string m_name_table;
