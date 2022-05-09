@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <TSQLServer.h>
 class TSQLServer;
 class TSQLStatement;
 
