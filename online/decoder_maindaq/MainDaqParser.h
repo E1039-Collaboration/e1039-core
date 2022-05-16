@@ -4,7 +4,7 @@
 #include "DecoParam.h"
 #include "DecoError.h"
 class CodaInputManager;
-class PHTimer;
+class PHTimer2;
 
 class MainDaqParser {
   static const std::vector<std::string> LIST_TIMERS;
@@ -22,7 +22,10 @@ class MainDaqParser {
   SpillData   * sd_now; //< Contain the spill info of the current spill
   EventDataMap* list_ed_now; //< Contain the event info only in the current spill
 
-  std::map<std::string, PHTimer*> m_timers; // [timer name]
+  std::map<std::string, PHTimer2*> m_timers; // [timer name]
+  PHTimer2* m_timer_sp_input;
+  PHTimer2* m_timer_sp_decode;
+  PHTimer2* m_timer_sp_map;
 
   // Handlers of CODA Event
   int ProcessCodaPrestart   (int* words);

@@ -9,6 +9,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilSQHit.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonTrigSig.h"
 using namespace std;
@@ -89,29 +90,39 @@ int OnlMonTrigSig::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonTrigSig::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
+  SQEvent*              evt = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   SQHitVector* trig_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-  if (!event_header || !hit_vec || !trig_hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
+  if (!evt || !hit_vec || !trig_hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
-  GeomSvc* geom = GeomSvc::instance();
-
-  for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
-    int det_id  = (*it)->get_detector_id();
-    int ele_id  = (*it)->get_element_id ();
-    double time = (*it)->get_tdc_time   ();
-    if      (det_id == geom->getDetectorID("BeforeInhNIM"   )) h2_bi_nim ->Fill(time, ele_id);
-    else if (det_id == geom->getDetectorID("BeforeInhMatrix")) h2_bi_fpga->Fill(time, ele_id);
-    else if (det_id == geom->getDetectorID("AfterInhNIM"    )) h2_ai_nim ->Fill(time, ele_id);
-    else if (det_id == geom->getDetectorID("AfterInhMatrix" )) h2_ai_fpga->Fill(time, ele_id);
+  auto vec = UtilSQHit::FindHitsFast(evt, hit_vec, "BeforeInhNIM");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_bi_nim->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
   }
 
-  for (SQHitVector::ConstIter it = trig_hit_vec->begin(); it != trig_hit_vec->end(); it++) {
-    int det_id  = (*it)->get_detector_id();
-    int ele_id  = (*it)->get_element_id ();
-    double time = (*it)->get_tdc_time   ();
-    if      (det_id == geom->getDetectorID("RF"  )) h2_rf  ->Fill(time, ele_id);
-    else if (det_id == geom->getDetectorID("STOP")) h2_stop->Fill(time, ele_id);
+  vec = UtilSQHit::FindHitsFast(evt, hit_vec, "BeforeInhMatrix");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_bi_fpga->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
+  }
+
+  vec = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhNIM");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_ai_nim->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
+  }
+
+  vec = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_ai_fpga->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
+  }
+
+  vec = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, "RF");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_rf->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
+  }
+
+  vec = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, "STOP");
+  for (auto it = vec->begin(); it != vec->end(); it++) {
+    h2_stop->Fill((*it)->get_tdc_time(), (*it)->get_element_id());
   }
   
   return Fun4AllReturnCodes::EVENT_OK;

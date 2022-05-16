@@ -1,5 +1,6 @@
 #ifndef __CHAN_MAP_V1495_H__
 #define __CHAN_MAP_V1495_H__
+#include <unordered_map>
 #include "RunParamBase.h"
 
 class ChanMapV1495 : public ChanMapBase {
@@ -16,7 +17,7 @@ class ChanMapV1495 : public ChanMapBase {
   List_t m_list; ///< Used to keep all information in the added order.
 
   typedef std::tuple<short, short, short> DetEleLvl_t;
-  typedef std::map<RocBoardChan_t, DetEleLvl_t> Map_t;
+  typedef std::unordered_map<RocBoardChan_t, DetEleLvl_t, RocBoardChanHash> Map_t;
   Map_t m_map; ///< Used in Find() for better speed.
 
  public:

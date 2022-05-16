@@ -7,7 +7,7 @@
 #include <map>
 
 class PHCompositeNode;
-class PHTimer;
+class PHTimer2;
 class SyncObject;
 class MainDaqParser;
 
@@ -44,7 +44,7 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   PHCompositeNode *topNode;
   SyncObject* syncobject;
   MainDaqParser* parser;
-  std::map<std::string, PHTimer*> m_timers; // [timer name]
+  std::map<std::string, PHTimer2*> m_timers; // [timer name]
 };
 
 #endif /* __Fun4AllEVIOInputManager_H_ */

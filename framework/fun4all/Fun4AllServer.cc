@@ -59,6 +59,8 @@ Fun4AllServer::Fun4AllServer(const std::string &name)
   , runnumber(0)
   , eventnumber(0)
   , beginruntimestamp(nullptr)
+  , timer_sp_subsys(0)
+  , timer_sp_output(0)
   , keep_db_connected(0)
 {
   InitAll();
@@ -116,6 +118,9 @@ Fun4AllServer::~Fun4AllServer()
     delete TDirCollection.back();
     TDirCollection.pop_back();
   }
+  if (timer_sp_subsys) delete timer_sp_subsys;
+  if (timer_sp_output) delete timer_sp_output;
+
   recoConsts *rc = recoConsts::instance();
   delete rc;
   __instance = nullptr;
@@ -143,6 +148,15 @@ void Fun4AllServer::InitAll()
   topnodemap["TOP"] = TopNode;
   default_Tdirectory = gDirectory->GetPath();
   InitNodeTree(TopNode);
+
+  timer_map["process_event_01"] = PHTimer2("process_event_01_prep");
+  timer_map["process_event_02"] = PHTimer2("process_event_02_subsys");
+  timer_map["process_event_03"] = PHTimer2("process_event_03_output");
+  timer_map["process_event_04"] = PHTimer2("process_event_04_reset");
+
+  timer_sp_subsys = new PHTimer2("timer_sp_subsys");
+  timer_sp_output = new PHTimer2("timer_sp_output");
+
   return;
 }
 
@@ -257,7 +271,7 @@ int Fun4AllServer::registerSubsystem(SubsysReco *subsystem, const string &topnod
   Subsystems.push_back(newsubsyspair);
   ostringstream timer_name;
   timer_name << subsystem->Name() << "_" << topnodename;
-  PHTimer timer(timer_name.str());
+  PHTimer2 timer(timer_name.str());
   if (timer_map.find(timer_name.str()) == timer_map.end())
   {
     timer_map[timer_name.str()] = timer;
@@ -501,6 +515,7 @@ int Fun4AllServer::process_event(PHCompositeNode * /*topNode*/)
 
 int Fun4AllServer::process_event()
 {
+  timer_map["process_event_01"].restart();
   vector<pair<SubsysReco *, PHCompositeNode *> >::iterator iter;
   unsigned icnt = 0;
   int eventbad = 0;
@@ -525,6 +540,11 @@ int Fun4AllServer::process_event()
   {
     unregisterSubsystemsNow();
   }
+  timer_map["process_event_01"].stop();
+
+  timer_map["process_event_02"].restart();
+  timer_sp_subsys->restart();
+
   gROOT->cd(default_Tdirectory.c_str());
   string currdir = gDirectory->GetPath();
   for (iter = Subsystems.begin(); iter != Subsystems.end(); ++iter)
@@ -554,7 +574,7 @@ int Fun4AllServer::process_event()
     {
       ostringstream timer_name;
       timer_name << (*iter).first->Name() << "_" << (*iter).second->getName();
-      std::map<const std::string, PHTimer>::iterator titer = timer_map.find(timer_name.str());
+      std::map<const std::string, PHTimer2>::iterator titer = timer_map.find(timer_name.str());
       bool timer_found = false;
       if (titer != timer_map.end())
       {
@@ -628,7 +648,11 @@ int Fun4AllServer::process_event()
   {
     retcodesmap[Fun4AllReturnCodes::EVENT_OK]++;
   }
+  timer_map["process_event_02"].stop();
+  timer_sp_subsys->stop();
 
+  timer_map["process_event_03"].restart();
+  timer_sp_output->restart();
   gROOT->cd(currdir.c_str());
 
   //  mainIter.print();
@@ -679,6 +703,10 @@ int Fun4AllServer::process_event()
       }
     }
   }
+  timer_map["process_event_03"].stop();
+  timer_sp_output->stop();
+
+  timer_map["process_event_04"].restart();
   for (iter = Subsystems.begin(); iter != Subsystems.end(); ++iter)
   {
     if (verbosity >= VERBOSITY_EVEN_MORE)
@@ -696,6 +724,8 @@ int Fun4AllServer::process_event()
     syncman->ResetEvent();
   }
   ResetNodeTree();
+  timer_map["process_event_04"].stop();
+
   return 0;
 }
 
@@ -1641,7 +1671,7 @@ void Fun4AllServer::NodeIdentify(const std::string &name)
 
 void Fun4AllServer::PrintTimer(const string &name)
 {
-  map<const string, PHTimer>::const_iterator iter;
+  map<const string, PHTimer2>::const_iterator iter;
   if (name.empty())
   {
     for (iter = timer_map.begin(); iter != timer_map.end(); ++iter)
@@ -1667,4 +1697,16 @@ void Fun4AllServer::PrintTimer(const string &name)
     }
   }
   return;
+}
+
+void Fun4AllServer::ReadSpillTimer(double& time_subsys, double& time_output)
+{
+  time_subsys = timer_sp_subsys->get_accumulated_time();
+  time_output = timer_sp_output->get_accumulated_time();
+}
+
+void Fun4AllServer::ResetSpillTimer()
+{
+  timer_sp_subsys->reset();
+  timer_sp_output->reset();
 }

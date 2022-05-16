@@ -1,5 +1,6 @@
 #ifndef __CHAN_MAP_TAIWAN_H__
 #define __CHAN_MAP_TAIWAN_H__
+#include <unordered_map>
 #include "RunParamBase.h"
 
 class ChanMapTaiwan : public ChanMapBase {
@@ -15,7 +16,7 @@ class ChanMapTaiwan : public ChanMapBase {
   List_t m_list; ///< Used to keep all information in the added order.
 
   typedef std::pair<short, short> DetEle_t;
-  typedef std::map<RocBoardChan_t, DetEle_t> Map_t;
+  typedef std::unordered_map<RocBoardChan_t, DetEle_t, RocBoardChanHash> Map_t;
   Map_t m_map; ///< Used in Find() for better speed.
 
  public:

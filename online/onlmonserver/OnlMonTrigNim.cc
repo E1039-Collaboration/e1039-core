@@ -10,6 +10,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilSQHit.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonTrigNim.h"
 using namespace std;
@@ -57,31 +58,22 @@ int OnlMonTrigNim::ProcessEventOnlMon(PHCompositeNode* topNode)
   SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   if (!event || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
-  /// Sort out all hits.
-  HitListMap_t lhm;
-  for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
-    // We better select good hits here in the fugure
-    lhm[(*it)->get_detector_id()].push_back(*it);
-  }
-
-  /// Judge if each plane should fire (i.e. has a hit) or not
-  GeomSvc* geom = GeomSvc::instance();
-  bool hit_h1x  = lhm.find(geom->getDetectorID("H1B"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H1T"  )) != lhm.end();
-  bool hit_h1y  = lhm.find(geom->getDetectorID("H1L"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H1R"  )) != lhm.end();
-  bool hit_h2x  = lhm.find(geom->getDetectorID("H2B"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H2T"  )) != lhm.end();
-  bool hit_h2y  = lhm.find(geom->getDetectorID("H2L"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H2R"  )) != lhm.end();
-  bool hit_h3x  = lhm.find(geom->getDetectorID("H3B"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H3T"  )) != lhm.end();
-  bool hit_h4x  = lhm.find(geom->getDetectorID("H4B"  )) != lhm.end()
-               || lhm.find(geom->getDetectorID("H4T"  )) != lhm.end();
-  bool hit_h4y1 = lhm.find(geom->getDetectorID("H4Y1L")) != lhm.end()
-               || lhm.find(geom->getDetectorID("H4Y1R")) != lhm.end();
-  bool hit_h4y2 = lhm.find(geom->getDetectorID("H4Y2L")) != lhm.end()
-               || lhm.find(geom->getDetectorID("H4Y2R")) != lhm.end();
+  bool hit_h1x  = UtilSQHit::FindHitsFast(event, hit_vec, "H1B"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H1T"  )->size() > 0;
+  bool hit_h1y  = UtilSQHit::FindHitsFast(event, hit_vec, "H1L"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H1R"  )->size() > 0;
+  bool hit_h2x  = UtilSQHit::FindHitsFast(event, hit_vec, "H2B"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H2T"  )->size() > 0;
+  bool hit_h2y  = UtilSQHit::FindHitsFast(event, hit_vec, "H2L"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H2R"  )->size() > 0;
+  bool hit_h3x  = UtilSQHit::FindHitsFast(event, hit_vec, "H3B"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H3T"  )->size() > 0;
+  bool hit_h4x  = UtilSQHit::FindHitsFast(event, hit_vec, "H4B"  )->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H4T"  )->size() > 0;
+  bool hit_h4y1 = UtilSQHit::FindHitsFast(event, hit_vec, "H4Y1L")->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H4Y1R")->size() > 0;
+  bool hit_h4y2 = UtilSQHit::FindHitsFast(event, hit_vec, "H4Y2L")->size() > 0
+               || UtilSQHit::FindHitsFast(event, hit_vec, "H4Y2R")->size() > 0;
 
   /// Fill the histogram per trigger
   bool trig_flag[10] = {

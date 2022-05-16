@@ -8,10 +8,11 @@ class SQHardSpill_v1 : public SQHardSpill {
   int _bos_vme_time;
   int _eos_coda_id;
   int _eos_vme_time;
-  TTimeStamp _ts_deco_begin;
-  TTimeStamp _ts_deco_end  ;
-  TTimeStamp _ts_proc_begin;
-  TTimeStamp _ts_proc_end  ;
+  double _time_input;
+  double _time_decode;
+  double _time_map;
+  double _time_subsys;
+  double _time_output;
 
  public:
   SQHardSpill_v1();
@@ -35,17 +36,20 @@ class SQHardSpill_v1 : public SQHardSpill {
   virtual int  get_eos_vme_time() const { return _eos_vme_time; }
   virtual void set_eos_vme_time(const int a)   { _eos_vme_time = a; }
   
-  virtual TTimeStamp get_timestamp_deco_begin() const      { return _ts_deco_begin; }
-  virtual void       set_timestamp_deco_begin(const TTimeStamp a) { _ts_deco_begin = a; }
+  virtual double get_time_input() const  { return _time_input; }
+  virtual void   set_time_input(const double a) { _time_input = a; }
 
-  virtual TTimeStamp get_timestamp_deco_end() const      { return _ts_deco_end; }
-  virtual void       set_timestamp_deco_end(const TTimeStamp a) { _ts_deco_end = a; }
+  virtual double get_time_decode() const  { return _time_decode; }
+  virtual void   set_time_decode(const double a) { _time_decode = a; }
 
-  virtual TTimeStamp get_timestamp_proc_begin() const      { return _ts_proc_begin; }
-  virtual void       set_timestamp_proc_begin(const TTimeStamp a) { _ts_proc_begin = a; }
+  virtual double get_time_map() const  { return _time_map; }
+  virtual void   set_time_map(const double a) { _time_map = a; }
 
-  virtual TTimeStamp get_timestamp_proc_end() const      { return _ts_proc_end; }
-  virtual void       set_timestamp_proc_end(const TTimeStamp a) { _ts_proc_end = a; }
+  virtual double get_time_subsys() const  { return _time_subsys; }
+  virtual void   set_time_subsys(const double a) { _time_subsys = a; }
+
+  virtual double get_time_output() const  { return _time_output; }
+  virtual void   set_time_output(const double a) { _time_output = a; }
 
   ClassDef(SQHardSpill_v1, 1);
 };

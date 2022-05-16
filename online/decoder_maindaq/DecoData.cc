@@ -67,8 +67,9 @@ SpillData::SpillData()
   , n_eos_spill  (0)
   , n_slow       (0)
   , n_scaler     (0)
-  , ts_deco_begin(TTimeStamp(0, 0))
-  , ts_deco_end  (TTimeStamp(0, 0))
+  , time_input   (0)
+  , time_decode  (0)
+  , time_map     (0)
 {
   ;
 }

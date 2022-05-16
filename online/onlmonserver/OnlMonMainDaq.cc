@@ -3,8 +3,10 @@
 #include <iomanip>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <THStack.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <TLegend.h>
 #include <interface_main/SQRun.h>
 #include <interface_main/SQIntMap.h>
 #include <interface_main/SQHardSpill.h>
@@ -80,11 +82,12 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   }
   h2_nhit_pl->GetYaxis()->SetBinLabel(N_PL + 1, "All planes");
 
-  h1_nevt_sp = new TH1F("h1_nevt_sp", ";Spill;N of events", 1000, -0.5, 999.5);
-
-  h1_time_deco = new TH1F("h1_time_deco", ";Spill;Decoding time (sec)", 1000, -0.5, 999.5);
-
-  h1_time_ana  = new TH1F("h1_time_ana", ";Spill;Analysis time (sec)", 1000, -0.5, 999.5);
+  h1_nevt_sp     = new TH1F("h1_nevt_sp"    , ";Spill;N of events"     , 1000, -0.5, 999.5);
+  h1_time_input  = new TH1F("h1_time_input" , ";Spill;Wait/read input" , 1000, -0.5, 999.5);
+  h1_time_deco   = new TH1F("h1_time_deco"  , ";Spill;Decode Coda file", 1000, -0.5, 999.5);
+  h1_time_map    = new TH1F("h1_time_map"   , ";Spill;Map channels"    , 1000, -0.5, 999.5);
+  h1_time_subsys = new TH1F("h1_time_subsys", ";Spill;Process events"  , 1000, -0.5, 999.5);
+  h1_time_output = new TH1F("h1_time_output", ";Spill;Write outputs"   , 1000, -0.5, 999.5);
 
   RegisterHist(h1_trig);
   RegisterHist(h1_n_taiwan);
@@ -93,8 +96,11 @@ int OnlMonMainDaq::InitRunOnlMon(PHCompositeNode* topNode)
   RegisterHist(h1_cnt, OnlMonClient::MODE_UPDATE);
   RegisterHist(h2_nhit_pl);
   RegisterHist(h1_nevt_sp);
+  RegisterHist(h1_time_input);
   RegisterHist(h1_time_deco);
-  RegisterHist(h1_time_ana);
+  RegisterHist(h1_time_map);
+  RegisterHist(h1_time_subsys);
+  RegisterHist(h1_time_output);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -169,21 +175,19 @@ int OnlMonMainDaq::ProcessEventOnlMon(PHCompositeNode* topNode)
   int bin_sp = sp_id - m_spill_id_1st + 1;
   if (1 <= bin_sp && bin_sp <= nbin_sp) { // Not underflow nor overflow
     h1_nevt_sp->AddBinContent(bin_sp);
-    
-    static int sp_id_pre = 0;
-    static TTimeStamp ts_begin(0, 0); // Begin time per spill
-    if (sp_id_pre != sp_id) { // Once at the 1st event per spill
-      SQHardSpill* hard_sp = (SQHardSpill*)map_hs->get(sp_id);
-      if (hard_sp) {
-        double tb = hard_sp->get_timestamp_deco_begin().AsDouble();
-        double te = hard_sp->get_timestamp_deco_end  ().AsDouble();
-        h1_time_deco->SetBinContent(bin_sp, te - tb);
+
+    SQHardSpill* hard_sp = (SQHardSpill*)map_hs->get(sp_id);
+    if (hard_sp) {
+      static int sp_id_pre = 0;
+      if (sp_id_pre != sp_id) { // Once at the 1st event per spill
+        h1_time_input->SetBinContent(bin_sp, hard_sp->get_time_input()  / 1000);
+        h1_time_deco ->SetBinContent(bin_sp, hard_sp->get_time_decode() / 1000);
+        h1_time_map  ->SetBinContent(bin_sp, hard_sp->get_time_map()    / 1000);
+        sp_id_pre = sp_id;
       }
-      ts_begin.Set();
-      sp_id_pre = sp_id;
+      h1_time_subsys->SetBinContent(bin_sp, hard_sp->get_time_subsys() / 1000);
+      h1_time_output->SetBinContent(bin_sp, hard_sp->get_time_output() / 1000);
     }
-    TTimeStamp ts_now;
-    h1_time_ana->SetBinContent(bin_sp, ts_now.AsDouble() - ts_begin.AsDouble());
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -203,23 +207,23 @@ int OnlMonMainDaq::FindAllMonHist()
   h1_cnt        = FindMonHist("h1_cnt");
   h2_nhit_pl    = (TH2*)FindMonHist("h2_nhit_pl");
   h1_nevt_sp    = FindMonHist("h1_nevt_sp");
-  h1_time_deco  = FindMonHist("h1_time_deco");
-  h1_time_ana   = FindMonHist("h1_time_ana");
-  return (h1_trig && h1_evt_qual && h1_flag_v1495 && h1_cnt && h2_nhit_pl && h1_nevt_sp && h1_time_deco && h1_time_ana  ?  0  :  1);
+  h1_time_input  = FindMonHist("h1_time_input");
+  h1_time_deco   = FindMonHist("h1_time_deco");
+  h1_time_map    = FindMonHist("h1_time_map");
+  h1_time_subsys = FindMonHist("h1_time_subsys");
+  h1_time_output = FindMonHist("h1_time_output");
+  return (h1_trig && h1_evt_qual && h1_flag_v1495 && h1_cnt && h2_nhit_pl && h1_nevt_sp &&
+          h1_time_input && h1_time_deco && h1_time_map && h1_time_subsys && h1_time_output  ?  0  :  1);
 }
 
 int OnlMonMainDaq::DrawMonitor()
 {
   OnlMonParam param(this);
-  int    n_ttdc         = param.GetIntParam   ("N_TAIWAN_TDC");
-  int    nhit_pl_warn   = param.GetIntParam   ("N_HIT_PL_WARN");
-  int    nhit_pl_err    = param.GetIntParam   ("N_HIT_PL_ERROR");
-  int    nevt_sp_warn   = param.GetIntParam   ("N_EVT_SP_WARN");
-  int    nevt_sp_err    = param.GetIntParam   ("N_EVT_SP_ERROR");
-  double time_deco_warn = param.GetDoubleParam("TIME_DECO_WARN");
-  double time_deco_err  = param.GetDoubleParam("TIME_DECO_ERROR");
-  double time_ana_warn  = param.GetDoubleParam("TIME_ANA_WARN");
-  double time_ana_err   = param.GetDoubleParam("TIME_ANA_ERROR");
+  int n_ttdc       = param.GetIntParam("N_TAIWAN_TDC");
+  int nhit_pl_warn = param.GetIntParam("N_HIT_PL_WARN");
+  int nhit_pl_err  = param.GetIntParam("N_HIT_PL_ERROR");
+  int nevt_sp_warn = param.GetIntParam("N_EVT_SP_WARN");
+  int nevt_sp_err  = param.GetIntParam("N_EVT_SP_ERROR");
 
   UtilHist::AutoSetRange(h1_n_taiwan);
 
@@ -370,10 +374,14 @@ int OnlMonMainDaq::DrawMonitor()
   
   OnlMonCanvas* can2 = GetCanvas(2); // ========== Canvas #2 ==========
   can2->SetStatus(OnlMonCanvas::OK);
-  TPad* pad2 = can2->GetMainPad();
-  pad2->Divide(1, 3);
+  can2->GetMainPad(); 
+  TPad* pad21 = new TPad("pad21", "", 0.0, 0.7, 1.0, 1.0);
+  TPad* pad22 = new TPad("pad22", "", 0.0, 0.0, 1.0, 0.7);
+  pad21->Draw();
+  pad22->Draw();
 
-  TVirtualPad* pad21 = pad2->cd(1);
+  //TVirtualPad* pad21 = pad2->cd(1);
+  pad21->cd();
   pad21->SetMargin(0.08, 0.01, 0.15, 0.01); // (l, r, b, t)
   pad21->SetGrid();
   pad21->SetLogy();
@@ -391,7 +399,8 @@ int OnlMonMainDaq::DrawMonitor()
   h1_nevt_sp->GetYaxis()->SetLabelSize(0.08); // default = 0.04
   h1_nevt_sp->GetYaxis()->SetTitleSize(0.08); // default = 0.04
   h1_nevt_sp->GetYaxis()->SetTitleOffset(0.53); // default = 1.0
-  h1_nevt_sp->Draw();
+  h1_nevt_sp->SetMarkerStyle(7);
+  h1_nevt_sp->Draw("pl");
 
   double nevt_sp = EvalAverageOfFilledBins(h1_nevt_sp);
   if (nevt_sp > nevt_sp_err) {
@@ -402,52 +411,56 @@ int OnlMonMainDaq::DrawMonitor()
     can2->AddMessage(TString::Format("N of events/spill = %.1f > %d.", nevt_sp, nevt_sp_warn).Data());
   }
 
-  TVirtualPad* pad22 = pad2->cd(2);
-  pad22->SetMargin(0.08, 0.01, 0.15, 0.01); // (l, r, b, t)
+  pad22->cd();
+  pad22->SetMargin(0.08, 0.01, 0.10, 0.10); // (l, r, b, t)
   pad22->SetGrid();
   pad22->SetLogy();
 
-  h1_time_deco->GetXaxis()->SetTitle(title_sp_id.c_str());
-  UtilHist::AutoSetRange(h1_time_deco, 0, 0);
-  h1_time_deco->GetXaxis()->SetLabelSize(0.08); // default = 0.04
-  h1_time_deco->GetXaxis()->SetTitleSize(0.08); // default = 0.04
-  h1_time_deco->GetYaxis()->SetLabelSize(0.08); // default = 0.04
-  h1_time_deco->GetYaxis()->SetTitleSize(0.08); // default = 0.04
-  h1_time_deco->GetYaxis()->SetTitleOffset(0.53); // default = 1.0
-  h1_time_deco->SetMarkerStyle(21);
-  h1_time_deco->Draw("P");
+  TH1* h1[5] = { h1_time_input, h1_time_deco, h1_time_map, h1_time_subsys, h1_time_output };
+  const char* label_h1[5] = {
+    "Wait/read input",
+    "Decode words"   ,
+    "Map channels"   ,
+    "Process events" ,
+    "Write outputs"   };
 
-  double time_deco = EvalAverageOfFilledBins(h1_time_deco);
-  if (time_deco > time_deco_err) {
-    can2->SetWorseStatus(OnlMonCanvas::ERROR);
-    can2->AddMessage(TString::Format("Decoding time = %.1f > %.1f.", time_deco, time_deco_err).Data());
-  } else if (time_deco > time_deco_warn) {
-    can2->SetWorseStatus(OnlMonCanvas::WARN);
-    can2->AddMessage(TString::Format("Decoding time = %.1f > %.1f.", time_deco, time_deco_warn).Data());
+  int bin_lo, bin_hi;
+  UtilHist::FindFilledRange(h1_time_input, bin_lo, bin_hi);
+
+  THStack* hs23 = new THStack("hs23", (";" + title_sp_id + ";Time (sec)").c_str());
+  for (int ih = 0; ih < 5; ih++) {
+    int color = ih < 4  ?  ih+1  :  ih+2; // Skip yellow (5).
+    h1[ih]->SetLineColor  (color);
+    h1[ih]->SetMarkerColor(color);
+    h1[ih]->SetMarkerStyle(7);
+    hs23->Add(h1[ih], "pl");
   }
-
-  TVirtualPad* pad23 = pad2->cd(3);
-  pad23->SetMargin(0.08, 0.01, 0.15, 0.01); // (l, r, b, t)
-  pad23->SetGrid();
-  pad23->SetLogy();
-
-  h1_time_ana->GetXaxis()->SetTitle(title_sp_id.c_str());
-  UtilHist::AutoSetRange(h1_time_ana, 0, 0);
-  h1_time_ana->GetXaxis()->SetLabelSize(0.08); // default = 0.04
-  h1_time_ana->GetXaxis()->SetTitleSize(0.08); // default = 0.04
-  h1_time_ana->GetYaxis()->SetLabelSize(0.08); // default = 0.04
-  h1_time_ana->GetYaxis()->SetTitleSize(0.08); // default = 0.04
-  h1_time_ana->GetYaxis()->SetTitleOffset(0.53); // default = 1.0
-  h1_time_ana->SetMarkerStyle(21);
-  h1_time_ana->Draw("P");
-
-  double time_ana = EvalAverageOfFilledBins(h1_time_ana);
-  if (time_ana > time_ana_err) {
-    can2->SetWorseStatus(OnlMonCanvas::ERROR);
-    can2->AddMessage(TString::Format("Analysis time = %.1f > %.1f.", time_ana, time_ana_err).Data());
-  } else if (time_ana > time_ana_warn) {
-    can2->SetWorseStatus(OnlMonCanvas::WARN);
-    can2->AddMessage(TString::Format("Analysis time = %.1f > %.1f.", time_ana, time_ana_warn).Data());
+  hs23->Draw("nostack");
+  hs23->GetXaxis()->SetLabelSize(0.035); // default = 0.04
+  hs23->GetXaxis()->SetTitleSize(0.035); // default = 0.04
+  hs23->GetYaxis()->SetLabelSize(0.035); // default = 0.04
+  hs23->GetYaxis()->SetTitleSize(0.035); // default = 0.04
+  hs23->GetYaxis()->SetTitleOffset(1.1); // default = 1.0
+  hs23->GetXaxis()->SetRange(bin_lo, bin_hi);
+  for (int ih = 0; ih < 5; ih++) {
+    double x0 = 0.09 + 0.30 * (ih % 3);
+    double y0 = 0.94 - 0.04 * (ih / 3);
+    TLegend* leg = new TLegend(x0, y0, x0+0.3, y0+0.05);
+    leg->AddEntry(h1[ih], label_h1[ih], "pl");
+    leg->SetTextSize(0.035);
+    leg->SetLineWidth(0);
+    leg->SetFillStyle(0);
+    leg->Draw();
+  }
+  for (int ih = 0; ih < 5; ih++) {
+    double time = EvalAverageOfFilledBins(h1[ih]);
+    if (time > 20) {
+      can2->SetWorseStatus(OnlMonCanvas::ERROR);
+      can2->AddMessage(TString::Format("Time to %s = %.1f > 20.", label_h1[ih], time).Data());
+    } else if (time > 10) {
+      can2->SetWorseStatus(OnlMonCanvas::WARN);
+      can2->AddMessage(TString::Format("Time to %s = %.1f > 10.", label_h1[ih], time).Data());
+    }
   }
 
   return 0;

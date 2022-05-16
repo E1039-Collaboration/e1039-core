@@ -2,7 +2,7 @@
 #include <sstream>
 #include <TSystem.h>
 #include <TDatime.h>
-#include <phool/PHTimer.h>
+#include <phool/PHTimer2.h>
 #include "CodaInputManager.h"
 #include "MainDaqParser.h"
 using namespace std;
@@ -31,6 +31,9 @@ MainDaqParser::MainDaqParser()
   : m_file_size_min(32768)
   , m_sec_wait(15)
   , m_n_wait(40)
+  , m_timer_sp_input (new PHTimer2("timer_sp_input"))
+  , m_timer_sp_decode(new PHTimer2("timer_sp_decode"))
+  , m_timer_sp_map   (new PHTimer2("timer_sp_map"))
 {
   coda = new CodaInputManager();
   list_sd = new SpillDataMap();
@@ -40,7 +43,7 @@ MainDaqParser::MainDaqParser()
 
   for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
     string name = *it;
-    m_timers[name] = new PHTimer(name);
+    m_timers[name] = new PHTimer2(name);
   }
 }
 
@@ -51,6 +54,9 @@ MainDaqParser::~MainDaqParser()
   if (list_ed    ) delete list_ed;
   if (list_ed_now) delete list_ed_now;
   for (auto it = m_timers.begin(); it != m_timers.end(); it++) delete it->second;
+  if (m_timer_sp_input ) delete m_timer_sp_input;
+  if (m_timer_sp_decode) delete m_timer_sp_decode;
+  if (m_timer_sp_map   ) delete m_timer_sp_map;
 }
 
 int MainDaqParser::OpenCodaFile(const std::string fname, const long file_size_min, const int sec_wait, const int n_wait)
@@ -121,9 +127,13 @@ int MainDaqParser::ParseOneSpill()
   int* event_words = 0;
   while (true) {
     m_timers["next_coda_event"]->restart();
+    m_timer_sp_input->restart();
     bool found_event = coda->NextCodaEvent(dec_par.event_count, event_words);
     m_timers["next_coda_event"]->stop();
+    m_timer_sp_input->stop();
     if (! found_event) break;
+
+    m_timer_sp_decode->restart();
 
     int evt_type_id = event_words[1];
     if (dec_par.verb>3) cout << "NextCodaEvent(): " << dec_par.event_count << " 0x" << hex <<  evt_type_id << dec << endl;
@@ -174,6 +184,7 @@ int MainDaqParser::ParseOneSpill()
       cerr << "!!ERROR!!  Uncovered Coda event type: " << evt_type_id << ".  Exit." << endl;
       return false;
     }
+    m_timer_sp_decode->stop();
     if (ret != 0) {
       cout << "WARNING:  ParseOneSpill():  ret = " << ret << endl;
       break;
@@ -203,14 +214,7 @@ int MainDaqParser::End()
 
     cout << "MainDaqParser: Timer:\n";
     for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
-      string   name  = *it;
-      PHTimer* timer = m_timers[name];
-      unsigned int num = timer->get_ncycle();
-      double      time = timer->get_accumulated_time();
-      cout << "  "  << setw(25) << left << name << right
-           << " "   << setw(15) << time/num << " ms"
-           << " * " << setw( 8) << num
-           << " = " << setw( 8) << (int)round(time/1000) << " s" << endl;
+      m_timers[*it]->print_stat();
     }
   }
   if (dec_par.is_online) {
@@ -381,7 +385,6 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     run_data.n_flush_evt++;
     m_timers["process_phys_flush"]->restart();
     ret = ProcessPhysStdAndFlush(words, FLUSH_EVENTS);
-    dec_par.ts_deco_end = TTimeStamp(); // The time of the last FLUSH event will be used.
     m_timers["process_phys_flush"]->stop();
     if (dec_err.GetFlushError()) run_data.n_flush_evt_bad++;
     break;
@@ -612,7 +615,8 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
     dec_par.spillID_cntr = dec_par.spillID_slow = 0; 
     dec_par.turn_id_max  = 0;
   } else { // EOS
-    dec_par.ts_deco_begin = TTimeStamp();
+    m_timer_sp_input ->reset();
+    m_timer_sp_decode->reset();
   }
 
   if (dec_par.verb) {
@@ -1430,6 +1434,7 @@ int MainDaqParser::PackOneSpillData()
 {
   if (dec_par.verb > 2) cout << "PackOneSpillData(): n=" << list_ed->size() << endl;
   m_timers["pack_one_spill_data"]->restart();
+  m_timer_sp_map->reset_and_start();
 
   if (dec_par.is_online) {
     dec_err.SetID(dec_par.runID, dec_par.spillID);
@@ -1438,9 +1443,6 @@ int MainDaqParser::PackOneSpillData()
   
   sd_now = &(*list_sd)[dec_par.spillID];
   run_data.n_evt_all += list_ed->size();
-
-  sd_now->ts_deco_begin = dec_par.ts_deco_begin;
-  sd_now->ts_deco_end   = dec_par.ts_deco_end  ;
 
   /// A part (most?) of lines in this loop had better be moved to
   /// a SubsysReco module for better function separation.
@@ -1485,6 +1487,12 @@ int MainDaqParser::PackOneSpillData()
   list_ed = ptr;
 
   m_timers["pack_one_spill_data"]->stop();
+  m_timer_sp_map->stop();
+
+  sd_now->time_input  = m_timer_sp_input ->get_accumulated_time();
+  sd_now->time_decode = m_timer_sp_decode->get_accumulated_time();
+  sd_now->time_map    = m_timer_sp_map   ->get_accumulated_time();
+
   return 0;
 }
 

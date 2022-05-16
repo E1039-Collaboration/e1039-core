@@ -126,14 +126,15 @@ int OnlMonH4::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonH4::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
-  SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  if (!event_header || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
+  SQEvent*     evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
+  SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  if (!evt || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
-  SQHitVector* hv[N_PL];
+  vector<SQHit*>* hv[N_PL];
   for (int i_pl = 0; i_pl < N_PL; i_pl++) {
-    hv[i_pl] = UtilSQHit::FindHits(hit_vec, m_list_det[i_pl]);
-    for (SQHitVector::ConstIter it = hv[i_pl]->begin(); it != hv[i_pl]->end(); it++) {
+    int det_id = m_list_det[i_pl];
+    hv[i_pl] = UtilSQHit::FindHitsFast(evt, hit_vec, det_id);
+    for (auto it = hv[i_pl]->begin(); it != hv[i_pl]->end(); it++) {
       h1_ele [i_pl]->Fill((*it)->get_element_id());
       h1_time[i_pl]->Fill((*it)->get_tdc_time  ());
     }
@@ -142,8 +143,7 @@ int OnlMonH4::ProcessEventOnlMon(PHCompositeNode* topNode)
     h2_ele ->Fill( hv[0]->at(0)->get_element_id(), hv[1]->at(0)->get_element_id() );
     h2_time->Fill( hv[0]->at(0)->get_tdc_time  (), hv[1]->at(0)->get_tdc_time  () );
   }
-  for (int i_pl = 0; i_pl < N_PL; i_pl++) delete hv[i_pl];
-  
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

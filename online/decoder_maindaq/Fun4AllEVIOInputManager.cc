@@ -31,6 +31,7 @@
 #include <phool/PHCompositeNode.h>
 #include <phool/PHDataNode.h>
 #include <phool/recoConsts.h>
+#include <phool/PHTimer2.h>
 #include <cstdlib>
 #include <iomanip>
 #include <memory>
@@ -116,7 +117,7 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
 
   for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
     string name = *it;
-    m_timers[name] = new PHTimer(name);
+    m_timers[name] = new PHTimer2(name);
   }
 
   return ;
@@ -349,14 +350,22 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   SQHardSpill* hard_spill = (SQHardSpill*)hard_spill_map->get(sd->spill_id);
   if (! hard_spill) {
     SQHardSpill_v1 obj;
-    obj.set_bos_coda_id         (sd->bos_coda_id );
-    obj.set_bos_vme_time        (sd->bos_vme_time);
-    obj.set_eos_coda_id         (sd->eos_coda_id );
-    obj.set_eos_vme_time        (sd->eos_vme_time);
-    obj.set_timestamp_deco_begin(sd->ts_deco_begin);
-    obj.set_timestamp_deco_end  (sd->ts_deco_end  );
+    obj.set_bos_coda_id (sd->bos_coda_id );
+    obj.set_bos_vme_time(sd->bos_vme_time);
+    obj.set_eos_coda_id (sd->eos_coda_id );
+    obj.set_eos_vme_time(sd->eos_vme_time);
+    obj.set_time_input  (sd->time_input   );
+    obj.set_time_decode (sd->time_decode  );
+    obj.set_time_map    (sd->time_map     );
     hard_spill = (SQHardSpill*)hard_spill_map->insert(sd->spill_id, &obj);
+
+    Fun4AllServer::instance()->ResetSpillTimer();
   }
+  double time_subsys, time_output;
+  Fun4AllServer::instance()->ReadSpillTimer(time_subsys, time_output);
+  hard_spill->set_time_subsys(time_subsys);
+  hard_spill->set_time_output(time_output);
+
   m_timers["run_set_spill_data"]->stop();
 
   m_timers["run_set_event_data"]->restart();
@@ -450,14 +459,7 @@ int Fun4AllEVIOInputManager::fileclose()
   parser->End();
   cout << "Fun4AllEVIOInputManager: Timer:\n";
   for (auto it = LIST_TIMERS.begin(); it != LIST_TIMERS.end(); it++) {
-    string   name  = *it;
-    PHTimer* timer = m_timers[name];
-    unsigned int num = timer->get_ncycle();
-    double      time = timer->get_accumulated_time();
-    cout << "  "  << setw(25) << left << name << right
-         << " "   << setw(15) << time/num << " ms"
-         << " * " << setw( 8) << num
-         << " = " << setw( 8) << (int)round(time/1000) << " s" << endl;
+    m_timers[*it]->print_stat();
   }
 
   isopen = 0;

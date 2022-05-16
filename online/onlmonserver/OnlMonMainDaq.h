@@ -12,8 +12,12 @@ class OnlMonMainDaq: public OnlMonClient {
   TH1* h1_cnt;
   TH2* h2_nhit_pl;
   TH1* h1_nevt_sp;
+
+  TH1* h1_time_input;
   TH1* h1_time_deco;
-  TH1* h1_time_ana;
+  TH1* h1_time_map;
+  TH1* h1_time_subsys;
+  TH1* h1_time_output;
 
  public:
   OnlMonMainDaq();

@@ -12,6 +12,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilSQHit.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonV1495.h"
 using namespace std;
@@ -113,15 +114,15 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
-  SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-  if (!event_header || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
+  SQEvent*     evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
+  SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+  if (!evt || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
-  for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
-    if ((*it)->get_level() != m_lvl) continue;
-    int det_id = (*it)->get_detector_id();
-    for (int i_det = 0; i_det < N_DET; i_det++) {
-      if (list_det_id[i_det] != det_id) continue;
+  for (int i_det = 0; i_det < N_DET; i_det++) {
+    int det_id = list_det_id[i_det];
+    auto vec = UtilSQHit::FindTriggerHitsFast(evt, hit_vec, det_id);
+    for (auto it = vec->begin(); it != vec->end(); it++) {
+      if ((*it)->get_level() != m_lvl) continue;
       int    ele  = (*it)->get_element_id();
       double time = (*it)->get_tdc_time  ();
       h1_ele     [i_det]->Fill(ele );
@@ -133,7 +134,7 @@ int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
       }
     }
   }
-  
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

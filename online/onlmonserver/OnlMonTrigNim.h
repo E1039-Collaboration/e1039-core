@@ -7,9 +7,6 @@ class OnlMonTrigNim: public OnlMonClient {
   TH2* h2_count;
 
  public:
-  typedef std::vector<SQHit*> HitList_t;
-  typedef std::map<short, HitList_t> HitListMap_t;
-
   OnlMonTrigNim();
   virtual ~OnlMonTrigNim() {}
   OnlMonClient* Clone() { return new OnlMonTrigNim(*this); }
