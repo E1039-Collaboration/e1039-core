@@ -1,11 +1,9 @@
 /// Fun4MainDaq.C:  Fun4all macro to decode the MainDAQ data.
-#if ROOT_VERSION_CODE >= ROOT_VERSION(6,00,0)
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libdecoder_maindaq)
 R__LOAD_LIBRARY(libonlmonserver)
 R__LOAD_LIBRARY(libpheve_modules)
 R__LOAD_LIBRARY(libktracker)
-#endif
 
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
@@ -94,6 +92,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   Fun4AllSpillDstOutputManager *om_spdst = new Fun4AllSpillDstOutputManager(UtilOnline::GetDstFileDir(), "SPILLDSTOUT");
   om_spdst->SetSpillStep(100);
+  om_spdst->EnableDB();
   se->registerOutputManager(om_spdst);
 
   if (use_evt_disp) {

@@ -68,8 +68,21 @@ else
     fi
     RUN=$1
     echo "Single-run decoding for run = $RUN."
-    root.exe -b -l <<-EOF
-	.L $E1039_CORE/macros/online/Daemon4MainDaq.C
-	StartDecoder($RUN, $N_EVT, $IS_ONLINE);
-	EOF
+    mkdir -p /dev/shm/decoder_maindaq
+    FN_LOG=$(printf '/dev/shm/decoder_maindaq/log_%06d.txt' $RUN)
+    if [ -e $FN_LOG ] ; then
+	for (( II = 1 ;  ; II++ )) ; do
+	    test ! -e $FN_LOG.$II && mv $FN_LOG $FN_LOG.$II && break
+	done
+    fi
+    echo "  Log file = $FN_LOG"
+    root.exe -b -l -q "$E1039_CORE/macros/online/Fun4MainDaq.C($RUN, $N_EVT, $IS_ONLINE)" &>$FN_LOG
+    RET=$?
+    SQMS_SEND=/data2/users/kenichi/local/SQMS/SQMS-sender.py
+    if [ $RET -ne 0 -a $IS_ONLINE = true -a -e $SQMS_SEND ] ; then
+	MSG="RUN: $RUN"$'\n'
+	MSG+="RET: $RET"$'\n'
+	MSG+="LOG: $FN_LOG"
+	$SQMS_SEND -t 'exec-decoder.sh' -p 'E' -A 'Online Software Alarm,bhy7tf@virginia.edu' -m "$MSG"
+    fi
 fi
