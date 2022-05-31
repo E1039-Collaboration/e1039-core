@@ -59,6 +59,17 @@ class RunParamBase {
 class ChanMapBase : public RunParamBase {
  protected:
   typedef std::tuple<short, short, short> RocBoardChan_t;
+
+  /// Hash of RocBoardChan_t for unordered_map.
+  struct RocBoardChanHash {
+    size_t operator()(const RocBoardChan_t& a) const {
+      size_t a0 = std::get<0>(a);
+      size_t a1 = std::get<1>(a);
+      size_t a2 = std::get<2>(a);
+      return (a0 << 32) | (a1 << 16) | a2;
+    }
+  };
+
  public:
   ChanMapBase(const std::string label, const std::string header) : RunParamBase("chan_map", label, header) {;}
   virtual ~ChanMapBase() {;}

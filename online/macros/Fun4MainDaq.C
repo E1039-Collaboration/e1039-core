@@ -116,6 +116,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   se->run(nevent);
   se->End();
+  se->PrintTimer();
   deco_stat.RunFinished(run, 0); // always "result = 0" for now.
   
   delete se;

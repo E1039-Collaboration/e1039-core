@@ -10,6 +10,7 @@
 #include <phool/PHIODataNode.h>
 #include <phool/getClass.h>
 #include <geom_svc/GeomSvc.h>
+#include <UtilAna/UtilSQHit.h>
 #include <UtilAna/UtilHist.h>
 #include "OnlMonProp.h"
 using namespace std;
@@ -76,17 +77,19 @@ int OnlMonProp::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonProp::ProcessEventOnlMon(PHCompositeNode* topNode)
 {
-  SQEvent*     event_header = findNode::getClass<SQEvent    >(topNode, "SQEvent");
-  SQHitVector*      hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  if (!event_header || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
+  SQEvent*     evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
+  SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+  if (!evt || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
-  for (SQHitVector::ConstIter it = hit_vec->begin(); it != hit_vec->end(); it++) {
-    int pl = (*it)->get_detector_id() - m_pl0;
-    if (pl < 0 || pl >= N_PL) continue;
-    h1_ele [pl]->Fill((*it)->get_element_id());
-    h1_time[pl]->Fill((*it)->get_tdc_time  ());
+  for (int pl = 0; pl < N_PL; pl++) {
+    int det_id = pl + m_pl0;
+    auto vec = UtilSQHit::FindHitsFast(evt, hit_vec, det_id);
+    for (auto it = vec->begin(); it != vec->end(); it++) {
+      h1_ele [pl]->Fill((*it)->get_element_id());
+      h1_time[pl]->Fill((*it)->get_tdc_time  ());
+    }
   }
-  
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

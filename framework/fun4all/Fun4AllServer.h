@@ -4,7 +4,7 @@
 #include "Fun4AllBase.h"
 #include "Fun4AllHistoManager.h"
 
-#include <phool/PHTimer.h>
+#include <phool/PHTimer2.h>
 
 #include <iostream>
 #include <map>
@@ -102,7 +102,10 @@ class Fun4AllServer : public Fun4AllBase
   void EventNumber(const int evtno) { eventnumber = evtno; }
   void NodeIdentify(const std::string &name);
   void KeepDBConnection(const int i = 1) { keep_db_connected = i; }
+
   void PrintTimer(const std::string &name = "");
+  void ReadSpillTimer(double& time_subsys, double& time_output);
+  void ResetSpillTimer();
 
  protected:
   Fun4AllServer(const std::string &name = "Fun4AllServer");
@@ -134,7 +137,11 @@ class Fun4AllServer : public Fun4AllBase
   Fun4AllSyncManager *defaultSyncManager;
   std::vector<Fun4AllSyncManager *> SyncManagers;
   std::map<int, int> retcodesmap;
-  std::map<const std::string, PHTimer> timer_map;
+
+  std::map<const std::string, PHTimer2> timer_map;
+  PHTimer2* timer_sp_subsys; ///< Measure the time used by SubsysReco in process_event().
+  PHTimer2* timer_sp_output; ///< Measure the time used by OutputManager in process_event().
+
   TH1 *FrameWorkVars;
   int keep_db_connected;
 };

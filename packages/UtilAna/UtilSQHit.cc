@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <geom_svc/GeomSvc.h>
+#include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
 #include "UtilSQHit.h"
 using namespace std;
@@ -67,4 +68,85 @@ SQHitVector* UtilSQHit::FindFirstHits(const SQHitVector* vec_in, const int det_i
     vec->push_back(vec_in->at(it->second));
   }
   return vec;
+}
+
+/**
+ * See `FindHitsFast(evt, hit_vec, det_id)` for details.
+ */
+std::vector<SQHit*>* UtilSQHit::FindHitsFast(const SQEvent* evt, const SQHitVector* hit_vec, const std::string det_name)
+{
+  GeomSvc* geom = GeomSvc::instance();
+  return FindHitsFast(evt, hit_vec, geom->getDetectorID(det_name));
+}
+
+/// Fast-extract a set of hits that are of the given detector (det_id).
+/**
+ * Useful for speed when many SubsysReco modules are registered and accessing the hit vector repeatedly.
+ * The returned variable is `vector<SQHit*>` (not `SQHitVector`), which can be used as follows for example:
+ * @code
+ *   auto vec = UtilSQHit::FindHitsFast(evt, hit_vec, det_id);
+ *   for (auto it = vec->begin(); it != vec->end(); it++) {
+ *     int    ele_id = (*it)->get_element_id();
+ *     double time   = (*it)->get_tdc_time  ();
+ *   }
+ * @endcode
+ * Caller must _not_ delete the vector nor the SQHit objects.
+ *
+ * This function has an internal static variable that holds one hit vector per detector.
+ * The variable is filled only on the 1st call per event, and used by all SubsysReco modules.
+ * The reason of using `vector<SQHit*>` is to avoid multiple creations+deletions of `SQHitVector`.
+ */
+std::vector<SQHit*>* UtilSQHit::FindHitsFast(const SQEvent* evt, const SQHitVector* hit_vec, const int det_id)
+{
+  static int run_id_now = 0;
+  static int evt_id_now = 0;
+  static map< int, vector<SQHit*> > hit_vec_map; // [det_id] => hit_vec
+
+  int run_id = evt->get_run_id();
+  int evt_id = evt->get_event_id();
+  if (run_id_now == 0 || run_id != run_id_now || evt_id != evt_id_now) {
+    hit_vec_map.clear();
+    for (auto it = hit_vec->begin(); it != hit_vec->end(); it++) {
+      SQHit* hit = *it;
+      hit_vec_map[hit->get_detector_id()].push_back(hit);
+    }
+    run_id_now = run_id;
+    evt_id_now = evt_id;
+  }
+
+  return &hit_vec_map[det_id];
+}
+
+/**
+ * See `FindTriggerHitsFast(evt, hit_vec, det_id)` for details.
+ */
+std::vector<SQHit*>* UtilSQHit::FindTriggerHitsFast(const SQEvent* evt, const SQHitVector* hit_vec, const std::string det_name)
+{
+  GeomSvc* geom = GeomSvc::instance();
+  return FindTriggerHitsFast(evt, hit_vec, geom->getDetectorID(det_name));
+}
+
+/// Fast-extract a set of trigger hits that are of the given detector (det_id).
+/**
+ * See `FindHitsFast()` for usage.
+ */
+std::vector<SQHit*>* UtilSQHit::FindTriggerHitsFast(const SQEvent* evt, const SQHitVector* hit_vec, const int det_id)
+{
+  static int run_id_now = 0;
+  static int evt_id_now = 0;
+  static map< int, vector<SQHit*> > hit_vec_map; // [det_id] => hit_vec
+
+  int run_id = evt->get_run_id();
+  int evt_id = evt->get_event_id();
+  if (run_id_now == 0 || run_id != run_id_now || evt_id != evt_id_now) {
+    hit_vec_map.clear();
+    for (auto it = hit_vec->begin(); it != hit_vec->end(); it++) {
+      SQHit* hit = *it;
+      hit_vec_map[hit->get_detector_id()].push_back(hit);
+    }
+    run_id_now = run_id;
+    evt_id_now = evt_id;
+  }
+
+  return &hit_vec_map[det_id];
 }

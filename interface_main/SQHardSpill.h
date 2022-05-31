@@ -1,7 +1,6 @@
 #ifndef _H_SQHardSpill_H_
 #define _H_SQHardSpill_H_
 #include <iostream>
-#include <TTimeStamp.h>
 #include <phool/PHObject.h>
 
 /// An SQ interface class to hold the hardware-related data of one spill.
@@ -34,21 +33,25 @@ class SQHardSpill : public PHObject {
   virtual int  get_eos_vme_time() const = 0;
   virtual void set_eos_vme_time(const int a) = 0;
 
-  /// Return the times when the decoding of spill begins.
-  virtual TTimeStamp get_timestamp_deco_begin() const = 0;
-  virtual void       set_timestamp_deco_begin(const TTimeStamp a) = 0;
+  /// Return the time taken for the Coda input per spill.
+  virtual double get_time_input() const = 0;
+  virtual void   set_time_input(const double a) = 0;
 
-  /// Return the time when the decoding of spill ends.
-  virtual TTimeStamp get_timestamp_deco_end() const = 0;
-  virtual void       set_timestamp_deco_end(const TTimeStamp a) = 0;
+  /// Return the time taken for the word decoding per spill.
+  virtual double get_time_decode() const = 0;
+  virtual void   set_time_decode(const double a) = 0;
 
-  /// Return the UNIX time when the event process of spill begins.
-  virtual TTimeStamp get_timestamp_proc_begin() const = 0;
-  virtual void       set_timestamp_proc_begin(const TTimeStamp a) = 0;
+  /// Return the time taken for the channel mapping per spill.
+  virtual double get_time_map() const = 0;
+  virtual void   set_time_map(const double a) = 0;
 
-  /// Return the UNIX time when the event process of spill ends.
-  virtual TTimeStamp get_timestamp_proc_end() const = 0;
-  virtual void       set_timestamp_proc_end(const TTimeStamp a) = 0;
+  /// Return the time taken for the SubsysReco event processing per spill.
+  virtual double get_time_subsys() const = 0;
+  virtual void   set_time_subsys(const double a) = 0;
+
+  /// Return the time taken for the data output per spill.
+  virtual double get_time_output() const = 0;
+  virtual void   set_time_output(const double a) = 0;
 
   ClassDef(SQHardSpill, 1);
 };
