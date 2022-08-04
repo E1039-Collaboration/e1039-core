@@ -30,13 +30,10 @@
 #include <TMutex.h>
 #include <TCondition.h>
 
-#include <fun4all/SubsysReco.h>
-
 #include <ktracker/EventReducer.h>
 #include <ktracker/SRawEvent.h>
 #include <ktracker/TriggerAnalyzer.h>
 #include <ktracker/KalmanFastTracking.h>
-#include <ktracker/SQReco.h>
 #include <ktracker/UtilSRawEvent.h>
 
 #include <interface_main/SQHit.h>
@@ -49,13 +46,9 @@
 #include <interface_main/SQSpillMap_v1.h>
 #include <interface_main/SQTrackVector_v1.h>
 
-
-
-#define LOUD 0 // verbosity
-#define NTHREADS 1 // later make JobOpt
+#define NTHREADS 16 // later make JobOpt
 #define INPUT_PIPE_DEPTH 32 // play with iobuffer to load memory vs do computation...
 #define OUTPUT_PIPE_DEPTH 32
-#define E906DATA 0
 
 #define NEVENT_REDUCERS NTHREADS// reducer factories
 #define NKFAST_TRACKERS NTHREADS// tracking factories
@@ -76,6 +69,8 @@ class KScheduler{
     KScheduler(TString inFile, TString outFile);
     ~KScheduler();
 
+    void Init();
+
     static TString getInputFilename(); 
     static void setInputFilename(TString name); 
     static TString getOutputFilename();
@@ -84,6 +79,15 @@ class KScheduler{
     void postCompletedEvent();
 
     Int_t runThreads();
+
+    static void Verbose(const int a) { verb = a; }
+    static int  Verbose() { return verb; }
+
+    void UseE906Data(const bool a) { use_e906_data = a; }
+    bool UseE906Data() { return use_e906_data; }
+
+    void UseTrackletReco(const bool a) { use_tracklet_reco = a; }
+    bool UseTrackletReco() const { return use_tracklet_reco; }
 
     // output tracklets
     
@@ -135,11 +139,12 @@ class KScheduler{
 
 
 // stuff
+    static int verb;
+    static bool use_e906_data;
 
-    GeomSvc* p_geomSvc;
+    bool use_tracklet_reco;
+
     TriggerAnalyzer* p_triggerAna;
-
-    static int trackletStationId;
 
     //io thread
     static TString inputFilename;
@@ -219,6 +224,9 @@ public:
     KJob(bool poisoned);
     ~KJob();
 
+    static void Verbose(const int a) { verb = a; }
+    static int  Verbose() { return verb; }
+
     //TODO needs a mutex     // TMUTEX 
     //KJobStatus getJobStatus();
     int jobId;
@@ -238,6 +246,7 @@ public:
 
 
 private:
+    static int verb;
 
     ClassDef(KJob,1)
 

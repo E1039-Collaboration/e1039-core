@@ -17,18 +17,19 @@
 
 #include <TCanvas.h>
 #include <TGraphErrors.h>
-
+#include <ktracker/KalmanFastTrackletting.h>
 #include "KScheduler.h"
 
 ClassImp(KJob)
 ClassImp(KScheduler)
 
+int KJob::verb = 0;
 
 // primary instantiator...
 // evPtr is pointer to copy of event that doesn't get clobbered on get entry
 KJob::KJob(int jobId, SRawEvent* evPtr, KScheduler* universe, bool copy): jobId(jobId),universe(universe){
 
-    if(LOUD)
+    if(Verbose() > 0)
         TThread::Printf("starting KJOB: %i\n", jobId);
     
     jobMutex = new TMutex();
@@ -82,7 +83,7 @@ KJob::~KJob(){
     delete evData;
     delete recEvData;
     //p_jobStatus
-    if(LOUD){
+    if(Verbose() > 0){
         TThread::Printf("Kjob: %i completed in time:\n",jobId);
         jobTimer->Print("u");
     }
@@ -109,16 +110,27 @@ struct workerArg{
 // FUCK this was tricky need to initialize blecause static
 // need static to acess via the member threads because pthreads are typically
 // static code
+int KScheduler::verb = 0;
+bool KScheduler::use_e906_data = true;
 TString KScheduler::inputFilename="";
 TString KScheduler::outputFilename="";
 int KScheduler::completedEvents = 0;
-int KScheduler::trackletStationId=4;
-
 
 // TODO INCLUDE IBUFFLEN AND NTHREADS IN OPTS
 KScheduler::KScheduler(TString inFile, TString outFile) 
+  : use_tracklet_reco(false)
 {
+    // I/O managed by fReader and fReaper
+    //this->setInputFilename( p_jobOptsSvc->m_inputFile );
+    //this->setOutputFilename( p_jobOptsSvc->m_outputFile );
 
+    //take as args now...
+    this->setInputFilename(inFile);
+    this->setOutputFilename(outFile);
+}
+
+void KScheduler::Init()
+{
     int i;
     std::cout << "Initialization of KScheduler ..." << std::endl;
     std::cout << "================================" << std::endl;
@@ -128,14 +140,6 @@ KScheduler::KScheduler(TString inFile, TString outFile)
     GeomSvc* p_geomSvc = GeomSvc::instance();
     recoConsts* rc = recoConsts::instance();
 
-    // I/O managed by fReader and fReaper
-    //this->setInputFilename( p_jobOptsSvc->m_inputFile );
-    //this->setOutputFilename( p_jobOptsSvc->m_outputFile );
-
-    //take as args now...
-    this->setInputFilename(inFile);
-    this->setOutputFilename(outFile);
-    
     //Initialize event reducer
     EventReducer* eventReducer = 0;
     for(i=0;i<NEVENT_REDUCERS;i++){
@@ -157,7 +161,8 @@ KScheduler::KScheduler(TString inFile, TString outFile)
         // _ENABLE_KF KFT takes PHField* and 
         // TGeoManager* as args
         // only used in fitter
-        kFastTracker = new KalmanFastTracking(nullptr, nullptr, false);
+        if (! use_tracklet_reco) kFastTracker = new KalmanFastTracking    (nullptr, nullptr, false);
+        else                     kFastTracker = new KalmanFastTrackletting(nullptr, nullptr, false);
         assert(kFastTracker);
         kFastTrkQueue.push(kFastTracker);
     }
@@ -464,10 +469,6 @@ TString KScheduler::getOutputFilename(){
     return outputFilename;
 }
 
-void KScheduler::getTrackletsInStation(int stid){
-    trackletStationId = stid; 
-}
-
 void KScheduler::setOutputFilename(TString name){
     outputFilename = name;
 }
@@ -532,7 +533,7 @@ void* KScheduler::fReaderThread(void* readerArgPtr){
     // wack... outdated instructions for ROOT?
     KScheduler* kschd = (KScheduler*) readerArgPtr;
     TString filename = kschd->getInputFilename();
-    if(LOUD){
+    if(Verbose() > 0){
         TThread::Printf("Start of fReaderThread - ifile is: %s\n", filename.Data());
     }
 
@@ -560,7 +561,7 @@ void* KScheduler::fReaderThread(void* readerArgPtr){
     kschd->fReaderMutex->Lock();
     TFile* inputFile = new TFile(filename, "READ"); 
     TTree* dataTree = 0;
-    if(E906DATA){
+    if(use_e906_data){
         dataTree = (TTree*) inputFile->Get("save");
         dataTree->SetBranchAddress("rawEvent",&localEventPtr);
     }
@@ -586,7 +587,7 @@ void* KScheduler::fReaderThread(void* readerArgPtr){
 
         // convert SQHitVector to SRawEvent
         // TODO memory leak from new alloc in BuildSRawEvent?
-        if(!E906DATA){
+        if(! use_e906_data){
             localEventPtr = KScheduler::BuildSRawEvent(SQEvPtr, SQHitVecPtr, SQTrigHitVecPtr);    
             copy = false;
         }
@@ -607,7 +608,7 @@ void* KScheduler::fReaderThread(void* readerArgPtr){
     TThread::Printf("fReaderThread: finished reading all events... dumping poison...");
 
     for(i=0;i<NTHREADS;i++){
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("poisoning...");
         }
         newKJobPtr = new KJob(true);
@@ -666,7 +667,7 @@ void* KScheduler::fReaperThread(void* reaperArg){
         // check for poison
         if(tCompleteJobPtr->isPoison){
             // cleanup job and die... 
-            if(LOUD){
+            if(Verbose() > 0){
                 TThread::Printf("ReaperThread got poison pill...");
             }
             delete tCompleteJobPtr;
@@ -688,7 +689,7 @@ void* KScheduler::fReaperThread(void* reaperArg){
 
         }
         
-        if(LOUD){
+        if(Verbose() > 0){
             tCompleteJobPtr->jobMutex->Lock();
             TThread::Printf("fReaper gets jobId: %i, eventID: %i", 
                 tCompleteJobPtr->jobId, tCompleteJobPtr->evData->getEventID());
@@ -717,7 +718,7 @@ void* KScheduler::fReaperThread(void* reaperArg){
         assert(outputRawEventPtr);
         assert(outputRecEventPtr);
         assert(outputTracklets);
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("got tracklets: %i for disk for event: %i\n",outputTracklets->GetEntries(), 
                 tCompleteJobPtr->evData->getEventID());
             TThread::Printf("outputTracklets pointer is: %p\n", outputTracklets);
@@ -835,7 +836,7 @@ void* KScheduler::fWorkerThread(void* wArgPtr){
         // try to acquire a job from the queue...
         /// TODO stuff on the job..
         // semaphore enforces synchronization... (I hope...)
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("Worker %u gets jobId: %i, eventID: %i\n", 
                 threadId, tCompleteJobPtr->jobId, tCompleteJobPtr->evData->getEventID());
         }
@@ -849,14 +850,14 @@ void* KScheduler::fWorkerThread(void* wArgPtr){
         kschd->evRedQueuePutMutex->UnLock();
         kschd->erqESem->Post();
 
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("Worker %u gets evReducer: %p\n",threadId,evReducer);
         }
 
         // reduce the event...
         evReducer->reduceEvent(tCompleteJobPtr->evData);
         if(kschd->acceptEvent(tCompleteJobPtr->evData)){
-            if(LOUD){
+            if(Verbose() > 0){
                 TThread::Printf("Worker %u passed event: %i",
                     threadId,tCompleteJobPtr->evData->getEventID());
             }
@@ -887,40 +888,35 @@ void* KScheduler::fWorkerThread(void* wArgPtr){
        
 
         // do something with the tracker
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("Worker %u gets kFastTracker: %p\n", threadId, kFastTracker);
         }
         // set the event
         recStatus = kFastTracker->setRawEvent(tCompleteJobPtr->evData); 
-        if(recStatus != 0 && LOUD)
+        if(recStatus != 0 && Verbose() > 0)
             TThread::Printf("kFastTrackRecStatus: %i",recStatus);
         tCompleteJobPtr->recEvData->setRecStatus(recStatus);
+        tCompleteJobPtr->recEvData->setRawEvent(tCompleteJobPtr->evData);
 
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("Worker %u completed rawEventSet in KFT: %p\n",
                 threadId, kFastTracker);
         }
-
         
         // TODO
         // Fill TClones Array
 
-//        std::list<Tracklet>& rec_tracklets = kFastTracker->getFinalTracklets(); 
-        std::list<Tracklet>& rec_tracklets = kFastTracker->getTrackletList(kschd->trackletStationId);
         TClonesArray& arr_tracklets = *(tCompleteJobPtr->tracklets);
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("job pointer for tracklets is%p\n",tCompleteJobPtr->tracklets);
             TThread::Printf("trackletsize:%i\n",tCompleteJobPtr->tracklets->GetEntries());
         }
 
-        // set rec rawevent 
-        tCompleteJobPtr->recEvData->setRawEvent(tCompleteJobPtr->evData);
         nTracklets = 0;
         Tracklet* printer = 0;
 
-
-
 /*
+        std::list<Tracklet>& rec_tracklets = kFastTracker->getFinalTracklets(); 
         for(std::list<Tracklet>::iterator iter = rec_tracklets.begin(); iter != rec_tracklets.end(); ++iter){
 
             iter->calcChisq();
@@ -941,10 +937,11 @@ void* KScheduler::fWorkerThread(void* wArgPtr){
         // TODO add fitter stuff here
 #endif        
 */
-        for(int j = 3; j!=0; --j){
-            std::list<Tracklet>& tracklets_temp = kFastTracker->getTrackletList(j);
+
+        /// Keep all trackets.  idx = 0 (D0/D1), 1 (D2), 2 (D3p/m), 3 (D2+3), 4 (D1+2+3)
+        for (int idx = 0; idx <= 4; idx++) {
+            std::list<Tracklet>& tracklets_temp = kFastTracker->getTrackletList(idx);
             for(std::list<Tracklet>::iterator iter = tracklets_temp.begin(); iter != tracklets_temp.end(); ++iter){
-                
 //                    TThread::Printf("evaluating tracklets");
                 iter->calcChisq();
 //                    iter->print();
@@ -954,7 +951,7 @@ void* KScheduler::fWorkerThread(void* wArgPtr){
                 tCompleteJobPtr->nTracklets++;
             }
         }
-        if(LOUD){
+        if(Verbose() > 0){
             TThread::Printf("arr_tracklet has %i entries for eventID: %i\n",arr_tracklets.GetEntries(), 
                 tCompleteJobPtr->evData->getEventID());
             if(arr_tracklets.GetEntries() > 0){
