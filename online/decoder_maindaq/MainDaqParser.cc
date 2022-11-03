@@ -664,7 +664,8 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
       //cout << "  " << spill_type_str << " " << idx << " 0x" << hex << e906flag << dec << endl;
       idx++;
       idx = ProcessBoardData (words, idx, idx_roc_end, e906flag, event_type);
-      if (idx == -1) return 0;
+      if      (idx == IDX_SKIP_EVENT) return 0;
+      else if (idx == IDX_SKIP_ROC  ) idx = idx_roc_end + 1;
     }
   }
   return 0;
@@ -753,9 +754,12 @@ int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
       int n_wd_bd  = get_hex_bits(words[idx], 3, 4);
       if (print_event) cout << hex << " " << (e906flag&0xFFFF) << "@" << board_id << dec << "(" << n_wd_bd << ")";
       idx = ProcessBoardData(words, idx, idx_roc_end, e906flag, event_type);
-      if (idx == -1) {
-        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned -1 @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.codaID << endl;
+      if (idx == IDX_SKIP_EVENT) {
+        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_EVENT @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.codaID << endl;
         return 0;
+      } else if (idx == IDX_SKIP_ROC) {
+        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_ROC @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.codaID << endl;
+        idx = idx_roc_end;
       }
     }
     if (idx != idx_roc_end) {
@@ -791,7 +795,7 @@ int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e
     if (event_type == FLUSH_EVENTS)         idx = ProcessBoardV1495TDC   (words, idx);
     else                                    idx = ProcessBoardStdV1495TDC(words, idx);
   } else if (e906flag == (int)0xE906F018) { idx = ProcessBoardJyTDC2     (words, idx, idx_roc_end);
-  } else if (e906flag == (int)0xE906F019) { return -1;
+  } else if (e906flag == (int)0xE906F019) { return IDX_SKIP_ROC;
   } else if (e906flag == (int)0xe906f01b) { idx = ProcessBoardFeeQIE      (words, idx);
   } else if (e906flag == (int)0xE906F014) { 
     if (event_type == FLUSH_EVENTS)         idx = ProcessBoardTriggerCount   (words, idx);
@@ -804,7 +808,7 @@ int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e
   } else {
     cerr << "ERROR: Unknown board flag (0x" << hex << e906flag << dec << ") at coda " << dec_par.codaID << ", roc " << (int)dec_par.rocID << ", idx " << idx << endl;
     PrintWords(words, idx-10, idx+40);
-    return -1; // Temporary solution.  Skip all boards and move to the next ROC.
+    return IDX_SKIP_ROC; // Temporary solution.  Skip all boards and move to the next ROC.
     Abort("Unexpected board type.");
   }
   return idx;
@@ -1084,7 +1088,8 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
       cout << "ProcessBoardV1495TDC(): idx != idx_end (" << idx << " != " << idx_end << ") @ coda=" << dec_par.codaID << " roc=" << dec_par.rocID << "  board=" << hex << boardID << dec << "\n"
            << "  idx_begin=" << idx_begin << " n_wd_fpga=" << n_wd_fpga << endl;
       PrintWords(words, idx_begin, idx);
-      exit(1);
+      return IDX_SKIP_ROC;
+      //exit(1);
       //Abort("idx != idx_end in ProcessBoardV1495TDC.");
     }
     return idx_end;
@@ -1138,7 +1143,7 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   }
   if (idx_events_end > idx_roc_end) {
     dec_err.AddTdcError(dec_par.codaID, roc, DecoError::WORD_OVERFLOW);
-    return -1;
+    return IDX_SKIP_ROC;
   }
 
   int i_evt = 0;
@@ -1383,7 +1388,7 @@ int MainDaqParser::ProcessBoardStdJyTDC2 (int* words, int idx_begin, int idx_roc
   int idx_end = idx_begin + nWordsBoard;
   if (idx_end > idx_roc_end) {
     cerr << "WARNING: Word overflow.  Skip ROC (" << dec_par.rocID << ")" << endl;
-    return -1;
+    return IDX_SKIP_ROC;
   }
 
   int idx = idx_begin + 1;
