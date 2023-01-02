@@ -10,8 +10,8 @@ class TGLabel;
 class TGNumberEntry;
 
 class EventDispUI {
-  static const int RUN_MIN = 1000; //< Min of search range
-  static const int RUN_MAX = 4000; //< Max of search range
+  static const int RUN_MIN =  1000; //< Min of search range
+  static const int RUN_MAX = 40000; //< Max of search range
   typedef std::vector<int> RunList_t;
   RunList_t m_list_run;
 
