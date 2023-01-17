@@ -1,0 +1,79 @@
+//rs_Reader.cc
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <limits>
+#include <cstring>
+#include <vector>
+#include "rs_Reader.h"
+using namespace std;
+
+rs_Reader::rs_Reader(const char* file_name) 
+{ 
+  //READ IN FILE NAME
+    if (file_name  == nullptr) {
+        str = new char[1];
+        str[0] = '\0';
+    }
+ 
+    else {
+ 
+        str = new char[strlen(file_name) + 1];
+        //Copy character of val[]
+        // using strcpy
+        strcpy(str, file_name);
+        str[strlen(file_name)] = '\0';
+        cout << "The string passed is: "<< str << endl;
+    }
+
+   //READ IN DATA FROM RS
+   ifstream infile_rs; 
+   infile_rs.open(file_name);
+   if (!infile_rs.is_open()){
+            cout << "Error opening RS file" <<endl;
+            exit(1);
+   }
+   infile_rs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');    
+
+   rs_vec.push_back(rs_vals());
+   int count = 0;  
+  
+   while(infile_rs >> rs_vec[count].road_id >> pol >> rs_vec[count].H1X >> rs_vec[count].H2X >> rs_vec[count].H3X >> rs_vec[count].H4X >> rs_vec[count].signal >> rs_vec[count].background){
+     count++;
+     rs_vec.push_back(rs_vals()); 
+   }
+
+   vector<rs_vals>::iterator it;
+  
+   it = rs_vec.end()-1;
+   rs_vec.erase(it);
+
+   N_ROADS = rs_vec.size();
+
+   infile_rs.close();   
+}
+
+
+
+int rs_Reader::get_road_id(int index){
+  return rs_vec[index].road_id;
+
+}
+
+int rs_Reader::get_H4X(int index){
+  return rs_vec[index].H4X;
+ 
+}
+
+int rs_Reader::get_H2X(int index){
+  return rs_vec[index].H2X;
+
+}
+
+int rs_Reader::get_pol(){
+  return pol;
+}
+
+int rs_Reader::get_N_ROADS(){
+  return N_ROADS;
+}
