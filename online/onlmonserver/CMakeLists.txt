@@ -32,7 +32,7 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -O2 -std=c++0x ${ROOT_CFLAGS}")
 
 add_library(onlmonserver SHARED ${sources} onlmonserver_Dict.cc)
-target_link_libraries(onlmonserver -lfun4all db_svc -lUtilAna -lktracker)
+target_link_libraries(onlmonserver -lfun4all db_svc -lUtilAna -lktracker -lrs_Reader)
 
 message(${CMAKE_PROJECT_NAME} " will be installed to " ${CMAKE_INSTALL_PREFIX})
 

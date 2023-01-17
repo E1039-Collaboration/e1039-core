@@ -21,5 +21,6 @@
 #pragma link C++ class OnlMonProp-!;
 #pragma link C++ class OnlMonQie-!;
 #pragma link C++ class OnlMonReco-!;
+#pragma link C++ class OnlMonTrigV1495-!;
 
 #endif
