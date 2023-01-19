@@ -106,7 +106,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
       
       oss.str("");
       oss << "h1_rs_top_mult_" << i;
-      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",257,-0.5, 256 + 0.5);
+      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",1001,-0.5, 1001 + 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_top_0_ << " Multiplicity" << ";Road ID;N of Hits";
@@ -118,7 +118,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
       rs_hist_range = (is_rs_t[i]) ? rs_top[i]->roads.size() : 100;
       oss.str("");
       oss << "h1_rs_top_" << i;
-      h1_rs_top[i] = new TH1D(oss.str().c_str(), "",rs_hist_range,-0.5, rs_hist_range + 0.5);
+      h1_rs_top[i] = new TH1D(oss.str().c_str(), "",rs_hist_range + 1,-0.5, rs_hist_range + 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_top_0_ << ";Road ID;N of Hits";
@@ -130,7 +130,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
       rs_hist_range = (is_rs_b[i]) ? rs_bot[i]->roads.size() : 100;
       oss.str("");
       oss << "h1_rs_bot_" << i;
-      h1_rs_bot[i] = new TH1D(oss.str().c_str(), "", rs_hist_range,-0.5, rs_hist_range + 0.5);
+      h1_rs_bot[i] = new TH1D(oss.str().c_str(), "", rs_hist_range + 1,-0.5, rs_hist_range + 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_bot_0_ << ";Road ID;N of Hits";
@@ -141,7 +141,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
       oss.str("");
       oss << "h1_rs_bot_mult_" << i;
-      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",257,-0.5, 256 + 0.5);
+      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",1001,-0.5, 1001 + 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_bot_0_ << " Multiplicity" << ";Road ID;N of Hits";
@@ -660,8 +660,56 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
 {
 
   int count_rd = 0;
+  
+  for(size_t i=0; i<rs_obj->roads.size();i++){
+    
+    for (auto it = H1X->begin(); it != H1X->end(); it++) {
+      if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
+      int eleH1X  = (*it)->get_element_id();
+      //double time = (*it)->get_tdc_time();
+    
+      for (auto it1 = H2X->begin(); it1 != H2X->end(); it1++) {
+        if ((*it1)->get_level() != 1) continue; //switched m_lvl for 1
+        int eleH2X  = (*it1)->get_element_id();
+        //double time = (*it)->get_tdc_time();
+    
+        for (auto it2 = H3X->begin(); it2 != H3X->end(); it2++) {
+          if ((*it2)->get_level() != 1) continue; //switched m_lvl for 1
+          int eleH3X  = (*it2)->get_element_id();
+          //double time = (*it)->get_tdc_time();  
+    
+          for (auto it0 = H4X->begin(); it0 != H4X->end(); it0++) {
+            if ((*it0)->get_level() != 1) continue; //switched m_lvl for 1
+            int eleH4X  = (*it0)->get_element_id();
+            //double time = (*it)->get_tdc_time();
+            int is_H1X = ((eleH1X == rs_obj->roads[i].H1X) || rs_obj->roads[i].H1X == -1 ) ? 1 : 0;
+            int is_H2X = ((eleH2X == rs_obj->roads[i].H2X) || rs_obj->roads[i].H2X == -1 ) ? 1 : 0;
+            int is_H3X = ((eleH3X == rs_obj->roads[i].H3X) || rs_obj->roads[i].H3X == -1 ) ? 1 : 0;
+            int is_H4X = ((eleH4X == rs_obj->roads[i].H4X) || rs_obj->roads[i].H4X == -1 ) ? 1 : 0;
+   
+            if(is_H1X && is_H2X && is_H3X && is_H4X){
+              hist_rs->Fill(rs_obj->roads[i].road_id);         
+              //cout << rs_top_0.get_road_id[i] << endl;
+              count_rd++;
+            }
+            if(rs_obj->roads[i].H4X == -1){break;} 
+          }
+          if(rs_obj->roads[i].H3X == -1){break;}
+        }
+        if(rs_obj->roads[i].H2X == -1){break;}
+      }
+      if(rs_obj->roads[i].H1X == -1){break;}
+    }
+  }
+  if(count_rd != 0){
+     cout << "Number of roads: " << count_rd << endl;
+     hist_mult->Fill(count_rd);
+  }
+  //hist_mult->Fill(count_rd);
 
-  for (auto it = H1X->begin(); it != H1X->end(); it++) {
+}
+ 
+/*  for (auto it = H1X->begin(); it != H1X->end(); it++) {
     if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
     int eleH1X  = (*it)->get_element_id();
     //double time = (*it)->get_tdc_time();
@@ -706,5 +754,5 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
      cout << "Number of roads: " << count_rd << endl;
   }
   hist_mult->Fill(count_rd);
-}
+}*/
 
