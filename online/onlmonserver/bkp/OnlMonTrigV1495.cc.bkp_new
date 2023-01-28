@@ -89,7 +89,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
       
       oss.str("");
       oss << "h1_rs_top_mult_" << i;
-      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",750,-0.5, 750 - 0.5);
+      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",1001,-0.5, 1001 - 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_top_0_ << " Multiplicity" << ";Road ID;N of Hits";
@@ -124,7 +124,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
       oss.str("");
       oss << "h1_rs_bot_mult_" << i;
-      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",750,-0.5, 750 - 0.5);
+      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",1001,-0.5, 1001 - 0.5);
       oss.str("");
       if(i == 0){
         oss << rs_bot_0_ << " Multiplicity" << ";Road ID;N of Hits";
@@ -246,34 +246,26 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
     auto vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
     auto vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
     auto vecH4T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[6]);
-   /* cout << "H1T: ";
+    cout << "H1T: ";
     for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
-        double ele1 = (*it)->get_element_id();
-        cout  << ele1 << ", "; 
+        double ele = (*it)->get_element_id();
+        cout  << ele << ", "; 
     }
     cout << endl;
 
-    cout << "H2T: ";
-    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
-        double ele2 = (*it)->get_element_id();
-        cout  << ele2 << ", ";
+  /*  for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
+        double ele = (*it)->get_element_id();
+        cout << "H1T: " << ele << endl;
     }
-    cout << endl;
-
-    cout << "H3T: ";
-    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
-        double ele3 = (*it)->get_element_id();
-        cout  << ele3 << ", ";
-    }
-    cout << endl;
-
-    cout << "H4T: ";
-    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
-        double ele4 = (*it)->get_element_id();
-        cout  << ele4 << ", ";
-    }
-    cout << endl;
 */
+
+
+
+
+
+
+
+
     for(int j = 0; j < 2; j++){
       if(is_rs_t[j]){
         RoadHits(vecH1T,vecH2T,vecH3T,vecH4T,rs_top[j],h1_rs_top[j],h1_rs_top_mult[j]);
@@ -291,7 +283,7 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
     } 
   }
   if(true){//event_cnt == 10000 || event_cnt == 1){
- //   cout << "NEW EVENT " << event_cnt << endl;
+    cout << "NEW EVENT " << event_cnt << endl;
   }
   event_cnt++;
   return Fun4AllReturnCodes::EVENT_OK;
@@ -459,18 +451,18 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
 
   int count_rd = 0;
 
-  int H_not_neg[4];
+  bool H_is_neg[4];
   int hod_hits[4] = {0,0,0,0}; 
   int rd_hits = 1; 
  
   for(size_t i=0; i<rs_obj->roads.size();i++){
   
-    H_not_neg[0] = (rs_obj->roads[i].H1X != -1) ? 1 : 0;  
-    H_not_neg[1] = (rs_obj->roads[i].H2X != -1) ? 1 : 0;
-    H_not_neg[2] = (rs_obj->roads[i].H3X != -1) ? 1 : 0;   
-    H_not_neg[3] = (rs_obj->roads[i].H4X != -1) ? 1 : 0;
+    H_is_neg[0] = (rs_obj->roads[i].H1X = -1) ? true : false;  
+    H_is_neg[1] = (rs_obj->roads[i].H2X = -1) ? true : false;
+    H_is_neg[2] = (rs_obj->roads[i].H3X = -1) ? true : false;   
+    H_is_neg[3] = (rs_obj->roads[i].H4X = -1) ? true : false;
     
-    if(H_not_neg[0] && H1X->size() > 0){
+    if(!H_is_neg[0] && H1X->size() > 0){
       for (auto it = H1X->begin(); it != H1X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH1X  = (*it)->get_element_id();
@@ -485,7 +477,7 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
     }
 
     
-    if(H_not_neg[1] && H2X->size() > 0){
+    if(!H_is_neg[1] && H2X->size() > 0){
       for (auto it = H2X->begin(); it != H2X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH2X  = (*it)->get_element_id();
@@ -498,7 +490,7 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       hod_hits[1]=0;
     }
        
-    if(H_not_neg[2] && H3X->size() > 0){
+    if(!H_is_neg[2] && H3X->size() > 0){
       for (auto it = H3X->begin(); it != H3X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH3X  = (*it)->get_element_id();
@@ -512,7 +504,7 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
 
     }
 
-    if(H_not_neg[3] && H4X->size() > 0){
+    if(!H_is_neg[3] && H4X->size() > 0){
       for (auto it = H4X->begin(); it != H4X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH4X  = (*it)->get_element_id();
@@ -525,33 +517,78 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       hod_hits[3] = 0;
 
     }
-    
     if(hod_hits[0] > 0 || hod_hits[1] > 0 || hod_hits[2] > 0 || hod_hits[3] > 0){ 
-      //cout << "hod_hits = [ " << hod_hits[0] << " , " << hod_hits[1] << " , " << hod_hits[2] << " , " << hod_hits[3] << " ]"<<endl;
+      cout << "hod_hits = [ " << hod_hits[0] << " , " << hod_hits[1] << " , " << hod_hits[2] << " , " << hod_hits[3] << " ]"<<endl;
     } 
-    
+
     rd_hits = 1;
     for(int j = 0; j < 4; j++){
-      if(H_not_neg[j]){// && hod_hits[j] > 0){
+      if(!H_is_neg[j] && hod_hits[j] > 0){
         rd_hits *= hod_hits[j];
-      }//else if(hod_hits[j] == 0){
-        //rd_hits = 0;
-     // }
+      }else if(hod_hits[j] == 0){
+        rd_hits = 0;
+      }
       hod_hits[j] = 0;
     }
-    
     if(rd_hits > 0){
-     // cout << "rd_hits = " << rd_hits << endl;
+      cout << "rd_hits = " << rd_hits << endl;
     }
 
     for(int k = 0; k < rd_hits; k++){
-//      cout << "Road ID: " << rs_obj->roads[i].road_id << endl;
       hist_rs->Fill(rs_obj->roads[i].road_id);         
       count_rd++;     
     }
   }
-  if (count_rd > 0 ){
-    cout << "Roads hit per event: " << count_rd <<endl;
-    hist_mult->Fill(count_rd);
-  }
+  hist_mult->Fill(count_rd);
 }
+/* 
+  for(size_t i=0; i<rs_obj->roads.size();i++){
+    
+    for (auto it = H1X->begin(); it != H1X->end(); it++) {
+      if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
+      int eleH1X  = (*it)->get_element_id();
+      //double time = (*it)->get_tdc_time();
+
+      for (auto it1 = H2X->begin(); it1 != H2X->end(); it1++) {
+        if ((*it1)->get_level() != 1) continue; //switched m_lvl for 1
+        int eleH2X  = (*it1)->get_element_id();
+        //double time = (*it)->get_tdc_time();
+    
+        for (auto it2 = H3X->begin(); it2 != H3X->end(); it2++) {
+          if ((*it2)->get_level() != 1) continue; //switched m_lvl for 1
+          int eleH3X  = (*it2)->get_element_id();
+          //double time = (*it)->get_tdc_time();  
+    
+          for (auto it0 = H4X->begin(); it0 != H4X->end(); it0++) {
+            if ((*it0)->get_level() != 1) continue; //switched m_lvl for 1
+            int eleH4X  = (*it0)->get_element_id();
+            //double time = (*it)->get_tdc_time();
+            int is_H1X = ((eleH1X == rs_obj->roads[i].H1X) || rs_obj->roads[i].H1X == -1 ) ? 1 : 0;
+            int is_H2X = ((eleH2X == rs_obj->roads[i].H2X) || rs_obj->roads[i].H2X == -1 ) ? 1 : 0;
+            int is_H3X = ((eleH3X == rs_obj->roads[i].H3X) || rs_obj->roads[i].H3X == -1 ) ? 1 : 0;
+            int is_H4X = ((eleH4X == rs_obj->roads[i].H4X) || rs_obj->roads[i].H4X == -1 ) ? 1 : 0;
+   
+            cout << "H1: " << eleH1X << " ;H2: " << eleH2X << " ;H3: " << eleH3X << " ;H4: " << eleH4X << endl; 
+
+            if(is_H1X && is_H2X && is_H3X && is_H4X){
+              hist_rs->Fill(rs_obj->roads[i].road_id);         
+              //cout << rs_top_0.get_road_id[i] << endl;
+              count_rd++;
+            }
+            if(rs_obj->roads[i].H4X == -1){break;} 
+          }
+          if(rs_obj->roads[i].H3X == -1){break;}
+        }
+        if(rs_obj->roads[i].H2X == -1){break;}
+      }
+      if(rs_obj->roads[i].H1X == -1){break;}
+    }
+  }
+  if(count_rd != 0){
+      cout << "Number of roads: " << count_rd << endl;
+     hist_mult->Fill(count_rd);
+  }
+  //hist_mult->Fill(count_rd);
+
+}
+ */
