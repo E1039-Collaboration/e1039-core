@@ -55,7 +55,6 @@ OnlMonTrigV1495::OnlMonTrigV1495(const char* rs_top_0, const char* rs_top_1, con
     strcpy(result,rs_path);
     rs_bot[1] = new rs_Reader(strcat(result,rs_bot_1_));
   }
-  event_cnt = 1;
 }
 
 int OnlMonTrigV1495::InitOnlMon(PHCompositeNode* topNode)
@@ -87,26 +86,26 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
     int rs_hist_range;
     for(int i = 0; i < 2; i++){ 
       
+      rs_hist_range = (is_rs_t[i]) ? rs_top[i]->roads.size() : 100;
       oss.str("");
       oss << "h1_rs_top_mult_" << i;
-      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",750,-0.5, 750 - 0.5);
+      h1_rs_top_mult[i] = new TH1D(oss.str().c_str(), "",rs_hist_range,-0.5, rs_hist_range - 0.5);
       oss.str("");
       if(i == 0){
-        oss << rs_top_0_ << " Multiplicity" << ";Road ID;N of Hits";
+        oss << rs_top_0_ << " Multiplicity" << ";Road Hits per Event;Counts";
       }else{
-        oss << rs_top_1_ << " Multiplicity" << ";Road ID;N of Hits";
+        oss << rs_top_1_ << " Multiplicity" << ";Road hits per Event;Counts";
       }
       h1_rs_top_mult[i]->SetTitle(oss.str().c_str());
 
-      rs_hist_range = (is_rs_t[i]) ? rs_top[i]->roads.size() : 100;
       oss.str("");
       oss << "h1_rs_top_" << i;
       h1_rs_top[i] = new TH1D(oss.str().c_str(), "",rs_hist_range ,-0.5, rs_hist_range - 0.5);
       oss.str("");
       if(i == 0){
-        oss << rs_top_0_ << ";Road ID;N of Hits";
+        oss << rs_top_0_ << ";Road ID;Counts";
       }else{
-        oss << rs_top_1_ << ";Road ID;N of Hits";
+        oss << rs_top_1_ << ";Road ID;Counts";
       }
       h1_rs_top[i]->SetTitle(oss.str().c_str());
 
@@ -116,20 +115,20 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
       h1_rs_bot[i] = new TH1D(oss.str().c_str(), "", rs_hist_range,-0.5, rs_hist_range - 0.5);
       oss.str("");
       if(i == 0){
-        oss << rs_bot_0_ << ";Road ID;N of Hits";
+        oss << rs_bot_0_ << ";Road ID;Counts";
       }else{
-        oss << rs_bot_1_ << ";Road ID;N of Hits";
+        oss << rs_bot_1_ << ";Road ID;Counts";
       }
       h1_rs_bot[i]->SetTitle(oss.str().c_str());
 
       oss.str("");
       oss << "h1_rs_bot_mult_" << i;
-      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",750,-0.5, 750 - 0.5);
+      h1_rs_bot_mult[i] = new TH1I(oss.str().c_str(), "",rs_hist_range,-0.5, rs_hist_range - 0.5);
       oss.str("");
       if(i == 0){
-        oss << rs_bot_0_ << " Multiplicity" << ";Road ID;N of Hits";
+        oss << rs_bot_0_ << " Multiplicity" << ";Road Hits per Event;Counts";
       }else{
-        oss << rs_bot_1_ << " Multiplicity" << ";Road ID;N of Hits";
+        oss << rs_bot_1_ << " Multiplicity" << ";Road Hits per Event;Counts";
       }
       h1_rs_bot_mult[i]->SetTitle(oss.str().c_str());
 
@@ -143,7 +142,7 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
     oss << "h2_trig_time_" << 1;
     h2_trig_time = new TH2D(oss.str().c_str(), "", 10, 0.5, 10.5, 150, 800.5, 1100.5);
     oss.str("");
-    oss << "Trigger Timing" << ";Trigger;tdcTime;Hit count";
+    oss << "Trigger Timing After Inh" << ";Trigger;tdcTime;Hit count";
     h2_trig_time->SetTitle(oss.str().c_str());
 
     h2_trig_time->GetXaxis()->SetBinLabel( 1, "FPGA1");
@@ -176,15 +175,23 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
     h1_trig->GetXaxis()->SetBinLabel(10, "NIM5");
 
     oss.str("");
-    oss << "h2_fpga_nim_time_" << 1;
-    h2_fpga_nim_time = new TH2D(oss.str().c_str(), "", 100, 1000.5, 1100.5, 100, 1000.5, 1100.5);
+    oss << "h2_fpga_nim_time_b4_" << 1;
+    h2_fpga_nim_time_b4 = new TH2D(oss.str().c_str(), "", 100, 1000.5, 1100.5, 100, 1000.5, 1100.5);
     oss.str("");
-    oss << "FPGA 1 & NIM 4 Timing" << ";NIM tdcTime;FPGA tdcTime;Hit count";
-    h2_fpga_nim_time->SetTitle(oss.str().c_str());
+    oss << "FPGA 1 & NIM 4 Before Inh Timing" << ";NIM tdcTime;FPGA tdcTime;Hit count";
+    h2_fpga_nim_time_b4->SetTitle(oss.str().c_str());
+
+    oss.str("");
+    oss << "h2_fpga_nim_time_af_" << 1;
+    h2_fpga_nim_time_af = new TH2D(oss.str().c_str(), "", 100, 1000.5, 1100.5, 100, 1000.5, 1100.5);
+    oss.str("");
+    oss << "FPGA 1 & NIM 4 After Inh Timing" << ";NIM tdcTime;FPGA tdcTime;Hit count";
+    h2_fpga_nim_time_af->SetTitle(oss.str().c_str());
  
     RegisterHist(h1_trig);
-      RegisterHist(h2_trig_time);
-      RegisterHist(h2_fpga_nim_time); 
+    RegisterHist(h2_trig_time);
+    RegisterHist(h2_fpga_nim_time_b4);
+    RegisterHist(h2_fpga_nim_time_af);   
     // cout << "REGISTERING HISTOGRAMS" << endl;
     return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -200,7 +207,7 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
   if (!evt || !hit_vec  || !trig_hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
   //Determine whether event is FPGA1-4 
-  int is_FPGA_event = (evt->get_trigger(SQEvent::MATRIX1) || evt->get_trigger(SQEvent::MATRIX2) ||evt->get_trigger(SQEvent::MATRIX3)||evt->get_trigger(SQEvent::MATRIX4) ) ? 1 : 0; 
+  int is_FPGA1 = (evt->get_trigger(SQEvent::MATRIX1)) ? 1 : 0; 
 
   if (evt->get_trigger(SQEvent::MATRIX1)) h1_trig->Fill( 1);
   if (evt->get_trigger(SQEvent::MATRIX2)) h1_trig->Fill( 2);
@@ -213,35 +220,52 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
   if (evt->get_trigger(SQEvent::NIM4   )) h1_trig->Fill( 9);
   if (evt->get_trigger(SQEvent::NIM5   )) h1_trig->Fill(10);
 
+//RF *************************************************************************************** 
+auto vec1 = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, "RF");
+  int count = 0;
+  for(auto it = vec1->begin(); it != vec1->end(); it++){
+    double tdc_time = (*it)->get_tdc_time();
+
+    if(is_FPGA1){
+      if(count == 3){
+  //      cout << "Time 3: " << tdc_time << endl;
+        RF_edge_low = tdc_time;
+      }else if(count == 4){
+//        cout <<"Time 4: " << tdc_time << endl;
+        RF_edge_up = tdc_time;
+      }else{
+     
+      }
+    }
+    count ++;
+  }
+
 
 //TDC 4 ************************************************************************************
-  auto vec0 = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
-  for (auto it = vec0->begin(); it != vec0->end(); it++) {
+  auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
+  for (auto it = vec_FPGA_af->begin(); it != vec_FPGA_af->end(); it++) {
     h2_trig_time->Fill((*it)->get_element_id(),(*it)->get_tdc_time());
   }
 
-  auto vec2 = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhNIM");
-  for (auto it = vec2->begin(); it != vec2->end(); it++) {
+  auto vec_NIM_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhNIM");
+  for (auto it = vec_NIM_af->begin(); it != vec_NIM_af->end(); it++) {
     h2_trig_time->Fill((*it)->get_element_id()+5,(*it)->get_tdc_time()); // element +5 so nim index start at 6 in histo
   }
 
+  auto vec_FPGA_b4 = UtilSQHit::FindHitsFast(evt, hit_vec, "BeforeInhMatrix");
+  auto vec_NIM_b4 = UtilSQHit::FindHitsFast(evt, hit_vec, "BeforeInhNIM");
+
+
   if(evt->get_trigger(SQEvent::MATRIX1) && evt->get_trigger(SQEvent::NIM4)){
-    for(auto it0 = vec0->begin(); it0 != vec0->end(); it0++){ //FPGA
-      double ele_FPGA1 = (*it0)->get_element_id();
-      double time_FPGA1 = (*it0)->get_tdc_time();
-      for(auto it1 = vec2->begin(); it1 != vec2->end(); it1++){//NIM
-        double ele_NIM4 = (*it1)->get_element_id();
-        double time_NIM4 = (*it1)->get_tdc_time();
-        if(ele_FPGA1 == 1 && ele_NIM4 == 4){
-          h2_fpga_nim_time->Fill(time_NIM4,time_FPGA1);
-        }
-      }
-    }
+
+    FPGA_NIM_Time(vec_FPGA_af, vec_NIM_af, 4, 1, h2_fpga_nim_time_af);
+    FPGA_NIM_Time(vec_FPGA_b4, vec_NIM_b4, 4, 1, h2_fpga_nim_time_b4);
 
   }
+
 //ROAD ID Logic  *************************************************************************** 
 //TOP####
-  if(is_FPGA_event){
+  if(is_FPGA1){
     auto vecH1T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[0]);
     auto vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
     auto vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
@@ -290,10 +314,6 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
       }
     } 
   }
-  if(true){//event_cnt == 10000 || event_cnt == 1){
- //   cout << "NEW EVENT " << event_cnt << endl;
-  }
-  event_cnt++;
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -341,9 +361,15 @@ int OnlMonTrigV1495::FindAllMonHist()
   if (! h2_trig_time) return 1;
 
   oss.str("");
-  oss << "h2_fpga_nim_time_" << 1;
-  h2_fpga_nim_time = (TH2*)FindMonHist(oss.str().c_str());
-  if (! h2_fpga_nim_time) return 1; 
+  oss << "h2_fpga_nim_time_b4_" << 1;
+  h2_fpga_nim_time_b4 = (TH2*)FindMonHist(oss.str().c_str());
+  if (! h2_fpga_nim_time_b4) return 1; 
+
+  oss.str("");
+  oss << "h2_fpga_nim_time_af_" << 1;
+  h2_fpga_nim_time_af = (TH2*)FindMonHist(oss.str().c_str());
+  if (! h2_fpga_nim_time_af) return 1; 
+
 
   return 0;
 }
@@ -374,12 +400,21 @@ int OnlMonTrigV1495::DrawMonitor()
   pad1->Divide(1,2);
   TVirtualPad* pad10 = pad1->cd(1);
   pad10->SetGrid();
-  h2_fpga_nim_time->Draw("colz");
+  h2_fpga_nim_time_b4->Draw("colz");
   ostringstream oss1;
-  oss1 << "pr_" << h2_fpga_nim_time->GetName();
-  TProfile* pr1 = h2_fpga_nim_time->ProfileX(oss1.str().c_str());
+  oss1 << "pr_" << h2_fpga_nim_time_b4->GetName();
+  TProfile* pr1 = h2_fpga_nim_time_b4->ProfileX(oss1.str().c_str());
   pr1->SetLineColor(kBlack);
   pr1->Draw("E1same");
+
+  TVirtualPad* pad11 = pad1->cd(2);
+  pad11->SetGrid();
+  h2_fpga_nim_time_af->Draw("colz");
+  ostringstream oss11;
+  oss11 << "pr_" << h2_fpga_nim_time_af->GetName();
+  TProfile* pr11 = h2_fpga_nim_time_af->ProfileX(oss11.str().c_str());
+  pr11->SetLineColor(kBlack);
+  pr11->Draw("E1same");
 
 
   OnlMonCanvas* can2 = GetCanvas(2);
@@ -474,9 +509,10 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       for (auto it = H1X->begin(); it != H1X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH1X  = (*it)->get_element_id();
-        //double time = (*it)->get_tdc_time();
-        if(eleH1X == rs_obj->roads[i].H1X){
-          hod_hits[0]++;
+        double timeH1X = (*it)->get_tdc_time();
+        if((eleH1X == rs_obj->roads[i].H1X) && (timeH1X > RF_edge_low) && (timeH1X < RF_edge_up)){
+          hod_hits[0] = 1;
+          break;
         }
       }
    
@@ -489,9 +525,10 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       for (auto it = H2X->begin(); it != H2X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH2X  = (*it)->get_element_id();
-        //double time = (*it)->get_tdc_time();
-        if(eleH2X == rs_obj->roads[i].H2X){
-          hod_hits[1]++;  
+        double timeH2X = (*it)->get_tdc_time();
+        if((eleH2X == rs_obj->roads[i].H2X) && (timeH2X > RF_edge_low) && (timeH2X < RF_edge_up)){
+          hod_hits[1] = 1;  
+          break;
         }
       }
     }else{
@@ -502,9 +539,10 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       for (auto it = H3X->begin(); it != H3X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH3X  = (*it)->get_element_id();
-        //double time = (*it)->get_tdc_time();
-        if(eleH3X == rs_obj->roads[i].H3X){
-          hod_hits[2]++;  
+        double timeH3X = (*it)->get_tdc_time();
+        if((eleH3X == rs_obj->roads[i].H3X) && (timeH3X > RF_edge_low) && (timeH3X < RF_edge_up)){
+          hod_hits[2] = 1;  
+          break;
         }   
       }
     }else{
@@ -516,9 +554,10 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
       for (auto it = H4X->begin(); it != H4X->end(); it++) {
         if ((*it)->get_level() != 1) continue; //switched m_lvl for 1
         int eleH4X  = (*it)->get_element_id();
-        //double time = (*it)->get_tdc_time();
-        if(eleH4X == rs_obj->roads[i].H4X){
-          hod_hits[3]++;  
+        double timeH4X = (*it)->get_tdc_time();
+        if((eleH4X == rs_obj->roads[i].H4X) && (timeH4X > RF_edge_low) && (timeH4X < RF_edge_up)){
+          hod_hits[3] = 1;  
+          break;
         }   
       }
     }else{
@@ -526,32 +565,41 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
 
     }
     
-    if(hod_hits[0] > 0 || hod_hits[1] > 0 || hod_hits[2] > 0 || hod_hits[3] > 0){ 
-      //cout << "hod_hits = [ " << hod_hits[0] << " , " << hod_hits[1] << " , " << hod_hits[2] << " , " << hod_hits[3] << " ]"<<endl;
-    } 
-    
     rd_hits = 1;
     for(int j = 0; j < 4; j++){
       if(H_not_neg[j]){// && hod_hits[j] > 0){
         rd_hits *= hod_hits[j];
-      }//else if(hod_hits[j] == 0){
-        //rd_hits = 0;
-     // }
+      }
       hod_hits[j] = 0;
     }
-    
-    if(rd_hits > 0){
-     // cout << "rd_hits = " << rd_hits << endl;
-    }
 
-    for(int k = 0; k < rd_hits; k++){
-//      cout << "Road ID: " << rs_obj->roads[i].road_id << endl;
+            
+
+    if(rd_hits != 0){   
+    //  cout << "Road ID: " << rs_obj->roads[i].road_id << endl;
       hist_rs->Fill(rs_obj->roads[i].road_id);         
       count_rd++;     
     }
   }
-  if (count_rd > 0 ){
-    cout << "Roads hit per event: " << count_rd <<endl;
-    hist_mult->Fill(count_rd);
+  //cout << "Roads hit per event: " << count_rd <<endl;
+    
+  hist_mult->Fill(count_rd);
+}
+
+void OnlMonTrigV1495::FPGA_NIM_Time(vector<SQHit*>* FPGA,vector<SQHit*>* NIM, int NIM_trig_num, int FPGA_trig_num, TH2* hist){
+
+  for(auto it0 = FPGA->begin(); it0 != FPGA->end(); it0++){ //FPGA
+      double ele_FPGA = (*it0)->get_element_id();
+      double time_FPGA = (*it0)->get_tdc_time();
+      for(auto it1 = NIM->begin(); it1 != NIM->end(); it1++){//NIM
+        double ele_NIM = (*it1)->get_element_id();
+        double time_NIM = (*it1)->get_tdc_time();
+        if(ele_FPGA == FPGA_trig_num && ele_NIM == NIM_trig_num){
+          hist->Fill(time_NIM,time_FPGA);
+        }
+      }
   }
+
+
+
 }

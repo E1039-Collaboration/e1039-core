@@ -145,7 +145,6 @@ int OnlMonHodoV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonHodoV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
 { 
-
   SQEvent*      evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector*  hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   SQHitVector*  trig_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
@@ -162,15 +161,16 @@ int OnlMonHodoV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
     double tdc_time = (*it)->get_tdc_time();
     float element = (*it)->get_element_id();
     
-        
     h2_RF_raw->Fill(tdc_time,element);  
     if(is_FPGA_event){
 	h2_RF->Fill(tdc_time,element); 
         
-        if(count < 8){
-           //Saving RF in 1d histograms to find max 
-           RF_proj[count]->Fill(tdc_time);
+        if(element == 3 || element == 4){
+           int cnt_mod = count%8;
+           RF_proj[cnt_mod]->Fill(tdc_time);
         }
+
+
     }else{
     
     }
