@@ -14,9 +14,9 @@ class OnlMonV1495: public OnlMonClient {
   int         list_det_id  [N_DET];
 
   TH1* h1_ele     [N_DET];
-  //TH1* h1_ele_in  [N_DET];
- // TH1* h1_time    [N_DET];
- // TH1* h1_time_in [N_DET];
+  TH1* h1_ele_in  [N_DET];
+  TH1* h1_time    [N_DET];
+  TH1* h1_time_in [N_DET];
   TH2* h2_time_ele[N_DET];
 
  public:

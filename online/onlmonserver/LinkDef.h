@@ -23,5 +23,6 @@
 #pragma link C++ class OnlMonReco-!;
 #pragma link C++ class OnlMonTrigV1495-!;
 #pragma link C++ class OnlMonHodoV1495-!;
+#pragma link C++ class OnlMonTrigEP-!;
 
 #endif

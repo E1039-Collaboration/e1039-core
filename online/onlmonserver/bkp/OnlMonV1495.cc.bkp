@@ -73,7 +73,7 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
     oss << name << ";Element ID;Hit count";
     h1_ele[i_det]->SetTitle(oss.str().c_str());
 
-/*    oss.str("");
+    oss.str("");
     oss << "h1_ele_in_" << i_det;
     h1_ele_in[i_det] = new TH1D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5);
     oss.str("");
@@ -94,19 +94,19 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
     oss.str("");
     oss << name << ";tdcTime;In-time hit count";
     h1_time_in[i_det]->SetTitle(oss.str().c_str());
-*/
+
     oss.str("");
     oss << "h2_time_ele_" << i_det;
-    h2_time_ele[i_det] = new TH2D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5, 16, 0.5, 16+0.5);
+    h2_time_ele[i_det] = new TH2D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5, NT, T0, T1);
     oss.str("");
-    oss << name << ";Element ID;event;Hit count";
+    oss << name << ";Element ID;tdcTime;Hit count";
     h2_time_ele[i_det]->SetTitle(oss.str().c_str());
-    
+
     RegisterHist(h1_ele    [i_det]);
- //   RegisterHist(h1_ele_in [i_det]);
- /*   RegisterHist(h1_time   [i_det]);
+    RegisterHist(h1_ele_in [i_det]);
+    RegisterHist(h1_time   [i_det]);
     RegisterHist(h1_time_in[i_det]);
-  */  RegisterHist(h2_time_ele[i_det]);
+    RegisterHist(h2_time_ele[i_det]);
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -117,31 +117,21 @@ int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
   SQEvent*     evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
   if (!evt || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
-  cout << "New Event" << endl;
+
   for (int i_det = 0; i_det < N_DET; i_det++) {
     int det_id = list_det_id[i_det];
     auto vec = UtilSQHit::FindTriggerHitsFast(evt, hit_vec, det_id);
-    int num = 1;
     for (auto it = vec->begin(); it != vec->end(); it++) {
       if ((*it)->get_level() != m_lvl) continue;
       int    ele  = (*it)->get_element_id();
-      double time = (*it)->get_tdc_time();
-      //cout <<"Element id:" <<  ele << endl;      
-      cout << "detector id:" << det_id << endl;
-      if(ele <= 10){
-        h1_ele     [i_det]->Fill(6 );
-      }else if(ele > 10 && ele < 22) {
-        h1_ele     [i_det]->Fill(12 );
-      }else{
-        h1_ele     [i_det]->Fill(18 );
-      } 
-   //   h1_time    [i_det]->Fill(time);
-      h2_time_ele[i_det]->Fill(ele, num);
+      double time = (*it)->get_tdc_time  ();
+      h1_ele     [i_det]->Fill(ele );
+      h1_time    [i_det]->Fill(time);
+      h2_time_ele[i_det]->Fill(ele, time);
       if ((*it)->is_in_time()) {
-   //     h1_ele_in [i_det]->Fill(ele );
-   //     h1_time_in[i_det]->Fill(time);
+        h1_ele_in [i_det]->Fill(ele );
+        h1_time_in[i_det]->Fill(time);
       }
-    num += 1;
     }
   }
 
@@ -161,7 +151,7 @@ int OnlMonV1495::FindAllMonHist()
     oss << "h1_ele_" << i_det;
     h1_ele[i_det] = FindMonHist(oss.str().c_str());
     if (! h1_ele[i_det]) return 1;
- /*   oss.str("");
+    oss.str("");
     oss << "h1_ele_in_" << i_det;
     h1_ele_in[i_det] = FindMonHist(oss.str().c_str());
     if (! h1_ele_in[i_det]) return 1;
@@ -173,12 +163,10 @@ int OnlMonV1495::FindAllMonHist()
     oss << "h1_time_in_" << i_det;
     h1_time_in[i_det] = FindMonHist(oss.str().c_str());
     if (! h1_time_in[i_det]) return 1;
-   */ 
     oss.str("");
     oss << "h2_time_ele_" << i_det;
     h2_time_ele[i_det] = (TH2*)FindMonHist(oss.str().c_str());
     if (! h2_time_ele[i_det]) return 1;
-  
   }
   return 0;
 }
@@ -193,10 +181,10 @@ int OnlMonV1495::DrawMonitor()
     pad01->SetGrid();
     h1_ele[i_det]->SetLineColor(kBlack);
     h1_ele[i_det]->Draw();
-/*    h1_ele_in[i_det]->SetLineColor(kBlue);
+    h1_ele_in[i_det]->SetLineColor(kBlue);
     h1_ele_in[i_det]->SetFillColor(kBlue-7);
     h1_ele_in[i_det]->Draw("same");
-*/
+
     TVirtualPad* pad02 = pad0->cd(2*i_det+2);
     pad02->SetGrid();
     h2_time_ele[i_det]->Draw("colz");
@@ -207,7 +195,7 @@ int OnlMonV1495::DrawMonitor()
     pr->Draw("E1same");
   }
   //can0->SetStatus(OnlMonCanvas::OK);
-/*
+
   OnlMonCanvas* can1 = GetCanvas(1);
   TPad* pad1 = can1->GetMainPad();
   pad1->Divide(1, N_DET);
@@ -222,7 +210,7 @@ int OnlMonV1495::DrawMonitor()
     h1_time_in[i_det]->Draw("same");
   }
   //can1->SetStatus(OnlMonCanvas::OK);
-*/
+
   return 0;
 }
 
