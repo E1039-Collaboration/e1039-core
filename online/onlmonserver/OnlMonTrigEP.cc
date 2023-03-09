@@ -21,7 +21,7 @@ using namespace std;
 
 OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1)
 {
-  NumCanvases(1);
+  NumCanvases(2);
   Name("OnlMonTrigEP" ); 
   Title("FPGA1 Purity & Efficiency" );
 
@@ -31,9 +31,14 @@ OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const cha
   rs_pur_num = 0.0;
   FPGA1_num = 0.0;
   purity = 0.0;
+  
+  eff = 0;
   eff_den = 0;
-  eff = 0; 
   NIM4_FPGA1_num = 0;
+
+  eff_TW = 0;
+  eff_den_TW = 0;
+  eff_num_TW = 0; 
  
   rs_top_check_p[0] = 0;
   rs_top_check_p[1] = 0;
@@ -108,32 +113,44 @@ int OnlMonTrigEP::InitRunOnlMon(PHCompositeNode* topNode)
   oss << "h1_purity_" << 0;
   h1_purity = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
   oss.str("");
-  oss << "Purity" << ";;Hit count";
+  oss << "FGPA1 Purity" << ";;Hit count";
   h1_purity->SetTitle(oss.str().c_str());
- 
-  h1_purity->GetXaxis()->SetBinLabel( 1, "FPGA1 && no rd hit");
-  h1_purity->GetXaxis()->SetBinLabel( 2, "FPGA1 && rd hit");
- 
+
+
+  h1_purity->GetXaxis()->SetBinLabel( 1, "FPGA1 && rd hit");
+  h1_purity->GetXaxis()->SetBinLabel( 2, "FPGA1 && no rd hit");
+
   RegisterHist(h1_purity);
 
   oss.str("");
   oss << "h1_eff_" << 0;
   h1_eff = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
   oss.str("");
-  oss << "Efficiency" << ";;Hit count";
+  oss << "FPGA1 Efficiency (NIM4)" << ";;Hit count";
   h1_eff->SetTitle(oss.str().c_str());
   
   h1_eff->GetXaxis()->SetBinLabel( 1, "NIM4 && rd hit && FPGA1");
-  h1_eff->GetXaxis()->SetBinLabel( 2, "NIM4 && rd hit && no FPGA1");
+  h1_eff->GetXaxis()->SetBinLabel( 2, "NIM4 && rd hit && NO FPGA1");
   
   RegisterHist(h1_eff);
+
+  oss.str("");
+  oss << "h1_TW_TDC_" << 0;
+  h1_TW_TDC = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
+  oss.str("");
+  oss << "FPGA1 Efficiency (TW TDC)" << ";;Hit count";
+  h1_TW_TDC->SetTitle(oss.str().c_str());
+
+  h1_TW_TDC->GetXaxis()->SetBinLabel( 1, "TW TDC FPGA1 && FPGA1");
+  h1_TW_TDC->GetXaxis()->SetBinLabel( 2, "TW TDC FPGA1 && NO FPGA1");
+  
+  RegisterHist(h1_TW_TDC);
  
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
 { 
-
   SQEvent*      evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector*  hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
   SQHitVector*  trig_hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
@@ -146,6 +163,11 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
   rs_top_check_p[1] = 0;
   rs_bot_check_p[0] = 0;
   rs_bot_check_p[1] = 0; 
+
+  rs_top_check_e[0] = 0;
+  rs_top_check_e[1] = 0;
+  rs_bot_check_e[0] = 0;
+  rs_bot_check_e[1] = 0;
 
 //RF *************************************************************************************** 
   auto vec1 = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, "RF");
@@ -179,6 +201,70 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
   auto vecH2B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[3]);
   auto vecH3B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[5]);
   auto vecH4B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[7]);
+
+  if(evt->get_trigger(SQEvent::NIM4)){
+   /* cout << endl; 
+    cout << "NIM4 Event" << endl;
+    cout << "H1T: ";
+    for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
+
+    cout << "H2T: ";
+    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3T: ";
+    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4T: ";
+    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+    cout << endl;
+ 
+    cout << "H1B: ";
+    for (auto it = vecH1B->begin(); it != vecH1B->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
+
+    cout << "H2B: ";
+    for (auto it = vecH2B->begin(); it != vecH2B->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3B: ";
+    for (auto it = vecH3B->begin(); it != vecH3B->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4B: ";
+    for (auto it = vecH4B->begin(); it != vecH4B->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+*/
+
+  }
+
 //Any Event type 
   if(evt->get_trigger(SQEvent::NIM4)){
     for(int j = 0; j < 2; j++){
@@ -198,11 +284,23 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
     }
 
     if(rs_top_check_e[0] || rs_bot_check_e[0] || rs_top_check_e[1] || rs_bot_check_e[1]){
-      eff_den += 1.0;  
+      eff_den += 1.0; 
       if(is_FPGA1){
+        cout << "FPGA1 event" << endl;
         NIM4_FPGA1_num += 1.0;
+        eff_den_TW += 1.0;
+        eff_num_TW +=1.0;
         h1_eff->Fill(1);
+        h1_TW_TDC->Fill(1);
       }else{
+        auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
+        for (auto it = vec_FPGA_af->begin(); it != vec_FPGA_af->end(); it++) {
+          if((*it)->get_element_id()==1 ){
+            cout << "Trigger = "<< (*it)->get_element_id() << endl;
+            eff_den_TW += 1.0; 
+            h1_TW_TDC->Fill(2);
+          }
+        } 
         h1_eff->Fill(2);
       }       
     }
@@ -226,13 +324,15 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
     } 
     
     if(rs_top_check_p[0] || rs_bot_check_p[0] || rs_top_check_p[1] || rs_bot_check_p[1]){
-      h1_purity->Fill(2);
+      //cout << "Road Hit" << endl;
+      h1_purity->Fill(1);
       rs_pur_num += 1.0;
     }else{
-      h1_purity->Fill(1);
+      h1_purity->Fill(2);
     }
     FPGA1_num += 1.0;
-  } 
+    
+    } 
 
  
   return Fun4AllReturnCodes::EVENT_OK;
@@ -258,6 +358,11 @@ int OnlMonTrigEP::FindAllMonHist()
   oss << "h1_eff_" << 0;
   h1_eff = FindMonHist(oss.str().c_str());
   if (! h1_eff) return 1;
+
+  oss.str("");
+  oss << "h1_TW_TDC_" << 0;
+  h1_TW_TDC = FindMonHist(oss.str().c_str());
+  if (! h1_TW_TDC) return 1;
 
   return 0;
 }
@@ -293,6 +398,22 @@ int OnlMonTrigEP::DrawMonitor()
   text0->SetNDC(true);
   text0->SetTextAlign(22);
   text0->DrawText(0.3, 0.5, oss0.str().c_str());
+ 
+  OnlMonCanvas* can1 = GetCanvas(1);
+  TPad* pad1 = can1->GetMainPad();
+  pad1->Divide(1,2);
+  TVirtualPad* pad10 = pad1->cd(1);
+  pad10->SetGrid();
+  h1_TW_TDC->Draw();
+
+  eff_TW = eff_num_TW/eff_den_TW;
+  ostringstream oss1;
+  oss1 << "Efficiency = " << eff_TW;
+  TText* text1 = new TText();
+  text1->SetNDC(true);
+  text1->SetTextAlign(22);
+  text1->DrawText(0.3, 0.5, oss1.str().c_str());
+
   return 0;
 }
 

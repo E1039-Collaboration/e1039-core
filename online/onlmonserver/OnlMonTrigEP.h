@@ -35,6 +35,7 @@ class OnlMonTrigEP: public OnlMonClient {
 
   TH1* h1_purity;  
   TH1* h1_eff;
+  TH1* h1_TW_TDC;
 
   int rs_top_check_p[2];
   int rs_bot_check_p[2];  
@@ -49,7 +50,11 @@ class OnlMonTrigEP: public OnlMonClient {
   float eff_den;
   float NIM4_FPGA1_num;
   float eff;
-
+  
+  float eff_TW;
+  float eff_den_TW;
+  float eff_num_TW;
+   
  public:
   OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1); 
   virtual ~OnlMonTrigEP() {}
