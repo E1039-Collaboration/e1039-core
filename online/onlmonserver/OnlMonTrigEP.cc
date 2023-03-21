@@ -21,25 +21,13 @@ using namespace std;
 
 OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1)
 {
-  NumCanvases(2);
+  NumCanvases(3);
   Name("OnlMonTrigEP" ); 
   Title("FPGA1 Purity & Efficiency" );
 
   top = 0; 
   bottom = 1;
 
-  rs_pur_num = 0.0;
-  FPGA1_num = 0.0;
-  purity = 0.0;
-  
-  eff = 0;
-  eff_den = 0;
-  NIM4_FPGA1_num = 0;
-
-  eff_TW = 0;
-  eff_den_TW = 0;
-  eff_num_TW = 0; 
- 
   rs_top_check_p[0] = 0;
   rs_top_check_p[1] = 0;
   rs_bot_check_p[0] = 0;
@@ -108,43 +96,69 @@ int OnlMonTrigEP::InitRunOnlMon(PHCompositeNode* topNode)
     }
 
   }
-  
+ 
+  const double DT2 = 1.0; // 1 ns per single count of v1495 TDC
+  const int NT2 = 300;
+  const double T02 = 300.5 * DT2;
+  const double T12 = 900.5;
+
+  oss.str("");
+  oss << "h2_RF_" << 1;
+  h2_RF = new TH2D(oss.str().c_str(), "",NT2, T02, T12,  9, 0.5, 9.5);
+  oss.str("");
+  oss << "RF TDC" << ";tdcTime;RF Board;Hit count";
+  h2_RF->SetTitle(oss.str().c_str());
+
+  RegisterHist(h2_RF);
+ 
   oss.str("");
   oss << "h1_purity_" << 0;
-  h1_purity = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
+  h1_purity = new TH1D(oss.str().c_str(), "", 2, -0.5, 1.5);
   oss.str("");
   oss << "FGPA1 Purity" << ";;Hit count";
   h1_purity->SetTitle(oss.str().c_str());
 
 
-  h1_purity->GetXaxis()->SetBinLabel( 1, "FPGA1 && rd hit");
-  h1_purity->GetXaxis()->SetBinLabel( 2, "FPGA1 && no rd hit");
+  h1_purity->GetXaxis()->SetBinLabel( 2, "FPGA1 && rd hit");
+  h1_purity->GetXaxis()->SetBinLabel( 1, "FPGA1 && no rd hit");
 
   RegisterHist(h1_purity);
 
   oss.str("");
-  oss << "h1_eff_" << 0;
-  h1_eff = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
+  oss << "h1_eff_NIM4_" << 0;
+  h1_eff_NIM4 = new TH1D(oss.str().c_str(), "", 2, -0.5, 1.5);
   oss.str("");
-  oss << "FPGA1 Efficiency (NIM4)" << ";;Hit count";
-  h1_eff->SetTitle(oss.str().c_str());
+  oss << "FPGA1 Efficiency (NIM4 + Event type)" << ";;Hit count";
+  h1_eff_NIM4->SetTitle(oss.str().c_str());
   
-  h1_eff->GetXaxis()->SetBinLabel( 1, "NIM4 && rd hit && FPGA1");
-  h1_eff->GetXaxis()->SetBinLabel( 2, "NIM4 && rd hit && NO FPGA1");
+  h1_eff_NIM4->GetXaxis()->SetBinLabel( 2, "NIM4 && rd hit && FPGA1");
+  h1_eff_NIM4->GetXaxis()->SetBinLabel( 1, "NIM4 && rd hit && NO FPGA1");
   
-  RegisterHist(h1_eff);
+  RegisterHist(h1_eff_NIM4);
 
   oss.str("");
-  oss << "h1_TW_TDC_" << 0;
-  h1_TW_TDC = new TH1D(oss.str().c_str(), "", 2, 0.5, 2.5);
+  oss << "h1_eff_TWTDC_" << 0;
+  h1_eff_TWTDC = new TH1D(oss.str().c_str(), "", 2, -0.5, 1.5);
   oss.str("");
-  oss << "FPGA1 Efficiency (TW TDC)" << ";;Hit count";
-  h1_TW_TDC->SetTitle(oss.str().c_str());
+  oss << "TW TDC Efficiency (NIM4 + TW TDC hit)" << ";;Hit count";
+  h1_eff_TWTDC->SetTitle(oss.str().c_str());
 
-  h1_TW_TDC->GetXaxis()->SetBinLabel( 1, "TW TDC FPGA1 && FPGA1");
-  h1_TW_TDC->GetXaxis()->SetBinLabel( 2, "TW TDC FPGA1 && NO FPGA1");
+  h1_eff_TWTDC->GetXaxis()->SetBinLabel( 2, "NIM4 && TW TDC");
+  h1_eff_TWTDC->GetXaxis()->SetBinLabel( 1, "NIM4 && NO TW TDC");
+
+  RegisterHist(h1_eff_TWTDC);
+
+  oss.str("");
+  oss << "h1_eff_TS_" << 0;
+  h1_eff_TS = new TH1D(oss.str().c_str(), "", 2, -0.5, 1.5);
+  oss.str("");
+  oss << "FPGA1 TS Efficiency (NIM4 + Event type vs TW TDC)" << ";;Hit count";
+  h1_eff_TS->SetTitle(oss.str().c_str());
+
+  h1_eff_TS->GetXaxis()->SetBinLabel( 2, "TW TDC FPGA1 && FPGA1");
+  h1_eff_TS->GetXaxis()->SetBinLabel( 1, "TW TDC FPGA1 && NO FPGA1");
   
-  RegisterHist(h1_TW_TDC);
+  RegisterHist(h1_eff_TS);
  
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -174,9 +188,10 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
   int count = 0;
   for(auto it = vec1->begin(); it != vec1->end(); it++){
     double tdc_time = (*it)->get_tdc_time();
-    //int element = (*it)->get_element_id();       
+    int element = (*it)->get_element_id();       
  
     if(is_FPGA1){
+      h2_RF->Fill(tdc_time,element);
       if(count == 3){
         RF_edge_low[top] = tdc_time;
       }else if(count == 4){
@@ -192,78 +207,15 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
   }
 
 //ROAD ID Logic  *************************************************************************** 
-  auto vecH1T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[0]);
-  auto vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
-  auto vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
-  auto vecH4T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[6]);
+  vecH1T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[0]);
+  vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
+  vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
+  vecH4T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[6]);
   
-  auto vecH1B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[1]);
-  auto vecH2B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[3]);
-  auto vecH3B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[5]);
-  auto vecH4B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[7]);
-
-  if(evt->get_trigger(SQEvent::NIM4)){
-   /* cout << endl; 
-    cout << "NIM4 Event" << endl;
-    cout << "H1T: ";
-    for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
-        double ele1 = (*it)->get_element_id();
-        cout  << ele1 << ", ";
-    }
-    cout << endl;
-
-    cout << "H2T: ";
-    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
-        double ele2 = (*it)->get_element_id();
-        cout  << ele2 << ", ";
-    }
-    cout << endl;
-
-    cout << "H3T: ";
-    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
-        double ele3 = (*it)->get_element_id();
-        cout  << ele3 << ", ";
-    }
-    cout << endl;
-
-    cout << "H4T: ";
-    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
-        double ele4 = (*it)->get_element_id();
-        cout  << ele4 << ", ";
-    }
-    cout << endl;
-    cout << endl;
- 
-    cout << "H1B: ";
-    for (auto it = vecH1B->begin(); it != vecH1B->end(); it++) {
-        double ele1 = (*it)->get_element_id();
-        cout  << ele1 << ", ";
-    }
-    cout << endl;
-
-    cout << "H2B: ";
-    for (auto it = vecH2B->begin(); it != vecH2B->end(); it++) {
-        double ele2 = (*it)->get_element_id();
-        cout  << ele2 << ", ";
-    }
-    cout << endl;
-
-    cout << "H3B: ";
-    for (auto it = vecH3B->begin(); it != vecH3B->end(); it++) {
-        double ele3 = (*it)->get_element_id();
-        cout  << ele3 << ", ";
-    }
-    cout << endl;
-
-    cout << "H4B: ";
-    for (auto it = vecH4B->begin(); it != vecH4B->end(); it++) {
-        double ele4 = (*it)->get_element_id();
-        cout  << ele4 << ", ";
-    }
-    cout << endl;
-*/
-
-  }
+  vecH1B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[1]);
+  vecH2B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[3]);
+  vecH3B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[5]);
+  vecH4B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[7]);
 
 //Any Event type 
   if(evt->get_trigger(SQEvent::NIM4)){
@@ -284,24 +236,32 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
     }
 
     if(rs_top_check_e[0] || rs_bot_check_e[0] || rs_top_check_e[1] || rs_bot_check_e[1]){
-      eff_den += 1.0; 
+
+      auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
+        for (auto it = vec_FPGA_af->begin(); it != vec_FPGA_af->end(); it++) {
+          if((*it)->get_element_id() != 0 ){
+            //cout << "Trigger = "<< (*it)->get_element_id() << endl;
+            h1_eff_TWTDC->Fill(1);
+          }else{
+
+            h1_eff_TWTDC->Fill(0);
+        
+          }
+        }
+ 
       if(is_FPGA1){
-        cout << "FPGA1 event" << endl;
-        NIM4_FPGA1_num += 1.0;
-        eff_den_TW += 1.0;
-        eff_num_TW +=1.0;
-        h1_eff->Fill(1);
-        h1_TW_TDC->Fill(1);
+        //cout << "FPGA1 event" << endl;
+        h1_eff_NIM4->Fill(1);
+        h1_eff_TS->Fill(1);
       }else{
-        auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
+        //auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
         for (auto it = vec_FPGA_af->begin(); it != vec_FPGA_af->end(); it++) {
           if((*it)->get_element_id()==1 ){
-            cout << "Trigger = "<< (*it)->get_element_id() << endl;
-            eff_den_TW += 1.0; 
-            h1_TW_TDC->Fill(2);
+            //cout << "Trigger = "<< (*it)->get_element_id() << endl;
+            h1_eff_TS->Fill(0);
           }
         } 
-        h1_eff->Fill(2);
+        h1_eff_NIM4->Fill(0);
       }       
     }
   }
@@ -326,13 +286,17 @@ int OnlMonTrigEP::ProcessEventOnlMon(PHCompositeNode* topNode)
     if(rs_top_check_p[0] || rs_bot_check_p[0] || rs_top_check_p[1] || rs_bot_check_p[1]){
       //cout << "Road Hit" << endl;
       h1_purity->Fill(1);
-      rs_pur_num += 1.0;
+   /* }else if((vecH2T->size() > 0) && (vecH4B->size() > 0)){
+      h1_purity->Fill(1);
+    }else if((vecH2B->size() > 0) && (vecH4T->size() > 0)){
+      h1_purity->Fill(1);*/
     }else{
-      h1_purity->Fill(2);
+      h1_purity->Fill(0);
+     // debug_print(DEBUG_LVL);
+
     }
-    FPGA1_num += 1.0;
     
-    } 
+  } 
 
  
   return Fun4AllReturnCodes::EVENT_OK;
@@ -350,19 +314,29 @@ int OnlMonTrigEP::FindAllMonHist()
   ostringstream oss; 
 
   oss.str("");
+  oss << "h2_RF_" << 1;
+  h2_RF = (TH2*)FindMonHist(oss.str().c_str());
+  if (! h2_RF) return 1;
+
+  oss.str("");
   oss << "h1_purity_" << 0;
   h1_purity = FindMonHist(oss.str().c_str());
   if (! h1_purity) return 1;
 
   oss.str("");
-  oss << "h1_eff_" << 0;
-  h1_eff = FindMonHist(oss.str().c_str());
-  if (! h1_eff) return 1;
+  oss << "h1_eff_NIM4_" << 0;
+  h1_eff_NIM4 = FindMonHist(oss.str().c_str());
+  if (! h1_eff_NIM4) return 1;
 
   oss.str("");
-  oss << "h1_TW_TDC_" << 0;
-  h1_TW_TDC = FindMonHist(oss.str().c_str());
-  if (! h1_TW_TDC) return 1;
+  oss << "h1_eff_TWTDC_" << 0;
+  h1_eff_TWTDC = FindMonHist(oss.str().c_str());
+  if (! h1_eff_TWTDC) return 1;
+
+  oss.str("");
+  oss << "h1_eff_TS_" << 0;
+  h1_eff_TS = FindMonHist(oss.str().c_str());
+  if (! h1_eff_TS) return 1;
 
   return 0;
 }
@@ -371,6 +345,7 @@ int OnlMonTrigEP::DrawMonitor()
 {
   //DRAWING HISTOGRAMS ON .PNG FILES ******************************************
 
+  UtilHist::AutoSetRangeX(h2_RF);
 
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
@@ -380,20 +355,20 @@ int OnlMonTrigEP::DrawMonitor()
   h1_purity->Draw();
   ostringstream oss;
   
-  purity = rs_pur_num/FPGA1_num;
-  oss << "Purity = " << purity;
+  double pur = h1_purity->GetMean();
+  oss << "Purity = " << pur;
   TText* text = new TText();
   text->SetNDC(true);
   text->SetTextAlign(22);
   text->DrawText(0.3, 0.5, oss.str().c_str());
     // The y-position above assumes that the top & bottom margins are 0.1 each.
   
-  eff = NIM4_FPGA1_num/eff_den; 
+  double eff_NIM4 = h1_eff_NIM4->GetMean();
   ostringstream oss0; 
   TVirtualPad* pad01 = pad0->cd(2);
   pad01->SetGrid();
-  h1_eff->Draw();
-  oss0 << "Efficiency = " << eff;
+  h1_eff_NIM4->Draw();
+  oss0 << "Efficiency = " << eff_NIM4;
   TText* text0 = new TText();
   text0->SetNDC(true);
   text0->SetTextAlign(22);
@@ -404,15 +379,34 @@ int OnlMonTrigEP::DrawMonitor()
   pad1->Divide(1,2);
   TVirtualPad* pad10 = pad1->cd(1);
   pad10->SetGrid();
-  h1_TW_TDC->Draw();
+  h1_eff_TS->Draw();
 
-  eff_TW = eff_num_TW/eff_den_TW;
+  double eff_TS = h1_eff_TS->GetMean();
   ostringstream oss1;
-  oss1 << "Efficiency = " << eff_TW;
+  oss1 << "Efficiency = " << eff_TS;
   TText* text1 = new TText();
   text1->SetNDC(true);
   text1->SetTextAlign(22);
   text1->DrawText(0.3, 0.5, oss1.str().c_str());
+
+  float eff_raw = h1_eff_TWTDC->GetMean();
+  ostringstream oss2;
+  TVirtualPad* pad11 = pad1->cd(2);
+  pad11->SetGrid();
+  h1_eff_TWTDC->Draw();
+  oss2 << "Efficiency = " << eff_raw;
+  TText* text2 = new TText();
+  text2->SetNDC(true);
+  text2->SetTextAlign(22);
+  text2->DrawText(0.3, 0.5, oss2.str().c_str());
+
+  OnlMonCanvas* can2 = GetCanvas(2);
+  TPad* pad2 = can2->GetMainPad();
+  pad2->Divide(1,2);
+  TVirtualPad* pad20 = pad2->cd(1);
+  pad20->SetGrid();
+  h2_RF->Draw("colz");
+
 
   return 0;
 }
@@ -436,7 +430,7 @@ void OnlMonTrigEP::SetDet()
 
 int OnlMonTrigEP::RoadCheck(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<SQHit*>* H3X, vector<SQHit*>* H4X,rs_Reader* rs_obj, int top0_or_bot1)
 {
-
+  //Checks to see if a road on one of the road sets was hit 
   int count_rd = 0;
 
   int H_not_neg[4];
@@ -530,4 +524,69 @@ int OnlMonTrigEP::RoadCheck(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<SQH
   return 0;  
 }
 
+void OnlMonTrigEP:: debug_print(int debug_lvl){
+  if(debug_lvl == 0){
+    cout << endl; 
+    cout << "New Event" << endl;
+    cout << "H1T: ";
+    for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
 
+    cout << "H2T: ";
+    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3T: ";
+    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4T: ";
+    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+    cout << endl;
+ 
+    cout << "H1B: ";
+    for (auto it = vecH1B->begin(); it != vecH1B->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
+
+    cout << "H2B: ";
+    for (auto it = vecH2B->begin(); it != vecH2B->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3B: ";
+    for (auto it = vecH3B->begin(); it != vecH3B->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4B: ";
+    for (auto it = vecH4B->begin(); it != vecH4B->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+
+    
+  }
+
+
+}

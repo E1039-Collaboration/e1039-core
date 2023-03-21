@@ -1,5 +1,6 @@
 #ifndef _ONL_MON_TRIG_EP__H_
 #define _ONL_MON_TRIG_EP__H_
+#define DEBUG_LVL 0
 #include <rs_Reader/rs_Reader.h>
 #include <interface_main/SQEvent.h>
 #include <interface_main/SQHitVector.h>
@@ -34,27 +35,28 @@ class OnlMonTrigEP: public OnlMonClient {
   int bottom;
 
   TH1* h1_purity;  
-  TH1* h1_eff;
-  TH1* h1_TW_TDC;
+  TH1* h1_eff_NIM4;
+  TH1* h1_eff_TS;
+  TH1* h1_eff_TWTDC;
+
+  TH2* h2_RF;
 
   int rs_top_check_p[2];
   int rs_bot_check_p[2];  
 
   int rs_top_check_e[2];
   int rs_bot_check_e[2];
-
-  float rs_pur_num;
-  float FPGA1_num;
-  float purity;
-
-  float eff_den;
-  float NIM4_FPGA1_num;
-  float eff;
   
-  float eff_TW;
-  float eff_den_TW;
-  float eff_num_TW;
-   
+  vector<SQHit*>* vecH1T;
+  vector<SQHit*>* vecH2T;
+  vector<SQHit*>* vecH3T;
+  vector<SQHit*>* vecH4T;
+
+  vector<SQHit*>* vecH1B;
+  vector<SQHit*>* vecH2B;
+  vector<SQHit*>* vecH3B;
+  vector<SQHit*>* vecH4B;
+ 
  public:
   OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1); 
   virtual ~OnlMonTrigEP() {}
@@ -68,6 +70,7 @@ class OnlMonTrigEP: public OnlMonClient {
   int DrawMonitor();
 
  private:
+  void debug_print(int debug_lvl);
   void SetDet();
   int RoadCheck(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<SQHit*>* H3X, vector<SQHit*>* H4X,rs_Reader* rs_obj,int top0_or_bot1);
 };

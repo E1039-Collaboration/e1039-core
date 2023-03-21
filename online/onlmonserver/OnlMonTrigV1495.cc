@@ -147,19 +147,23 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
   oss << "FPGA 1 & NIM 4 After Inh Timing" << ";NIM tdcTime;FPGA tdcTime;Hit count";
   h2_fpga_nim_time_af->SetTitle(oss.str().c_str());
 
-  const double DT2 = 1.0; // 1 ns per single count of v1495 TDC
-  const int NT2 = 300;
-  const double T02 = 300.5 * DT2;
-  const double T12 = 900.5;
+  oss.str("");
+  oss << "h1_trig_diff_TS_" << 0;
+  h1_trig_diff_TS = new TH1D(oss.str().c_str(), "", NT+1, -0.5, 30.5);
+  oss.str("");
+  oss << "FPGA1 NIM4 Timing Difference TS constrained" << ";TDC time diff;Hit count";
+  h1_trig_diff_TS->SetTitle(oss.str().c_str());
+
+  RegisterHist(h1_trig_diff_TS);
 
   oss.str("");
-  oss << "h2_RF_" << 1;
-  h2_RF = new TH2D(oss.str().c_str(), "",NT2, T02, T12,  9, 0.5, 9.5);
+  oss << "h1_trig_diff_TW_" << 0;
+  h1_trig_diff_TW = new TH1D(oss.str().c_str(), "", NT+1, -0.5, 30.5);
   oss.str("");
-  oss << "RF TDC" << ";tdcTime;RF Board;Hit count";
-  h2_RF->SetTitle(oss.str().c_str());
- 
-  RegisterHist(h2_RF);
+  oss << "FPGA1 NIM4 Timing Difference no TS (TW constrained)" << ";TDC time diff;Hit count";
+  h1_trig_diff_TW->SetTitle(oss.str().c_str());
+
+  RegisterHist(h1_trig_diff_TW);
   RegisterHist(h2_trig_time);
   RegisterHist(h2_fpga_nim_time_af);   
   
@@ -168,8 +172,6 @@ int OnlMonTrigV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
 int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
 { 
-
-  
 
   SQEvent*      evt     = findNode::getClass<SQEvent    >(topNode, "SQEvent");
   SQHitVector*  hit_vec = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
@@ -185,10 +187,9 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
   int count = 0;
   for(auto it = vec1->begin(); it != vec1->end(); it++){
     double tdc_time = (*it)->get_tdc_time();
-    int element = (*it)->get_element_id();       
+    //int element = (*it)->get_element_id();       
  
     if(is_FPGA1){
-      h2_RF->Fill(tdc_time,element);
       if(count == 3){
         RF_edge_low[top] = tdc_time;
       }else if(count == 4){
@@ -203,71 +204,49 @@ int OnlMonTrigV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
     count ++;
   }
 
-
 //TDC 4 ************************************************************************************
   auto vec_FPGA_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhMatrix");
   for (auto it = vec_FPGA_af->begin(); it != vec_FPGA_af->end(); it++) {
+   // cout << "FPGA " << (*it)->get_element_id() << endl;
     h2_trig_time->Fill((*it)->get_tdc_time(),(*it)->get_element_id());
   }
 
   auto vec_NIM_af = UtilSQHit::FindHitsFast(evt, hit_vec, "AfterInhNIM");
   for (auto it = vec_NIM_af->begin(); it != vec_NIM_af->end(); it++) {
+   // cout << "NIM " << (*it)->get_element_id() << endl;
     h2_trig_time->Fill((*it)->get_tdc_time(),(*it)->get_element_id()+5); // element +5 so nim index start at 6 in histo
   }
 
-
   if(evt->get_trigger(SQEvent::MATRIX1) && evt->get_trigger(SQEvent::NIM4)){
 
-    FPGA_NIM_Time(vec_FPGA_af, vec_NIM_af, 4, 1, h2_fpga_nim_time_af);
+    FPGA_NIM_Time(vec_FPGA_af, vec_NIM_af, 4, 1,h2_fpga_nim_time_af,h1_trig_diff_TS);//h2_fpga_nim_time_af);
+
+  }else{
+    FPGA_NIM_Time(vec_FPGA_af, vec_NIM_af, 4, 1,NULL,h1_trig_diff_TW);
 
   }
 
 //ROAD ID Logic  *************************************************************************** 
+ if(is_FPGA1){
+   vecH1T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[0]);
+   vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
+   vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
+   vecH4T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[6]);
+   
+   vecH1B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[1]);
+   vecH2B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[3]);
+   vecH3B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[5]);
+   vecH4B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[7]);
+       
+   //debug_print(DEBUG_LVL);
 //TOP####
-  if(is_FPGA1){
-    auto vecH1T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[0]);
-    auto vecH2T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[2]);
-    auto vecH3T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[4]);
-    auto vecH4T = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[6]);
-   /* cout << "H1T: ";
-    for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
-        double ele1 = (*it)->get_element_id();
-        cout  << ele1 << ", "; 
-    }
-    cout << endl;
-
-    cout << "H2T: ";
-    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
-        double ele2 = (*it)->get_element_id();
-        cout  << ele2 << ", ";
-    }
-    cout << endl;
-
-    cout << "H3T: ";
-    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
-        double ele3 = (*it)->get_element_id();
-        cout  << ele3 << ", ";
-    }
-    cout << endl;
-
-    cout << "H4T: ";
-    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
-        double ele4 = (*it)->get_element_id();
-        cout  << ele4 << ", ";
-    }
-    cout << endl;
-*/
-    for(int j = 0; j < 2; j++){
+   for(int j = 0; j < 2; j++){
       if(is_rs_t[j]){
         RoadHits(vecH1T,vecH2T,vecH3T,vecH4T,rs_top[j],h1_rs_top[j],top);
       }
     }
 //BOTTOM####
-    auto vecH1B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[1]);
-    auto vecH2B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[3]);
-    auto vecH3B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[5]);
-    auto vecH4B = UtilSQHit::FindTriggerHitsFast(evt, trig_hit_vec, list_det_id[7]);
-    for(int j = 0; j < 2; j++){
+   for(int j = 0; j < 2; j++){
       if(is_rs_b[j]){
         RoadHits(vecH1B,vecH2B,vecH3B,vecH4B,rs_bot[j],h1_rs_bot[j],bottom);
       }
@@ -286,6 +265,16 @@ int OnlMonTrigV1495::FindAllMonHist()
 
  // cout << "FIND ALL MON HIST PART" << endl;
   ostringstream oss; 
+
+  oss.str("");
+  oss << "h1_trig_diff_TS_" << 0;
+  h1_trig_diff_TS = FindMonHist(oss.str().c_str());
+  if (! h1_trig_diff_TS) return 1;
+
+  oss.str("");
+  oss << "h1_trig_diff_TW_" << 0;
+  h1_trig_diff_TW = FindMonHist(oss.str().c_str());
+  if (! h1_trig_diff_TW) return 1;
 
   for(int i = 0; i < 2; i++){
     oss.str("");
@@ -306,11 +295,6 @@ int OnlMonTrigV1495::FindAllMonHist()
   if (! h2_trig_time) return 1;
 
   oss.str("");
-  oss << "h2_RF_" << 1;
-  h2_RF = (TH2*)FindMonHist(oss.str().c_str());
-  if (! h2_RF) return 1;
-
-  oss.str("");
   oss << "h2_fpga_nim_time_af_" << 1;
   h2_fpga_nim_time_af = (TH2*)FindMonHist(oss.str().c_str());
   if (! h2_fpga_nim_time_af) return 1; 
@@ -322,23 +306,20 @@ int OnlMonTrigV1495::FindAllMonHist()
 int OnlMonTrigV1495::DrawMonitor()
 {
   //DRAWING HISTOGRAMS ON .PNG FILES ******************************************
-
   UtilHist::AutoSetRangeX(h2_trig_time);
   UtilHist::AutoSetRangeX(h2_fpga_nim_time_af); 
   UtilHist::AutoSetRangeY(h2_fpga_nim_time_af); 
-  UtilHist::AutoSetRangeX(h2_RF);
 
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
   pad0->Divide(1,2);
   TVirtualPad* pad00 = pad0->cd(1);
   pad00->SetGrid();
-  h2_RF->Draw("colz");
-
+  h1_trig_diff_TS->Draw();
 
   TVirtualPad* pad01 = pad0->cd(2);
   pad01->SetGrid();
-
+  h1_trig_diff_TW->Draw();
 
 
   OnlMonCanvas* can1 = GetCanvas(1);
@@ -508,7 +489,7 @@ void OnlMonTrigV1495::RoadHits(vector<SQHit*>* H1X, vector<SQHit*>* H2X, vector<
     
 }
 
-void OnlMonTrigV1495::FPGA_NIM_Time(vector<SQHit*>* FPGA,vector<SQHit*>* NIM, int NIM_trig_num, int FPGA_trig_num, TH2* hist){
+void OnlMonTrigV1495::FPGA_NIM_Time(vector<SQHit*>* FPGA,vector<SQHit*>* NIM, int NIM_trig_num, int FPGA_trig_num, TH2* h2, TH1* h1){
 
   for(auto it0 = FPGA->begin(); it0 != FPGA->end(); it0++){ //FPGA
       double ele_FPGA = (*it0)->get_element_id();
@@ -517,7 +498,14 @@ void OnlMonTrigV1495::FPGA_NIM_Time(vector<SQHit*>* FPGA,vector<SQHit*>* NIM, in
         double ele_NIM = (*it1)->get_element_id();
         double time_NIM = (*it1)->get_tdc_time();
         if(ele_FPGA == FPGA_trig_num && ele_NIM == NIM_trig_num){
-          hist->Fill(time_NIM,time_FPGA);
+          if(h2 != NULL){
+            h2->Fill(time_NIM,time_FPGA);
+          }
+          double time_diff = Abs(time_FPGA,time_NIM);
+     //     if(time_diff > 100.0){
+        //    cout << "Time_diff == " << time_diff << "; FPGA == " << time_FPGA << "; NIM == " << time_NIM << endl;
+       //   }
+          h1->Fill(time_diff);
         }
       }
   }
@@ -542,4 +530,81 @@ void OnlMonTrigV1495::DrawTH2WithPeakPos(TH2* h2, const double cont_min)
     text->DrawText(0.3, 0.1+(iy-0.5)*0.8/ny, oss.str().c_str());
     // The y-position above assumes that the top & bottom margins are 0.1 each.
   }
+}
+
+void OnlMonTrigV1495:: debug_print(int debug_lvl){
+  if(debug_lvl == 0){
+    cout << endl;
+    cout << "New Event" << endl;
+    cout << "H1T: ";
+    for (auto it = vecH1T->begin(); it != vecH1T->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
+
+    cout << "H2T: ";
+    for (auto it = vecH2T->begin(); it != vecH2T->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3T: ";
+    for (auto it = vecH3T->begin(); it != vecH3T->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4T: ";
+    for (auto it = vecH4T->begin(); it != vecH4T->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+    cout << endl;
+
+    cout << "H1B: ";
+    for (auto it = vecH1B->begin(); it != vecH1B->end(); it++) {
+        double ele1 = (*it)->get_element_id();
+        cout  << ele1 << ", ";
+    }
+    cout << endl;
+
+    cout << "H2B: ";
+    for (auto it = vecH2B->begin(); it != vecH2B->end(); it++) {
+        double ele2 = (*it)->get_element_id();
+        cout  << ele2 << ", ";
+    }
+    cout << endl;
+
+    cout << "H3B: ";
+    for (auto it = vecH3B->begin(); it != vecH3B->end(); it++) {
+        double ele3 = (*it)->get_element_id();
+        cout  << ele3 << ", ";
+    }
+    cout << endl;
+
+    cout << "H4B: ";
+    for (auto it = vecH4B->begin(); it != vecH4B->end(); it++) {
+        double ele4 = (*it)->get_element_id();
+        cout  << ele4 << ", ";
+    }
+    cout << endl;
+
+
+  }
+
+
+}
+
+double OnlMonTrigV1495:: Abs(double var0, double var1){
+  if(var0 > var1){ 
+    return (var0 - var1);
+  }else{
+    return (var1 - var0);
+  }
+
+
 }
