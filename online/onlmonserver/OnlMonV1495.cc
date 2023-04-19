@@ -142,7 +142,7 @@ int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
     float element = (*it)->get_element_id();
 
     if(is_FPGA_event){
-
+        //Fill 1D histograms with RF data to determine RF buckets
         if(element == 3 || element == 4){
            int cnt_mod = count%8;
            RF_proj[cnt_mod]->Fill(tdc_time);
@@ -215,14 +215,12 @@ int OnlMonV1495::FindAllMonHist()
 
 int OnlMonV1495::DrawMonitor()
 {
-
   int binmax[8];
   double x[8];
   //Determine maximum value from projection histos to determine RF rising edges
   for(int i = 0; i < 8; i++){
      binmax[i] = RF_proj[i]->GetMaximumBin();
      x[i] = RF_proj[i]->GetXaxis()->GetBinCenter(binmax[i]);
-     //cout << x[i] << endl;
      //Lines to show RF buckets on 2d histo
      if(is_H1 == 1){
        proj_line[i] = new TLine(0.5,x[i],23.5,x[i]);

@@ -26,9 +26,9 @@ class OnlMonTrigV1495: public OnlMonClient {
 
   TH2* h2_trig_time;
   TH2* h2_fpga_nim_time_af;  
+  TH2* h2_RF;
 
   TH1* h1_trig_diff_TS;
-  TH1* h1_trig_diff_TW;
 
   HodoType_t m_type;
   int m_lvl;

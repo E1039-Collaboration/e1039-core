@@ -36,10 +36,6 @@ class OnlMonTrigEP: public OnlMonClient {
 
   TH1* h1_purity;  
   TH1* h1_eff_NIM4;
-  TH1* h1_eff_TS;
-  TH1* h1_eff_TWTDC;
-
-  TH2* h2_RF;
 
   int rs_top_check_p[2];
   int rs_bot_check_p[2];  
