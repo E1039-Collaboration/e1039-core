@@ -146,7 +146,7 @@ void recoConsts::set_defaults()
   set_DoubleFlag("PT_KICK_KMAG", 0.4016);
   set_DoubleFlag("PT_KICK_FMAG", 2.909);
 
-  set_DoubleFlag("Z_KMAG_BEND", 1064.26);
+  set_DoubleFlag("Z_KMAG_BEND", 1042.01722);
   set_DoubleFlag("Z_FMAG_BEND", 251.4);
   set_DoubleFlag("Z_KFMAG_BEND", 375.);
   set_DoubleFlag("ELOSS_KFMAG", 8.12);

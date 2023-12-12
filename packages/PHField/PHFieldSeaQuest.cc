@@ -1,5 +1,5 @@
 #include "PHFieldSeaQuest.h"
-
+#include <phool/recoConsts.h>
 #include <TFile.h>
 #include <TNtuple.h>
 
@@ -24,7 +24,7 @@ PHFieldSeaQuest::PHFieldSeaQuest(
 		targetmag(targermag_y)
 
 {
-  kmagZOffset = 1064.26*cm;
+  kmagZOffset = recoConsts::instance()->get_DoubleFlag("Z_KMAG_BEND")*cm;
 
   zValues[0] = fmag.GetZMin();                // front of fmag field map
   zValues[1] = kmag.GetZMin() + kmagZOffset;  // front of kmag field map
