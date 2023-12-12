@@ -167,8 +167,21 @@ void recoConsts::set_defaults()
 
 void recoConsts::init(int runNo, bool verbose)
 {
-  //TODO: initialization based on run range
   set_IntFlag("RUNNUMBER", runNo);
+  if (runNo < 10) { // E906 data.  We will need dataset-dependent settings.
+    set_DoubleFlag("FMAGSTR", -1.044);
+    set_DoubleFlag("KMAGSTR", -1.025);
+    set_DoubleFlag("RejectWinDC0" , 0.12);
+    set_DoubleFlag("RejectWinDC1" , 0.25);
+    set_DoubleFlag("RejectWinDC2" , 0.15);
+    set_DoubleFlag("RejectWinDC3p", 0.16);
+    set_DoubleFlag("RejectWinDC3m", 0.14);
+    set_IntFlag("MaxHitsDC0" , 350);
+    set_IntFlag("MaxHitsDC1" , 350);
+    set_IntFlag("MaxHitsDC2" , 170);
+    set_IntFlag("MaxHitsDC3p", 140);
+    set_IntFlag("MaxHitsDC3m", 140);
+  }
   return;
 }
 
