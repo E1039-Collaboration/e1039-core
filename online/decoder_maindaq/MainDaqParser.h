@@ -9,6 +9,13 @@ class PHTimer2;
 class MainDaqParser {
   static const std::vector<std::string> LIST_TIMERS;
 
+  typedef enum {
+    IDX_NONE       =  0,
+    IDX_SKIP_EVENT = -1,
+    IDX_SKIP_ROC   = -2,
+    IDX_SKIP_BOARD = -3
+  } SpecialWordIndex_t;
+
   long m_file_size_min;
   int m_sec_wait;
   int m_n_wait;

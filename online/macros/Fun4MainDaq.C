@@ -8,6 +8,8 @@ R__LOAD_LIBRARY(libktracker)
 int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false)
 {
   gSystem->Umask(0002);
+  const bool output_full_dst = false;
+  const bool output_spill_dst = true;
   const bool use_onlmon = true;
   const bool use_evt_disp = true;
 
@@ -87,13 +89,17 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonProp (OnlMonProp::P2));
   }
 
-  Fun4AllDstOutputManager *om_dst = new Fun4AllDstOutputManager("DSTOUT", fn_out);
-  se->registerOutputManager(om_dst);
+  if (output_full_dst) {
+    Fun4AllDstOutputManager *om_dst = new Fun4AllDstOutputManager("DSTOUT", fn_out);
+    se->registerOutputManager(om_dst);
+  }
 
-  Fun4AllSpillDstOutputManager *om_spdst = new Fun4AllSpillDstOutputManager(UtilOnline::GetDstFileDir(), "SPILLDSTOUT");
-  om_spdst->SetSpillStep(100);
-  om_spdst->EnableDB();
-  se->registerOutputManager(om_spdst);
+  if (output_spill_dst) {
+    Fun4AllSpillDstOutputManager *om_spdst = new Fun4AllSpillDstOutputManager(UtilOnline::GetDstFileDir(), "SPILLDSTOUT");
+    om_spdst->SetSpillStep(100);
+    om_spdst->EnableDB();
+    se->registerOutputManager(om_spdst);
+  }
 
   if (use_evt_disp) {
     se->registerSubsystem(new EvtDispFilter(1000, 1)); // (step, max per spill)
