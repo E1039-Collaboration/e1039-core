@@ -20,8 +20,9 @@ using namespace std;
 OnlMonV1495::OnlMonV1495(const HodoType_t type, const int lvl) : m_type(type), m_lvl(lvl)
 {
   NumCanvases(2);
+  is_H1 = 0;
   switch (m_type) {
-  case H1X:  Name("OnlMonV1495H1X" );  Title("V1495: H1X" );  break;
+  case H1X:  Name("OnlMonV1495H1X" );  Title("V1495: H1X" ); is_H1 = 1;  break;
   case H2X:  Name("OnlMonV1495H2X" );  Title("V1495: H2X" );  break;
   case H3X:  Name("OnlMonV1495H3X" );  Title("V1495: H3X" );  break;
   case H4X:  Name("OnlMonV1495H4X" );  Title("V1495: H4X" );  break;
@@ -97,7 +98,7 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
 
     oss.str("");
     oss << "h2_time_ele_" << i_det;
-    h2_time_ele[i_det] = new TH2D(oss.str().c_str(), "", n_ele, 0.5, n_ele+0.5, NT, T0, T1);
+    h2_time_ele[i_det] = new TH2D(oss.str().c_str(), "",n_ele, 0.5, n_ele+0.5, 80, 720.5, 880.5);
     oss.str("");
     oss << name << ";Element ID;tdcTime;Hit count";
     h2_time_ele[i_det]->SetTitle(oss.str().c_str());
@@ -109,6 +110,18 @@ int OnlMonV1495::InitRunOnlMon(PHCompositeNode* topNode)
     RegisterHist(h2_time_ele[i_det]);
   }
 
+  for(int i = 0; i < 8; i++){
+    oss.str("");
+    oss << "RF_proj_" << i;
+    RF_proj[i] = new TH1D(oss.str().c_str(), "",160 , 720.5, 880.5);
+    oss.str("");
+    oss << "RF TDC Projection" << ";TDC RF;Hit count";
+    RF_proj[i]->SetTitle(oss.str().c_str());
+
+    RegisterHist(RF_proj[i]);
+  }
+
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -118,6 +131,33 @@ int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
   SQHitVector* hit_vec = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
   if (!evt || !hit_vec) return Fun4AllReturnCodes::ABORTEVENT;
 
+  int is_FPGA_event = (evt->get_trigger(SQEvent::MATRIX1) || evt->get_trigger(SQEvent::MATRIX2) ||evt->get_trigger(SQEvent::MATRIX3)||evt->get_trigger(SQEvent::MATRIX4) ) ? 1 : 0;
+
+//RF ***************************************************************************************
+//Looping through RF data to determine RF buckets
+  auto vec1 = UtilSQHit::FindTriggerHitsFast(evt, hit_vec, "RF");
+  int count = 0;
+  for(auto it = vec1->begin(); it != vec1->end(); it++){
+    double tdc_time = (*it)->get_tdc_time();
+    float element = (*it)->get_element_id();
+
+    if(is_FPGA_event){
+        //Fill 1D histograms with RF data to determine RF buckets
+        if(element == 3 || element == 4){
+           int cnt_mod = count%8;
+           RF_proj[cnt_mod]->Fill(tdc_time);
+        }
+
+
+    }else{
+
+    }
+
+    count ++;
+  }
+
+
+//Hodoscope Hits ***************************************************************************
   for (int i_det = 0; i_det < N_DET; i_det++) {
     int det_id = list_det_id[i_det];
     auto vec = UtilSQHit::FindTriggerHitsFast(evt, hit_vec, det_id);
@@ -125,12 +165,14 @@ int OnlMonV1495::ProcessEventOnlMon(PHCompositeNode* topNode)
       if ((*it)->get_level() != m_lvl) continue;
       int    ele  = (*it)->get_element_id();
       double time = (*it)->get_tdc_time  ();
-      h1_ele     [i_det]->Fill(ele );
-      h1_time    [i_det]->Fill(time);
-      h2_time_ele[i_det]->Fill(ele, time);
-      if ((*it)->is_in_time()) {
-        h1_ele_in [i_det]->Fill(ele );
-        h1_time_in[i_det]->Fill(time);
+      if(is_FPGA_event){
+        h1_ele     [i_det]->Fill(ele );
+        h1_time    [i_det]->Fill(time);
+        h2_time_ele[i_det]->Fill(ele, time);
+        if ((*it)->is_in_time()) {
+          h1_ele_in [i_det]->Fill(ele );
+          h1_time_in[i_det]->Fill(time);
+        }
       }
     }
   }
@@ -173,6 +215,20 @@ int OnlMonV1495::FindAllMonHist()
 
 int OnlMonV1495::DrawMonitor()
 {
+  int binmax[8];
+  double x[8];
+  //Determine maximum value from projection histos to determine RF rising edges
+  for(int i = 0; i < 8; i++){
+     binmax[i] = RF_proj[i]->GetMaximumBin();
+     x[i] = RF_proj[i]->GetXaxis()->GetBinCenter(binmax[i]);
+     //Lines to show RF buckets on 2d histo
+     if(is_H1 == 1){
+       proj_line[i] = new TLine(0.5,x[i],23.5,x[i]);
+     }else{
+       proj_line[i] = new TLine(0.5,x[i],16.5,x[i]);
+     }
+  }
+
   OnlMonCanvas* can0 = GetCanvas(0);
   TPad* pad0 = can0->GetMainPad();
   pad0->Divide(2, N_DET);
@@ -193,6 +249,12 @@ int OnlMonV1495::DrawMonitor()
     TProfile* pr = h2_time_ele[i_det]->ProfileX(oss.str().c_str());
     pr->SetLineColor(kBlack);
     pr->Draw("E1same");
+    for(int i = 0; i < 8; i++){
+      proj_line[i]->SetLineStyle(2);
+      proj_line[i]->SetLineWidth(3);
+      proj_line[i]->SetLineColor(kRed);
+      proj_line[i]->Draw();
+    }
   }
   //can0->SetStatus(OnlMonCanvas::OK);
 
