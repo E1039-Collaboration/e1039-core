@@ -127,6 +127,31 @@ public:
     std::vector<double> elementPos;
 };
 
+/// User interface class about the geometry of detector planes.
+/**
+ * When you need the geometry information, such as the name and the z position of detector ID = 1,
+ * you first get the instance of this class and then call corresponding member functions;
+ * @code
+ * int det_id = 1;
+ * GeomSvc* geom = GeomSvc::instance();
+ * string det_name = geom->getDetectorName(det_id);
+ * double det_zc   = getPlaneCenterZ(det_id);
+ * @endcode
+ *
+ * Usually a version of the geometry information is selected based on run ID.
+ * Thus you need set the RUNNUMBER flag before instantiating this object, namely
+ * @code
+ * recoConsts* rc = recoConsts::instance();
+ * rc->set_IntFlag("RUNNUMBER", 1234);
+ * GeomSvc* geom = GeomSvc::instance();
+ * @endcode
+ * Or you might manually select a version via the GeomPlane flag;
+ * @code
+ * recoConsts* rc = recoConsts::instance();
+ * rc->set_CharFlag("GeomPlane", "2022111601");
+ * GeomSvc* geom = GeomSvc::instance();
+ * @endcode
+ */
 class GeomSvc
 {
 public:

@@ -171,6 +171,7 @@ void recoConsts::init(int runNo, bool verbose)
   if (runNo < 10) { // E906 data.  We will need dataset-dependent settings.
     set_DoubleFlag("FMAGSTR", -1.044);
     set_DoubleFlag("KMAGSTR", -1.025);
+    set_CharFlag  ("TRIGGER_L1", "78");
     set_DoubleFlag("RejectWinDC0" , 0.12);
     set_DoubleFlag("RejectWinDC1" , 0.25);
     set_DoubleFlag("RejectWinDC2" , 0.15);
