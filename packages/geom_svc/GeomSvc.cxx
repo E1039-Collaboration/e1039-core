@@ -419,14 +419,20 @@ void GeomSvc::initPlaneDirect() {
 void GeomSvc::initPlaneDbSvc() {
   using namespace std;
   recoConsts* rc = recoConsts::instance();
-  int run = rc->get_IntFlag("RUNNUMBER");
-  cout << "GeomSvc:  Load the plane geometry info for run = " << run << "." << endl;
-
   GeomParamPlane* geom = new GeomParamPlane();
-  geom->SetMapIDbyDB(run);
-  rc->get_CharFlag("GeomPlane", geom->GetMapID());
 
+  if (rc->FlagExist("GeomPlane") && rc->get_CharFlag("GeomPlane") != "") {
+    string map_id = rc->get_CharFlag("GeomPlane");
+    cout << "GeomSvc:  Load the plane geometry info for map_id = " << map_id << "." << endl;    
+    geom->SetMapID(map_id);
+  } else {
+    int run_id = rc->get_IntFlag("RUNNUMBER");
+    cout << "GeomSvc:  Load the plane geometry info for run_id = " << run_id << "." << endl;
+    geom->SetMapIDbyDB(run_id);
+    rc->set_CharFlag("GeomPlane", geom->GetMapID());
+  }
   geom->ReadFromDB();
+
   int dummy = 0;
   for (int ii = 0; ii < geom->GetNumPlanes(); ii++) {
     GeomParamPlane::Plane* pl = geom->GetPlane(ii);

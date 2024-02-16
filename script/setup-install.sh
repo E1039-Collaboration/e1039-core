@@ -26,7 +26,7 @@ if [ -z "$1" ] ; then
 elif [ "X$1" = 'Xauto' ] ; then
     DIR_INST=$(readlink -f $DIR_SCRIPT/../../core-inst)
 elif [ "X$1" = 'Xosg-user' ] ; then
-    DIR_INST=/e906/app/software/osg/users/$USER/e1039/core
+    DIR_INST=/exp/seaquest/app/software/osg/users/$USER/e1039/core
 else
     DIR_INST=$(readlink -m "$1")
 fi
@@ -60,7 +60,7 @@ elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o \
        ${HOSTNAME:0:13} = 'spinquestgpvm' ] ; then
     echo "Use the environment for seaquestgpvm/spinquestgpvm."
     {
-	echo 'export E1039_ROOT=/e906/app/software/osg/software/e1039'
+	echo 'export E1039_ROOT=/exp/seaquest/app/software/osg/software/e1039'
 	echo 'if [ ! -d $E1039_ROOT ] ; then '
 	echo '    E1039_ROOT=/cvmfs/seaquest.opensciencegrid.org/seaquest/software/e1039'
 	echo 'fi'
