@@ -2,8 +2,7 @@
 #define _GFFITTER_H
 
 #include <GenFit/AbsBField.h>
-#include <GenFit/AbsKalmanFitter.h>
-#include <GenFit/EventDisplay.h>
+#include <GenFit/AbsFitter.h>
 #include <TString.h>
 #include <TGeoManager.h>
 
@@ -21,19 +20,15 @@ public:
   void setVerbosity(unsigned int v);
 
   void init(GFField* field, const TString& fitter_choice = "KalmanFitterRefTrack");
-  int processTrack(GFTrack& track, bool display = false);
+  int processTrack(GFTrack& track);
 
   const TString& getFitterType() const { return _fitterTy; }
   genfit::AbsKalmanFitter* getGenFitFitter() { return _kmfitter; }
-
-  void displayEvent();
 
 private:
   TString _fitterTy;
   genfit::AbsKalmanFitter* _kmfitter;
   unsigned int _verbosity;
-
-  genfit::EventDisplay* _display;
 };
 }
 

@@ -46,7 +46,7 @@ foreach(LinkDefh ${LinkDefhs})
 endforeach(LinkDefh)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -msse2 -std=c++11 -I${GEANT4_PREFIX}/include/ -I${ROOT_PREFIX}/include/")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -msse2 -I${GEANT4_PREFIX}/include/ -I${ROOT_PREFIX}/include/")
 
 add_library(g4eval SHARED
   ${PROJECT_SOURCE_DIR}/PHG4DSTReader.cc

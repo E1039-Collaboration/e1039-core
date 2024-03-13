@@ -1,23 +1,19 @@
 #include "GFFitter.h"
 
-#include <GenFit/DAF.h>
-#include <GenFit/EventDisplay.h>
 #include <GenFit/FieldManager.h>
 #include <GenFit/FitStatus.h>
-#include <GenFit/KalmanFitter.h>
-#include <GenFit/KalmanFitterRefTrack.h>
-#include <GenFit/MaterialEffects.h>
+#include <GenFit/AbsFitter.h>
+//#include <GenFit/MaterialEffects.h>
 #include <GenFit/TGeoMaterialInterface.h>
 
 namespace SQGenFit
 {
-GFFitter::GFFitter(): _verbosity(0), _kmfitter(nullptr), _display(nullptr)
+GFFitter::GFFitter(): _verbosity(0), _kmfitter(nullptr)
 {}
 
 GFFitter::~GFFitter()
 {
   if(_kmfitter != nullptr) delete _kmfitter;
-  if(_display != nullptr) delete _display;
 }
 
 void GFFitter::setVerbosity(unsigned int v)
@@ -29,25 +25,21 @@ void GFFitter::setVerbosity(unsigned int v)
 void GFFitter::init(GFField* field, const TString& fitter_choice)
 {
   genfit::FieldManager::getInstance()->init(field);
-  genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
+//  genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
 
   _fitterTy = fitter_choice;
   if(fitter_choice == "KalmanFitterRefTrack")
-    _kmfitter = new genfit::KalmanFitterRefTrack();
+    _kmfitter = new genfit::AbsFitter();
   else if(fitter_choice == "KalmanFitter")
-    _kmfitter = new genfit::KalmanFitter();
-  else if(fitter_choice == "DafSimple")
-    _kmfitter = new genfit::DAF(false);
-  else if(fitter_choice == "DafRef")
-    _kmfitter = new genfit::DAF(true);
+    _kmfitter = new genfit::AbsFitter();
   else
-    _kmfitter = new genfit::KalmanFitter();
+    _kmfitter = new genfit::AbsFitter();
 
   _kmfitter->setMaxIterations(10);
   _kmfitter->setDebugLvl(_verbosity);
 }
 
-int GFFitter::processTrack(GFTrack& track, bool display)
+int GFFitter::processTrack(GFTrack& track)
 {
   //check before fit
   try
@@ -90,18 +82,7 @@ int GFFitter::processTrack(GFTrack& track, bool display)
     return -4;
   }
 
-  if(display)
-  {
-    if(_display == nullptr) _display = genfit::EventDisplay::getInstance();
-    _display->addEvent(gftrack);
-  }
-
   return 0;
-}
-
-void GFFitter::displayEvent()
-{
-  if(_display != nullptr) _display->open();
 }
 
 }
