@@ -7,7 +7,7 @@
 #include <TMatrixDSym.h>
 #include <TVector3.h>
 
-#include <GenFit/AbsFitterInfo.h>
+#include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/MeasuredStateOnPlane.h>
 #include <GenFit/MeasurementOnPlane.h>
 #include <GenFit/TrackPoint.h>

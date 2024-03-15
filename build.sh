@@ -85,16 +85,16 @@ else # 'all' or 'resume'
     packages/dptrigger
     #packages/db2g4
     packages/reco/interface
-    #packages/reco/SQGenFit
-    #packages/reco/kfitter
-    #packages/reco/ktracker
-    #packages/kTThreads
-    #packages/embedding
+    packages/reco/SQGenFit
+    packages/reco/kfitter
+    packages/reco/ktracker
+    packages/kTThreads
+    packages/embedding
     simulation/g4dst
-    #online/onlmonserver
+    online/onlmonserver
     packages/Display/display
-    #packages/Display/modules
-    #packages/Display/interface
+    packages/Display/modules
+    packages/Display/interface
     _macro_
 	)
   if [ $mode = 'resume' ] ; then

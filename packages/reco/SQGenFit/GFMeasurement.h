@@ -1,7 +1,7 @@
 #ifndef _GFMEASUREMENT_H
 #define _GFMEASUREMENT_H
 
-#include <GenFit/AbsMeasurement.h>
+#include <GenFit/WireMeasurement.h>
 
 #include "FastTracklet.h"
 
@@ -10,7 +10,7 @@ namespace SQGenFit
 
 class GFTrack;
 
-class GFMeasurement: public genfit::AbsMeasurement
+class GFMeasurement: public genfit::WireMeasurement
 {
 public:
   GFMeasurement(const SignedHit& rawHit, bool en = true);

@@ -60,7 +60,7 @@ include_directories("${PROJECT_SOURCE_DIR}/../SQGenFit")
 file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cxx)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/*.h)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++17")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(ktracker SHARED ${sources} ${dicts})
 target_link_libraries(ktracker -lktracker_interface -lkfitter -lgenfit2 -lsqgenfit -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc -lphg4hit ${ROOT_LINK})

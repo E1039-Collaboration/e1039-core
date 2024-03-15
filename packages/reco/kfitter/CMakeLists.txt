@@ -35,7 +35,7 @@ execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUT
 string(REGEX REPLACE "-W[a-z-]*" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 string(REPLACE "-pedantic" "" GEANT4_CFLAGS ${GEANT4_CFLAGS})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++17")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lphool")
 add_library(kfitter SHARED ${sources} ${dicts})
 target_link_libraries(kfitter -lktracker_interface -lgenfit2 -lsqgenfit -lphfield -lphgeom -linterface_main -lfun4all -lgeom_svc -lphg4hit ${ROOT_LINK})

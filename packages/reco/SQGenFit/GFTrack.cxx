@@ -8,9 +8,11 @@
 
 #include <GenFit/MeasuredStateOnPlane.h>
 #include <GenFit/MeasurementOnPlane.h>
-#include <GenFit/AbsMeasurement.h>
-#include <GenFit/AbsTrackRep.h>
+#include <GenFit/WireMeasurement.h>
+#include <GenFit/PlanarMeasurement.h>
+#include <GenFit/RKTrackRep.h>
 #include <GenFit/AbsFitterInfo.h>
+#include <GenFit/KalmanFitterInfo.h>
 #include <GenFit/StateOnPlane.h>
 
 #include <phool/recoConsts.h>
@@ -62,7 +64,7 @@ GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _vir
 GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
 {
   _pdg = recTrack.getCharge() > 0 ? -13 : 13;
-  _trkrep = new genfit::AbsTrackRep(_pdg);
+  _trkrep = new genfit::RKTrackRep(_pdg);
     
   TVector3 seed_mom = recTrack.getMomentumVecSt1();
   TVector3 seed_pos = recTrack.getPositionVecSt1();
@@ -212,7 +214,7 @@ double GFTrack::extrapolateToPlane(TVector3& pO, TVector3& pU, TVector3& pV, con
   TMatrixDSym tempcov(2);
   tempcov.UnitMatrix();
 
-  genfit::AbsMeasurement* pMeas = new genfit::AbsMeasurement(hitcoord, tempcov, 998, 998, nullptr);
+  genfit::PlanarMeasurement* pMeas = new genfit::PlanarMeasurement(hitcoord, tempcov, 998, 998, nullptr);
   pMeas->setPlane(destPlane);
   _virtMeas.reset(pMeas);
 
@@ -334,7 +336,7 @@ void GFTrack::setTracklet(Tracklet& tracklet, double z_reference, bool wildseedc
 {
   _trkcand = &tracklet;
   _pdg = tracklet.getCharge() > 0 ? -13 : 13;
-  _trkrep = new genfit::AbsTrackRep(_pdg);
+  _trkrep = new genfit::RKTrackRep(_pdg);
 
   TVectorD seed_state(6);
     
