@@ -32,11 +32,9 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   string fn_out = oss.str();
   gSystem->mkdir(UtilOnline::GetDstFileDir().c_str(), true);
 
-  recoConsts* rc = recoConsts::instance();
-  rc->set_IntFlag("RUNNUMBER", run);
-
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
+  se->setRun(run); // This sets the `RUNNUMBER` flag.
   se->SetOnline(is_online);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");

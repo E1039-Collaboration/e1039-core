@@ -129,7 +129,7 @@ bool OnlMonServer::CloseExistingServer(const int port)
   TSocket sock(m_mon_host.c_str(), port);
   if (sock.IsValid()) {
     cout << "  Close the existing onlmon server at " << port << "." << endl;
-    sock.Send("Suicide");
+    sock.Send(("Suicide:"+to_string(runnumber)).c_str());
     //TMessage *mess = 0;
     //sock.Recv(mess); // Just check a response.
     //delete mess;
@@ -236,10 +236,15 @@ void OnlMonServer::HandleConnection(TSocket* sock)
       
       if (msg_str == "Finished") {
         break;
-      } else if (msg_str == "Suicide") {
-        cout << "OnlMonServer::HandleConnection():  Suicide." << endl;
-        sock->Send("OK");
-        m_go_end = true;
+      } else if (msg_str.substr(0, 8) == "Suicide:") {
+        int run_id = stoi(msg_str.substr(8));
+        cout << "OnlMonServer::HandleConnection():  Suicide " << run_id << "." << endl;
+        if (runnumber < run_id) {
+          sock->Send("OK");
+          m_go_end = true;
+        } else {
+          sock->Send("NG");
+        }
         break;
       } else if (msg_str == "Ping") {
         if (Verbosity() > 2) cout << "  Ping." << endl;
