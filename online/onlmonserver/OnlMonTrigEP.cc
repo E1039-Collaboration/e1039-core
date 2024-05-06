@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <TSystem.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TProfile.h>
@@ -50,26 +51,27 @@ OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const cha
   rs_bot_1_ = rs_bot_1;
 
   //Path to folder containing all of the roadset .txt files
-  rs_path = "/seaquest/users/hazeltet/E1039_ana/e1039-core/online/onlmonserver/rs/";
-  
+  string rs_path = gSystem->Getenv("E1039_RESOURCE");
+  rs_path += "/trigger/rs/";
+
   char result[150];  
 
 
   //calling rs_Reader class for each road set file
   if(is_rs_t[0]){
-    strcpy(result,rs_path);
+    strcpy(result,rs_path.c_str());
     rs_top[0] = new rs_Reader(strcat(result,rs_top_0_));
   }
   if(is_rs_t[1]){
-    strcpy(result,rs_path);
+    strcpy(result,rs_path.c_str());
     rs_top[1] = new rs_Reader(strcat(result,rs_top_1_));
   }
   if(is_rs_b[0]){
-    strcpy(result,rs_path);
+    strcpy(result,rs_path.c_str());
     rs_bot[0] = new rs_Reader(strcat(result,rs_bot_0_));
   }
   if(is_rs_b[1]){
-    strcpy(result,rs_path);
+    strcpy(result,rs_path.c_str());
     rs_bot[1] = new rs_Reader(strcat(result,rs_bot_1_));
   }
 }

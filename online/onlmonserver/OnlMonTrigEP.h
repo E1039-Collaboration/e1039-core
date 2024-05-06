@@ -12,7 +12,6 @@ class OnlMonTrigEP: public OnlMonClient {
   static const int N_DET = 8;
 
  private:
-  const char* rs_path;
   const char* rs_top_0_;
   const char* rs_top_1_;
   const char* rs_bot_0_;
