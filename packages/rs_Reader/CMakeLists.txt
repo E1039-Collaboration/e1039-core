@@ -31,8 +31,8 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${ROOT_CFLAGS}")
 
 add_library(rs_Reader SHARED ${sources} rs_Reader_Dict.cc)
-include_directories("${PROJECT_SOURCE_DIR}/../../simulation")
-target_link_libraries(rs_Reader -linterface_main -lgeom_svc)
+#include_directories("${PROJECT_SOURCE_DIR}/../../simulation")
+#target_link_libraries(rs_Reader -linterface_main -lgeom_svc)
 
 install(TARGETS rs_Reader DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)

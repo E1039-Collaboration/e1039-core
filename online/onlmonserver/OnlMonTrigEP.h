@@ -6,16 +6,18 @@
 #include <interface_main/SQHitVector.h>
 #include "OnlMonClient.h"
 
+/// OnlMonClient to estimate the efficiency and the purity of FPGA trigger.
 class OnlMonTrigEP: public OnlMonClient {
  public:
   typedef enum { H1X, H2X, H3X, H4X, H1Y, H2Y, H4Y1, H4Y2 } HodoType_t;
   static const int N_DET = 8;
 
  private:
-  const char* rs_top_0_;
-  const char* rs_top_1_;
-  const char* rs_bot_0_;
-  const char* rs_bot_1_;
+  std::string rs_top_0_;
+  std::string rs_top_1_;
+  std::string rs_bot_0_;
+  std::string rs_bot_1_;
+  std::string rs_path_; ///< Path to folder containing all of the roadset .txt files
 
   bool is_rs_t[2];
   bool is_rs_b[2];
@@ -53,7 +55,7 @@ class OnlMonTrigEP: public OnlMonClient {
   vector<SQHit*>* vecH4B;
  
  public:
-  OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1); 
+  OnlMonTrigEP(const std::string rs_top_0, const std::string rs_top_1, const std::string rs_bot_0, const std::string rs_bot_1, const std::string rs_path="");
   virtual ~OnlMonTrigEP() {}
   OnlMonClient* Clone() { return new OnlMonTrigEP(*this); }
 

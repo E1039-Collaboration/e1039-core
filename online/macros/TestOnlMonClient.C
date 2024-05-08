@@ -19,9 +19,9 @@ int TestOnlMonClient(const int run_id=3620, const int spill_id=0, const int n_ev
   ///
   //se->registerSubsystem(new OnlMonMainDaq());
   //se->registerSubsystem(new OnlMonTrigSig());
+  //se->registerSubsystem(new OnlMonTrigNim());
   se->registerSubsystem(new OnlMonTrigV1495("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
   se->registerSubsystem(new OnlMonTrigEP   ("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
-  //se->registerSubsystem(new OnlMonTrigNim());
   //se->registerSubsystem(new OnlMonQie());
   //se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
   //se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));

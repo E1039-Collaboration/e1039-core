@@ -8,24 +8,10 @@
 #include "rs_Reader.h"
 using namespace std;
 
-rs_Reader::rs_Reader(const char* file_name) 
+rs_Reader::rs_Reader(const std::string file_name_in) 
+  : file_name(file_name_in)
 { 
-
-  //READ IN FILE NAME
-    if (file_name  == nullptr) {
-        str = new char[1];
-        str[0] = '\0';
-    }
- 
-    else {
- 
-        str = new char[strlen(file_name) + 1];
-        //Copy character of val[]
-        // using strcpy
-        strcpy(str, file_name);
-        str[strlen(file_name)] = '\0';
-        cout << "Opening File with RS: "<< str << endl;
-    }
+  //cout << "Opening File with RS: "<< file_name << endl;
 
    //READ IN DATA FROM RS
    ifstream infile_rs; 
@@ -63,5 +49,3 @@ rs_Reader::rs_Reader(const char* file_name)
 */
    infile_rs.close();   
 }
-
-

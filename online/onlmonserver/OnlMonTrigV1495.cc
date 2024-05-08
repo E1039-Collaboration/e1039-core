@@ -21,48 +21,34 @@
 using namespace std;
 
 //Arguments = name of road set .txt files
-OnlMonTrigV1495::OnlMonTrigV1495(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1)
+OnlMonTrigV1495::OnlMonTrigV1495(const std::string rs_top_0, const std::string rs_top_1, const std::string rs_bot_0, const std::string rs_bot_1, const std::string rs_path)
+  : rs_top_0_(rs_top_0)
+  , rs_top_1_(rs_top_1)
+  , rs_bot_0_(rs_bot_0)
+  , rs_bot_1_(rs_bot_1)
+  , rs_path_ (rs_path)
+  , top   (0) // should be const?
+  , bottom(1) // should be const?
 {
   NumCanvases(4);
   Name("OnlMonTrigV1495" ); 
   Title("V1495 Trigger Analysis" );
 
-  top = 0; 
-  bottom = 1;
-
-  is_rs_t[0] = (strcmp(rs_top_0,"") == 0) ? false : true;
-  is_rs_t[1] = (strcmp(rs_top_1,"") == 0) ? false : true;
-  is_rs_b[0] = (strcmp(rs_bot_0,"") == 0) ? false : true;
-  is_rs_b[1] = (strcmp(rs_bot_1,"") == 0) ? false : true;
+  is_rs_t[0] = rs_top_0 != "";
+  is_rs_t[1] = rs_top_1 != "";
+  is_rs_b[0] = rs_bot_0 != "";
+  is_rs_b[1] = rs_bot_1 != "";
  
-  rs_top_0_ = rs_top_0;
-  rs_top_1_ = rs_top_1;
-  rs_bot_0_ = rs_bot_0;
-  rs_bot_1_ = rs_bot_1;
-
-  //Path to folder containing all of the roadset .txt files
-  string rs_path = gSystem->Getenv("E1039_RESOURCE");
-  rs_path += "/trigger/rs/";
+  if (rs_path_ == "") {
+    rs_path_ = gSystem->Getenv("E1039_RESOURCE");
+    rs_path_ += "/trigger/rs";
+  }
   
-  char result[150];  
-
   //calling rs_Reader class for each road set file
-  if(is_rs_t[0]){
-    strcpy(result,rs_path.c_str());
-    rs_top[0] = new rs_Reader(strcat(result,rs_top_0_));
-  }
-  if(is_rs_t[1]){
-    strcpy(result,rs_path.c_str());
-    rs_top[1] = new rs_Reader(strcat(result,rs_top_1_));
-  }
-  if(is_rs_b[0]){
-    strcpy(result,rs_path.c_str());
-    rs_bot[0] = new rs_Reader(strcat(result,rs_bot_0_));
-  }
-  if(is_rs_b[1]){
-    strcpy(result,rs_path.c_str());
-    rs_bot[1] = new rs_Reader(strcat(result,rs_bot_1_));
-  }
+  if(is_rs_t[0]) rs_top[0] = new rs_Reader( rs_path_+"/"+rs_top_0_ );
+  if(is_rs_t[1]) rs_top[1] = new rs_Reader( rs_path_+"/"+rs_top_1_ );
+  if(is_rs_b[0]) rs_bot[0] = new rs_Reader( rs_path_+"/"+rs_bot_0_ );
+  if(is_rs_b[1]) rs_bot[1] = new rs_Reader( rs_path_+"/"+rs_bot_1_ );
 }
 
 int OnlMonTrigV1495::InitOnlMon(PHCompositeNode* topNode)

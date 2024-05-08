@@ -12,10 +12,11 @@ class OnlMonTrigV1495: public OnlMonClient {
   static const int N_DET = 8;
 
  private:
-  const char* rs_top_0_;
-  const char* rs_top_1_;
-  const char* rs_bot_0_;
-  const char* rs_bot_1_;
+  std::string rs_top_0_;
+  std::string rs_top_1_;
+  std::string rs_bot_0_;
+  std::string rs_bot_1_;
+  std::string rs_path_; ///< Path to folder containing all of the roadset .txt files
 
   bool is_rs_t[2];
   bool is_rs_b[2];
@@ -53,7 +54,7 @@ class OnlMonTrigV1495: public OnlMonClient {
   vector<SQHit*>* vecH4B;
  
  public:
-  OnlMonTrigV1495(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1); 
+  OnlMonTrigV1495(const std::string rs_top_0, const std::string rs_top_1, const std::string rs_bot_0, const std::string rs_bot_1, const std::string rs_path=""); 
   virtual ~OnlMonTrigV1495() {}
   OnlMonClient* Clone() { return new OnlMonTrigV1495(*this); }
 

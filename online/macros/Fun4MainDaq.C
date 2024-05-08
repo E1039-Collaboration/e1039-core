@@ -56,6 +56,8 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonTrigNim());
+    se->registerSubsystem(new OnlMonTrigV1495("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
+    se->registerSubsystem(new OnlMonTrigEP   ("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
     se->registerSubsystem(new OnlMonQie());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
