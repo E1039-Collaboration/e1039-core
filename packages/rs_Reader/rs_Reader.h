@@ -20,17 +20,14 @@ public:
 };
 
 class rs_Reader {
-//variables
- public:
-  char* str;
-
  public:  
+  std::string file_name;
   int N_ROADS;
   int pol;
   std::vector<rs> roads;
  
 //functions
-  rs_Reader(const char* file_name); 
+  rs_Reader(const std::string file_name); 
 
 };
 

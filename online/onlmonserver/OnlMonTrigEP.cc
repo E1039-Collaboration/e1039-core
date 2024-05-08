@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <TSystem.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TProfile.h>
@@ -20,14 +21,18 @@
 using namespace std;
 
 //Arguments = name of road set .txt files
-OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const char* rs_bot_0, const char* rs_bot_1)
+OnlMonTrigEP::OnlMonTrigEP(const std::string rs_top_0, const std::string rs_top_1, const std::string rs_bot_0, const std::string rs_bot_1, const std::string rs_path)
+  : rs_top_0_(rs_top_0)
+  , rs_top_1_(rs_top_1)
+  , rs_bot_0_(rs_bot_0)
+  , rs_bot_1_(rs_bot_1)
+  , rs_path_ (rs_path)
+  , top   (0) // should be const?
+  , bottom(1) // should be const?
 {
   NumCanvases(1);
   Name("OnlMonTrigEP" ); 
   Title("FPGA1 Purity & Efficiency" );
-
-  top = 0; 
-  bottom = 1;
 
   rs_top_check_p[0] = 0;
   rs_top_check_p[1] = 0;
@@ -39,39 +44,21 @@ OnlMonTrigEP::OnlMonTrigEP(const char* rs_top_0, const char* rs_top_1, const cha
   rs_bot_check_e[0] = 0;
   rs_bot_check_e[1] = 0;
 
-  is_rs_t[0] = (strcmp(rs_top_0,"") == 0) ? false : true;
-  is_rs_t[1] = (strcmp(rs_top_1,"") == 0) ? false : true;
-  is_rs_b[0] = (strcmp(rs_bot_0,"") == 0) ? false : true;
-  is_rs_b[1] = (strcmp(rs_bot_1,"") == 0) ? false : true;
- 
-  rs_top_0_ = rs_top_0;
-  rs_top_1_ = rs_top_1;
-  rs_bot_0_ = rs_bot_0;
-  rs_bot_1_ = rs_bot_1;
+  is_rs_t[0] = rs_top_0 != "";
+  is_rs_t[1] = rs_top_1 != "";
+  is_rs_b[0] = rs_bot_0 != "";
+  is_rs_b[1] = rs_bot_1 != "";
 
-  //Path to folder containing all of the roadset .txt files
-  rs_path = "/seaquest/users/hazeltet/E1039_ana/e1039-core/online/onlmonserver/rs/";
-  
-  char result[150];  
-
+  if (rs_path_ == "") {
+    rs_path_ = gSystem->Getenv("E1039_RESOURCE");
+    rs_path_ += "/trigger/rs";
+  }
 
   //calling rs_Reader class for each road set file
-  if(is_rs_t[0]){
-    strcpy(result,rs_path);
-    rs_top[0] = new rs_Reader(strcat(result,rs_top_0_));
-  }
-  if(is_rs_t[1]){
-    strcpy(result,rs_path);
-    rs_top[1] = new rs_Reader(strcat(result,rs_top_1_));
-  }
-  if(is_rs_b[0]){
-    strcpy(result,rs_path);
-    rs_bot[0] = new rs_Reader(strcat(result,rs_bot_0_));
-  }
-  if(is_rs_b[1]){
-    strcpy(result,rs_path);
-    rs_bot[1] = new rs_Reader(strcat(result,rs_bot_1_));
-  }
+  if(is_rs_t[0]) rs_top[0] = new rs_Reader( rs_path_+"/"+rs_top_0_ );
+  if(is_rs_t[1]) rs_top[1] = new rs_Reader( rs_path_+"/"+rs_top_1_ );
+  if(is_rs_b[0]) rs_bot[0] = new rs_Reader( rs_path_+"/"+rs_bot_0_ );
+  if(is_rs_b[1]) rs_bot[1] = new rs_Reader( rs_path_+"/"+rs_bot_1_ );
 }
 
 int OnlMonTrigEP::InitOnlMon(PHCompositeNode* topNode)

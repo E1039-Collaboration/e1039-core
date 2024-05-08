@@ -17,6 +17,8 @@ int OnlMon4MainDaq()
   list_omc.push_back(new OnlMonMainDaq());
   list_omc.push_back(new OnlMonTrigSig());
   list_omc.push_back(new OnlMonTrigNim());
+  list_omc.push_back(new OnlMonTrigV1495("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
+  list_omc.push_back(new OnlMonTrigEP   ("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
   list_omc.push_back(new OnlMonQie());
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H1X, 1));
   list_omc.push_back(new OnlMonV1495(OnlMonV1495::H2X, 1));
