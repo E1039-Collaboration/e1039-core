@@ -10,6 +10,7 @@ class SRawEvent;
 class SQEvent;
 class SQSpillMap;
 class SQHitVector;
+class DbSvc;
 
 class Fun4AllSRawEventOutputManager: public Fun4AllOutputManager
 {
@@ -34,12 +35,17 @@ class Fun4AllSRawEventOutputManager: public Fun4AllOutputManager
   SQHitVector* m_hit_vec;
   SQHitVector* m_trig_hit_vec;
 
+  DbSvc* m_db;
+  std::string m_name_schema;
+  std::string m_name_table;
+
  public:
   Fun4AllSRawEventOutputManager(const std::string &dir_base, const std::string &myname = "SRAWEVENTOUT");
   virtual ~Fun4AllSRawEventOutputManager();
 
   void SetTreeName  (const std::string name) { m_tree_name   = name; }
   void SetBranchName(const std::string name) { m_branch_name = name; }
+  void EnableDB(const std::string name_schema="user_e1039_maindaq", const std::string name_table="sraw_file_status", const bool refresh_db=false);
 
   virtual int Write(PHCompositeNode *startNode);
 

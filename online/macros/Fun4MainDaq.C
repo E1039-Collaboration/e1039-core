@@ -40,6 +40,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(3);
   in->SetOnline(is_online);
+  //in->UseLocalSpillID(true); // default = false
   //if (is_online) in->PretendSpillInterval(20);
   in->fileopen(fn_in);
   se->registerInputManager(in);
@@ -117,6 +118,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   if (is_online) {
     Fun4AllSRawEventOutputManager *om_sraw = new Fun4AllSRawEventOutputManager("/data2/e1039/online");
     om_sraw->Verbosity(10);
+    om_sraw->EnableDB();
     se->registerOutputManager(om_sraw);
   }
 

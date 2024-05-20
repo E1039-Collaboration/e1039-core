@@ -34,6 +34,7 @@ MainDaqParser::MainDaqParser()
   , m_timer_sp_input (new PHTimer2("timer_sp_input"))
   , m_timer_sp_decode(new PHTimer2("timer_sp_decode"))
   , m_timer_sp_map   (new PHTimer2("timer_sp_map"))
+  , m_use_local_spill_id(false)
 {
   coda = new CodaInputManager();
   list_sd = new SpillDataMap();
@@ -596,11 +597,10 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
       return 1;
     }
 
-    /// Temporary adjustment (modified on 2020-01-15).
-    /// Since spill ID is not always available in the cosmic-ray commissioning,
-    /// a temporary ID is given here.
+    /// Use a temporary spill ID if requested.
+    /// Useful in the cosmic-ray commissioning since spill ID is not always available.
     static int spillID_local = 0;
-    dec_par.spillID_cntr = ++spillID_local;
+    if (m_use_local_spill_id) dec_par.spillID_cntr = ++spillID_local;
 
     /// Regard the Slow Control info as primary (rather than Spill Counter)
     dec_par.spillID     = dec_par.spillID_cntr;
