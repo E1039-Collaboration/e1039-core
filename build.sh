@@ -90,6 +90,7 @@ else # 'all' or 'resume'
     packages/reco/ktracker
     packages/kTThreads
     packages/embedding
+    packages/rs_Reader
     simulation/g4dst
     online/onlmonserver
     packages/Display/display

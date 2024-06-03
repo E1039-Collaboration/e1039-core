@@ -107,6 +107,9 @@ class Fun4AllServer : public Fun4AllBase
   void ReadSpillTimer(double& time_subsys, double& time_output);
   void ResetSpillTimer();
 
+  int getRun() const { return runnumber; }
+  int setRun(const int runno);
+
  protected:
   Fun4AllServer(const std::string &name = "Fun4AllServer");
   int InitNodeTree(PHCompositeNode *topNode);
@@ -114,7 +117,6 @@ class Fun4AllServer : public Fun4AllBase
   int CountOutNodesRecursive(PHCompositeNode *startNode, const int icount);
   int UpdateEventSelector(Fun4AllOutputManager *manager);
   int unregisterSubsystemsNow();
-  int setRun(const int runnumber);
   static Fun4AllServer *__instance;
   int OutNodeCount;
   int bortime_override;

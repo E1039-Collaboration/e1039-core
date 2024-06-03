@@ -1636,20 +1636,24 @@ Fun4AllServer::getSyncManager(const string &name)
   return 0;
 }
 
+/**
+ * This function sets `RUNNUMBER` via recoConsts.
+ */
 int Fun4AllServer::setRun(const int runno)
 {
+  runnumber = runno;
   recoConsts *rc = recoConsts::instance();
   rc->set_IntFlag("RUNNUMBER", runno);
-  PHTimeStamp *tstamp = nullptr;
-  if (!tstamp)
-  {
-    tstamp = new PHTimeStamp(0);
-    cout << "Fun4AllServer::setRun(): could not get timestamp for run  " << runno
-         << ", using tics(0) timestamp: ";
-    tstamp->print();
-    cout << endl;
-  }
-  delete tstamp;
+  //PHTimeStamp *tstamp = nullptr;
+  //if (!tstamp)
+  //{
+  //  tstamp = new PHTimeStamp(0);
+  //  cout << "Fun4AllServer::setRun(): could not get timestamp for run  " << runno
+  //       << ", using tics(0) timestamp: ";
+  //  tstamp->print();
+  //  cout << endl;
+  //}
+  //delete tstamp;
   FrameWorkVars->SetBinContent(RUNNUMBERBIN, (Stat_t) runno);
   return 0;
 }
