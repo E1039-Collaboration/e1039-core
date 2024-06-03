@@ -38,7 +38,7 @@ struct DecoParam {
   short targPos_slow; // from slow-control event
 
   unsigned int event_count; ///< current event count
-  unsigned int codaID; ///< current Coda event ID
+  int codaID; ///< current Coda event ID
   short spillType; ///< current spill type
   short rocID; ///< current ROC ID
   int eventIDstd; ///< current event ID of standard physics events
