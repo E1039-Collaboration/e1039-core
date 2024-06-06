@@ -137,7 +137,7 @@ int MainDaqParser::ParseOneSpill()
     m_timer_sp_decode->restart();
 
     int evt_type_id = event_words[1];
-    if (dec_par.verb>3) cout << "NextCodaEvent(): " << dec_par.event_count << " 0x" << hex <<  evt_type_id << dec << endl;
+    if (dec_par.verb > 3) cout << "NextCodaEvent(): " << dec_par.event_count << " 0x" << hex <<  evt_type_id << dec << endl;
     
     // The last 4 hex digits will be 0x01cc for Prestart, Go Event,
     //		and End Event, and 0x10cc for Physics Events
@@ -385,6 +385,8 @@ int MainDaqParser::ProcessCodaPhysics(int* words)
     if (! dec_par.has_1st_bos) break;
     run_data.n_flush_evt++;
     m_timers["process_phys_flush"]->restart();
+    if (dec_par.verb > 10) PrintCodaEventSummary(words);
+    if (dec_par.verb > 20) PrintWords(words, 0, words[0]);
     ret = ProcessPhysStdAndFlush(words, FLUSH_EVENTS);
     m_timers["process_phys_flush"]->stop();
     if (dec_err.GetFlushError()) run_data.n_flush_evt_bad++;
@@ -491,7 +493,7 @@ int MainDaqParser::ProcessPhysPrestart(int* words)
  */
 int MainDaqParser::ProcessPhysSlow(int* words)
 {
-  if (dec_par.verb) cout << "Slow Cont @ coda " << dec_par.event_count << " " << dec_par.codaID << ": ";
+  if (dec_par.verb) cout << "Slow Cont @ coda " << dec_par.event_count << ": ";
   int evLength = words[0];
   dec_par.targPos_slow = 0;
   
@@ -573,7 +575,7 @@ int MainDaqParser::ProcessPhysSpillCounter(int* words)
   /// Replace spillID with spillID_cntr at BOS.
   dec_par.spillID_cntr = atoi(spillNum);
   if (dec_par.verb) {
-    cout << "Spill Counter @ coda = " << dec_par.event_count << " " << dec_par.codaID << ":  spill = " << dec_par.spillID_cntr << endl;
+    cout << "Spill Counter @ coda = " << dec_par.event_count << ":  spill = " << dec_par.spillID_cntr << endl;
   }
   run_data.n_spill++;
   return 0;
@@ -614,7 +616,7 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
   }
 
   if (dec_par.verb) {
-    cout << spill_type_str << " @ coda " << dec_par.event_count << " " << dec_par.codaID << ": spill " << dec_par.spillID << "." << endl;
+    cout << spill_type_str << " @ coda " << dec_par.event_count << ": spill " << dec_par.spillID << "." << endl;
   }
   dec_par.spillType = spill_type;
 
@@ -636,15 +638,15 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
     if (rocID == 2) {
       SpillData* data = &(*list_sd)[dec_par.spillID];
       if (spill_type == TYPE_BOS) {
-	data->bos_coda_id  = dec_par.codaID;
+	data->bos_coda_id  = dec_par.event_count;
 	data->bos_vme_time = codaEvVmeTime;
 	data->n_bos_spill++;
       } else {
-	data->eos_coda_id  = dec_par.codaID;
+	data->eos_coda_id  = dec_par.event_count;
 	data->eos_vme_time = codaEvVmeTime;
 	data->n_eos_spill++;
       }
-      if (dec_par.verb > 2) cout << "  " << spill_type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.event_count << " " << dec_par.codaID << " " << (short)dec_par.targPos << " " << codaEvVmeTime << endl;
+      if (dec_par.verb > 2) cout << "  " << spill_type_str << " spill: " << dec_par.spillID << " " << dec_par.runID << " " << dec_par.event_count << " " << (short)dec_par.targPos << " " << codaEvVmeTime << endl;
     }
     /// Skip ROC 25 in END_SPILL since unknown words are placed for debug by Xinkun(?).
     if (spill_type != TYPE_BOS && rocID == 25) idx = idx_roc_end + 1;
@@ -706,7 +708,7 @@ int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
     if (idx_roc_end > evLength + 1) {
       dec_err.SetFlushError(true);
       cerr << "ERROR: ROC Event Length exceeds event length\n"
-	   << "  Event: " << dec_par.event_count << " " << dec_par.codaID << ", EventLength = " << evLength 
+	   << "  Event: " << dec_par.event_count << ", EventLength = " << evLength 
 	   << ", position = " << idx << ", rocEvLength = " << words[idx] << endl;
       ret = -1;
       break;
@@ -749,15 +751,15 @@ int MainDaqParser::ProcessPhysStdAndFlush(int* words, const int event_type)
       if (print_event) cout << hex << " " << (e906flag&0xFFFF) << "@" << board_id << dec << "(" << n_wd_bd << ")";
       idx = ProcessBoardData(words, idx, idx_roc_end, e906flag, event_type);
       if (idx == IDX_SKIP_EVENT) {
-        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_EVENT @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.event_count << " " << dec_par.codaID << endl;
+        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_EVENT @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.event_count << endl;
         return 0;
       } else if (idx == IDX_SKIP_ROC) {
-        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_ROC @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.event_count << " " << dec_par.codaID << endl;
+        if (dec_par.verb > 1) cout << "ERROR: ProcessBoardData() returned IDX_SKIP_ROC @ 0x" << hex << e906flag << dec << ", board " << board_id << ",roc " << rocID << ", coda " << dec_par.event_count << endl;
         idx = idx_roc_end;
       }
     }
     if (idx != idx_roc_end) {
-      cout << "ERROR: idx(" << idx << ") != idx_roc_end(" << idx_roc_end << ") @ roc " << rocID << ", coda " << dec_par.event_count << " " << dec_par.codaID << endl;
+      cout << "ERROR: idx(" << idx << ") != idx_roc_end(" << idx_roc_end << ") @ roc " << rocID << ", coda " << dec_par.event_count << endl;
       return 0;
     }
   }
@@ -800,7 +802,7 @@ int MainDaqParser::ProcessBoardData (int* words, int idx, int idx_roc_end, int e
   } else if (e906flag == (int)0xE906F010) { idx = ProcessBoardStdJyTDC2    (words, idx, idx_roc_end);
   } else if (e906flag == (int)0xe906f013) { idx = ProcessBoardStdFeeQIE    (words, idx);
   } else {
-    cerr << "ERROR: Unknown board flag (0x" << hex << e906flag << dec << ") at coda " << dec_par.event_count << " " << dec_par.codaID << ", roc " << (int)dec_par.rocID << ", idx " << idx << endl;
+    cerr << "ERROR: Unknown board flag (0x" << hex << e906flag << dec << ") at coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ", idx " << idx << endl;
     PrintWords(words, idx-10, idx+40);
     return IDX_SKIP_ROC; // Temporary solution.  Skip all boards and move to the next ROC.
     Abort("Unexpected board type.");
@@ -821,7 +823,7 @@ int MainDaqParser::ProcessBoardScaler (int* words, int idx)
 
       ScalerData data;
       data.type  = dec_par.spillType;
-      data.coda  = dec_par.codaID;
+      data.coda  = dec_par.event_count;
       data.roc   = dec_par.rocID;
       data.board = boardID;
       data.chan  = ii;
@@ -945,7 +947,7 @@ int MainDaqParser::ProcessBoardFeeQIE (int* words, int idx)
     if      (n_wd_evt == 44) idx_evt += 5; // skip the spill header
     else if (n_wd_evt != 39) {
       /// Known issue.  See memo.txt.
-      //cerr << "!! QIE: Unexpected N of words: " << dec_par.event_count << " " << dec_par.codaID << " " << i_evt << " " << n_wd_evt << " (" << n_wd << ")." << endl;
+      //cerr << "!! QIE: Unexpected N of words: " << dec_par.event_count << " " << i_evt << " " << n_wd_evt << " (" << n_wd << ")." << endl;
       return idx_end;
     }
     
@@ -981,7 +983,7 @@ int MainDaqParser::ProcessBoardFeeQIE (int* words, int idx)
     ed->n_qie++;
     EventInfo* evt = &ed->event;
     //if (ed->n_qie == 2) {
-    //  cout << "QIE#1 " << dec_par.event_count << " " << dec_par.codaID << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
+    //  cout << "QIE#1 " << dec_par.event_count << " " << i_evt << " " << evt->eventID << " " << evt->spillID << " "
     //       << evt->triggerCount << " " << evt->turnOnset << " " << evt->rfOnset << endl;
     //}
     SetEventInfo(evt, eventID);
@@ -1020,7 +1022,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
     int n_wd_fpga = words[idx++]; // N of words taken from FPGA buffer.
     if (n_wd_fpga == 0) return idx; // No event data.  Just finish.
     if (words[idx] == (int)0xe9060bad) {
-      dec_err.AddTdcError(dec_par.codaID, dec_par.rocID, DecoError::V1495_0BAD);
+      dec_err.AddTdcError(dec_par.event_count, dec_par.rocID, DecoError::V1495_0BAD);
       return idx+1;
     }
     int idx_end = idx + n_wd_fpga; // Exclusive endpoint.  To be incremented in the while loop.
@@ -1037,7 +1039,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	/// is temporarily fixed to "0" as of 2017-Jan-11.  Thus not checked for now.
 	int evt_id_fpga = (words[idx+3]<<15) + words[idx+4];
 	if (evt_id != evt_id_fpga) {
-	  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA at event " << dec_par.event_count << " " << dec_par.codaID << ":" << i_evt << " board 0x" << hex << boardID << dec << endl;
+	  cerr << "!! EventID mismatch @ v1495: " << evt_id << "@CPU vs " << evt_id_fpga << "@FPGA at event " << dec_par.event_count << ":" << i_evt << " board 0x" << hex << boardID << dec << endl;
 	}
 	
 	EventData* ed = &(*list_ed)[evt_id];
@@ -1053,7 +1055,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
 	  run_data.n_v1495_d3ad++;
 	} else if (get_hex_bits(word_stop, 3, 1) != 1) {
           evt->flag_v1495 |= 0x8;
-	  cerr << "  !! v1495: bad stop word: " << word_stop << endl;
+	  //cerr << "  !! v1495: bad stop word: " << word_stop << endl;
 	} else { // OK.  Insert hits.
 	  int time_stop   = get_hex_bits(word_stop, 2, 3);
 	  for (unsigned int ii = 0; ii < list_chan.size(); ii++) {
@@ -1080,7 +1082,7 @@ int MainDaqParser::ProcessBoardV1495TDC (int* words, int idx)
       }
     }
     if (idx != idx_end) {
-      cout << "ProcessBoardV1495TDC(): idx != idx_end (" << idx << " != " << idx_end << ") @ coda=" << dec_par.event_count << " " << dec_par.codaID << " roc=" << dec_par.rocID << "  board=" << hex << boardID << dec << "\n"
+      cout << "ProcessBoardV1495TDC(): idx != idx_end (" << idx << " != " << idx_end << ") @ coda=" << dec_par.event_count << " roc=" << dec_par.rocID << "  board=" << hex << boardID << dec << "\n"
            << "  idx_begin=" << idx_begin << " n_wd_fpga=" << n_wd_fpga << endl;
       PrintWords(words, idx_begin, idx);
       return IDX_SKIP_ROC;
@@ -1117,15 +1119,19 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   int hex54       = get_hex_bits (words[idx_begin], 5, 2);
   int boardID     = get_hex_bits (words[idx_begin], 6, 3);
   int nWordsBoard = get_hex_bits (words[idx_begin], 3, 4);
-  if (nWordsBoard == 0) return idx_begin + 1;
   int roc = (int)dec_par.rocID;
   //if (roc < 12 || roc > 30) Abort("rocID out of 12...30.");
+  if (nWordsBoard == 0) {
+    if (dec_par.verb > 5) cerr << "ERROR: nWordsBoard==0:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";    
+    return idx_begin + 1;
+  }
 
   if (hex7 != 0 || hex54 != 0) {
     // According to Kun on 2017-Jan-01, the board sometimes gets to output only 
     // "0x8*******" or "0x9*******".  This "if" condition is strict enough to 
     // catch this error.  Shifter has to reset VME crate to clear this error.
-    dec_err.AddTdcError(dec_par.codaID, roc, DecoError::WORD_ONLY89);
+    if (dec_par.verb > 5) cerr << "ERROR: WORD_ONLY89:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+    dec_err.AddTdcError(dec_par.event_count, roc, DecoError::WORD_ONLY89);
     return idx_begin + 1;
   }
 
@@ -1137,9 +1143,11 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     idx_events_end  ++;
   }
   if (idx_events_end > idx_roc_end) {
-    cerr << "ERROR: WORD_OVERFLOW:  coda " << dec_par.event_count << " " << dec_par.codaID << ", roc " << (int)dec_par.rocID << ", event_end " << idx_events_end << " vs roc_end " << idx_roc_end << ".\n";
-    PrintWords(words, idx_events_begin, idx_events_end);
-    if (dec_par.verb > 3) dec_err.AddTdcError(dec_par.codaID, roc, DecoError::WORD_OVERFLOW);
+    if (dec_par.verb > 5) {
+      cerr << "ERROR: WORD_OVERFLOW:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ", event_end " << idx_events_end << " vs roc_end " << idx_roc_end << ".\n";
+      PrintWords(words, idx_events_begin, idx_events_end);
+    }
+    dec_err.AddTdcError(dec_par.event_count, roc, DecoError::WORD_OVERFLOW);
     return IDX_SKIP_ROC;
   }
 
@@ -1151,7 +1159,8 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
   for (int idx = idx_events_begin; idx < idx_events_end; idx++) {
     if (get_hex_bits(words[idx], 7, 1) == 8) { // header = stop hit
       if (header_found) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::MULTIPLE_HEADER);
+        if (dec_par.verb > 5) cerr << "ERROR: MULTIPLE_HEADER:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+        dec_err.AddTdcError(dec_par.event_count, roc, DecoError::MULTIPLE_HEADER);
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) Abort("Stop signal is not rising.  Not supported.");
@@ -1162,7 +1171,8 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     } else if (get_hex_bits(words[idx], 7, 1) == 0 &&
 	       get_hex_bits(words[idx], 6, 7) != 0   ) { // event ID
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::EVT_ID_ONLY); // eventID without stop word
+        if (dec_par.verb > 5) cerr << "ERROR: EVT_ID_ONLY:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+        dec_err.AddTdcError(dec_par.event_count, roc, DecoError::EVT_ID_ONLY); // eventID without stop word
 	run_data.n_hit_bad++;
 	continue;
       }
@@ -1190,13 +1200,15 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
       list_time.clear();
     } else { // start hit
       if (! header_found) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_WO_STOP); // Start without stop word
+        if (dec_par.verb > 5) cerr << "ERROR: START_WO_STOP:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+        dec_err.AddTdcError(dec_par.event_count, roc, DecoError::START_WO_STOP); // Start without stop word
 	run_data.n_hit_bad++;
 	continue;
       }
       int word = words[idx];
       if (get_bin_bit(word, 16) == 0) { // Not seen in run 23930, but seen in run 23751.
-        dec_err.AddTdcError(dec_par.codaID, roc, DecoError::START_NOT_RISE); // Start signal is not rising
+        if (dec_par.verb > 5) cerr << "ERROR: START_NOT_RISE:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+        dec_err.AddTdcError(dec_par.event_count, roc, DecoError::START_NOT_RISE); // Start signal is not rising
 	run_data.n_hit_bad++;
       }
       double fine  = 4.0 - get_hex_bit (word, 0) * 4.0 / 9.0;
@@ -1212,7 +1224,8 @@ int MainDaqParser::ProcessBoardJyTDC2 (int* words, int idx_begin, int idx_roc_en
     }
   }
   if (header_found) { // Not seen in run 23930, but seen in run 23751.
-    dec_err.AddTdcError(dec_par.codaID, roc, DecoError::DIRTY_FINISH); // Not finished cleanly
+    if (dec_par.verb > 5) cerr << "ERROR: DIRTY_FINISH:  coda " << dec_par.event_count << ", roc " << (int)dec_par.rocID << ".\n";
+    dec_err.AddTdcError(dec_par.event_count, roc, DecoError::DIRTY_FINISH); // Not finished cleanly
   }
   
   return idx_events_end;
@@ -1504,9 +1517,9 @@ void MainDaqParser::SetEventInfo(EventInfo* evt, const int eventID)
   evt->eventID     = eventID;
   evt->spillID     = dec_par.spillID;
   if        (evt->codaEventID == 0) {
-    evt->codaEventID = dec_par.codaID;
-  } else if (evt->codaEventID != dec_par.codaID) {
-    if (dec_par.verb > 0) cout << "  CodaEventID Mismatch @ eventID " << eventID << ", rocID " << dec_par.rocID << ": " << evt->codaEventID << " vs " << dec_par.codaID << "\n";
-    if (evt->codaEventID > dec_par.codaID) dec_par.codaID = evt->codaEventID;
+    evt->codaEventID = dec_par.event_count;
+  } else if ((unsigned int)evt->codaEventID != dec_par.event_count) {
+    if (dec_par.verb > 0) cout << "  CodaEventID Mismatch @ eventID " << eventID << ", rocID " << dec_par.rocID << ": " << evt->codaEventID << " vs " << dec_par.event_count << "\n";
+    if ((unsigned int)evt->codaEventID > dec_par.event_count) dec_par.event_count = evt->codaEventID;
   }
 }
