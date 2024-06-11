@@ -33,6 +33,9 @@ class UtilOnline {
   static std::string RunNum2DstFile(const int run);
   static std::string RunNum2EDDstFile(const int run);
 
+  static std::string GetSpillDstDir (const int run);
+  static std::string GetSpillDstFile(const int run, const int spill);
+
   static std::string GetCodaFilePath(const int run);
   static std::string GetEndFilePath(const int run);
   static std::string GetDstFilePath(const int run);

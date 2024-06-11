@@ -8,7 +8,7 @@ using namespace std;
 std::string UtilOnline::m_dir_end     = "/seaquest/e906daq/coda/data/END";
 std::string UtilOnline::m_dir_coda    = "/localdata/codadata"; // could be "/data3/data/mainDAQ" or "/data2/e1039/codadata".
 std::string UtilOnline::m_dir_dst     = "/data2/e1039/dst";
-std::string UtilOnline::m_dir_eddst   = "/data2/e1039/online/evt_disp";
+std::string UtilOnline::m_dir_eddst   = "/data4/e1039_data/online/evt_disp";
 std::string UtilOnline::m_dir_onlmon  = "/data2/e1039/onlmon/plots";
 std::string UtilOnline::m_sch_maindaq = "user_e1039_maindaq";
 
@@ -89,6 +89,22 @@ std::string UtilOnline::RunNum2EDDstFile(const int run)
 {
   ostringstream oss;
   oss << setfill('0') << "run_" << setw(6) << run << "_evt_disp.root";
+  return oss.str();
+}
+
+/// Get a directory of spill-level DST files.
+std::string UtilOnline::GetSpillDstDir(const int run)
+{
+  ostringstream oss;
+  oss << setfill('0') << m_dir_dst << "/run_" << setw(6) << run;
+  return oss.str();
+}
+
+/// Convert a run+spill number to the corresponding name of DST file.
+std::string UtilOnline::GetSpillDstFile(const int run, const int spill)
+{
+  ostringstream oss;
+  oss << setfill('0') << "run_" << setw(6) << run << "_spill_" << setw(9) << spill << "_spin.root";
   return oss.str();
 }
 

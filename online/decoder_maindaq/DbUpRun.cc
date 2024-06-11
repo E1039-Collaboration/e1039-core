@@ -32,6 +32,7 @@ int DbUpRun::InitRun(PHCompositeNode* topNode)
   if (!run || !par_deco) return Fun4AllReturnCodes::ABORTEVENT;
   UploadRun(run);
   UploadParam(run->get_run_id(), par_deco);
+  UploadV1495(run);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -57,6 +58,7 @@ int DbUpRun::End(PHCompositeNode* topNode)
   if (!run || !par_deco) return Fun4AllReturnCodes::ABORTEVENT;
   UploadRun(run);
   UploadParam(run->get_run_id(), par_deco);
+  UploadV1495(run);
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
@@ -159,6 +161,44 @@ void DbUpRun::UploadParam(const int run, const SQParamDeco* sq)
   query.erase(query.length()-1, 1); // Remove the last ',' char.
   if (! db.Con()->Exec(query.c_str())) {
     cerr << "!!ERROR!!  DbUpRun::UploadParam()." << endl;
+    return;
+  }
+}
+
+/// Function to upload the V1495 parameters into DB.
+void DbUpRun::UploadV1495(SQRun* sq)
+{
+  const char* table_name = "v1495";
+  static DbSvc* db = 0;
+  if (db == 0) {
+    db = new DbSvc(DbSvc::DB1);
+    db->UseSchema(UtilOnline::GetSchemaMainDaq(), true);
+    //db->DropTable(table_name); // Use this when you want to refresh
+    if (! db->HasTable(table_name)) {
+      DbSvc::VarList list;
+      list.Add("run_id"    , "INT", true);
+      list.Add("v1495_id_1", "INT"); 
+      list.Add("v1495_id_2", "INT"); 
+      list.Add("v1495_id_3", "INT"); 
+      list.Add("v1495_id_4", "INT"); 
+      list.Add("v1495_id_5", "INT"); 
+      db->CreateTable(table_name, list);
+    }
+  }
+
+  ostringstream oss;
+  oss << "delete from " << table_name << " where run_id = " << sq->get_run_id();
+  if (! db->Con()->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DbUpRun::UploadV1495()." << endl;
+    return;
+  }
+  oss.str("");
+  oss << "insert into " << table_name << " values"
+      << " (" << sq->get_run_id();
+  for (int ii = 0; ii < 5; ii++) oss << ", " << sq->get_v1495_id(ii);
+  oss << ")";
+  if (! db->Con()->Exec(oss.str().c_str())) {
+    cerr << "!!ERROR!!  DbUpRun::UploadV1495()." << endl;
     return;
   }
 }

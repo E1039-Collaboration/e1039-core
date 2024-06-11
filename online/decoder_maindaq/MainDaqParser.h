@@ -42,6 +42,7 @@ class MainDaqParser {
   int ProcessCodaFee        (int* words);
   int ProcessCodaFeeBoard   (int* words);
   int ProcessCodaFeePrescale(int* words);
+  int ProcessCodaFeeV1495   (int* words);
   int ProcessCodaPhysics    (int* words);
 
   // Handlers of CODA PHYSICS Event

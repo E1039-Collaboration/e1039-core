@@ -81,6 +81,7 @@ struct RunData : public TObject {
 
   int trig_bit[10];
   int prescale[ 8];
+  int v1495_id[10];
   FeeDataList fee;
   std::string run_desc;
   

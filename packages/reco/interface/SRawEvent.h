@@ -268,7 +268,7 @@ private:
     Short_t fNRoads[4];       //0, positive top; 1, positive bottom; 2, negative top; 3, negative bottom
 
     ///Hits of this event
-    Int_t fNHits[nChamberPlanes+nHodoPlanes+nPropPlanes+1];  //0 for all hits, 1, 2, ..., 24 for number of hits in plane 1, 2, ..., 24
+    Int_t fNHits[nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1];  //0 for all hits, 1, 2, ..., 24 for number of hits in plane 1, 2, ..., 24
     std::vector<Hit> fAllHits;
     std::vector<Hit> fTriggerHits;
 

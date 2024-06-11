@@ -16,6 +16,7 @@ class DbUpRun: public SubsysReco {
  private:
   void UploadRun(SQRun* sq);
   void UploadParam(const int run, const SQParamDeco* sq);
+  void UploadV1495(SQRun* sq);
 };
 
 #endif /* _DB_UP_RUN__H_ */

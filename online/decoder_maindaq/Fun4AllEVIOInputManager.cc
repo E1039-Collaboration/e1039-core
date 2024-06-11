@@ -10,7 +10,7 @@
 #include <interface_main/SQHitVector_v1.h>
 #include <interface_main/SQEvent_v2.h>
 #include <interface_main/SQHardEvent_v1.h>
-#include <interface_main/SQRun_v1.h>
+#include <interface_main/SQRun_v2.h>
 #include <interface_main/SQSpill_v2.h>
 #include <interface_main/SQSpillMap_v1.h>
 #include <interface_main/SQHardSpill_v1.h>
@@ -76,7 +76,7 @@ Fun4AllEVIOInputManager::Fun4AllEVIOInputManager(const string &name, const strin
     topNode->addNode(runNode);
   }
 
-  PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(new SQRun_v1(), "SQRun", "PHObject");
+  PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(new SQRun_v2(), "SQRun", "PHObject");
   runNode->addNode(runHeaderNode);
   
   PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(new SQSpillMap_v1(), "SQSpillMap", "PHObject");
@@ -297,6 +297,13 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   for (int ii = 0; ii < 3; ii++) {
     run_header->set_nim_prescale(ii, rd->nim_prescale[ii]);
   }
+  if (rd->v1495_id[0] != 5) {
+    cout << "  N of V1495 IDs != 5 but " << rd->v1495_id[0] << "." << endl;
+  }
+  for (int ii = 0; ii < 5; ii++) {
+    run_header->set_v1495_id(ii, rd->v1495_id[ii+1]);
+  }
+
   run_header->set_run_desc       (rd->run_desc);
   run_header->set_n_fee_event    (rd->n_fee_event);
   run_header->set_n_fee_prescale (rd->n_fee_prescale);
