@@ -50,6 +50,9 @@ public:
 	virtual int  get_nim_prescale(const int chan) const {return std::numeric_limits<int>::max();} ///< Return the prescale factor of the given channel ('chan') of the NIM trigger in this run.
 	virtual void set_nim_prescale(const int chan, const int a) {}
 
+        virtual int  get_v1495_id(const int chan) const {return std::numeric_limits<int>::max();} ///< Return the ID of the `chan`-th V1495 boards.
+        virtual void set_v1495_id(const int chan, const int id) {}
+
 	virtual std::string get_run_desc() const {return "";} ///< Return the run description of this run.
 	virtual void        set_run_desc(const std::string a) {}
 
