@@ -644,3 +644,13 @@ void Fun4AllEVIOInputManager::PretendSpillInterval(const int sec)
 {
   parser->dec_par.time_wait = sec;
 }
+
+void Fun4AllEVIOInputManager::UseLocalSpillID(const bool use)
+{
+  parser->UseLocalSpillID(use);
+}
+
+bool Fun4AllEVIOInputManager::UseLocalSpillID() const
+{
+  return parser->UseLocalSpillID();
+}

@@ -6,7 +6,7 @@
 class ChanMapV1495 : public ChanMapBase {
   struct MapItem {
     short roc;
-    short board;
+    int   board;
     short chan;
     std::string det_name;
     short det;
@@ -24,11 +24,11 @@ class ChanMapV1495 : public ChanMapBase {
   ChanMapV1495();
   virtual ~ChanMapV1495() {;}
 
-  void Add (const short roc, const short board, const short chan, const std::string det, const short ele, const short lvl);
-  void Add (const short roc, const short board, const short chan, const std::string det_name, const short det_id, const short ele, const short lvl);
+  void Add (const short roc, const int board, const short chan, const std::string det, const short ele, const short lvl);
+  void Add (const short roc, const int board, const short chan, const std::string det_name, const short det_id, const short ele, const short lvl);
 
-  //bool Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl);
-  bool Find(const short roc, const short board, const short chan,        short& det, short& ele, short& lvl);
+  //bool Find(const short roc, const int board, const short chan,  std::string& det, short& ele, short& lvl);
+  bool Find(const short roc, const int board, const short chan,        short& det, short& ele, short& lvl);
   void Print(std::ostream& os);
 
  protected:

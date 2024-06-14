@@ -35,6 +35,9 @@ Fun4AllSRawEventOutputManager::Fun4AllSRawEventOutputManager(const std::string &
   , m_sp_map(0)
   , m_hit_vec(0)
   , m_trig_hit_vec(0)
+  , m_db(0)
+  , m_name_schema("")
+  , m_name_table("")
 {
   ;
 }
@@ -43,6 +46,27 @@ Fun4AllSRawEventOutputManager::~Fun4AllSRawEventOutputManager()
 {
   CloseFile();
   if (m_sraw) delete m_sraw;
+  if (m_db) delete m_db;
+}
+
+void Fun4AllSRawEventOutputManager::EnableDB(const std::string name_schema, const std::string name_table, const bool refresh_db)
+{
+  m_name_schema = name_schema;
+  m_name_table  = name_table;
+  m_db = new DbSvc(DbSvc::DB1);
+  m_db->UseSchema(m_name_schema, true);
+
+  if (refresh_db && m_db->HasTable(m_name_table)) m_db->DropTable(m_name_table);
+  if (! m_db->HasTable(m_name_table)) {
+    DbSvc::VarList list;
+    list.Add("run_id"   , "INT", true);
+    list.Add("spill_id" , "INT", true);
+    list.Add("file_name", "VARCHAR(256)");
+    list.Add("status"   , "INT");
+    list.Add("utime_b"  , "INT");
+    list.Add("utime_e"  , "INT");
+    m_db->CreateTable(m_name_table, list);
+  }
 }
 
 int Fun4AllSRawEventOutputManager::Write(PHCompositeNode *startNode)
@@ -83,6 +107,17 @@ void Fun4AllSRawEventOutputManager::CloseFile()
   delete m_file;
   m_file = 0;
   UpdateDBStatus(CLOSE);
+
+  if (m_db) { // MySQL DB
+    int utime = time(0);
+    ostringstream oss;
+    oss << "update " << m_name_table << " set status = " << CLOSE << ", utime_e = " << utime
+        << " where run_id = " << m_run_id << " and spill_id = " << m_spill_id;
+    if (! m_db->Con()->Exec(oss.str().c_str())) {
+      cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::OpenFile():  " << oss.str() << endl;
+      return;
+    }
+  }
 }
 
 void Fun4AllSRawEventOutputManager::OpenFile()
@@ -103,6 +138,18 @@ void Fun4AllSRawEventOutputManager::OpenFile()
   m_tree = new TTree(m_tree_name.c_str(), "");
   m_tree->Branch(m_branch_name.c_str(), &m_sraw);
   UpdateDBStatus(OPEN);
+
+  if (m_db) { // MySQL DB
+    int utime = time(0);
+    ostringstream oss;
+    oss << "insert into " << m_name_table
+        << " values(" << m_run_id << ", " << m_spill_id << ", '" << m_file_name << "', 1, " << utime << ", 0)"
+        << " on duplicate key update file_name = '" << m_file_name << "', status = " << OPEN << ", utime_b = " << utime << ", utime_e = 0";
+    if (! m_db->Con()->Exec(oss.str().c_str())) {
+      cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::OpenFile(): " << oss.str() << endl;
+      return;
+    }
+  }
 }
 
 /// Update the status stored in SQLite DB.

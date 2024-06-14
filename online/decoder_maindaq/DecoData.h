@@ -172,7 +172,7 @@ struct HitData {
   int   event;
   int   id;
   short roc;
-  short board;
+  int   board;
   short chan;
   short det;
   short ele;
