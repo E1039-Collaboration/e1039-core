@@ -413,6 +413,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
   m_timers["run_set_hit_data"]->restart();
   for (HitDataList::iterator it = ed->list_hit.begin(); it != ed->list_hit.end(); it++) {
     HitData* hd = &*it;
+    if (hd->det == 0) continue;
     SQHit* hit = new SQHit_v1();
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
@@ -427,6 +428,7 @@ int Fun4AllEVIOInputManager::run(const int nevents)
 
   for (HitDataList::iterator it = ed->list_hit_trig.begin(); it != ed->list_hit_trig.end(); it++) {
     HitData* hd = &*it;
+    if (hd->det == 0) continue;
     SQHit* hit = new SQHit_v1();
     hit->set_hit_id     (hd->id  );
     hit->set_detector_id(hd->det );
@@ -660,4 +662,14 @@ void Fun4AllEVIOInputManager::UseLocalSpillID(const bool use)
 bool Fun4AllEVIOInputManager::UseLocalSpillID() const
 {
   return parser->UseLocalSpillID();
+}
+
+void Fun4AllEVIOInputManager::ForceLocalSpillID(const bool force)
+{
+  parser->ForceLocalSpillID(force);
+}
+
+bool Fun4AllEVIOInputManager::ForceLocalSpillID() const
+{
+  return parser->ForceLocalSpillID();
 }

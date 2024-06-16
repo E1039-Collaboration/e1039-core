@@ -40,6 +40,9 @@ class UtilOnline {
   static std::string GetEndFilePath(const int run);
   static std::string GetDstFilePath(const int run);
   static std::string GetEDDstFilePath(const int run);
+
+  static std::string Run6(const int run, const int digit=6);
+  static std::string Spill9(const int spill, const int digit=9);
 };
 
 #endif /* _UTIL_ONLINE__H_ */

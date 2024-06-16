@@ -64,7 +64,7 @@ int UtilOnline::CodaFile2RunNum(const std::string name)
 std::string UtilOnline::RunNum2CodaFile(const int run)
 {
   ostringstream oss;
-  oss << setfill('0') << "run_" << setw(6) << run << "_spin.dat";
+  oss << setfill('0') << "run_" << Run6(run) << "_spin.dat";
   return oss.str();
 }
 
@@ -80,7 +80,7 @@ std::string UtilOnline::RunNum2EndFile(const int run)
 std::string UtilOnline::RunNum2DstFile(const int run)
 {
   ostringstream oss;
-  oss << setfill('0') << "run_" << setw(6) << run << "_spin.root";
+  oss << setfill('0') << "run_" << Run6(run) << "_spin.root";
   return oss.str();
 }
 
@@ -88,7 +88,7 @@ std::string UtilOnline::RunNum2DstFile(const int run)
 std::string UtilOnline::RunNum2EDDstFile(const int run)
 {
   ostringstream oss;
-  oss << setfill('0') << "run_" << setw(6) << run << "_evt_disp.root";
+  oss << setfill('0') << "run_" << Run6(run) << "_evt_disp.root";
   return oss.str();
 }
 
@@ -96,7 +96,7 @@ std::string UtilOnline::RunNum2EDDstFile(const int run)
 std::string UtilOnline::GetSpillDstDir(const int run)
 {
   ostringstream oss;
-  oss << setfill('0') << m_dir_dst << "/run_" << setw(6) << run;
+  oss << setfill('0') << m_dir_dst << "/run_" << Run6(run);
   return oss.str();
 }
 
@@ -104,7 +104,7 @@ std::string UtilOnline::GetSpillDstDir(const int run)
 std::string UtilOnline::GetSpillDstFile(const int run, const int spill)
 {
   ostringstream oss;
-  oss << setfill('0') << "run_" << setw(6) << run << "_spill_" << setw(9) << spill << "_spin.root";
+  oss << setfill('0') << "run_" << Run6(run) << "_spill_" << Spill9(spill) << "_spin.root";
   return oss.str();
 }
 
@@ -126,4 +126,18 @@ std::string UtilOnline::GetDstFilePath(const int run)
 std::string UtilOnline::GetEDDstFilePath(const int run)
 {
   return GetEDDstFileDir() + "/" + RunNum2EDDstFile(run);
+}
+
+std::string UtilOnline::Run6(const int run, const int digit)
+{
+  ostringstream oss;
+  oss << setfill('0') << setw(digit) << run;
+  return oss.str();
+}
+
+std::string UtilOnline::Spill9(const int spill, const int digit)
+{
+  ostringstream oss;
+  oss << setfill('0') << setw(digit) << spill;
+  return oss.str();
 }
