@@ -1,6 +1,7 @@
 #ifndef _UTIL_ONLINE__H_
 #define _UTIL_ONLINE__H_
 #include <string>
+#include <vector>
 
 class UtilOnline {
   static std::string m_dir_end;
@@ -35,6 +36,8 @@ class UtilOnline {
 
   static std::string GetSpillDstDir (const int run);
   static std::string GetSpillDstFile(const int run, const int spill);
+  static std::string GetSpillDstPath(const int run, const int spill);
+  static std::vector<std::string> GetListOfSpillDSTs(const int run, const std::string dir_dst="");
 
   static std::string GetCodaFilePath(const int run);
   static std::string GetEndFilePath(const int run);

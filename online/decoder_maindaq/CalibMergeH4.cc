@@ -10,7 +10,10 @@
 #include "CalibMergeH4.h"
 using namespace std;
 
-CalibMergeH4::CalibMergeH4(const std::string& name) : SubsysReco(name), m_and_mode(false), m_remove_mode(false)
+CalibMergeH4::CalibMergeH4(const std::string& name)
+  : SubsysReco(name)
+  , m_and_mode   (false)
+  , m_remove_mode(false)
 {
   ;
 }

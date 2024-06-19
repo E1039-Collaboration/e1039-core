@@ -108,6 +108,38 @@ std::string UtilOnline::GetSpillDstFile(const int run, const int spill)
   return oss.str();
 }
 
+std::string UtilOnline::GetSpillDstPath(const int run, const int spill)
+{
+  return GetSpillDstDir(run) + "/" + GetSpillDstFile(run, spill);
+}
+
+std::vector<std::string> UtilOnline::GetListOfSpillDSTs(const int run, const std::string dir_dst)
+{
+  ostringstream oss;
+  if (dir_dst != "") oss << dir_dst;
+  else               oss << UtilOnline::GetDstFileDir();
+  oss << "/run_" << Run6(run);
+  string dir_run = oss.str();
+
+  vector<string> list_dst;
+
+  void* dirp = gSystem->OpenDirectory(dir_run.c_str());
+  if (dirp == 0) return list_dst; // The directory does not exist.
+
+  const char* name_char;
+  while ((name_char = gSystem->GetDirEntry(dirp))) {
+    string name = name_char;
+    int length = name.length();
+    if (length < 10 ||
+        name.substr(0, 4) != "run_" ||
+        name.substr(length-10, 10) != "_spin.root") continue;
+    list_dst.push_back(dir_run+"/"+name);
+  }
+  gSystem->FreeDirectory(dirp);
+  sort(list_dst.begin(), list_dst.end());
+  return list_dst;
+}
+
 std::string UtilOnline::GetCodaFilePath(const int run)
 {
   return GetCodaFileDir() + "/" + RunNum2CodaFile(run);

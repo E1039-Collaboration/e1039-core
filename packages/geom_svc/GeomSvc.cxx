@@ -801,6 +801,16 @@ bool GeomSvc::isDPHodo(const std::string detectorName) const
   return detectorName.substr(0, 2) == "DP";
 }
 
+bool GeomSvc::isInh(const int detectorID) const
+{
+  return isInh(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isInh(const std::string detectorName) const
+{
+  return detectorName.substr(0, 6) == "Before" || detectorName.substr(0, 5) == "After";
+}
+
 int GeomSvc::getHodoStation(const int detectorID) const
 {
   return getHodoStation(getDetectorName(detectorID));
