@@ -52,6 +52,7 @@ void recoConsts::set_defaults()
   set_BoolFlag("COARSE_MODE", false);
   set_BoolFlag("MC_MODE", false);
   set_BoolFlag("COSMIC_MODE", false);
+  set_BoolFlag("REQUIRE_MUID", true);
 
   set_BoolFlag("TARGETONLY", false);
   set_BoolFlag("DUMPONLY", false);
