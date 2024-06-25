@@ -24,8 +24,6 @@ Created: 05-28-2013
 #include "KalmanFastTracking.h"
 #include "TriggerRoad.h"
 
-//#define _DEBUG_ON
-
 namespace 
 {
     //static flag to indicate the initialized has been done
@@ -69,7 +67,10 @@ namespace
     static double MERGE_THRES;
 
     //static flag of kmag on/off
-	static bool KMAG_ON;
+    static bool KMAG_ON;
+
+    //static flag to turn MU ID on/off
+    static bool REQUIRE_MUID;
 
     //running mode
     static bool MC_MODE;
@@ -88,6 +89,7 @@ namespace
             KMAG_ON = rc->get_BoolFlag("KMAG_ON");
             COSMIC_MODE = rc->get_BoolFlag("COSMIC_MODE");
             COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
+            REQUIRE_MUID = rc->get_BoolFlag("REQUIRE_MUID");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -127,10 +129,10 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     using namespace std;
     initGlobalVariables();
 
-#ifdef _DEBUG_ON
-    cout << "Initialization of KalmanFastTracking ..." << endl;
-    cout << "========================================" << endl;
-#endif
+    if (verbosity >= 3) {
+      cout << "Initialization of KalmanFastTracking ..." << endl;
+      cout << "========================================" << endl;
+    }
 
     _timers.insert(std::make_pair<std::string, PHTimer*>("st2", new PHTimer("st2")));
     _timers.insert(std::make_pair<std::string, PHTimer*>("st3", new PHTimer("st3")));
@@ -168,11 +170,11 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
 
     //Initialize geometry service
     p_geomSvc = GeomSvc::instance();
-#ifdef _DEBUG_ON
-    p_geomSvc->printTable();
-    p_geomSvc->printWirePosition();
-    p_geomSvc->printAlignPar();
-#endif
+    if (verbosity >= 3) {
+      p_geomSvc->printTable();
+      p_geomSvc->printWirePosition();
+      p_geomSvc->printAlignPar();
+    }
 
     //Initialize plane angles for all planes
     for(int i = 1; i <= nChamberPlanes; ++i)
@@ -264,27 +266,27 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
         }
     }
 
-#ifdef _DEBUG_ON
-    cout << "========================" << endl;
-    cout << "Hodo. masking settings: " << endl;
-    for(int i = 0; i < 4; i++)
-    {
+    if (verbosity >= 3) {
+      cout << "========================" << endl;
+      cout << "Hodo. masking settings: " << endl;
+      for(int i = 0; i < 4; i++)
+      {
         cout << "For station " << i+1 << endl;
         for(std::vector<int>::iterator iter = detectorIDs_mask[i].begin();  iter != detectorIDs_mask[i].end();  ++iter) cout << "All: " << *iter << endl;
         for(std::vector<int>::iterator iter = detectorIDs_maskX[i].begin(); iter != detectorIDs_maskX[i].end(); ++iter) cout << "X:   " << *iter << endl;
         for(std::vector<int>::iterator iter = detectorIDs_maskY[i].begin(); iter != detectorIDs_maskY[i].end(); ++iter) cout << "Y:   " << *iter << endl;
-    }
-
-    for(int i = 0; i < nStations; ++i)
-    {
+      }
+      
+      for(int i = 0; i < nStations; ++i)
+      {
         std::cout << "Masking stations for tracklets with stationID = " << i + 1 << ": " << std::endl;
         for(std::vector<int>::iterator iter = stationIDs_mask[i].begin(); iter != stationIDs_mask[i].end(); ++iter)
         {
-            std::cout << *iter << "  ";
+          std::cout << *iter << "  ";
         }
         std::cout << std::endl;
+      }
     }
-#endif
 
     //Initialize super stationIDs
     for(int i = 0; i < nChamberPlanes/6+2; i++) superIDs[i].clear();
@@ -309,25 +311,25 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     superIDs[6].push_back((p_geomSvc->getDetectorIDs("P1Y")[0] + 1)/2);
     superIDs[6].push_back((p_geomSvc->getDetectorIDs("P2Y")[0] + 1)/2);
 
-#ifdef _DEBUG_ON
-    cout << "=============" << endl;
-    cout << "Chamber IDs: " << endl;
-    TString stereoNames[3] = {"X", "U", "V"};
-    for(int i = 0; i < nChamberPlanes/6; i++)
-    {
+    if (verbosity >= 3) {
+      cout << "=============" << endl;
+      cout << "Chamber IDs: " << endl;
+      TString stereoNames[3] = {"X", "U", "V"};
+      for(int i = 0; i < nChamberPlanes/6; i++)
+      {
         for(int j = 0; j < 3; j++) cout << i << "  " << stereoNames[j].Data() << ": " << superIDs[i][j] << endl;
-    }
-
-    cout << "Proptube IDs: " << endl;
-    for(int i = nChamberPlanes/6; i < nChamberPlanes/6+2; i++)
-    {
+      }
+      
+      cout << "Proptube IDs: " << endl;
+      for(int i = nChamberPlanes/6; i < nChamberPlanes/6+2; i++)
+      {
         for(int j = 0; j < 2; j++) cout << i << "  " << j << ": " << superIDs[i][j] << endl;
+      }
+      
+      //Initialize widow sizes for X-U matching and z positions of all chambers
+      cout << "======================" << endl;
+      cout << "U plane window sizes: " << endl;
     }
-
-    //Initialize widow sizes for X-U matching and z positions of all chambers
-    cout << "======================" << endl;
-    cout << "U plane window sizes: " << endl;
-#endif
 
     double u_factor[] = {5., 5., 5., 15., 15.};
     for(int i = 0; i < nChamberPlanes/6; i++)
@@ -348,9 +350,9 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
         //u_win[i] = fabs(0.5*x_span/(spacing/sintheta_plane[uID])) + 2.*spacing + u_factor[i];
         u_win[i] = fabs(0.5*x_span*sintheta_plane[uID]) + TX_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_costheta[i]) + TY_MAX*fabs((z_plane_u[i] - z_plane_x[i])*u_sintheta[i]) + 2.*spacing + u_factor[i];
 
-#ifdef _DEBUG_ON
-        cout << "Station " << i << ": " << xID << "  " << uID << "  " << vID << "  " << u_win[i] << endl;
-#endif
+        if (verbosity >= 4) {
+          cout << "Station " << i << ": " << xID << "  " << uID << "  " << vID << "  " << u_win[i] << endl;
+        }
     }
 
     //Initialize Z positions and maximum parameters of all planes
@@ -360,37 +362,40 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
         slope_max[i] = costheta_plane[i]*TX_MAX + sintheta_plane[i]*TY_MAX;
         intersection_max[i] = costheta_plane[i]*X0_MAX + sintheta_plane[i]*Y0_MAX;
 
-#ifdef COARSE_MODE
-        resol_plane[i] = 3.*p_geomSvc->getPlaneSpacing(i)/sqrt(12.);
-#else
-        if(i <= 6)
+        if(COARSE_MODE)
         {
-            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC0");
-        }
-        else if(i <= 12)
-        {
-            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC1");
-        }
-        else if(i <= 18)
-        {
-            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC2");
-        }
-        else if(i <= 24)
-        {
-            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3p");
+          resol_plane[i] = 3.*p_geomSvc->getPlaneSpacing(i)/sqrt(12.);
         }
         else
         {
-            resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3m");
+          if(i <= 6)
+          {
+              resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC0");
+          }
+          else if(i <= 12)
+          {
+              resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC1");
+          }
+          else if(i <= 18)
+          {
+              resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC2");
+          }
+          else if(i <= 24)
+          {
+              resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3p");
+          }
+          else
+          {
+              resol_plane[i] = recoConsts::instance()->get_DoubleFlag("RejectWinDC3m");
+          }
         }
-#endif
         spacing_plane[i] = p_geomSvc->getPlaneSpacing(i);
     }
 
-#ifdef _DEBUG_ON
-    cout << "======================================" << endl;
-    cout << "Maximum local slope and intersection: " << endl;
-#endif
+    if (verbosity >= 3) {
+      cout << "======================================" << endl;
+      cout << "Maximum local slope and intersection: " << endl;
+    }
     for(int i = 1; i <= nChamberPlanes/2; i++)
     {
         double d_slope = (p_geomSvc->getPlaneResolution(2*i - 1) + p_geomSvc->getPlaneResolution(2*i))/(z_plane[2*i] - z_plane[2*i-1]);
@@ -401,9 +406,9 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
         slope_max[2*i] += d_slope;
         intersection_max[2*i] += d_intersection;
 
-#ifdef _DEBUG_ON
-        cout << "Super plane " << i << ": " << slope_max[2*i-1] << "  " << intersection_max[2*i-1] << endl;
-#endif
+        if (verbosity >= 3) {
+          cout << "Super plane " << i << ": " << slope_max[2*i-1] << "  " << intersection_max[2*i-1] << endl;
+        }
     }
 
     //Initialize sagitta ratios, index 0, 1, 2 are for X, U, V, this is the incrementing order of plane type
@@ -475,7 +480,7 @@ int KalmanFastTracking::setRawEventPrep(SRawEvent* event_input)
         hitIDs_muidHodoAid[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_muidHodoAid[i]);
     }
 
-    if(!COARSE_MODE)
+    if(!COARSE_MODE && REQUIRE_MUID)
     {
         buildPropSegments();
         if(propSegs[0].empty() || propSegs[1].empty())
@@ -483,7 +488,7 @@ int KalmanFastTracking::setRawEventPrep(SRawEvent* event_input)
           if(verbosity >= 3) {
             LogInfo("Failed in prop tube segment building: " << propSegs[0].size() << ", " << propSegs[1].size());
           }
-            //return TFEXIT_FAIL_ROUGH_MUONID;
+          //return TFEXIT_FAIL_ROUGH_MUONID;
         }
     }
     return 0;
@@ -678,52 +683,55 @@ void KalmanFastTracking::buildBackPartialTracks()
                 if(fabs(a) > 2.*TX_MAX || fabs(b) > 2.*X0_MAX) continue;
 
                 //Project to proportional tubes to see if there is enough
-                int nPropHits = 0;
-                for(int i = 0; i < 4; ++i)
+                if(REQUIRE_MUID)
                 {
-                    double x_exp = a*z_mask[detectorIDs_muid[0][i] - nChamberPlanes - 1] + b;
-                    for(std::list<int>::iterator iter = hitIDs_muid[0][i].begin(); iter != hitIDs_muid[0][i].end(); ++iter)
-                    {
-                        if(fabs(hitAll[*iter].pos - x_exp) < 5.08)
-                        {
-                            ++nPropHits;
-                            break;
-                        }
-                    }
-                    if(nPropHits > 0) break;
+                  int nPropHits = 0;
+                  for(int i = 0; i < 4; ++i)
+                  {
+                      double x_exp = a*z_mask[detectorIDs_muid[0][i] - nChamberPlanes - 1] + b;
+                      for(std::list<int>::iterator iter = hitIDs_muid[0][i].begin(); iter != hitIDs_muid[0][i].end(); ++iter)
+                      {
+                          if(fabs(hitAll[*iter].pos - x_exp) < 5.08)
+                          {
+                              ++nPropHits;
+                              break;
+                          }
+                      }
+                      if(nPropHits > 0) break;
+                  }
+                  if(nPropHits == 0) continue;
                 }
-                if(nPropHits == 0) continue;
             }
 
             Tracklet tracklet_23 = (*tracklet2) + (*tracklet3);
-#ifdef _DEBUG_ON
-            LogInfo("Using following two tracklets:");
-            tracklet2->print();
-            tracklet3->print();
-            LogInfo("Yield this combination:");
-            tracklet_23.print();
-#endif
+            if (verbosity >= 3) {
+              LogInfo("Using following two tracklets:");
+              tracklet2->print();
+              tracklet3->print();
+              LogInfo("Yield this combination:");
+              tracklet_23.print();
+            }
             fitTracklet(tracklet_23);
             if(tracklet_23.chisq > 9000.)
             {
-#ifdef _DEBUG_ON
+              if (verbosity >= 3) {
                 tracklet_23.print();
                 LogInfo("Impossible combination!");
-#endif
-                continue;
+              }
+              continue;
             }
 
             if(!COARSE_MODE && !hodoMask(tracklet_23))
             {
-#ifdef _DEBUG_ON
+              if (verbosity >= 3) {
                 LogInfo("Hodomasking failed!");
-#endif
-                continue;
+              }
+              continue;
             }
-#ifdef _DEBUG_ON
-            LogInfo("Hodomasking Scucess!");
-#endif
-
+            if (verbosity >= 3) {
+              LogInfo("Hodomasking Scucess!");
+            }
+            
             if(!COARSE_MODE)
             {
                 resolveLeftRight(tracklet_23, 40.);
@@ -733,28 +741,26 @@ void KalmanFastTracking::buildBackPartialTracks()
             ///Remove bad hits if needed
             removeBadHits(tracklet_23);
 
-#ifdef _DEBUG_ON
-            LogInfo("New tracklet: ");
-            tracklet_23.print();
-
-            LogInfo("Current best:");
-            tracklet_best.print();
-
-            LogInfo("Comparison: " << (tracklet_23 < tracklet_best));
-            LogInfo("Quality: " << acceptTracklet(tracklet_23));
-#endif
+            if (verbosity >= 3) {
+              LogInfo("New tracklet: ");
+              tracklet_23.print();
+              
+              LogInfo("Current best:");
+              tracklet_best.print();
+              
+              LogInfo("Comparison: " << (tracklet_23 < tracklet_best));
+              LogInfo("Quality: " << acceptTracklet(tracklet_23));
+            }
 
             //If current tracklet is better than the best tracklet up-to-now
             if(acceptTracklet(tracklet_23) && tracklet_23 < tracklet_best)
             {
                 tracklet_best = tracklet_23;
             }
-#ifdef _DEBUG_ON
-            else
+            else if (verbosity >= 3)
             {
                 LogInfo("Rejected!!");
             }
-#endif
         }
 
         if(tracklet_best.isValid() > 0) trackletsInSt[3].push_back(tracklet_best);
@@ -784,11 +790,11 @@ void KalmanFastTracking::buildGlobalTracks()
                 getExtrapoWindowsInSt1(*tracklet23, pos_exp, window, i+1);
             }
 
-#ifdef _DEBUG_ON
-            LogInfo("Using this back partial: ");
-            tracklet23->print();
-            for(int j = 0; j < 3; j++) LogInfo("Extrapo: " << pos_exp[j] << "  " << window[j]);
-#endif
+            if (verbosity >= 3) {
+              LogInfo("Using this back partial: ");
+              tracklet23->print();
+              for(int j = 0; j < 3; j++) LogInfo("Extrapo: " << pos_exp[j] << "  " << window[j]);
+            }
 
             _timers["global_st1"]->restart();
             buildTrackletsInStation(i+1, 0, pos_exp, window);
@@ -798,10 +804,10 @@ void KalmanFastTracking::buildGlobalTracks()
             Tracklet tracklet_best_prob, tracklet_best_vtx;
             for(std::list<Tracklet>::iterator tracklet1 = trackletsInSt[0].begin(); tracklet1 != trackletsInSt[0].end(); ++tracklet1)
             {
-#ifdef _DEBUG_ON
+              if (verbosity >= 3) {
                 LogInfo("With this station 1 track:");
                 tracklet1->print();
-#endif
+              }
 
                 Tracklet tracklet_global = (*tracklet23) * (*tracklet1);
                 fitTracklet(tracklet_global);
@@ -836,25 +842,25 @@ void KalmanFastTracking::buildGlobalTracks()
                     if(recTrack.isValid() && tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx) tracklet_best_vtx = tracklet_global;
                 }
 
-#ifdef _DEBUG_ON
-                LogInfo("New tracklet: ");
-                tracklet_global.print();
-
-                LogInfo("Current best by prob:");
-                tracklet_best_prob.print();
-
-                LogInfo("Comparison I: " << (tracklet_global < tracklet_best_prob));
-                LogInfo("Quality I   : " << acceptTracklet(tracklet_global));
-
-                if(enable_KF)
-                {
+                if (verbosity >= 3) {
+                  LogInfo("New tracklet: ");
+                  tracklet_global.print();
+                  
+                  LogInfo("Current best by prob:");
+                  tracklet_best_prob.print();
+                  
+                  LogInfo("Comparison I: " << (tracklet_global < tracklet_best_prob));
+                  LogInfo("Quality I   : " << acceptTracklet(tracklet_global));
+                  
+                  if(enable_KF)
+                  {
                     LogInfo("Current best by vtx:");
                     tracklet_best_vtx.print();
-
+                    
                     LogInfo("Comparison II: " << (tracklet_global.chisq_vtx < tracklet_best_vtx.chisq_vtx));
                     //LogInfo("Quality II   : " << recTrack.isValid());
+                  }
                 }
-#endif
             }
             _timers["global_link"]->stop();
 
@@ -881,33 +887,33 @@ void KalmanFastTracking::buildGlobalTracks()
             tracklet_merge = tracklet_best[0].merge(tracklet_best[1]);
             fitTracklet(tracklet_merge);
 
-#ifdef _DEBUG_ON
-            LogInfo("Merging two track candidates with momentum: " << tracklet_best[0].getMomentum() << "  " << tracklet_best[1].getMomentum());
-            LogInfo("tracklet_best_1:"); tracklet_best[0].print();
-            LogInfo("tracklet_best_2:"); tracklet_best[1].print();
-            LogInfo("tracklet_merge:"); tracklet_merge.print();
-#endif
+            if (verbosity >= 3) {
+              LogInfo("Merging two track candidates with momentum: " << tracklet_best[0].getMomentum() << "  " << tracklet_best[1].getMomentum());
+              LogInfo("tracklet_best_1:"); tracklet_best[0].print();
+              LogInfo("tracklet_best_2:"); tracklet_best[1].print();
+              LogInfo("tracklet_merge:"); tracklet_merge.print();
+            }
         }
 
         if(tracklet_merge.isValid() > 0 && tracklet_merge < tracklet_best[0] && tracklet_merge < tracklet_best[1])
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Choose merged tracklet");
-#endif
+          }
             trackletsInSt[4].push_back(tracklet_merge);
         }
         else if(tracklet_best[0].isValid() > 0 && tracklet_best[0] < tracklet_best[1])
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Choose tracklet with station-0");
-#endif
+          }
             trackletsInSt[4].push_back(tracklet_best[0]);
         }
         else if(tracklet_best[1].isValid() > 0)
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Choose tracklet with station-1");
-#endif
+          }
             trackletsInSt[4].push_back(tracklet_best[1]);
         }
     }
@@ -917,10 +923,10 @@ void KalmanFastTracking::buildGlobalTracks()
 
 void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
 {
-#ifdef _DEBUG_ON
+  if (verbosity >= 3) {
     LogInfo("Left right for this track..");
     tracklet.print();
-#endif
+  }
 
     //Check if the track has been updated
     bool isUpdated = false;
@@ -937,13 +943,13 @@ void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
     ++hit2;
     while(true)
     {
-#ifdef _DEBUG_ON
+      if (verbosity >= 3) {
         LogInfo(hit1->hit.index << "  " << hit2->sign << " === " << hit2->hit.index << "  " << hit2->sign);
         int detectorID1 = hit1->hit.detectorID;
         int detectorID2 = hit2->hit.detectorID;
         LogInfo("Hit1: " << tracklet.getExpPositionX(z_plane[detectorID1])*costheta_plane[detectorID1] + tracklet.getExpPositionY(z_plane[detectorID1])*sintheta_plane[detectorID1] << "  " << hit1->hit.pos + hit1->hit.driftDistance << "  " << hit1->hit.pos - hit1->hit.driftDistance);
         LogInfo("Hit2: " << tracklet.getExpPositionX(z_plane[detectorID2])*costheta_plane[detectorID2] + tracklet.getExpPositionY(z_plane[detectorID2])*sintheta_plane[detectorID2] << "  " << hit2->hit.pos + hit2->hit.driftDistance << "  " << hit2->hit.pos - hit2->hit.driftDistance);
-#endif
+      }
 
         if(hit1->hit.index > 0 && hit2->hit.index > 0 && hit1->sign*hit2->sign == 0)
         {
@@ -987,13 +993,13 @@ void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
                     pull_min = pull;
                 }
 
-#ifdef _DEBUG_ON
-                LogInfo(hit1->hit.detectorID << ": " << i << "  " << possibility[i][0] << "  " << possibility[i][1]);
-                LogInfo(tx << "  " << x0 << "  " << ty << "  " << y0);
-                LogInfo("Slope: " << slope_local << "  " << slope_exp << "  " << err_slope);
-                LogInfo("Intersection: " << inter_local << "  " << inter_exp << "  " << err_inter);
-                LogInfo("Current: " << pull << "  " << index_min << "  " << pull_min);
-#endif
+                if (verbosity >= 3) {
+                  LogInfo(hit1->hit.detectorID << ": " << i << "  " << possibility[i][0] << "  " << possibility[i][1]);
+                  LogInfo(tx << "  " << x0 << "  " << ty << "  " << y0);
+                  LogInfo("Slope: " << slope_local << "  " << slope_exp << "  " << err_slope);
+                  LogInfo("Intersection: " << inter_local << "  " << inter_exp << "  " << err_inter);
+                  LogInfo("Current: " << pull << "  " << index_min << "  " << pull_min);
+                }
             }
 
             //LogInfo("Final: " << index_min << "  " << pull_min);
@@ -1019,10 +1025,10 @@ void KalmanFastTracking::resolveLeftRight(Tracklet& tracklet, double threshold)
 
 void KalmanFastTracking::resolveSingleLeftRight(Tracklet& tracklet)
 {
-#ifdef _DEBUG_ON
+  if (verbosity >= 3) {
     LogInfo("Single left right for this track..");
     tracklet.print();
-#endif
+  }
 
     //Check if the track has been updated
     bool isUpdated = false;
@@ -1042,11 +1048,11 @@ void KalmanFastTracking::resolveSingleLeftRight(Tracklet& tracklet)
 
 void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
 {
-#ifdef _DEBUG_ON
+  if (verbosity >= 3) {
     LogInfo("Removing hits for this track..");
     tracklet.calcChisq();
     tracklet.print();
-#endif
+  }
 
     //Check if the track has beed updated
     int signflipflag[nChamberPlanes];
@@ -1084,11 +1090,11 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
         double cut = hit_remove->sign == 0 ? hit_remove->hit.driftDistance + resol_plane[hit_remove->hit.detectorID] : resol_plane[hit_remove->hit.detectorID];
         if(res_remove1 > cut)
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Dropping this hit: " << res_remove1 << "  " << res_remove2 << "   " << signflipflag[hit_remove->hit.detectorID-1] << "  " << cut);
             hit_remove->hit.print();
             hit_neighbour->hit.print();
-#endif
+          }
 
             //can only be changed less than twice
             if(res_remove2 < cut && signflipflag[hit_remove->hit.detectorID-1] < 2)
@@ -1096,9 +1102,9 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
                 hit_remove->sign = -hit_remove->sign;
                 hit_neighbour->sign = 0;
                 ++signflipflag[hit_remove->hit.detectorID-1];
-#ifdef _DEBUG_ON
-                LogInfo("Only changing the sign.");
-#endif
+                if (verbosity >= 3) {
+                  LogInfo("Only changing the sign.");
+                }
             }
             else
             {
@@ -1123,10 +1129,10 @@ void KalmanFastTracking::removeBadHits(Tracklet& tracklet)
                 //If both hit pairs are not included, the track can be rejected
                 if(hit_neighbour->hit.index < 0)
                 {
-#ifdef _DEBUG_ON
+                  if (verbosity >= 3) {
                     LogInfo("Both hits in a view are missing! Will exit the bad hit removal...");
-#endif
-                    return;
+                  }
+                  return;
                 }
             }
             isUpdated = true;
@@ -1182,9 +1188,9 @@ void KalmanFastTracking::resolveLeftRight(SRawEvent::hit_pair hpair, int& LR1, i
 
 void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, double* pos_exp, double* window)
 {
-#ifdef _DEBUG_ON
+  if (verbosity >= 3) {
     LogInfo("Building tracklets in station " << stationID);
-#endif
+  }
 
     //actuall ID of the tracklet lists
     int sID = stationID - 1;
@@ -1205,19 +1211,19 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
         pairs_V = rawEvent->getPartialHitPairsInSuperDetector(superIDs[sID][2], pos_exp[2], window[2]);
     }
 
-#ifdef _DEBUG_ON
-    LogInfo("Hit pairs in this event: ");
-    for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_X.begin(); iter != pairs_X.end(); ++iter) LogInfo("X :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
-    for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_U.begin(); iter != pairs_U.end(); ++iter) LogInfo("U :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
-    for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_V.begin(); iter != pairs_V.end(); ++iter) LogInfo("V :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
-#endif
+    if (verbosity >= 3) {
+      LogInfo("Hit pairs in this event: ");
+      for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_X.begin(); iter != pairs_X.end(); ++iter) LogInfo("X :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
+      for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_U.begin(); iter != pairs_U.end(); ++iter) LogInfo("U :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
+      for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_V.begin(); iter != pairs_V.end(); ++iter) LogInfo("V :" << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << " " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
+    }
 
     if(pairs_X.empty() || pairs_U.empty() || pairs_V.empty())
     {
-#ifdef _DEBUG_ON
+      if (verbosity >= 3) {
         LogInfo("Not all view has hits in station " << stationID);
-#endif
-        return;
+      }
+      return;
     }
 
     //X-U combination first, then add V pairs
@@ -1227,17 +1233,17 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
         double x_pos = xiter->second >= 0 ? 0.5*(hitAll[xiter->first].pos + hitAll[xiter->second].pos) : hitAll[xiter->first].pos;
         double u_min = x_pos*u_costheta[sID] - u_win[sID];
         double u_max = u_min + 2.*u_win[sID];
-
-#ifdef _DEBUG_ON
-        LogInfo("Trying X hits " << xiter->first << "  " << xiter->second << "  " << hitAll[xiter->first].elementID << " at " << x_pos);
-        LogInfo("U plane window:" << u_min << "  " << u_max);
-#endif
+        if (verbosity >= 3) {
+          LogInfo("Trying X hits " << xiter->first << "  " << xiter->second << "  " << hitAll[xiter->first].elementID << " at " << x_pos);
+          LogInfo("U plane window:" << u_min << "  " << u_max);
+        }
+        
         for(std::list<SRawEvent::hit_pair>::iterator uiter = pairs_U.begin(); uiter != pairs_U.end(); ++uiter)
         {
             double u_pos = uiter->second >= 0 ? 0.5*(hitAll[uiter->first].pos + hitAll[uiter->second].pos) : hitAll[uiter->first].pos;
-#ifdef _DEBUG_ON
-            LogInfo("Trying U hits " << uiter->first << "  " << uiter->second << "  " << hitAll[uiter->first].elementID << " at " << u_pos);
-#endif
+            if (verbosity >= 3) {
+              LogInfo("Trying U hits " << uiter->first << "  " << uiter->second << "  " << hitAll[uiter->first].elementID << " at " << u_pos);
+            }
             if(u_pos < u_min || u_pos > u_max) continue;
 
             //V projections from X and U plane
@@ -1251,15 +1257,15 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
             double v_min = 2*x_pos*u_costheta[sID] - u_pos - v_win;
             double v_max = v_min + 2.*v_win;
 
-#ifdef _DEBUG_ON
-            LogInfo("V plane window:" << v_min << "  " << v_max);
-#endif
+            if (verbosity >= 3) {
+              LogInfo("V plane window:" << v_min << "  " << v_max);
+            }
             for(std::list<SRawEvent::hit_pair>::iterator viter = pairs_V.begin(); viter != pairs_V.end(); ++viter)
             {
                 double v_pos = viter->second >= 0 ? 0.5*(hitAll[viter->first].pos + hitAll[viter->second].pos) : hitAll[viter->first].pos;
-#ifdef _DEBUG_ON
-                LogInfo("Trying V hits " << viter->first << "  " << viter->second << "  " << hitAll[viter->first].elementID << " at " << v_pos);
-#endif
+                if (verbosity >= 3) {
+                  LogInfo("Trying V hits " << viter->first << "  " << viter->second << "  " << hitAll[viter->first].elementID << " at " << v_pos);
+                }
                 if(v_pos < v_min || v_pos > v_max) continue;
 
                 //Now add the tracklet
@@ -1314,19 +1320,17 @@ void KalmanFastTracking::buildTrackletsInStation(int stationID, int listID, doub
                     continue;
                 }
 
-#ifdef _DEBUG_ON
-                tracklet_new.print();
-#endif
+                if (verbosity >= 3) {
+                  tracklet_new.print();
+                }
                 if(acceptTracklet(tracklet_new))
                 {
                     trackletsInSt[listID].push_back(tracklet_new);
                 }
-#ifdef _DEBUG_ON
-                else
+                else if (verbosity >= 3)
                 {
                     LogInfo("Rejected!!!");
                 }
-#endif
             }
         }
     }
@@ -1351,10 +1355,10 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     //Tracklet itself is okay with enough hits (4-out-of-6) and small chi square
     if(tracklet.isValid() == 0)
     {
-#ifdef _DEBUG_ON
+      if (verbosity >= 3) {
         LogInfo("Failed in quality check!");
-#endif
-        return false;
+      }
+      return false;
     }
 
     if(COARSE_MODE) return true;
@@ -1366,13 +1370,13 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
     if(tracklet.stationID > nStations-2)
     {
         if(!COSMIC_MODE && !p_geomSvc->isInKMAG(tracklet.getExpPositionX(Z_KMAG_BEND), tracklet.getExpPositionY(Z_KMAG_BEND))) return false;
-        if(!(muonID_comp(tracklet) || muonID_search(tracklet))) return false;
+        if(REQUIRE_MUID && (!(muonID_comp(tracklet) || muonID_search(tracklet)))) return false;
     }
 
     //If everything is fine ...
-#ifdef _DEBUG_ON
-    LogInfo("AcceptTracklet!!!");
-#endif
+    if (verbosity >= 3) {
+      LogInfo("AcceptTracklet!!!");
+    }
     return true;
 }
 
@@ -1404,11 +1408,11 @@ bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
             double y_min = y_mask_min[idx1][idx2] - err_y;
             double y_max = y_mask_max[idx1][idx2] + err_y;
 
-#ifdef _DEBUG_ON
-            LogInfo(*iter);
-            hitAll[*iter].print();
-            LogInfo(nHodoHits << "/" << stationIDs_mask[tracklet.stationID-1].size() << ":  " << z_hodo << "  " << x_hodo << " +/- " << err_x << "  " << y_hodo << " +/-" << err_y << " : " << x_min << "  " << x_max << "  " << y_min << "  " << y_max);
-#endif
+            if (verbosity >= 3) {
+              LogInfo(*iter);
+              hitAll[*iter].print();
+              LogInfo(nHodoHits << "/" << stationIDs_mask[tracklet.stationID-1].size() << ":  " << z_hodo << "  " << x_hodo << " +/- " << err_x << "  " << y_hodo << " +/-" << err_y << " : " << x_min << "  " << x_max << "  " << y_min << "  " << y_max);
+            }
             if(x_hodo > x_min && x_hodo < x_max && y_hodo > y_min && y_hodo < y_max)
             {
                 nHodoHits++;
@@ -1421,9 +1425,9 @@ bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
         if(!masked) return false;
     }
 
-#ifdef _DEBUG_ON
-    LogInfo(tracklet.stationID << "  " << nHodoHits << "  " << stationIDs_mask[tracklet.stationID-1].size());
-#endif
+    if (verbosity >= 3) {
+      LogInfo(tracklet.stationID << "  " << nHodoHits << "  " << stationIDs_mask[tracklet.stationID-1].size());
+    }
     return true;
 }
 
@@ -1510,43 +1514,43 @@ bool KalmanFastTracking::muonID_comp(Tracklet& tracklet)
         double cut_emp = MUID_EMP_P0 + MUID_EMP_P1/tracklet.invP + MUID_EMP_P2/tracklet.invP/tracklet.invP;
         cut = MUID_REJECTION*(cut_the > cut_emp ? cut_the : cut_emp);
     }
-#ifdef _DEBUG_ON
-    LogInfo("Muon ID cut is: " << cut << " rad.");
-#endif
+    if (verbosity >= 3) {
+      LogInfo("Muon ID cut is: " << cut << " rad.");
+    }
 
     double slope[2] = {tracklet.tx, tracklet.ty};
     PropSegment* segs[2] = {&(tracklet.seg_x), &(tracklet.seg_y)};
 
     for(int i = 0; i < 2; ++i)
     {
-#ifdef _DEBUG_ON
+      if (verbosity >= 3) {
         if(i == 0) LogInfo("Working in X-Z:");
         if(i == 1) LogInfo("Working in Y-Z:");
-#endif
+      }
 
         double pos_ref = i == 0 ? tracklet.getExpPositionX(MUID_Z_REF) : tracklet.getExpPositionY(MUID_Z_REF);
         if(segs[i]->getNHits() > 2 && segs[i]->isValid() > 0 && fabs(slope[i] - segs[i]->a) < cut && fabs(segs[i]->getExpPosition(MUID_Z_REF) - pos_ref) < MUID_R_CUT)
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Muon ID are already avaiable!");
-#endif
-            continue;
+          }
+          continue;
         }
 
         for(std::list<PropSegment>::iterator iter = propSegs[i].begin(); iter != propSegs[i].end(); ++iter)
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Testing this prop segment, with ref pos = " << pos_ref << ", slope_ref = " << slope[i]);
             iter->print();
-#endif
-            if(fabs(iter->a - slope[i]) < cut && fabs(iter->getExpPosition(MUID_Z_REF) - pos_ref) < MUID_R_CUT)
-            {
-                *(segs[i]) = *iter;
-#ifdef _DEBUG_ON
+          }
+          if(fabs(iter->a - slope[i]) < cut && fabs(iter->getExpPosition(MUID_Z_REF) - pos_ref) < MUID_R_CUT)
+          {
+            *(segs[i]) = *iter;
+            if (verbosity >= 3) {
                 LogInfo("Accepted!");
-#endif
-                break;
             }
+            break;
+          }
         }
 
         if(segs[i]->isValid() == 0) return false;
@@ -1607,9 +1611,9 @@ bool KalmanFastTracking::muonID_hodoAid(Tracklet& tracklet)
 
 void KalmanFastTracking::buildPropSegments()
 {
-#ifdef _DEBUG_ON
+  if (verbosity >= 3) {
     LogInfo("Building prop. tube segments");
-#endif
+  }
 
     for(int i = 0; i < 2; ++i)
     {
@@ -1619,24 +1623,24 @@ void KalmanFastTracking::buildPropSegments()
         std::list<SRawEvent::hit_pair> pairs_forward  = rawEvent->getPartialHitPairsInSuperDetector(superIDs[i+5][0]);
         std::list<SRawEvent::hit_pair> pairs_backward = rawEvent->getPartialHitPairsInSuperDetector(superIDs[i+5][1]);
 
-#ifdef _DEBUG_ON
-        std::cout << "superID: " << superIDs[i+5][0] << ", " << superIDs[i+5][1] << std::endl;
-        for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_forward.begin(); iter != pairs_forward.end(); ++iter)
-        	LogInfo("Forward: " << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << "  " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
-        for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_backward.begin(); iter != pairs_backward.end(); ++iter)
-        	LogInfo("Backward: " << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << "  " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
-#endif
+        if (verbosity >= 3) {        
+          std::cout << "superID: " << superIDs[i+5][0] << ", " << superIDs[i+5][1] << std::endl;
+          for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_forward.begin(); iter != pairs_forward.end(); ++iter)
+            LogInfo("Forward: " << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << "  " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
+          for(std::list<SRawEvent::hit_pair>::iterator iter = pairs_backward.begin(); iter != pairs_backward.end(); ++iter)
+            LogInfo("Backward: " << iter->first << "  " << iter->second << "  " << hitAll[iter->first].index << "  " << (iter->second < 0 ? -1 : hitAll[iter->second].index));
+        }
 
         for(std::list<SRawEvent::hit_pair>::iterator fiter = pairs_forward.begin(); fiter != pairs_forward.end(); ++fiter)
         {
-#ifdef _DEBUG_ON
+          if (verbosity >= 3) {
             LogInfo("Trying forward pair " << fiter->first << "  " << fiter->second);
-#endif
+          }
             for(std::list<SRawEvent::hit_pair>::iterator biter = pairs_backward.begin(); biter != pairs_backward.end(); ++biter)
             {
-#ifdef _DEBUG_ON
+              if (verbosity >= 3) {
                 LogInfo("Trying backward pair " << biter->first << "  " << biter->second);
-#endif
+              }
 
                 PropSegment seg;
 
@@ -1646,24 +1650,22 @@ void KalmanFastTracking::buildPropSegments()
                 if(biter->first >= 0) seg.hits[3] = SignedHit(hitAll[biter->first], 0);
                 if(biter->second >= 0) seg.hits[2] = SignedHit(hitAll[biter->second], 0);
 
-#ifdef _DEBUG_ON
-                seg.print();
-#endif
+                if (verbosity >= 3) {
+                  seg.print();
+                }
                 seg.fit();
-#ifdef _DEBUG_ON
-                seg.print();
-#endif
+                if (verbosity >= 3) {
+                  seg.print();
+                }
 
                 if(seg.isValid() > 0)
                 {
                     propSegs[i].push_back(seg);
                 }
-#ifdef _DEBUG_ON
-                else
+                else if (verbosity >= 3)
                 {
                     LogInfo("Rejected!");
                 }
-#endif
             }
         }
     }
@@ -1700,6 +1702,12 @@ int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
     tracklet.err_x0 = minimizer[idx]->Errors()[2];
     tracklet.err_y0 = minimizer[idx]->Errors()[3];
 
+    /// Avoid too-small error, which causes NaN in Tracklet::operator+().
+    if (tracklet.err_tx < 1e-6) tracklet.err_tx = 1e-6;
+    if (tracklet.err_ty < 1e-6) tracklet.err_ty = 1e-6;
+    if (tracklet.err_x0 < 1e-4) tracklet.err_x0 = 1e-4;
+    if (tracklet.err_y0 < 1e-4) tracklet.err_y0 = 1e-4;
+    
     if(KMAG_ON && tracklet.stationID == nStations)
     {
         tracklet.invP = minimizer[idx]->X()[4];
@@ -1722,19 +1730,19 @@ int KalmanFastTracking::reduceTrackletList(std::list<Tracklet>& tracklets)
         targetList.push_back(tracklets.front());
         tracklets.pop_front();
 
-#ifdef _DEBUG_ON_LEVEL_2
-        LogInfo("Current best tracklet in reduce");
-        targetList.back().print();
-#endif
+        if (verbosity >= 4) {
+          LogInfo("Current best tracklet in reduce");
+          targetList.back().print();
+        }
 
         for(std::list<Tracklet>::iterator iter = tracklets.begin(); iter != tracklets.end(); )
         {
             if(iter->similarity(targetList.back()))
             {
-#ifdef _DEBUG_ON_LEVEL_2
+              if (verbosity >= 4) {
                 LogInfo("Removing this tracklet: ");
                 iter->print();
-#endif
+              }
                 iter = tracklets.erase(iter);
                 continue;
             }
@@ -1984,9 +1992,9 @@ SRecTrack KalmanFastTracking::processOneTracklet(Tracklet& tracklet)
     }
     else
     {
-#ifdef _DEBUG_ON
+      if (verbosity >= 3) {      
     	LogInfo("!kmtrk.isValid()");
-#endif
+      }
         SRecTrack strack = tracklet.getSRecTrack();
         strack.setKalmanStatus(-1);
 
