@@ -49,6 +49,7 @@ void recoConsts::set_defaults()
   set_IntFlag("RUNNUMBER", 1);
 
   set_BoolFlag("KMAG_ON", true);
+  set_BoolFlag("REQUIRE_MUID", true);
   set_BoolFlag("COARSE_MODE", false);
   set_BoolFlag("MC_MODE", false);
   set_BoolFlag("COSMIC_MODE", false);
