@@ -36,6 +36,8 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
 
   void UseLocalSpillID(const bool use);
   bool UseLocalSpillID() const;
+  void ForceLocalSpillID(const bool force);
+  bool ForceLocalSpillID() const;
   
  protected:
   int OpenNextFile();

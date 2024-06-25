@@ -34,6 +34,7 @@ RunData::RunData() :
 
   memset(trig_bit, 0, sizeof(trig_bit));
   memset(prescale, 0, sizeof(prescale));
+  memset(v1495_id, 0, sizeof(v1495_id));
 }
 
 

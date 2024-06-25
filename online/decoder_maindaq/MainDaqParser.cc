@@ -35,6 +35,7 @@ MainDaqParser::MainDaqParser()
   , m_timer_sp_decode(new PHTimer2("timer_sp_decode"))
   , m_timer_sp_map   (new PHTimer2("timer_sp_map"))
   , m_use_local_spill_id(false)
+  , m_force_local_spill_id(false)
 {
   coda = new CodaInputManager();
   list_sd = new SpillDataMap();
@@ -273,6 +274,8 @@ int MainDaqParser::ProcessCodaFee(int* words)
     } else if (words[3] == (int)0xe906f012) {
       if (dec_par.verb) cout << "feePrescale: event " << dec_par.event_count << endl;
       return ProcessCodaFeePrescale(words);
+    } else if (words[3] == (int)0xe906f005) {
+      return ProcessCodaFeeV1495(words);
     }
   }
   return 0;
@@ -282,9 +285,9 @@ int MainDaqParser::ProcessCodaFeeBoard(int* words)
 {
   if (dec_par.verb > 1) cout << "CodaFeeBoard: event " << dec_par.event_count << endl;
 
-    FeeData data;
-    int size = words[0];
-    data.roc = words[2];
+  FeeData data;
+  int size = words[0];
+  data.roc = words[2];
     int i_wd = 3;
     while (i_wd < size)
     {
@@ -357,6 +360,26 @@ int MainDaqParser::ProcessCodaFeePrescale(int* words)
     cout << "\n  feeP ";
     for (int ii = 0; ii <  8; ii++) cout << " " << run_data.prescale[ii];
     cout << endl;
+  }
+  return 0;
+}
+
+// Words: 0=size 1=0x00840100 2=ROC 3=0xe906f005 4=N 5=v1 v2 v3 v4 v5
+int MainDaqParser::ProcessCodaFeeV1495(int* words)
+{
+  if (dec_par.verb > 0) cout << "CodaFeeV1495: event " << dec_par.event_count << endl;
+  //int size = words[0];
+  //data.roc = words[2];
+  int num = words[4];
+  if (run_data.v1495_id[0] != 0) {
+    if (dec_par.verb > 0) cout << "  Multiple events.  Overwriting." << endl;
+    memset(run_data.v1495_id, 0, sizeof(run_data.v1495_id));
+  }
+  run_data.v1495_id[0] = num;
+  for (int ii = 0; ii < num; ii++) {
+    int value = words[5+ii];
+    run_data.v1495_id[ii+1] = value;
+    if (dec_par.verb > 0) cout << "  feeV1495\t" << ii << "\t" << value << "\n";
   }
   return 0;
 }
@@ -596,7 +619,8 @@ int MainDaqParser::ProcessPhysBOSEOS(int* words, const int event_type)
     /// Use a temporary spill ID if requested.
     /// Useful in the cosmic-ray commissioning since spill ID is not always available.
     static int spillID_local = 0;
-    if (m_use_local_spill_id) dec_par.spillID_cntr = ++spillID_local;
+    if (m_force_local_spill_id ||
+        (m_use_local_spill_id && dec_par.spillID_cntr == 0)) dec_par.spillID_cntr = ++spillID_local;
 
     /// Regard the Slow Control info as primary (rather than Spill Counter)
     dec_par.spillID     = dec_par.spillID_cntr;
@@ -1519,7 +1543,7 @@ void MainDaqParser::SetEventInfo(EventInfo* evt, const int eventID)
   if        (evt->codaEventID == 0) {
     evt->codaEventID = dec_par.event_count;
   } else if ((unsigned int)evt->codaEventID != dec_par.event_count) {
-    if (dec_par.verb > 0) cout << "  CodaEventID Mismatch @ eventID " << eventID << ", rocID " << dec_par.rocID << ": " << evt->codaEventID << " vs " << dec_par.event_count << "\n";
+    if (dec_par.verb > 10) cout << "  CodaEventID Mismatch @ eventID " << eventID << ", rocID " << dec_par.rocID << ": " << evt->codaEventID << " vs " << dec_par.event_count << "\n";
     if ((unsigned int)evt->codaEventID > dec_par.event_count) dec_par.event_count = evt->codaEventID;
   }
 }

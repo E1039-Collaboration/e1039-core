@@ -260,6 +260,8 @@ public:
     bool isPropTube(const std::string detectorName) const; ///< Return "true" for prop tube planes.
     bool isDPHodo(const int detectorID) const; ///< Return "true" for DP hodo planes.
     bool isDPHodo(const std::string detectorName) const; ///< Return "true" for DP hodo planes.
+    bool isInh(const int detectorID) const; ///< Return "true" for BeforeInh and AfterInh signals.
+    bool isInh(const std::string detectorName) const;
 
     int getHodoStation(const int detectorID) const; ///< Return a station number (1-4) for hodo planes or "0" for others.
     int getHodoStation(const std::string detectorName) const; ///< Return a station number (1-4) for hodo planes or "0" for others.

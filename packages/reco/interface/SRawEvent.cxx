@@ -84,7 +84,7 @@ SRawEvent::SRawEvent() : fRunID(-1), fEventID(-1), fSpillID(-1), fTriggerBits(-1
 {
     fAllHits.clear();
     fTriggerHits.clear();
-    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++)
+    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; i++)
     {
         fNHits[i] = 0;
     }
@@ -112,7 +112,7 @@ void SRawEvent::DeepClone(SRawEvent *c)
     for(int i=0; i<4; ++i)  fNRoads[i]    = c->getNRoads()[i];
 
 
-    for(Short_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++) {
+    for(Short_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; i++) {
         fNHits[i] = c->getNHitsInDetector(i);
     }
     fAllHits      = c->getAllHits();
@@ -130,7 +130,7 @@ void SRawEvent::setEventInfo(Int_t runID, Int_t spillID, Int_t eventID)
 
 void SRawEvent::insertHit(Hit h)
 {
-    if(h.detectorID < 1 || h.detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes) return;
+    if(h.detectorID < 1 || h.detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) return;
     fAllHits.push_back(h);
 
     fNHits[0]++;
@@ -139,7 +139,7 @@ void SRawEvent::insertHit(Hit h)
 
 Int_t SRawEvent::findHit(Short_t detectorID, Short_t elementID)
 {
-    if(detectorID < 1 || detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes) return -1;
+    if(detectorID < 1 || detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) return -1;
     if(elementID < 0) return -1;
 
     /*
@@ -417,7 +417,7 @@ Int_t SRawEvent::getNHitsInDetectors(std::vector<Int_t>& detectorIDs)
     UInt_t nDetectors = detectorIDs.size();
     for(UInt_t i = 0; i < nDetectors; i++)
     {
-        for(Int_t j = 0; j <= nChamberPlanes+nHodoPlanes+nPropPlanes; j++)
+        for(Int_t j = 0; j <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; j++)
         {
             if(detectorIDs[i] == j)
             {
@@ -561,7 +561,7 @@ void SRawEvent::reIndex(bool doSort)
     if(doSort) std::sort(fAllHits.begin(), fAllHits.end());
 
     ///Reset the number of hits on each plane
-    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++) fNHits[i] = 0;
+    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; i++) fNHits[i] = 0;
     for(UInt_t i = 0; i < fAllHits.size(); i++) ++fNHits[fAllHits[i].detectorID];
 
     fNHits[0] = fAllHits.size();
@@ -605,7 +605,7 @@ void SRawEvent::clear()
 {
     //set everything to empty or impossible numbers
     fAllHits.clear();
-    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+1; i++) fNHits[i] = 0;
+    for(Int_t i = 0; i < nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes+1; i++) fNHits[i] = 0;
 
     fRunID = -1;
     fSpillID = -1;

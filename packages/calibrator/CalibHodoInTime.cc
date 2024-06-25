@@ -76,15 +76,14 @@ int CalibHodoInTime::process_event(PHCompositeNode* topNode)
   for (SQHitVector::Iter it = m_vec_hit->begin(); it != m_vec_hit->end(); it++) {
     SQHit* hit = *it;
     int det = hit->get_detector_id();
-    if (!geom->isHodo(det)) continue;
+    if (!geom->isHodo(det) && !geom->isDPHodo(det) && !geom->isInh(det)) continue;
 
     int ele = hit->get_element_id();
     double center, width;
     if (! m_cal_taiwan->Find(det, ele, center, width)) {
-      cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << ".\n";
-      hit->set_in_time(false);
+      if (Verbosity() > 1) cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " ele=" << ele << ".\n";
+      //hit->set_in_time(false);
       continue;
-      //return Fun4AllReturnCodes::ABORTEVENT;
     }
     hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width / 2 );
     hit->set_drift_distance(0);
@@ -99,10 +98,9 @@ int CalibHodoInTime::process_event(PHCompositeNode* topNode)
     int lvl = hit->get_level();
     double center, width;
     if (! m_cal_v1495->Find(det, ele, lvl, center, width)) {
-      cerr << "  WARNING:  Cannot find the in-time parameter for trigger det=" << det << " ele=" << ele << " lvl=" << lvl << ".\n";
-      hit->set_in_time(false);
+      if (Verbosity() > 1) cerr << "  WARNING:  Cannot find the in-time parameter for trigger det=" << det << " ele=" << ele << " lvl=" << lvl << ".\n";
+      //hit->set_in_time(false);
       continue;
-      //return Fun4AllReturnCodes::ABORTEVENT;
     }
     hit->set_in_time( fabs(hit->get_tdc_time() - center) <= width / 2 );
     hit->set_drift_distance(0);
