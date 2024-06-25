@@ -26,6 +26,7 @@ void recoConsts::set_CharFlag(const std::string& name, const std::string& flag)
 
 std::string recoConsts::ExpandEnvironmentals(const std::string& input)
 {
+  if (input.length() == 00) return ""; // Treat specially since exp_result.we_wordc = 0 when input is "".
   wordexp_t exp_result;
   if(wordexp(input.c_str(), &exp_result, 0) != 0)
   {
@@ -51,6 +52,7 @@ void recoConsts::set_defaults()
   set_BoolFlag("COARSE_MODE", false);
   set_BoolFlag("MC_MODE", false);
   set_BoolFlag("COSMIC_MODE", false);
+  set_BoolFlag("REQUIRE_MUID", true);
 
   set_BoolFlag("TARGETONLY", false);
   set_BoolFlag("DUMPONLY", false);
