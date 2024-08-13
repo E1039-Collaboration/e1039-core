@@ -33,6 +33,11 @@ class Fun4AllEVIOInputManager : public Fun4AllInputManager
   void EventSamplingFactor(const int factor);
   void DirParam(const std::string dir);
   void PretendSpillInterval(const int sec);
+
+  void UseLocalSpillID(const bool use);
+  bool UseLocalSpillID() const;
+  void ForceLocalSpillID(const bool force);
+  bool ForceLocalSpillID() const;
   
  protected:
   int OpenNextFile();

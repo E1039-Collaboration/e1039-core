@@ -34,12 +34,16 @@ class MainDaqParser {
   PHTimer2* m_timer_sp_decode;
   PHTimer2* m_timer_sp_map;
 
+  bool m_use_local_spill_id;
+  bool m_force_local_spill_id;
+
   // Handlers of CODA Event
   int ProcessCodaPrestart   (int* words);
   int ProcessCodaEnd        (int* words);
   int ProcessCodaFee        (int* words);
   int ProcessCodaFeeBoard   (int* words);
   int ProcessCodaFeePrescale(int* words);
+  int ProcessCodaFeeV1495   (int* words);
   int ProcessCodaPhysics    (int* words);
 
   // Handlers of CODA PHYSICS Event
@@ -83,6 +87,11 @@ public:
   bool NextPhysicsEvent(EventData*& ed, SpillData*& sd, RunData*& rd);
   RunData* GetRunData() { return &run_data; }
   int End();
+
+  void UseLocalSpillID(const bool use) { m_use_local_spill_id = use; }
+  bool UseLocalSpillID() const  { return m_use_local_spill_id; }
+  void ForceLocalSpillID(const bool force) { m_force_local_spill_id = force; }
+  bool ForceLocalSpillID() const  { return m_force_local_spill_id; }
 
   DecoParam dec_par;
   DecoError dec_err;

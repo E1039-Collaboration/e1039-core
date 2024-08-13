@@ -10,12 +10,16 @@ class TGLabel;
 class TGNumberEntry;
 
 class EventDispUI {
+ protected:
   static const int RUN_MIN =  1000; //< Min of search range
   static const int RUN_MAX = 40000; //< Max of search range
   typedef std::vector<int> RunList_t;
+  typedef std::vector<int> SpillList_t;
   RunList_t m_list_run;
+  SpillList_t m_list_spill;
 
   int m_run;
+  int m_spill;
   int m_n_evt;
   int m_i_evt;
   
@@ -38,15 +42,16 @@ class EventDispUI {
 
  public:
   EventDispUI();
-  ~EventDispUI() {;}
+  virtual ~EventDispUI() {;}
 
-  std::string GetDstPath(const int run);
+  std::string GetDstPath(const int run, const int spill=0);
   bool FindNewRuns();
+  bool FindSpillDSTs();
 
-  int FetchNumEvents(const int run);
-  int OpenRunFile(const int run);
-  void NextEvent();
-  void PrevEvent();
+  int FetchNumEvents(const int run, const int spill=0);
+  int OpenRunFile(const int run, const int spill=0);
+  virtual void NextEvent();
+  virtual void PrevEvent();
   void MoveEvent(const int i_evt);
   void ReqEvtID();
   void ReqTrig();
@@ -56,7 +61,7 @@ class EventDispUI {
   void UpdateLabels();
   void SetAutoMode(bool value);
   void Init(const bool online_mode);
-  void Run();
+  virtual void Run();
 
  protected:
   void BuildInterface();
@@ -64,6 +69,8 @@ class EventDispUI {
 
   static void* FuncNewEventCheck(void* arg);
   void ExecNewEventCheck();
+
+  int ReadNumber(const std::string msg="Run?");
 };
 
 #endif /* _EVENT_DISP_UI__H_ */

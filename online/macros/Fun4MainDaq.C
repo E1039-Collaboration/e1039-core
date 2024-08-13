@@ -32,16 +32,15 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   string fn_out = oss.str();
   gSystem->mkdir(UtilOnline::GetDstFileDir().c_str(), true);
 
-  recoConsts* rc = recoConsts::instance();
-  rc->set_IntFlag("RUNNUMBER", run);
-
   OnlMonServer* se = OnlMonServer::instance();
   //se->Verbosity(1);
+  se->setRun(run); // This sets the `RUNNUMBER` flag.
   se->SetOnline(is_online);
 
   Fun4AllEVIOInputManager *in = new Fun4AllEVIOInputManager("MainDaq");
   in->Verbosity(3);
   in->SetOnline(is_online);
+  //in->UseLocalSpillID(true); // default = false
   //if (is_online) in->PretendSpillInterval(20);
   in->fileopen(fn_in);
   se->registerInputManager(in);
@@ -58,6 +57,8 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new OnlMonMainDaq());
     se->registerSubsystem(new OnlMonTrigSig());
     se->registerSubsystem(new OnlMonTrigNim());
+    se->registerSubsystem(new OnlMonTrigV1495("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
+    se->registerSubsystem(new OnlMonTrigEP   ("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
     se->registerSubsystem(new OnlMonQie());
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
     se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));
@@ -96,7 +97,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
 
   if (output_spill_dst) {
     Fun4AllSpillDstOutputManager *om_spdst = new Fun4AllSpillDstOutputManager(UtilOnline::GetDstFileDir(), "SPILLDSTOUT");
-    om_spdst->SetSpillStep(100);
+    om_spdst->SetSpillStep(1);
     om_spdst->EnableDB();
     se->registerOutputManager(om_spdst);
   }
@@ -105,7 +106,7 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
     se->registerSubsystem(new EvtDispFilter(1000, 1)); // (step, max per spill)
 
     oss.str("");
-    oss << "/data2/e1039/online/evt_disp";
+    oss << "/data4/e1039_data/online/evt_disp";
     gSystem->mkdir(oss.str().c_str(), true);
     oss << "/run_" << setfill('0') << setw(6) << run << "_evt_disp.root";
     Fun4AllDstOutputManager *om_eddst = new Fun4AllDstOutputManager("EDDST", oss.str());
@@ -115,8 +116,9 @@ int Fun4MainDaq(const int run=46, const int nevent=0, const bool is_online=false
   }
 
   if (is_online) {
-    Fun4AllSRawEventOutputManager *om_sraw = new Fun4AllSRawEventOutputManager("/data2/e1039/online");
+    Fun4AllSRawEventOutputManager *om_sraw = new Fun4AllSRawEventOutputManager("/data4/e1039_data/online");
     om_sraw->Verbosity(10);
+    om_sraw->EnableDB();
     se->registerOutputManager(om_sraw);
   }
 

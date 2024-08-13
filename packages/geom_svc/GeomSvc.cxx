@@ -296,7 +296,7 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("H4T"  , ++idx));
     // Please make sure of "idx = nChamberPlanes + nHodoPlanes" here
 
-    map_detectorID.insert(nameToID("P1Y1", ++idx));
+    map_detectorID.insert(nameToID("P1Y1", ++idx)); // 47
     map_detectorID.insert(nameToID("P1Y2", ++idx));
     map_detectorID.insert(nameToID("P1X1", ++idx));
     map_detectorID.insert(nameToID("P1X2", ++idx));
@@ -306,7 +306,7 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("P2Y2", ++idx));
     // Please make sure of "idx = nChamberPlanes + nHodoPlanes + nPropPlanes" here
 
-    map_detectorID.insert(nameToID("DP1TL", ++idx));
+    map_detectorID.insert(nameToID("DP1TL", ++idx)); // 55
     map_detectorID.insert(nameToID("DP1TR", ++idx));
     map_detectorID.insert(nameToID("DP1BL", ++idx));
     map_detectorID.insert(nameToID("DP1BR", ++idx));
@@ -316,7 +316,7 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("DP2BR", ++idx));
     // Please make sure of "idx = nChamberPlanes + nHodoPlanes + nPropPlanes + nDarkPhotonPlanes" here
 
-    map_detectorID.insert(nameToID("BeforeInhNIM"   , ++idx));
+    map_detectorID.insert(nameToID("BeforeInhNIM"   , ++idx)); // 63
     map_detectorID.insert(nameToID("BeforeInhMatrix", ++idx));
     map_detectorID.insert(nameToID("AfterInhNIM"    , ++idx));
     map_detectorID.insert(nameToID("AfterInhMatrix" , ++idx));
@@ -335,7 +335,7 @@ void GeomSvc::init()
     map_detectorID.insert(nameToID("L1NIMyb"        , ++idx));
     // No constant for this name group is defined in GlobalConsts.h.
 
-    map_detectorID.insert(nameToID("H4Y1Ll", ++idx));
+    map_detectorID.insert(nameToID("H4Y1Ll", ++idx)); // 80
     map_detectorID.insert(nameToID("H4Y1Lr", ++idx));
     map_detectorID.insert(nameToID("H4Y1Rl", ++idx));
     map_detectorID.insert(nameToID("H4Y1Rr", ++idx));
@@ -799,6 +799,16 @@ bool GeomSvc::isDPHodo(const int detectorID) const
 bool GeomSvc::isDPHodo(const std::string detectorName) const
 {
   return detectorName.substr(0, 2) == "DP";
+}
+
+bool GeomSvc::isInh(const int detectorID) const
+{
+  return isInh(getDetectorName(detectorID));
+}
+
+bool GeomSvc::isInh(const std::string detectorName) const
+{
+  return detectorName.substr(0, 6) == "Before" || detectorName.substr(0, 5) == "After";
 }
 
 int GeomSvc::getHodoStation(const int detectorID) const

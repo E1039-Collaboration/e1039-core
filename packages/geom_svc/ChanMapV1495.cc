@@ -24,7 +24,8 @@ int ChanMapV1495::ReadFileCont(LineList& lines)
     iss.clear(); // clear any error flags
     iss.str(*it);
     string det;
-    short  ele, lvl, roc, board, chan;
+    short  ele, lvl, roc, chan;
+    int board;
     if (! (iss >> det >> ele >> lvl >> roc >> board >> chan)) continue;
     Add(roc, board, chan, det, ele, lvl);
     nn++;
@@ -50,7 +51,7 @@ void ChanMapV1495::ReadDbTable(DbSvc& db)
   TSQLStatement* stmt = db.Process(oss.str());
   while (stmt->NextResultRow()) {
     short  roc      = stmt->GetInt   (0);
-    short  board    = stmt->GetInt   (1);
+    int    board    = stmt->GetInt   (1);
     short  chan     = stmt->GetInt   (2);
     string det_name = stmt->GetString(3);
     short  det      = stmt->GetInt   (4);
@@ -65,8 +66,8 @@ void ChanMapV1495::WriteDbTable(DbSvc& db)
 {
   string name_table = MapTableName();
 
-  const char* list_var [] = {      "roc",    "board",     "chan",    "det_name",      "det",      "ele",      "lvl" };
-  const char* list_type[] = { "SMALLINT", "SMALLINT", "SMALLINT", "VARCHAR(32)", "SMALLINT", "SMALLINT", "SMALLINT" };
+  const char* list_var [] = {      "roc", "board",     "chan",    "det_name",      "det",      "ele",      "lvl" };
+  const char* list_type[] = { "SMALLINT",   "INT", "SMALLINT", "VARCHAR(32)", "SMALLINT", "SMALLINT", "SMALLINT" };
   const int   n_var       = 7;
   db.CreateTable(name_table, n_var, list_var, list_type);
 
@@ -88,7 +89,7 @@ void ChanMapV1495::WriteDbTable(DbSvc& db)
  * todo: The "STOP" and "L1PX*" detectors should be handled by GeomSvc properly.
  */
 void ChanMapV1495::Add(
-  const short roc, const short board, const short chan, 
+  const short roc, const int board, const short chan, 
   const std::string det, const short ele, const short lvl)
 {
   GeomSvc* geom = GeomSvc::instance();
@@ -115,7 +116,7 @@ void ChanMapV1495::Add(
 }
 
 void ChanMapV1495::Add(
-  const short roc, const short board, const short chan, 
+  const short roc, const int board, const short chan, 
   const std::string det_name, const short det_id, const short ele, const short lvl)
 {
   MapItem item;
@@ -130,7 +131,7 @@ void ChanMapV1495::Add(
   m_map[RocBoardChan_t(roc, board, chan)] = DetEleLvl_t(det_id, ele, lvl);
 }
 
-//bool ChanMapV1495::Find(const short roc, const short board, const short chan,  std::string& det, short& ele, short& lvl)
+//bool ChanMapV1495::Find(const short roc, const int board, const short chan,  std::string& det, short& ele, short& lvl)
 //{
 //  RocBoardChan_t key(roc, board, chan);
 //  if (m_map.find(key) != m_map.end()) {
@@ -145,7 +146,7 @@ void ChanMapV1495::Add(
 //  return false;
 //}  
 
-bool ChanMapV1495::Find(const short roc, const short board, const short chan,  short& det, short& ele, short& lvl)
+bool ChanMapV1495::Find(const short roc, const int board, const short chan,  short& det, short& ele, short& lvl)
 {
   RocBoardChan_t key(roc, board, chan);
   if (m_map.find(key) != m_map.end()) {
