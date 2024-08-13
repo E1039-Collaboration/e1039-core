@@ -624,6 +624,7 @@ void SRawEvent::clear()
 
 void SRawEvent::setTriggerBits(Int_t triggers[])
 {
+  fTriggerBits = 0;
     for(int i = 0; i < 10; ++i)
     {
         if(triggers[i] == 0) continue;
