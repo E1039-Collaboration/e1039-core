@@ -38,6 +38,7 @@
 #include "TGLViewer.h"
 #include "TGPack.h"
 
+#include <TVirtualX.h>
 #include "TSystem.h"
 #include "TStyle.h"
 #include "TFile.h"

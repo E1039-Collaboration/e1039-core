@@ -35,7 +35,7 @@ include_directories("${PROJECT_SOURCE_DIR}/")
 include_directories("${PROJECT_SOURCE_DIR}/../interface")
 include_directories("${PROJECT_SOURCE_DIR}/../ktracker")
 include_directories("${PROJECT_SOURCE_DIR}/../kfitter")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++11 -Wno-shadow")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GEANT4_CFLAGS} ${ROOT_CFLAGS} -std=c++17 -Wno-shadow")
 
 add_library(sqgenfit SHARED ${sources})
 target_link_libraries(sqgenfit -lgenfit2 -lktracker_interface -lphfield)

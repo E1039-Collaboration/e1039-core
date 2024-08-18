@@ -52,7 +52,7 @@ if   [ ${HOSTNAME:0:11} = 'seaquestdaq' -o \
     {
 	echo 'export  E1039_ROOT=/data2/e1039'
 	echo 'source $E1039_ROOT/resource/this-resource.sh'
-	echo 'source $E1039_ROOT/share/this-share.sh'
+	echo 'source $E1039_ROOT/share/default/this-share.sh'
 	echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
     } >$DIR_INST/this-e1039.sh
     
@@ -65,7 +65,7 @@ elif [ ${HOSTNAME:0:12} = 'seaquestgpvm' -o \
 	echo '    E1039_ROOT=/cvmfs/seaquest.opensciencegrid.org/seaquest/software/e1039'
 	echo 'fi'
 	echo 'source $E1039_ROOT/resource/this-resource.sh'
-	echo 'source $E1039_ROOT/share/this-share.sh'
+	echo 'source $E1039_ROOT/share/default/this-share.sh'
 	echo 'source $(dirname $(readlink -f $BASH_SOURCE))/this-core.sh'
     } >$DIR_INST/this-e1039.sh
     
