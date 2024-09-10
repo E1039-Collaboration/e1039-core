@@ -90,14 +90,4 @@ std::string TrigRoadset::str(const int level) const
   return oss.str();
 }
 
-//std::ostream& operator<<(std::ostream& os, const TrigRoadset& rs)
-//{
-//  os << "Roadset = " << rs.RoadsetID() << ", LBTop = " << hex << rs.LBTop() << ", LBBot = " << rs.LBBot() << dec << "\n"
-//     << "  " << *rs.PosTop() << "\n"
-//     << "  " << *rs.PosBot() << "\n"
-//     << "  " << *rs.NegTop() << "\n"
-//     << "  " << *rs.NegBot() << "\n";
-//  return os;
-//}
-
 }; // End of "namespace UtilTrigger"

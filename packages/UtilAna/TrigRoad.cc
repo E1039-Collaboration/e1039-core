@@ -41,11 +41,5 @@ std::string TrigRoad::str(const int level) const
   if (level > 1) oss << (charge > 0 ? '+' : '-');
   return oss.str();
 }
-
-//std::ostream& operator<<(std::ostream& os, const TrigRoad& rd)
-//{
-//  os << setw(6) << rd.road_id << ": " << rd.charge << " (" << rd.H1X << ", " << rd.H2X << ", " << rd.H3X << ", " << rd.H4X << ")";
-//  return os;
-//}
   
 }; // End of "namespace UtilTrigger"

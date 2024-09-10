@@ -20,7 +20,6 @@ class TrigRoad {
   static int  Hodo2Road(const int h1, const int h2, const int h3, const int h4, const int tb);
   
   std::string str(const int level=0) const;
-  //friend std::ostream& operator<<(std::ostream& os, const TrigRoad& rd);
 };
   
 }; // namespace UtilTrigger

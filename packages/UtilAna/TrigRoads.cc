@@ -66,13 +66,4 @@ std::string TrigRoads::str(const int level) const
   return oss.str();
 }
 
-//std::ostream& operator<<(std::ostream& os, const TrigRoads& tr)
-//{
-//  ostringstream oss;
-//  oss << showpos << "Charge = " << tr.Charge() << ", TopBot = " << tr.TopBot() << ", N of roads = "
-//      << noshowpos << tr.GetNumRoads();
-//  os << oss.str();
-//  return os;
-//}
-
 }; // End of "namespace UtilTrigger"

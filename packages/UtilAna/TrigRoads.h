@@ -27,7 +27,6 @@ class TrigRoads {
   int LoadConfig(const std::string file_name);
 
   std::string str(const int level=0) const;
-  //friend std::ostream& operator<<(std::ostream& os, const TrigRoads& tr);
 };
 
 }; // namespace UtilTrigger
