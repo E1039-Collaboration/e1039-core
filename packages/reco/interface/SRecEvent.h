@@ -82,9 +82,10 @@ public:
     virtual void           set_mom_st3(const TLorentzVector a) { throw std::logic_error(__PRETTY_FUNCTION__); }
 
     virtual double get_chisq() const          { return fChisq; }
-    virtual double get_chisq_target() const   { return fChisqVertex; }
+    virtual double get_chisq_target() const   { return fChisqTarget; }
     virtual double get_chisq_dump() const     { return fChisqDump; } 
     virtual double get_chsiq_upstream() const { return fChisqUpstream; } 
+    virtual double get_chisq_upstream() const { return fChisqUpstream; } 
 
     virtual TVector3 get_pos_target() const   { return fTargetPos; }
     virtual TVector3 get_pos_dump() const     { return fDumpPos; }
