@@ -52,7 +52,7 @@ enum { STANDARD_PHYSICS =  14 }; //
 enum { FLUSH_EVENTS     =  10 }; // previous IGNORE_ME type
 enum { SLOW_CONTROL     = 130 };
 enum { RUN_DESCRIPTOR   = 140 };
-enum { PRESTART_INFO    = 150 };
+enum { PRESTART_INFO    = 150 }; // 132 = 0x84.  Was 150 in E906?
 enum { BEGIN_SPILL      =  11 };
 enum { END_SPILL        =  12 };
 enum { SPILL_COUNTER    = 129 };

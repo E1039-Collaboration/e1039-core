@@ -122,13 +122,21 @@ PHEveDisplay::load_geometry(PHCompositeNode *topNode, TEveManager* geve)
     node[i]->GetVolume()->SetTransparency(95); // 0: opaque, 100: transparent
 
     std::string name(node[i]->GetName());
-    if (name.find("fmag") < 5 || name.find("kmag") < 5) { // make fmag
+    std::cout << "name " << name << std::endl;
+    bool is_fmag = name.find("fmag") < 5;
+    bool is_kmag = name.find("kmag") < 5;
+    if (is_fmag || is_kmag) { // make fmag
       TGeoVolume* subvol = node[i]->GetVolume();
       const int nsub = subvol->GetNdaughters();
       TGeoNode* subnod[nsub];
       for (int j = 0; j < nsub; j++) {
         subnod[j] = subvol->GetNode(j);
-        subnod[j]->GetVolume()->SetTransparency(100);
+        std::string mat_name = subnod[j]->GetMedium()->GetMaterial()->GetName();
+        int trans;
+        if      (mat_name == "G4_Fe") trans =   0;
+        else if (mat_name == "G4_Al") trans =  95;
+        else                          trans = 100;
+        subnod[j]->GetVolume()->SetTransparency(trans); // (100);
       }
     }
   }

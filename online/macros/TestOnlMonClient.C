@@ -1,21 +1,27 @@
 R__LOAD_LIBRARY(libinterface_main)
 R__LOAD_LIBRARY(libonlmonserver)
 
-int TestOnlMonClient(const int run_id=3620, const int n_evt=0)
+int TestOnlMonClient(const int run_id=3620, const int spill_id=0, const int n_evt=0)
 {
   gSystem->Umask(0002);
-  string fn_in = UtilOnline::GetDstFilePath(run_id);
+  //string fn_in = UtilOnline::GetDstFilePath(run_id);
+  ostringstream oss;
+  oss << setfill('0') << "/data2/e1039/dst/run_" << setw(6) << run_id << "/run_" << setw(6) << run_id << "_spill_" << setw(9) << spill_id << "_spin.root";
+  string fn_in = oss.str();
   cout << "DST = " << fn_in << endl;
   UtilOnline::SetOnlMonDir("/dev/shm/$USER/onlmon/plots");
   OnlMonServer* se = OnlMonServer::instance();
+  //se->setRun(run_id);
   se->SetOnline(false);
 
   ///
   /// Enable only what you want to test
   ///
-  se->registerSubsystem(new OnlMonMainDaq());
-  se->registerSubsystem(new OnlMonTrigSig());
+  //se->registerSubsystem(new OnlMonMainDaq());
+  //se->registerSubsystem(new OnlMonTrigSig());
   //se->registerSubsystem(new OnlMonTrigNim());
+  se->registerSubsystem(new OnlMonTrigV1495("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
+  se->registerSubsystem(new OnlMonTrigEP   ("rs_FPGA1_NIM_top.txt", "", "rs_FPGA1_NIM_bottom.txt", ""));
   //se->registerSubsystem(new OnlMonQie());
   //se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H1X, 1));
   //se->registerSubsystem(new OnlMonV1495(OnlMonV1495::H2X, 1));

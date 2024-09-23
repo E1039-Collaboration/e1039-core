@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <sys/stat.h>
 #include <TSystem.h>
@@ -20,6 +21,7 @@ using namespace std;
 
 EventDispUI::EventDispUI()
   : m_run(0)
+  , m_spill(0)
   , m_n_evt(0)
   , m_i_evt(0)
   , m_fr_main(0)
@@ -39,9 +41,13 @@ EventDispUI::EventDispUI()
   ;
 }
 
-std::string EventDispUI::GetDstPath(const int run)
+std::string EventDispUI::GetDstPath(const int run, const int spill)
 {
-  return m_online_mode ? UtilOnline::GetEDDstFilePath(run) : UtilOnline::GetDstFilePath(run);
+  if (m_online_mode) {
+    return UtilOnline::GetEDDstFilePath(run);
+  } else {
+    return UtilOnline::GetSpillDstDir(run) + "/" + UtilOnline::GetSpillDstFile(run, spill);
+  }
 }
 
 bool EventDispUI::FindNewRuns()
@@ -49,7 +55,7 @@ bool EventDispUI::FindNewRuns()
   int nn = m_list_run.size();
   int run = nn > 0  ? m_list_run[nn-1] : RUN_MIN;
   while (++run < RUN_MAX) {
-    string fname = GetDstPath(run);
+    string fname = GetDstPath(run, 0);
     if (! gSystem->AccessPathName(fname.c_str())) { // if exists
       m_list_run.push_back(run);
     }
@@ -57,10 +63,30 @@ bool EventDispUI::FindNewRuns()
   return m_list_run.size() > nn;
 }
 
-int EventDispUI::FetchNumEvents(const int run)
+bool EventDispUI::FindSpillDSTs()
+{
+  m_list_spill.clear();
+  string dir_dst = UtilOnline::GetSpillDstDir(m_run);
+  cout << "\nSpill-level DST directory: " << dir_dst << endl;
+  void *dirp = gSystem->OpenDirectory(dir_dst.c_str());
+  if (dirp == 0) return false; // The directory does not exist.
+  const char* name_char;
+  while ((name_char = gSystem->GetDirEntry(dirp))) {
+    string name = name_char;
+    if (name.length() != 36) continue; // run_005638_spill_001907985_spin.root
+    if (name.substr(0, 4) != "run_") continue; // easy check
+    int spill = atoi(name.substr(17, 9).c_str());
+    m_list_spill.push_back(spill);
+  }
+  gSystem->FreeDirectory(dirp);
+  sort(m_list_spill.begin(), m_list_spill.end());
+  return m_list_spill.size() > 0;
+}
+
+int EventDispUI::FetchNumEvents(const int run, const int spill)
 {
   int ret = -1;
-  TFile* file = new TFile(GetDstPath(run).c_str());
+  TFile* file = new TFile(GetDstPath(run, spill).c_str());
   if (file->IsOpen()) {
     TTree* tree = (TTree*)file->Get("T");
     if (tree) ret = tree->GetEntries();
@@ -69,15 +95,18 @@ int EventDispUI::FetchNumEvents(const int run)
   return ret;
 }
 
-int EventDispUI::OpenRunFile(const int run)
+int EventDispUI::OpenRunFile(const int run, const int spill)
 {
-  cout << "EventDispUI::OpenRunFile(): run = " << run << endl;
-  m_run = run;
-  m_n_evt = FetchNumEvents(run);
+  string fname = GetDstPath(run, spill);
+  cout << "EventDispUI::OpenRunFile(): run = " << run << "\n"
+       << "  " << fname << endl;
+  m_run   = run;
+  m_spill = spill;
+  m_n_evt = FetchNumEvents(run, spill);
   m_i_evt = 0;
   UpdateLabels();
   Fun4AllInputManager *in = Fun4AllServer::instance()->getInputManager("DSTIN");
-  return in->fileopen(GetDstPath(run));
+  return in->fileopen(fname);
 }
 
 void EventDispUI::NextEvent()
@@ -111,7 +140,7 @@ void EventDispUI::PrevEvent()
   }
   int i_new = m_i_evt - 1;
   cout << "Prev: " << i_new << " / " << m_n_evt << endl;
-  if (OpenRunFile(m_run) != 0) {
+  if (OpenRunFile(m_run, m_spill) != 0) {
     cout << "PrevEvent(): Cannot reopen DST." << endl;
     return;
   }
@@ -127,7 +156,7 @@ void EventDispUI::PrevEvent()
 void EventDispUI::MoveEvent(const int i_evt)
 {
   if (i_evt > m_n_evt) {
-    OpenRunFile(m_run);
+    OpenRunFile(m_run, m_spill);
     if (i_evt > m_n_evt) {
       cout << "Unexpected!!" << endl;
       return;
@@ -214,18 +243,44 @@ void EventDispUI::Init(const bool online_mode)
   m_run = m_list_run.back();
   if (! online_mode) {
     cout << "\nHit only 'Enter' to select the last run, " << m_list_run.back() << ".\n"
-         << "Or input a run number that you select.\n";
-    while (true) {
-      cout << "Run? " << flush;
-      char line[64];
-      cin.getline(line, 64);
-      if (line[0] == '\0') {
-        m_run = m_list_run.back();
-      } else if ((m_run = atoi(line)) <= 0) {
-        cout << "  Invalid input." << endl;
-        continue;
-      }
-      break;
+         << "Or input a run number to select.\n";
+    m_run = ReadNumber("Run?");
+    cout << "Run = " << m_run << endl;
+    if (m_run < 0) m_run = m_list_run.back();
+    cout << "Run = " << m_run << endl;
+
+    if (! FindSpillDSTs()) {
+      cout << "Found no spill-level DST file.  Abort." << endl;
+      exit(2);
+    }
+    cout << "Available spill-level DST files:\n";
+    for (unsigned int ii = 0; ii < m_list_spill.size(); ii++) {
+      cout << "  " << setw(9) << m_list_spill[ii];
+      if (ii % 5 == 4) cout << "\n";
+    }
+
+    cout << "\nHit only 'Enter' to select the last spill, " << m_list_spill.back() << ".\n"
+         << "Or input a spill number to select.\n";
+    m_spill = ReadNumber("Spill?");
+    if (m_spill < 0) m_spill = m_list_spill.back();
+  }
+}
+
+int EventDispUI::ReadNumber(const std::string msg)
+{
+  int number;
+  while (true) {
+    cout << msg << " " << flush;
+    char line[64];
+    cin.getline(line, 64);
+    if (line[0] == '\0') {
+      return -1;
+    } else if (line[0] == '0') {
+      return 0;
+    } else if ((number = atoi(line)) > 0) {
+      return number;
+    } else {
+      cout << "  Invalid input." << endl;
     }
   }
 }
@@ -233,7 +288,7 @@ void EventDispUI::Init(const bool online_mode)
 void EventDispUI::Run()
 {
   BuildInterface();
-  OpenRunFile(m_run);
+  OpenRunFile(m_run, m_spill);
   MoveEvent(1); // Need process one event here, before calling "FuncNewEventCheck"
   if (m_online_mode) {
     pthread_create(&m_tid1, NULL, FuncNewEventCheck, this);
@@ -383,7 +438,7 @@ void EventDispUI::UpdateInterface()
     m_fr_menu->HideFrame(m_fr_evt_mode);
     m_fr_menu->ShowFrame(m_fr_evt_sel);
     m_fr_menu->ShowFrame(m_fr_evt_next);
-    m_fr_menu->HideFrame(m_fr_evt_prev);
+    m_fr_menu->ShowFrame(m_fr_evt_prev); // HideFrame(m_fr_evt_prev);
   }
   m_fr_menu->Resize(); // (m_fr_menu->GetDefaultSize());
   m_fr_menu->MapWindow();

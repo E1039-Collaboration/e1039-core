@@ -9,4 +9,8 @@
 #pragma link C++ class UtilDimuon-!;
 #pragma link C++ class UtilBeam-!;
 
+#pragma link C++ class UtilTrigger::TrigRoad-!;
+#pragma link C++ class UtilTrigger::TrigRoads-!;
+#pragma link C++ class UtilTrigger::TrigRoadset-!;
+
 #endif

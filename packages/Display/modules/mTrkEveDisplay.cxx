@@ -313,7 +313,7 @@ mTrkEveDisplay::draw_tracks()
     }
     trk->SetLineWidth(1);
 
-    for (int iz = -1; iz<26; ++iz) {
+    for (int iz = 2; iz < 26; ++iz) {
       double z = iz * 100;
       double x, y;
       srecTrack.getExpPositionFast(z, x, y);
