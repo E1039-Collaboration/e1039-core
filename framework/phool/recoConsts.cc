@@ -163,7 +163,7 @@ void recoConsts::set_defaults()
   set_DoubleFlag("FMAG_HOLE_LENGTH", 27.94);
   set_DoubleFlag("FMAG_HOLE_RADIUS", 1.27);
   set_DoubleFlag("FMAG_LENGTH", 502.92);
-  set_DoubleFlag("Z_UPSTREAM", -500.);
+  set_DoubleFlag("Z_UPSTREAM", -700.);
   set_DoubleFlag("Z_DOWNSTREAM", 500.);
 }
 
