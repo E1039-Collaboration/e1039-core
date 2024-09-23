@@ -343,8 +343,8 @@ public:
     //Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
 
-    //Calculate the kinematic vairables
-    void calcVariables();
+    //Calculate the kinematic vairables, 0 = vertex, 1 = target, 2 = dump
+    void calcVariables(int choice = 0);
 
     //Dimuon quality cut
     //bool isValid();
@@ -362,6 +362,12 @@ public:
     //4-momentum of the muon tracks after vertex fit
     TLorentzVector p_pos;
     TLorentzVector p_neg;
+
+    //Track momentum projections at different location
+    TLorentzVector p_pos_target;
+    TLorentzVector p_neg_target;
+    TLorentzVector p_pos_dump;
+    TLorentzVector p_neg_dump;
 
     //4-momentum of the muon tracks before vertex fit
     TLorentzVector p_pos_single;
@@ -398,7 +404,7 @@ public:
     Double_t chisq_dump;
     Double_t chisq_upstream;
 
-    ClassDef(SRecDimuon, 6)
+    ClassDef(SRecDimuon, 7)
 };
 
 class SRecEvent: public PHObject
