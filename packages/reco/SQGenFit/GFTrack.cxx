@@ -422,15 +422,6 @@ SRecTrack GFTrack::getSRecTrack()
   strack.swimToVertex(nullptr, nullptr, false);
 
   //Hypothesis test should be implemented here
-  TVector3 pO(0., 0., Z_UPSTREAM);
-  TVector3 pU(1., 0., 0.);
-  TVector3 pV(0., 1., 0.);
-  TVectorD beamCenter(2);
-  beamCenter[0] = X_BEAM; beamCenter[1] = Y_BEAM; 
-  TMatrixDSym beamCov(2);
-  beamCov.Zero();
-  beamCov(0, 0) = SIGX_BEAM*SIGX_BEAM; beamCov(1, 1) = SIGY_BEAM*SIGY_BEAM;
-
   //test Z_UPSTREAM
   strack.setChisqUpstream(swimToVertex(Z_UPSTREAM));
 
@@ -461,7 +452,10 @@ SRecTrack GFTrack::getSRecTrack()
   */
 
   //test Z_VERTEX
-  strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z()));
+  TVector3 pos, mom;
+  strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z(), &pos, &mom));
+  strack.setVertexPos(pos);
+  strack.setVertexMom(mom);
 
   strack.setKalmanStatus(1);
   return strack;
