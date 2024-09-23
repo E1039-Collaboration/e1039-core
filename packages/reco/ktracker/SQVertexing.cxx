@@ -100,8 +100,6 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
   }
   if(trackIDs1.empty() || trackIDs2.empty()) return Fun4AllReturnCodes::EVENT_OK;
 
-  recEvent->identify();
-
   for(int i = 0; i < trackIDs1.size(); ++i)
   {
     for(int j = charge1 == charge2 ? i+1 : 0; j < trackIDs2.size(); ++j)
