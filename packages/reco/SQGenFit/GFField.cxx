@@ -6,7 +6,10 @@
 
 namespace SQGenFit
 {
-GFField::GFField(const PHField* field): _field(field)
+GFField::GFField(const PHField* field): 
+  _field(field),
+  _scale(1.),
+  _offset(0.) 
 {
   _scale = 1.;
   _disable = false;
@@ -34,7 +37,7 @@ void GFField::get(const double& x, const double& y, const double& z, double& Bx,
     return;
   }
 
-  const double Point[] = {x*CLHEP::cm, y*CLHEP::cm, z*CLHEP::cm, 0.};
+  const double Point[] = {x*CLHEP::cm, y*CLHEP::cm, (z + _offset)*CLHEP::cm, 0.};
   double Bfield[6];
   for(int i = 0; i < 6; ++i)
   {
