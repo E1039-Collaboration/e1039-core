@@ -590,8 +590,25 @@ void SRecTrack::print(std::ostream& os) const
   os << "Chi square at vertex: " << fChisqVertex << std::endl;
 }
 
-void SRecDimuon::calcVariables()
+void SRecDimuon::calcVariables(int choice)
 {
+    TLorentzVector pos, neg;
+    if(choice == 0)
+    {
+        pos = p_pos;
+        neg = p_neg;
+    }
+    else if(choice == 1)
+    {
+        pos = p_pos_target;
+        neg = p_neg_target;
+    }
+    else if(choice == 2)
+    {
+        pos = p_pos_dump;
+        neg = p_neg_dump;
+    }
+
     Double_t mp = 0.938;
     Double_t ebeam = 120.;
 
@@ -599,7 +616,7 @@ void SRecDimuon::calcVariables()
     TLorentzVector p_target(0., 0., 0., mp);
 
     TLorentzVector p_cms = p_beam + p_target;
-    TLorentzVector p_sum = p_pos + p_neg;
+    TLorentzVector p_sum = pos + neg;
 
     mass = p_sum.M();
     pT = p_sum.Perp();
@@ -612,8 +629,8 @@ void SRecDimuon::calcVariables()
     p_sum.Boost(-bv_cms);
     xF = 2.*p_sum.Pz()/TMath::Sqrt(s)/(1. - mass*mass/s);
 
-    costh = 2.*(p_neg.E()*p_pos.Pz() - p_pos.E()*p_neg.Pz())/mass/sqrt(mass*mass + pT*pT);
-    phi = atan2(2.*sqrt(mass*mass + pT*pT)*(p_neg.X()*p_pos.Y() - p_pos.X()*p_neg.Y()), mass*(p_pos.X()*p_pos.X() - p_neg.X()*p_neg.X() + p_pos.Y()*p_pos.Y() - p_neg.Y()*p_neg.Y()));
+    costh = 2.*(p_neg.E()*pos.Pz() - pos.E()*neg.Pz())/mass/sqrt(mass*mass + pT*pT);
+    phi = atan2(2.*sqrt(mass*mass + pT*pT)*(neg.X()*pos.Y() - pos.X()*neg.Y()), mass*(pos.X()*pos.X() - neg.X()*neg.X() + pos.Y()*pos.Y() - neg.Y()*neg.Y()));
     mass_single = (p_pos_single + p_neg_single).M();
 }
 
