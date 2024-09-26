@@ -174,16 +174,39 @@ int SQVertexing::MakeNodes(PHCompositeNode* topNode)
 
 double SQVertexing::swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVector3* pos, TVector3* mom)
 {
-  //TODO: adjust FMag bend plan here
-  //gfield->setOffset(xxx);
-
   double chi2 = track.swimToVertex(z, pos, mom);
-  if(chi2 < 0.) return chi2;
+  return chi2;
+}
 
-  //TODO: re-adjust FMag bend plane here
-  //gfield->setOffset(-xxx);
+double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos, TVector3* mom)
+{
+  gfield->setOffset(0.);
+
+  double z_offset_prev = 1.E9;
+  double z_offset_curr = 0.;
+  double chi2 = 0.;
+  while(fabs(z_offset_curr - z_offset_prev) > 0.1)
+  {
+    chi2 = swimTrackToVertex(track, z, pos, mom);
+
+    //update scatter plane location
+    //std::cout << " 1 " << z_offset_prev << "  " << z_offset_curr << "  " << mom->Mag() << "   " <<  chi2 << std::endl;
+    z_offset_prev = z_offset_curr;
+    z_offset_curr = calcZsclp(mom->Mag());
+    //std::cout << " 2 " << z_offset_prev << "  " << z_offset_curr << "  " << mom->Mag() << "   " <<  chi2 << std::endl;
+    gfield->setOffset(-z_offset_curr);
+  }
+
+  //re-adjust FMag bend plane here
+  gfield->setOffset(0.);
 
   return chi2;
+}
+
+double SQVertexing::calcZsclp(double p)
+{
+  //return 293.745 - 0.716984*p + 0.00841544*p*p - 3.44278e-05*p*p*p - 271.;
+  return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
 }
 
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
@@ -216,9 +239,9 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
   dimuon.vtx_neg = pos;
 
   //Test target hypothesis
-  swimTrackToVertex(gtrk1, Z_TARGET, &pos, &mom);
+  refitTrkToVtx(gtrk1, Z_TARGET, &pos, &mom);
   dimuon.p_pos_target.SetVectM(mom, M_MU);
-  swimTrackToVertex(gtrk2, Z_TARGET, &pos, &mom);
+  refitTrkToVtx(gtrk2, Z_TARGET, &pos, &mom);
   dimuon.p_neg_target.SetVectM(mom, M_MU);
 
   //Test dump hypothesis
@@ -253,7 +276,9 @@ double SQVertexing::findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& tra
 
     for(double z = z_start; z > z_end; z = z - stepsize[i])
     {
-      double chi2 = swimTrackToVertex(track1, z) + swimTrackToVertex(track2, z);
+      double chi2_1 = swimTrackToVertex(track1, z);
+      double chi2_2 = swimTrackToVertex(track2, z);
+      double chi2 = chi2_1 > 0 && chi2_2 > 0 ? chi2_1 + chi2_2 : 1.E9;
       if(chi2 < chi2_min)
       {
         z_min = z;

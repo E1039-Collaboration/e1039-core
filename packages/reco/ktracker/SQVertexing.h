@@ -33,7 +33,9 @@ private:
   int GetNodes(PHCompositeNode* topNode);
 
   double swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
+  double refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
   double findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& track1, SQGenFit::GFTrack& track2);
+  double calcZsclp(double p);
   bool   processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon);
 
   bool legacyContainer;
