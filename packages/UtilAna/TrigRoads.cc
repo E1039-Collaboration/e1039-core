@@ -31,6 +31,8 @@ TrigRoad* TrigRoads::FindRoad(const int road_id)
 int TrigRoads::LoadConfig(const std::string file_name)
 {
   //cout << "TrigRoads::LoadConfig(" << file_name << ")\n";
+  m_roads.clear();
+  m_idx_map.clear();
   m_file_name = file_name;
   ifstream ifs(file_name);
   if (! ifs) return 1;
