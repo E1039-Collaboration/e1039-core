@@ -93,6 +93,7 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
   for(int i = 0; i < nTracks; ++i)
   {
     SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
+    if(!recTrack->isKalmanFitted()) continue;
 
     if(recTrack->getCharge() == charge1) trackIDs1.push_back(i);
     if(recTrack->getCharge() == charge2) trackIDs2.push_back(i);
@@ -205,8 +206,7 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
 
 double SQVertexing::calcZsclp(double p)
 {
-  //return 293.745 - 0.716984*p + 0.00841544*p*p - 3.44278e-05*p*p*p - 271.;
-  return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
+  return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 266.;
 }
 
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
