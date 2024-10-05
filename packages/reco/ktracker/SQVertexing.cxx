@@ -191,10 +191,9 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
     chi2 = swimTrackToVertex(track, z, pos, mom);
 
     //update scatter plane location
-    //std::cout << " 1 " << z_offset_prev << "  " << z_offset_curr << "  " << mom->Mag() << "   " <<  chi2 << std::endl;
     z_offset_prev = z_offset_curr;
     z_offset_curr = calcZsclp(mom->Mag());
-    //std::cout << " 2 " << z_offset_prev << "  " << z_offset_curr << "  " << mom->Mag() << "   " <<  chi2 << std::endl;
+  
     gfield->setOffset(-z_offset_curr);
   }
 
@@ -229,6 +228,7 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
   dimuon.vtx.SetXYZ(0., 0., z_vtx);
 
   //Vertex info based on the dimuon vertex
+  //TODO: consider using addjustable bend-plane for vertex test as well
   TVector3 pos, mom;
   dimuon.chisq_kf = swimTrackToVertex(gtrk1, z_vtx, &pos, &mom);
   dimuon.p_pos.SetVectM(mom, M_MU);
@@ -245,6 +245,7 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
   dimuon.p_neg_target.SetVectM(mom, M_MU);
 
   //Test dump hypothesis
+  //TODO: consider using addjustable bend-plane for dump test as well
   swimTrackToVertex(gtrk1, Z_DUMP, &pos, &mom);
   dimuon.p_pos_dump.SetVectM(mom, M_MU);
   swimTrackToVertex(gtrk2, Z_DUMP, &pos, &mom);
@@ -256,6 +257,7 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
 
 double SQVertexing::findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& track1, SQGenFit::GFTrack& track2)
 {
+  //TODO: consider using addjustable bend-plane for vertex finding as well
   double stepsize[3] = {25., 5., 1.};
 
   double z_min = 200.;
