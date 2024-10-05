@@ -59,10 +59,7 @@ int SQTrackletReco::process_event(PHCompositeNode* topNode)
  */
 int SQTrackletReco::InitFastTracking()
 {
-  _fastfinder = new KalmanFastTrackletting(_phfield, _t_geo_manager, false);
-
-  _fastfinder->Verbosity(Verbosity());
-
+  _fastfinder = new KalmanFastTrackletting(_phfield, _t_geo_manager, false, Verbosity());
   if (_output_list_idx >= 0) _fastfinder->setOutputListIndex(_output_list_idx);
   return 0;
 }

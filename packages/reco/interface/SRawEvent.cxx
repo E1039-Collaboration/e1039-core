@@ -80,7 +80,7 @@ bool Hit::operator==(const Hit& elem) const
     return false;
 }
 
-SRawEvent::SRawEvent() : fRunID(-1), fEventID(-1), fSpillID(-1), fTriggerBits(-1), fTriggerEmu(-1)
+SRawEvent::SRawEvent() : fRunID(-1), fEventID(-1), fSpillID(-1), fTriggerBits(0), fTriggerEmu(-1)
 {
     fAllHits.clear();
     fTriggerHits.clear();

@@ -6,8 +6,8 @@
 #include "KalmanFastTrackletting.h"
 using namespace std;
 
-KalmanFastTrackletting::KalmanFastTrackletting(const PHField* field, const TGeoManager* geom, bool flag)
-  : KalmanFastTracking(field, geom, flag)
+KalmanFastTrackletting::KalmanFastTrackletting(const PHField* field, const TGeoManager* geom, bool flag, const int verb)
+  : KalmanFastTracking(field, geom, flag, verb)
 {
   recoConsts* rc = recoConsts::instance();
   TX_MAX = rc->get_DoubleFlag("TX_MAX");

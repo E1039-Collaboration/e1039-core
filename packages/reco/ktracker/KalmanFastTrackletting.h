@@ -10,7 +10,7 @@ class KalmanFastTrackletting : public KalmanFastTracking
   double Y0_MAX;
 
 public:
-    explicit KalmanFastTrackletting(const PHField* field, const TGeoManager *geom, bool flag = true);
+  explicit KalmanFastTrackletting(const PHField* field, const TGeoManager *geom, bool flag=true, const int verb=0);
     virtual ~KalmanFastTrackletting();
 
     virtual int setRawEvent(SRawEvent* event_input);
