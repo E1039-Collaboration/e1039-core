@@ -6,6 +6,7 @@
 #include "GFField.h"
 #include "GFTrack.h"
 
+class TString;
 class TVector3;
 class SQTrack;
 class SQTrackVector;
@@ -25,12 +26,14 @@ public:
   int process_event(PHCompositeNode* topNode);
   int End(PHCompositeNode* topNode);
 
-  void set_legacy_rec_container(const bool enable = true) { legacyContainer = enable; }
-  void setFieldPtr(SQGenFit::GFField* field) { gfield = field; }
+  void set_legacy_rec_container(const bool enable = true)  { legacyContainer = enable; }
+  void set_geom_file_name(const std::string& geomFileName) { geom_file_name = geomFileName; }
 
 private:
+  int InitField(PHCompositeNode* topNode);
+  int InitGeom(PHCompositeNode*  topNode);
   int MakeNodes(PHCompositeNode* topNode);
-  int GetNodes(PHCompositeNode* topNode);
+  int GetNodes(PHCompositeNode*  topNode);
 
   double swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
   double refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
@@ -42,6 +45,7 @@ private:
 
   int charge1, charge2;
 
+  std::string geom_file_name;
   SQGenFit::GFField* gfield;
 
   SRecEvent*      recEvent;
