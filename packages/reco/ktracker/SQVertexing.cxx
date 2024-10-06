@@ -1,5 +1,9 @@
 #include "SQVertexing.h"
 
+#include <phfield/PHFieldConfig_v3.h>
+#include <phfield/PHFieldUtility.h>
+#include <phgeom/PHGeomUtility.h>
+
 #include <fun4all/Fun4AllReturnCodes.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/PHIODataNode.h>
@@ -56,6 +60,7 @@ SQVertexing::SQVertexing(const std::string& name, int sign1, int sign2):
   SubsysReco(name),
   legacyContainer(false),
   gfield(nullptr),
+  geom_file_name(""),
   recEvent(nullptr),
   recTrackVec(nullptr),
   recDimuonVec(nullptr),
@@ -80,13 +85,19 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
   ret = MakeNodes(topNode);
   if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
-  gfield = dynamic_cast<SQGenFit::GFField*>(genfit::FieldManager::getInstance()->getField());
+  ret = InitField(topNode);
+  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
+  ret = InitGeom(topNode);
+  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 int SQVertexing::process_event(PHCompositeNode* topNode)
 {
+  if(legacyContainer) recEvent->clearDimuons();
+
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
   int nTracks = legacyContainer ? recEvent->getNTracks() : recTrackVec->size();
@@ -290,4 +301,51 @@ double SQVertexing::findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& tra
   }
 
   return z_min;
+}
+
+int SQVertexing::InitField(PHCompositeNode* topNode)
+{
+  try
+  {
+    gfield = dynamic_cast<SQGenFit::GFField*>(genfit::FieldManager::getInstance()->getField());
+  }
+  catch(const std::exception& e)
+  {
+    std::cout << "SQVertexing::InitGeom - Caught an exception " << std::endl;
+    gfield = nullptr;
+  }
+  
+  if(gfield == nullptr)
+  {
+    recoConsts* rc = recoConsts::instance();
+
+    std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
+    PHField* phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
+
+    std::cout << "SQVertexing::InitGeom - creating new GenFit field map" << std::endl;
+    gfield = new SQGenFit::GFField(phfield);
+  }
+  else
+  {
+    std::cout << "SQVertexing::InitGeom - reading existing GenFit field map" << std::endl;
+  }
+
+  return Fun4AllReturnCodes::EVENT_OK;
+}
+
+int SQVertexing::InitGeom(PHCompositeNode* topNode)
+{
+  if(geom_file_name != "")
+  {
+    std::cout << "SQVertexing::InitGeom - create geom from " << geom_file_name << std::endl;
+
+    int ret = PHGeomUtility::ImportGeomFile(topNode, geom_file_name);
+    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+  }
+  else
+  {
+    std::cout << "SQVertexing::InitGeom - rely on existing TGeo geometry" << std::endl;
+  }
+
+  return Fun4AllReturnCodes::EVENT_OK;
 }
