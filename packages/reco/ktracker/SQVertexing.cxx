@@ -59,6 +59,7 @@ namespace
 SQVertexing::SQVertexing(const std::string& name, int sign1, int sign2):
   SubsysReco(name),
   legacyContainer(false),
+  enableSingleRetracking(false),
   gfield(nullptr),
   geom_file_name(""),
   recEvent(nullptr),
@@ -105,6 +106,18 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
   {
     SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
     if(!recTrack->isKalmanFitted()) continue;
+
+    if(enableSingleRetracking)
+    {
+      TVector3 pos, mom;
+      double chi2 = refitTrkToVtx(recTrack, Z_TARGET, &pos, &mom);
+      if(chi2 > 0)
+      {
+        recTrack->setChisqTarget(chi2);
+        recTrack->setTargetPos(pos);
+        recTrack->setTargetMom(mom);
+      }
+    }
 
     if(recTrack->getCharge() == charge1) trackIDs1.push_back(i);
     if(recTrack->getCharge() == charge2) trackIDs2.push_back(i);
@@ -212,6 +225,12 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
   gfield->setOffset(0.);
 
   return chi2;
+}
+
+double SQVertexing::refitTrkToVtx(SRecTrack* track, double z, TVector3* pos, TVector3* mom)
+{
+  SQGenFit::GFTrack gtrk(*track);
+  return refitTrkToVtx(gtrk, z, pos, mom);
 }
 
 double SQVertexing::calcZsclp(double p)
