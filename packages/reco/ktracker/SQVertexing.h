@@ -27,6 +27,8 @@ public:
   int End(PHCompositeNode* topNode);
 
   void set_legacy_rec_container(const bool enable = true)  { legacyContainer = enable; }
+  void set_single_retracking(const bool enable = true)     { enableSingleRetracking = true; }
+
   void set_geom_file_name(const std::string& geomFileName) { geom_file_name = geomFileName; }
 
 private:
@@ -37,11 +39,13 @@ private:
 
   double swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
   double refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
+  double refitTrkToVtx(SRecTrack*         track, double z, TVector3* pos = nullptr, TVector3* mom = nullptr);
   double findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& track1, SQGenFit::GFTrack& track2);
   double calcZsclp(double p);
   bool   processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon);
 
   bool legacyContainer;
+  bool enableSingleRetracking;
 
   int charge1, charge2;
 
