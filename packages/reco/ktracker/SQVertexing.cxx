@@ -235,7 +235,7 @@ double SQVertexing::refitTrkToVtx(SRecTrack* track, double z, TVector3* pos, TVe
 
 double SQVertexing::calcZsclp(double p)
 {
-  return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 266.;
+  return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
 }
 
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
