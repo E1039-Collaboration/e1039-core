@@ -34,7 +34,7 @@ class PHTimer;
 class KalmanFastTracking
 {
 public:
-    explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true);
+  explicit KalmanFastTracking(const PHField* field, const TGeoManager *geom, bool flag = true, const int verb=0);
     virtual ~KalmanFastTracking();
 
     //set/get verbosity

@@ -13,6 +13,7 @@ Created: 05-28-2013
 #include <fun4all/Fun4AllBase.h>
 
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <cmath>
 
@@ -76,7 +77,8 @@ namespace
     static bool MC_MODE;
     static bool COSMIC_MODE;
     static bool COARSE_MODE;
-
+    static std::string HIT_MASK_MODE;
+  
     //initialize global variables
     void initGlobalVariables()
     {
@@ -90,6 +92,7 @@ namespace
             COSMIC_MODE = rc->get_BoolFlag("COSMIC_MODE");
             COARSE_MODE = rc->get_BoolFlag("COARSE_MODE");
             REQUIRE_MUID = rc->get_BoolFlag("REQUIRE_MUID");
+            HIT_MASK_MODE = rc->get_CharFlag("HIT_MASK_MODE");
 
             MaxHitsDC0 = rc->get_IntFlag("MaxHitsDC0");
             MaxHitsDC1 = rc->get_IntFlag("MaxHitsDC1");
@@ -124,7 +127,10 @@ namespace
     }
 }
 
-KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag): verbosity(0), enable_KF(flag), outputListIdx(4)
+KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* geom, bool flag, const int verb)
+  : verbosity(verb)
+  , enable_KF(flag)
+  , outputListIdx(4)
 {
     using namespace std;
     initGlobalVariables();
@@ -455,13 +461,31 @@ int KalmanFastTracking::setRawEventPrep(SRawEvent* event_input)
     {
         //std::cout << "For station " << i << std::endl;
         hitIDs_mask[i].clear();
-        if(MC_MODE || COSMIC_MODE || rawEvent->isFPGATriggered())
+        if(HIT_MASK_MODE == "XY")
+        {
+            hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_mask[i]);
+            if (verbosity >= 4) LogInfo("Mask XY");
+        }          
+        else if(HIT_MASK_MODE == "X" ||
+                HIT_MASK_MODE == "AUTO" && (MC_MODE || COSMIC_MODE || rawEvent->isFPGATriggered()))
         {
             hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_maskX[i]);
+            if (verbosity >= 4) LogInfo("Mask X");
+        }
+        else if(HIT_MASK_MODE == "NONE")
+        {
+            if (verbosity >= 4) LogInfo("Mask NONE");
         }
         else
         {
             hitIDs_mask[i] = rawEvent->getHitsIndexInDetectors(detectorIDs_maskY[i]);
+            if (verbosity >= 4) LogInfo("Mask Y");
+        }
+        if (verbosity >= 4) {
+          std::ostringstream oss;
+          oss << "  ";
+          for (auto it = hitIDs_mask[i].begin(); it != hitIDs_mask[i].end(); it++) oss << " " << *it;
+          LogInfo(oss.str());
         }
 
         //for(std::list<int>::iterator iter = hitIDs_mask[i].begin(); iter != hitIDs_mask[i].end(); ++iter) std::cout << *iter << " " << hitAll[*iter].detectorID << " === ";
@@ -1382,10 +1406,12 @@ bool KalmanFastTracking::acceptTracklet(Tracklet& tracklet)
 
 bool KalmanFastTracking::hodoMask(Tracklet& tracklet)
 {
-    //LogInfo(tracklet.stationID);
+    if (verbosity >= 3) LogInfo("hodoMask: " << tracklet.stationID);
+    if (HIT_MASK_MODE == "NONE") return true;
     int nHodoHits = 0;
     for(std::vector<int>::iterator stationID = stationIDs_mask[tracklet.stationID-1].begin(); stationID != stationIDs_mask[tracklet.stationID-1].end(); ++stationID)
     {
+        if (verbosity >= 3) LogInfo("stID=" << *stationID);
         bool masked = false;
         for(std::list<int>::iterator iter = hitIDs_mask[*stationID-1].begin(); iter != hitIDs_mask[*stationID-1].end(); ++iter)
         {

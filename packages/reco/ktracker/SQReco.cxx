@@ -165,15 +165,7 @@ int SQReco::InitRun(PHCompositeNode* topNode)
 
 int SQReco::InitField(PHCompositeNode* topNode)
 {
-  if(Verbosity() > 1)
-  {
-    std::cout << "SQReco::InitField" << std::endl;
-    if(!_enable_KF)
-    {
-      std::cout << " KF is disabled thus phfield is not needed. Skip InitField for SQReco." << std::endl;
-      return Fun4AllReturnCodes::EVENT_OK;
-    }
-  }
+  if(Verbosity() > 1) std::cout << "SQReco::InitField" << std::endl;
 
   std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
   _phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
@@ -192,15 +184,7 @@ int SQReco::InitField(PHCompositeNode* topNode)
 
 int SQReco::InitGeom(PHCompositeNode* topNode)
 {
-  if(Verbosity() > 1) 
-  {
-    std::cout << "SQReco::InitGeom" << std::endl;
-    if(!_enable_KF)
-    {
-      std::cout << " KF is disabled thus TGeo is not needed. Skip InitGeom for SQReco." << std::endl;
-      return Fun4AllReturnCodes::EVENT_OK;
-    }
-  }
+  if(Verbosity() > 1) std::cout << "SQReco::InitGeom" << std::endl;
 
   if (_geom_file_name != "")
   {
@@ -240,10 +224,7 @@ int SQReco::InitGeom(PHCompositeNode* topNode)
 
 int SQReco::InitFastTracking()
 {
-  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false);
-
-  _fastfinder->Verbosity(Verbosity());
-
+  _fastfinder = new KalmanFastTracking(_phfield, _t_geo_manager, false, Verbosity());
   if (_output_list_idx > 0) _fastfinder->setOutputListIndex(_output_list_idx);
   return 0;
 }
