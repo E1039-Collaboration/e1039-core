@@ -182,7 +182,7 @@ public:
     Double_t getVtxPar(Int_t i) { return fVertexPos[i]; }
     Double_t getChisqVertex() { return fChisqVertex; }
 
-    //Get mom/pos at a given location
+    ///Get mom/pos at a given location
     TVector3 getDumpPos() { return fDumpPos; }
     TVector3 getDumpFacePos() { return fDumpFacePos; }
     TVector3 getTargetPos() { return fTargetPos; }
@@ -199,7 +199,7 @@ public:
     Double_t getChisqTarget() { return fChisqTarget; }
     Double_t getChisqUpstream() { return fChisqUpstream; }
 
-    //Set mom/pos at a given location
+    ///Set mom/pos at a given location
     void setDumpPos(TVector3 pos) { fDumpPos = pos; }
     void setDumpFacePos(TVector3 pos) { fDumpFacePos = pos; }
     void setTargetPos(TVector3 pos) { fTargetPos = pos; }
@@ -217,11 +217,11 @@ public:
     void setChisqUpstream(Double_t chisq) { fChisqUpstream = chisq; }
     void setChisqVertex(Double_t chisq) { fChisqVertex = chisq; }
 
-    //Trigger road info
+    ///Trigger road info
     void setTriggerRoad(Int_t roadID) { fTriggerID = roadID; }
     Int_t getTriggerRoad() { return fTriggerID; }
 
-    //Prop. tube muon ID info
+    ///Prop. tube muon ID info
     void setPTSlope(Double_t slopeX, Double_t slopeY) { fPropSlopeX = slopeX; fPropSlopeY = slopeY; }
     void setNHitsInPT(Int_t nHitsX, Int_t nHitsY) { fNPropHitsX = nHitsX; fNPropHitsY = nHitsY; }
     Double_t getPTSlopeX() { return fPropSlopeX; }
@@ -231,7 +231,7 @@ public:
     Int_t getNHitsInPTX() { return fNPropHitsX; }
     Int_t getNHitsInPTY() { return fNPropHitsY; }
 
-    //Overall track quality cut
+    ///Overall track quality cut
     //bool isValid();
     bool isTarget();
     bool isDump();
@@ -282,12 +282,12 @@ private:
     Double_t fPropSlopeX;
     Double_t fPropSlopeY;
 
-    //Chisq of three test position
+    ///Chisq of three test position
     Double_t fChisqTarget;
     Double_t fChisqDump;
     Double_t fChisqUpstream;
 
-    //GenFit track info - only available if the track comes from GF fitter
+    ///GenFit track info - only available if the track comes from GF fitter
     std::vector<TVector3> fGFDetPlaneVec[3];
     std::vector<TVectorD> fGFAuxInfo;
     std::vector<TVectorD> fGFStateVec;
@@ -306,7 +306,7 @@ public:
     int          isValid() const;
     SRecDimuon*  Clone() const { return (new SRecDimuon(*this)); }
 
-    //SQDimuon virtual functions
+    /// SQDimuon virtual functions
     virtual int  get_dimuon_id() const      { return 0; }
     virtual void set_dimuon_id(const int a) { throw std::logic_error(__PRETTY_FUNCTION__); }
 
@@ -341,51 +341,51 @@ public:
 
     virtual double get_chisq() const { return chisq_kf; }
 
-    //Get the total momentum of the virtual photon
+    /// Get the total momentum of the virtual photon
     TLorentzVector getVPhoton() { return p_pos + p_neg; }
 
-    //Calculate the kinematic vairables, 0 = vertex, 1 = target, 2 = dump
+    /// Calculate the kinematic vairables, 0 = vertex, 1 = target, 2 = dump
     void calcVariables(int choice = 0);
 
     //Dimuon quality cut
     //bool isValid();
 
-    //Target dimuon
+    /// Target dimuon
     bool isTarget();
 
-    //Dump dimuon
+    /// Dump dimuon
     bool isDump();
 
-    //Index of muon track used in host SRecEvent
+    /// Index of muon track used in host SRecEvent
     Int_t trackID_pos;
     Int_t trackID_neg;
 
-    //4-momentum of the muon tracks after vertex fit
+    /// 4-momentum of the muon tracks after vertex fit
     TLorentzVector p_pos;
     TLorentzVector p_neg;
 
-    //Track momentum projections at different location
+    /// Track momentum projections at different location
     TLorentzVector p_pos_target;
     TLorentzVector p_neg_target;
     TLorentzVector p_pos_dump;
     TLorentzVector p_neg_dump;
 
-    //4-momentum of the muon tracks before vertex fit
+    /// 4-momentum of the muon tracks before vertex fit
     TLorentzVector p_pos_single;
     TLorentzVector p_neg_single;
 
-    //3-vector vertex position
+    /// 3-vector vertex position
     TVector3 vtx;
     TVector3 vtx_pos;
     TVector3 vtx_neg;
 
-    //Track projections at different location
+    /// Track projections at different location
     TVector3 proj_target_pos;
     TVector3 proj_dump_pos;
     TVector3 proj_target_neg;
     TVector3 proj_dump_neg;
 
-    //Kinematic variables
+    /// Kinematic variables
     Double_t mass;
     Double_t pT;
     Double_t xF;
@@ -396,11 +396,11 @@ public:
     Double_t mass_single;
     Double_t chisq_single;
 
-    //Vertex fit chisqs
+    /// Vertex fit chisqs
     Double_t chisq_kf;
     Double_t chisq_vx;
 
-    //Chisq of three test position
+    /// Chisq of three test position
     Double_t chisq_target;
     Double_t chisq_dump;
     Double_t chisq_upstream;
@@ -445,7 +445,7 @@ public:
 
     Int_t getLocalID(Int_t hitID) { return fLocalID[hitID]; }
 
-    //Event source set/get
+    ///Event source set/get
     void setEventSource(Int_t id1, Int_t id2) { fSource1 = id1; fSource2 = id2; }
     Int_t getSourceID1() { return fSource1; }
     Int_t getSourceID2() { return fSource2; }
