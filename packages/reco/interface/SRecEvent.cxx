@@ -608,6 +608,23 @@ void SRecDimuon::calcVariables(int choice)
         pos = p_pos_dump;
         neg = p_neg_dump;
     }
+    else
+    {
+        std::cout << "ERROR!!! In SRecDimuon::calcVariables(choice), only three dimuon vertex choice numbers are provided - ";
+        std::cout << " 0 (default) = fitted vertex position, 1 = target position, 2 = dump position" << std::endl;
+        
+        //Unphysical error values
+        mass = -1.;
+        xF = -10.;
+        x1 = -10.;
+        x2 = -10.;
+        pT = -1.;
+        costh = -10.;
+        phi = -10.;
+        mass_single = -1.;
+
+        return;
+    }
 
     Double_t mp = 0.938;
     Double_t ebeam = 120.;
