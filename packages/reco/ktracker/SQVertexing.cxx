@@ -213,7 +213,7 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
   double z_offset_prev = 1.E9;
   double z_offset_curr = 0.;
   double chi2 = 0.;
-  const int n_iter_max = 10000;
+  const int n_iter_max = 100;
   int n_iter = 0;
   while(fabs(z_offset_curr - z_offset_prev) > 0.1)
   {
@@ -246,6 +246,8 @@ double SQVertexing::refitTrkToVtx(SRecTrack* track, double z, TVector3* pos, TVe
 
 double SQVertexing::calcZsclp(double p)
 {
+  if(p < 5.) p = 5.;
+  else if(p>120.) p = 120.;
   return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
 }
 
