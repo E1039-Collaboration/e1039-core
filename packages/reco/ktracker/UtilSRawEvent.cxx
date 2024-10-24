@@ -25,16 +25,16 @@ bool UtilSRawEvent::SetEvent(SRawEvent* sraw, const SQEvent* evt, const bool do_
 
   /// Note that the bit order is different between SRawEvent and SQEvent!!
   int trig_bits = 0;
-  if (evt->get_trigger(SQEvent::MATRIX1)) trig_bits |= (0x1 << SRawEvent::MATRIX1);
-  if (evt->get_trigger(SQEvent::MATRIX2)) trig_bits |= (0x1 << SRawEvent::MATRIX2);
-  if (evt->get_trigger(SQEvent::MATRIX3)) trig_bits |= (0x1 << SRawEvent::MATRIX3);
-  if (evt->get_trigger(SQEvent::MATRIX4)) trig_bits |= (0x1 << SRawEvent::MATRIX4);
-  if (evt->get_trigger(SQEvent::MATRIX5)) trig_bits |= (0x1 << SRawEvent::MATRIX5);
-  if (evt->get_trigger(SQEvent::NIM1   )) trig_bits |= (0x1 << SRawEvent::NIM1   );
-  if (evt->get_trigger(SQEvent::NIM2   )) trig_bits |= (0x1 << SRawEvent::NIM2   );
-  if (evt->get_trigger(SQEvent::NIM3   )) trig_bits |= (0x1 << SRawEvent::NIM3   );
-  if (evt->get_trigger(SQEvent::NIM4   )) trig_bits |= (0x1 << SRawEvent::NIM4   );
-  if (evt->get_trigger(SQEvent::NIM5   )) trig_bits |= (0x1 << SRawEvent::NIM5   );
+  if (evt->get_trigger(SQEvent::MATRIX1)) trig_bits |= SRawEvent::MATRIX1;
+  if (evt->get_trigger(SQEvent::MATRIX2)) trig_bits |= SRawEvent::MATRIX2;
+  if (evt->get_trigger(SQEvent::MATRIX3)) trig_bits |= SRawEvent::MATRIX3;
+  if (evt->get_trigger(SQEvent::MATRIX4)) trig_bits |= SRawEvent::MATRIX4;
+  if (evt->get_trigger(SQEvent::MATRIX5)) trig_bits |= SRawEvent::MATRIX5;
+  if (evt->get_trigger(SQEvent::NIM1   )) trig_bits |= SRawEvent::NIM1   ;
+  if (evt->get_trigger(SQEvent::NIM2   )) trig_bits |= SRawEvent::NIM2   ;
+  if (evt->get_trigger(SQEvent::NIM3   )) trig_bits |= SRawEvent::NIM3   ;
+  if (evt->get_trigger(SQEvent::NIM4   )) trig_bits |= SRawEvent::NIM4   ;
+  if (evt->get_trigger(SQEvent::NIM5   )) trig_bits |= SRawEvent::NIM5   ;
   sraw->setTriggerBits(trig_bits);
 
   return true;
