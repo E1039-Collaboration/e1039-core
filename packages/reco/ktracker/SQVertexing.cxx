@@ -247,7 +247,8 @@ double SQVertexing::refitTrkToVtx(SRecTrack* track, double z, TVector3* pos, TVe
 double SQVertexing::calcZsclp(double p)
 {
   if(p < 5.) p = 5.;
-  else if(p>120.) p = 120.;
+  else if(p > 120.) p = 120.;
+  
   return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
 }
 
@@ -305,14 +306,14 @@ double SQVertexing::findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& tra
   //TODO: consider using addjustable bend-plane for vertex finding as well
   double stepsize[3] = {25., 5., 1.};
 
-  double z_min = 200.;
+  double z_min = 300.;
   double chi2_min = 1.E9;
   for(int i = 0; i < 3; ++i)
   {
     double z_start, z_end;
     if(i == 0)
     {
-      z_start = 200.;
+      z_start = z_min;
       z_end   = Z_UPSTREAM;
     }
     else
