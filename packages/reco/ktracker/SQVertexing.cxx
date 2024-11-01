@@ -102,6 +102,7 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
   int nTracks = legacyContainer ? recEvent->getNTracks() : recTrackVec->size();
+  if(Verbosity() > 10) std::cout << "SQVertexing::process_event():  nTracks = " << nTracks << std::endl;
   for(int i = 0; i < nTracks; ++i)
   {
     SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
@@ -124,7 +125,8 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
    
   }
   if(trackIDs1.empty() || trackIDs2.empty()) return Fun4AllReturnCodes::EVENT_OK;
-
+  if(Verbosity() > 10) std::cout << "  N of trackIDs1 & trackIDs1 = " << trackIDs1.size() << " & " << trackIDs2.size() << std::endl;
+  
   for(int i = 0; i < trackIDs1.size(); ++i)
   {
     for(int j = charge1 == charge2 ? i+1 : 0; j < trackIDs2.size(); ++j)
@@ -205,11 +207,14 @@ double SQVertexing::swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVecto
 
 double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos, TVector3* mom)
 {
+  if(Verbosity() > 20) std::cout << "SQVertexing::refitTrkToVtx(): z = " << z << ", pos = (" << pos->X() << ", " << pos->Y() << ", " << pos->Z() << "), mom = (" << mom->X() << ", " << mom->Y() << ", " << mom->Z() << ")" << std::endl;
   gfield->setOffset(0.);
 
   double z_offset_prev = 1.E9;
   double z_offset_curr = 0.;
   double chi2 = 0.;
+  const int n_iter_max = 100;
+  int n_iter = 0;
   while(fabs(z_offset_curr - z_offset_prev) > 0.1)
   {
     chi2 = swimTrackToVertex(track, z, pos, mom);
@@ -219,8 +224,14 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
     z_offset_curr = calcZsclp(mom->Mag());
   
     gfield->setOffset(-z_offset_curr);
+    if(Verbosity() > 20) std::cout << "  i_iter = " << n_iter << ": p = " << mom->Mag() << ", dz = " << z_offset_curr << " - " << z_offset_prev << " = " << z_offset_curr - z_offset_prev << std::endl;
+    if (++n_iter == n_iter_max) {
+      std::cout << "!WARNING!  SQVertexing::refitTrkToVtx():  Give up the iteration." << std::endl;
+      break;
+    }
   }
-
+  if(Verbosity() > 10) std::cout << "  n_iter = " << n_iter << std::endl;
+  
   //re-adjust FMag bend plane here
   gfield->setOffset(0.);
 
@@ -235,11 +246,16 @@ double SQVertexing::refitTrkToVtx(SRecTrack* track, double z, TVector3* pos, TVe
 
 double SQVertexing::calcZsclp(double p)
 {
+  if(p < 5.) p = 5.;
+  else if(p > 120.) p = 120.;
+  
   return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
 }
 
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
 {
+  if(Verbosity() > 10) std::cout << "  SQVertexing::processOneDimuon(): " << std::endl;
+  
   //Pre-calculated variables
   dimuon.proj_target_pos = track1->getTargetPos();
   dimuon.proj_dump_pos   = track1->getDumpPos();
@@ -290,14 +306,14 @@ double SQVertexing::findDimuonZVertex(SRecDimuon& dimuon, SQGenFit::GFTrack& tra
   //TODO: consider using addjustable bend-plane for vertex finding as well
   double stepsize[3] = {25., 5., 1.};
 
-  double z_min = 200.;
+  double z_min = 300.;
   double chi2_min = 1.E9;
   for(int i = 0; i < 3; ++i)
   {
     double z_start, z_end;
     if(i == 0)
     {
-      z_start = 200.;
+      z_start = z_min;
       z_end   = Z_UPSTREAM;
     }
     else

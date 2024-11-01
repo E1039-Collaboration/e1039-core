@@ -5,7 +5,6 @@
 #include <TSystem.h>
 #include <TFile.h>
 #include <TTree.h>
-#include <TSQLServer.h>
 #include <phool/phool.h>
 #include <phool/getClass.h>
 #include <phool/PHNode.h>
@@ -15,19 +14,17 @@
 #include <interface_main/SQSpillMap.h>
 #include <interface_main/SQHitVector.h>
 #include <ktracker/SRawEvent.h>
-#include <db_svc/DbSvc.h>
+//#include <ktracker/UtilSRawEvent.h>
 #include "UtilSRawEvent.h"
 #include "Fun4AllSRawEventOutputManager.h"
 using namespace std;
 
-Fun4AllSRawEventOutputManager::Fun4AllSRawEventOutputManager(const std::string &dir_base, const string &myname)
+Fun4AllSRawEventOutputManager::Fun4AllSRawEventOutputManager(const string &myname)
   : Fun4AllOutputManager(myname)
-  , m_dir_base(dir_base)
+  , m_file_name("sraw.root")
   , m_tree_name("save")
   , m_branch_name("rawEvent")
-  , m_file_name("")
   , m_run_id(0)
-  , m_spill_id(0)
   , m_file(0)
   , m_tree(0)
   , m_sraw(0)
@@ -35,9 +32,6 @@ Fun4AllSRawEventOutputManager::Fun4AllSRawEventOutputManager(const std::string &
   , m_sp_map(0)
   , m_hit_vec(0)
   , m_trig_hit_vec(0)
-  , m_db(0)
-  , m_name_schema("")
-  , m_name_table("")
 {
   ;
 }
@@ -46,27 +40,6 @@ Fun4AllSRawEventOutputManager::~Fun4AllSRawEventOutputManager()
 {
   CloseFile();
   if (m_sraw) delete m_sraw;
-  if (m_db) delete m_db;
-}
-
-void Fun4AllSRawEventOutputManager::EnableDB(const std::string name_schema, const std::string name_table, const bool refresh_db)
-{
-  m_name_schema = name_schema;
-  m_name_table  = name_table;
-  m_db = new DbSvc(DbSvc::DB1);
-  m_db->UseSchema(m_name_schema, true);
-
-  if (refresh_db && m_db->HasTable(m_name_table)) m_db->DropTable(m_name_table);
-  if (! m_db->HasTable(m_name_table)) {
-    DbSvc::VarList list;
-    list.Add("run_id"   , "INT", true);
-    list.Add("spill_id" , "INT", true);
-    list.Add("file_name", "VARCHAR(256)");
-    list.Add("status"   , "INT");
-    list.Add("utime_b"  , "INT");
-    list.Add("utime_e"  , "INT");
-    m_db->CreateTable(m_name_table, list);
-  }
 }
 
 int Fun4AllSRawEventOutputManager::Write(PHCompositeNode *startNode)
@@ -81,14 +54,10 @@ int Fun4AllSRawEventOutputManager::Write(PHCompositeNode *startNode)
       exit(1);
     }
   }
-  int run_id = m_evt->get_run_id();
+  if (! m_file) OpenFile();
+
+  //int run_id = m_evt->get_run_id();
   int sp_id  = m_evt->get_spill_id();
-  if (m_run_id != run_id || m_spill_id != sp_id) { // New spill
-    CloseFile();
-    m_run_id   = run_id;
-    m_spill_id = sp_id;
-    OpenFile();
-  }
   SQSpill* sp = m_sp_map ? m_sp_map->get(sp_id) : 0;
   UtilSRawEvent::SetEvent     (m_sraw, m_evt);
   UtilSRawEvent::SetSpill     (m_sraw, sp);
@@ -100,35 +69,17 @@ int Fun4AllSRawEventOutputManager::Write(PHCompositeNode *startNode)
 
 void Fun4AllSRawEventOutputManager::CloseFile()
 {
-  if (Verbosity() > 0) cout << "Fun4AllSRawEventOutputManager::CloseFile(): run " << m_run_id << ", spill " << m_spill_id << endl;
+  if (Verbosity() > 0) cout << "Fun4AllSRawEventOutputManager::CloseFile(): run " << m_run_id << endl;
   if (! m_file) return;
   m_file->Write();
   m_file->Close();
   delete m_file;
   m_file = 0;
-  UpdateDBStatus(CLOSE);
-
-  if (m_db) { // MySQL DB
-    int utime = time(0);
-    ostringstream oss;
-    oss << "update " << m_name_table << " set status = " << CLOSE << ", utime_e = " << utime
-        << " where run_id = " << m_run_id << " and spill_id = " << m_spill_id;
-    if (! m_db->Con()->Exec(oss.str().c_str())) {
-      cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::OpenFile():  " << oss.str() << endl;
-      return;
-    }
-  }
 }
 
 void Fun4AllSRawEventOutputManager::OpenFile()
 {
-  if (Verbosity() > 0) cout << "Fun4AllSRawEventOutputManager::OpenFile(): run " << m_run_id << ", spill " << m_spill_id << endl;
-  ostringstream oss;
-  oss << m_dir_base << "/sraw/run_" << setfill('0') << setw(6) << m_run_id;
-  gSystem->mkdir(oss.str().c_str(), true);
-  oss << "/run_" << setw(6) << m_run_id << "_spill_" << setw(9) << m_spill_id << "_sraw.root";
-  m_file_name = oss.str();
-  if (Verbosity() > 9) cout << "  " << m_file_name << endl;
+  if (Verbosity() > 0) cout << "Fun4AllSRawEventOutputManager::OpenFile(): run " << m_run_id << ", file " << m_file_name << endl;
   m_file = new TFile(m_file_name.c_str(), "RECREATE");
   if (!m_file->IsOpen()) {
     cout << PHWHERE << "Could not open " << m_file_name << ".  Abort." << endl;
@@ -137,57 +88,4 @@ void Fun4AllSRawEventOutputManager::OpenFile()
   if (!m_sraw) m_sraw = new SRawEvent();
   m_tree = new TTree(m_tree_name.c_str(), "");
   m_tree->Branch(m_branch_name.c_str(), &m_sraw);
-  UpdateDBStatus(OPEN);
-
-  if (m_db) { // MySQL DB
-    int utime = time(0);
-    ostringstream oss;
-    oss << "insert into " << m_name_table
-        << " values(" << m_run_id << ", " << m_spill_id << ", '" << m_file_name << "', 1, " << utime << ", 0)"
-        << " on duplicate key update file_name = '" << m_file_name << "', status = " << OPEN << ", utime_b = " << utime << ", utime_e = 0";
-    if (! m_db->Con()->Exec(oss.str().c_str())) {
-      cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::OpenFile(): " << oss.str() << endl;
-      return;
-    }
-  }
-}
-
-/// Update the status stored in SQLite DB.
-/**
- * This function assumes the SQLite DB file exists with the proper table contents.
- * We have to manually execute the following commands beforehand;
- * @code
- * sqlite3 /path/to/data_status.db
- * create table data_status (
- *     run_id          INTEGER,
- *     spill_id        INTEGER,
- *      utime_deco     INTEGER DEFAULT 0,
- *     status_deco     INTEGER DEFAULT 0,
- *      utime_reco_cpu INTEGER DEFAULT 0,
- *     status_reco_cpu INTEGER DEFAULT 0,
- *      utime_reco_gpu INTEGER DEFAULT 0,
- *     status_reco_gpu INTEGER DEFAULT 0,
- *     UNIQUE(run_id, spill_id)
- *   );
- * @endcode
- */
-void Fun4AllSRawEventOutputManager::UpdateDBStatus(const int status)
-{
-  const char* table_name = "data_status";
-  ostringstream oss;
-  oss << m_dir_base << "/data_status.db";
-  DbSvc db(DbSvc::LITE, oss.str());
-
-  oss.str("");
-  oss << "insert or ignore into " << table_name << " (run_id, spill_id) values (" << m_run_id << ", " << m_spill_id << ")";
-  if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::UpdateDBStatus()." << endl;
-    return;
-  }
-  oss.str("");
-  oss << "update " << table_name << " set utime_deco = strftime('%s', 'now'), status_deco = " << status << " where run_id = " << m_run_id << " and spill_id = " << m_spill_id;
-  if (! db.Con()->Exec(oss.str().c_str())) {
-    cerr << "!!ERROR!!  Fun4AllSRawEventOutputManager::UpdateDBStatus()." << endl;
-    return;
-  }
 }

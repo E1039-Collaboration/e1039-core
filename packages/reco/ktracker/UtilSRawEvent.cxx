@@ -23,11 +23,20 @@ bool UtilSRawEvent::SetEvent(SRawEvent* sraw, const SQEvent* evt, const bool do_
   int event_id = evt->get_event_id();
   sraw->setEventInfo(run_id, spill_id, event_id);
 
-  int triggers[10];
-  for(int i = SQEvent::NIM1; i <= SQEvent::MATRIX5; ++i) {
-    triggers[i] = evt->get_trigger(static_cast<SQEvent::TriggerMask>(i));
-  }
-  sraw->setTriggerBits(triggers);
+  /// Note that the bit order is different between SRawEvent and SQEvent!!
+  int trig_bits = 0;
+  if (evt->get_trigger(SQEvent::MATRIX1)) trig_bits |= SRawEvent::MATRIX1;
+  if (evt->get_trigger(SQEvent::MATRIX2)) trig_bits |= SRawEvent::MATRIX2;
+  if (evt->get_trigger(SQEvent::MATRIX3)) trig_bits |= SRawEvent::MATRIX3;
+  if (evt->get_trigger(SQEvent::MATRIX4)) trig_bits |= SRawEvent::MATRIX4;
+  if (evt->get_trigger(SQEvent::MATRIX5)) trig_bits |= SRawEvent::MATRIX5;
+  if (evt->get_trigger(SQEvent::NIM1   )) trig_bits |= SRawEvent::NIM1   ;
+  if (evt->get_trigger(SQEvent::NIM2   )) trig_bits |= SRawEvent::NIM2   ;
+  if (evt->get_trigger(SQEvent::NIM3   )) trig_bits |= SRawEvent::NIM3   ;
+  if (evt->get_trigger(SQEvent::NIM4   )) trig_bits |= SRawEvent::NIM4   ;
+  if (evt->get_trigger(SQEvent::NIM5   )) trig_bits |= SRawEvent::NIM5   ;
+  sraw->setTriggerBits(trig_bits);
+
   return true;
 }
 
