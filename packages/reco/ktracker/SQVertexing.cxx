@@ -59,6 +59,8 @@ namespace
 SQVertexing::SQVertexing(const std::string& name, int sign1, int sign2):
   SubsysReco(name),
   legacyContainer(false),
+  legacyContainer_in(false),
+  legacyContainer_out(false),
   enableSingleRetracking(false),
   gfield(nullptr),
   geom_file_name(""),
@@ -97,15 +99,15 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
 
 int SQVertexing::process_event(PHCompositeNode* topNode)
 {
-  if(legacyContainer) recEvent->clearDimuons();
+  if(legacyContainer_out) recEvent->clearDimuons();
 
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
-  int nTracks = legacyContainer ? recEvent->getNTracks() : recTrackVec->size();
+  int nTracks = legacyContainer_in ? recEvent->getNTracks() : recTrackVec->size();
   if(Verbosity() > 10) std::cout << "SQVertexing::process_event():  nTracks = " << nTracks << std::endl;
   for(int i = 0; i < nTracks; ++i)
   {
-    SRecTrack* recTrack = legacyContainer ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
+    SRecTrack* recTrack = legacyContainer_in ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
     if(!recTrack->isKalmanFitted()) continue;
 
     if(enableSingleRetracking)
@@ -134,8 +136,8 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
       //A protection, probably not really needed
       if(trackIDs1[i] == trackIDs2[j]) continue;
 
-      SRecTrack* recTrack1 = legacyContainer ? &(recEvent->getTrack(trackIDs1[i])) : dynamic_cast<SRecTrack*>(recTrackVec->at(trackIDs1[i]));
-      SRecTrack* recTrack2 = legacyContainer ? &(recEvent->getTrack(trackIDs2[j])) : dynamic_cast<SRecTrack*>(recTrackVec->at(trackIDs2[j]));
+      SRecTrack* recTrack1 = legacyContainer_in ? &(recEvent->getTrack(trackIDs1[i])) : dynamic_cast<SRecTrack*>(recTrackVec->at(trackIDs1[i]));
+      SRecTrack* recTrack2 = legacyContainer_in ? &(recEvent->getTrack(trackIDs2[j])) : dynamic_cast<SRecTrack*>(recTrackVec->at(trackIDs2[j]));
 
       SRecDimuon recDimuon;
       if(processOneDimuon(recTrack1, recTrack2, recDimuon))
@@ -144,7 +146,7 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
         recDimuon.set_track_id_pos(trackIDs1[i]);
         recDimuon.set_track_id_neg(trackIDs2[j]);
 
-        if(legacyContainer)
+        if(legacyContainer_out)
           recEvent->insertDimuon(recDimuon);
         else
           recDimuonVec->push_back(&recDimuon);
@@ -162,19 +164,23 @@ int SQVertexing::End(PHCompositeNode* topNode)
 
 int SQVertexing::GetNodes(PHCompositeNode* topNode)
 {
-  if(legacyContainer)
+  if(legacyContainer_in || legacyContainer_out)
   {
     recEvent = findNode::getClass<SRecEvent>(topNode, "SRecEvent");
+    if(!recEvent)
+    {
+      std::cerr << Name() << ": failed finding SRecEvent node, abort." << std::endl;
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
   }
   else
   {
     recTrackVec = findNode::getClass<SQTrackVector>(topNode, "SQRecTrackVector");
-  }
-
-  if((!recEvent) && (!recTrackVec))
-  {
-    std::cerr << Name() << ": failed finding rec track info, abort." << std::endl;
-    return Fun4AllReturnCodes::ABORTRUN;
+    if(!recTrackVec)
+    {
+      std::cerr << Name() << ": failed finding SQRecTrackVector node, abort." << std::endl;
+      return Fun4AllReturnCodes::ABORTRUN;
+    }
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
@@ -182,7 +188,7 @@ int SQVertexing::GetNodes(PHCompositeNode* topNode)
 
 int SQVertexing::MakeNodes(PHCompositeNode* topNode)
 {
-  if(!legacyContainer)
+  if(!legacyContainer_out)
   {
     PHNodeIterator iter(topNode);
     PHCompositeNode* dstNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
@@ -297,7 +303,14 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
   swimTrackToVertex(gtrk2, Z_DUMP, &pos, &mom);
   dimuon.p_neg_dump.SetVectM(mom, M_MU);
   
-  dimuon.calcVariables();
+  //Flip the sign of Px of 'positive' muon if processing like-sign muons
+  if(charge1 == charge2)
+  {
+    dimuon.p_pos.SetPx(-dimuon.p_pos.Px());
+    dimuon.p_pos_target.SetPx(-dimuon.p_pos_target.Px());
+    dimuon.p_pos_dump.SetPx(-dimuon.p_pos_dump.Px());
+  }
+
   return true;
 }
 
