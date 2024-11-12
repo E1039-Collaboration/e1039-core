@@ -26,7 +26,7 @@ public:
   int process_event(PHCompositeNode* topNode);
   int End(PHCompositeNode* topNode);
 
-  void set_legacy_rec_container(const bool enable = true)  { legacyContainer = enable; legacyContainer_in = enable; legacyContainer_out = enable; }
+  void set_legacy_rec_container(const bool enable = true)  { legacyContainer_in  = enable; legacyContainer_out = enable; }
   void set_legacy_in_container(const bool enable = true)   { legacyContainer_in  = enable; }
   void set_legacy_out_container(const bool enable = true)  { legacyContainer_out = enable; }
   void set_single_retracking(const bool enable = true)     { enableSingleRetracking = true; }
@@ -46,7 +46,6 @@ private:
   double calcZsclp(double p);
   bool   processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon);
 
-  bool legacyContainer;
   bool legacyContainer_in, legacyContainer_out;
   bool enableSingleRetracking;
 

@@ -58,7 +58,6 @@ namespace
 
 SQVertexing::SQVertexing(const std::string& name, int sign1, int sign2):
   SubsysReco(name),
-  legacyContainer(false),
   legacyContainer_in(false),
   legacyContainer_out(false),
   enableSingleRetracking(false),
