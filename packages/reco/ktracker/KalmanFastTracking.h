@@ -25,6 +25,7 @@ Created: 05-24-2013
 #include "KalmanTrack.h"
 #include "KalmanFitter.h"
 #include "FastTracklet.h"
+#include "SQTrackletFitter.h"
 
 class TGeoManager;
 
@@ -194,12 +195,8 @@ protected:
     //Sagitta ratio in station 1, index 0, 1, 2 are for X/U/V
     int s_detectorID[3];
 
-    //Current tracklets being processed
-    Tracklet tracklet_curr;
-
-    //Least chi square fitter and functor
-    ROOT::Math::Minimizer* minimizer[2];
-    ROOT::Math::Functor fcn;
+    //Simple tracklet fitter
+    SQTrackletFitter* trackletFitter;
 
     //Kalman fitter
     KalmanFitter* kmfitter;
