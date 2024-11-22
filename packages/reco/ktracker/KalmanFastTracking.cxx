@@ -157,18 +157,7 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
     }
 
     //Initialize minuit minimizer
-    minimizer[0] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Simplex");
-    minimizer[1] = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Combined");
-    fcn = ROOT::Math::Functor(&tracklet_curr, &Tracklet::Eval, KMAG_ON ? 5 : 4);
-
-    for(int i = 0; i < 2; ++i)
-    {
-        minimizer[i]->SetMaxFunctionCalls(1000000);
-        minimizer[i]->SetMaxIterations(100);
-        minimizer[i]->SetTolerance(1E-2);
-        minimizer[i]->SetFunction(fcn);
-        minimizer[i]->SetPrintLevel(0);
-    }
+    trackletFitter = new SQTrackletFitter(KMAG_ON);
 
     //Minimize ROOT output
     extern Int_t gErrorIgnoreLevel;
@@ -426,8 +415,7 @@ KalmanFastTracking::KalmanFastTracking(const PHField* field, const TGeoManager* 
 KalmanFastTracking::~KalmanFastTracking()
 {
     if(enable_KF) delete kmfitter;
-    delete minimizer[0];
-    delete minimizer[1];
+    delete trackletFitter;
 }
 
 void KalmanFastTracking::setRawEventDebug(SRawEvent* event_input)
@@ -1700,49 +1688,7 @@ void KalmanFastTracking::buildPropSegments()
 
 int KalmanFastTracking::fitTracklet(Tracklet& tracklet)
 {
-    tracklet_curr = tracklet;
-
-    //idx = 0, using simplex; idx = 1 using migrad
-    int idx = 1;
-#ifdef _ENABLE_MULTI_MINI
-    if(tracklet.stationID < nStations-1) idx = 0;
-#endif
-
-    minimizer[idx]->SetLimitedVariable(0, "tx", tracklet.tx, 0.001, -TX_MAX, TX_MAX);
-    minimizer[idx]->SetLimitedVariable(1, "ty", tracklet.ty, 0.001, -TY_MAX, TY_MAX);
-    minimizer[idx]->SetLimitedVariable(2, "x0", tracklet.x0, 0.1, -X0_MAX, X0_MAX);
-    minimizer[idx]->SetLimitedVariable(3, "y0", tracklet.y0, 0.1, -Y0_MAX, Y0_MAX);
-    if(KMAG_ON)
-    {
-        minimizer[idx]->SetLimitedVariable(4, "invP", tracklet.invP, 0.001*tracklet.invP, INVP_MIN, INVP_MAX);
-    }
-    minimizer[idx]->Minimize();
-
-    tracklet.tx = minimizer[idx]->X()[0];
-    tracklet.ty = minimizer[idx]->X()[1];
-    tracklet.x0 = minimizer[idx]->X()[2];
-    tracklet.y0 = minimizer[idx]->X()[3];
-
-    tracklet.err_tx = minimizer[idx]->Errors()[0];
-    tracklet.err_ty = minimizer[idx]->Errors()[1];
-    tracklet.err_x0 = minimizer[idx]->Errors()[2];
-    tracklet.err_y0 = minimizer[idx]->Errors()[3];
-
-    /// Avoid too-small error, which causes NaN in Tracklet::operator+().
-    if (tracklet.err_tx < 1e-6) tracklet.err_tx = 1e-6;
-    if (tracklet.err_ty < 1e-6) tracklet.err_ty = 1e-6;
-    if (tracklet.err_x0 < 1e-4) tracklet.err_x0 = 1e-4;
-    if (tracklet.err_y0 < 1e-4) tracklet.err_y0 = 1e-4;
-    
-    if(KMAG_ON && tracklet.stationID == nStations)
-    {
-        tracklet.invP = minimizer[idx]->X()[4];
-        tracklet.err_invP = minimizer[idx]->Errors()[4];
-    }
-
-    tracklet.chisq = minimizer[idx]->MinValue();
-
-    int status = minimizer[idx]->Status();
+    int status = trackletFitter->fit(tracklet);
     return status;
 }
 
