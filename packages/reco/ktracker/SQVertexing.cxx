@@ -15,6 +15,8 @@
 #include <interface_main/SQTrackVector_v1.h>
 #include <interface_main/SQDimuonVector_v1.h>
 #include <GenFit/FieldManager.h>
+#include <GenFit/MaterialEffects.h>
+#include <GenFit/TGeoMaterialInterface.h>
 
 #include "SRecEvent.h"
 #include "GFTrack.h"
@@ -371,6 +373,8 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
 
     std::cout << "SQVertexing::InitGeom - creating new GenFit field map" << std::endl;
     gfield = new SQGenFit::GFField(phfield);
+
+    genfit::FieldManager::getInstance()->init(gfield);
   }
   else
   {
@@ -387,6 +391,8 @@ int SQVertexing::InitGeom(PHCompositeNode* topNode)
     std::cout << "SQVertexing::InitGeom - create geom from " << geom_file_name << std::endl;
 
     int ret = PHGeomUtility::ImportGeomFile(topNode, geom_file_name);
+    genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
+
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   }
   else
