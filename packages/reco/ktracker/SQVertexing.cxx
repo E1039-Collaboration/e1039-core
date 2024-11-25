@@ -214,7 +214,7 @@ double SQVertexing::swimTrackToVertex(SQGenFit::GFTrack& track, double z, TVecto
 
 double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* pos, TVector3* mom)
 {
-  if(Verbosity() > 20) std::cout << "SQVertexing::refitTrkToVtx(): z = " << z << ", pos = (" << pos->X() << ", " << pos->Y() << ", " << pos->Z() << "), mom = (" << mom->X() << ", " << mom->Y() << ", " << mom->Z() << ")" << std::endl;
+  if(Verbosity() > 10) std::cout << "SQVertexing::refitTrkToVtx(): z = " << z << std::endl;
   gfield->setOffset(0.);
 
   double z_offset_prev = 1.E9;
@@ -237,7 +237,9 @@ double SQVertexing::refitTrkToVtx(SQGenFit::GFTrack& track, double z, TVector3* 
       break;
     }
   }
-  if(Verbosity() > 10) std::cout << "  n_iter = " << n_iter << std::endl;
+  if(Verbosity() > 10) {
+    std::cout << "  n_iter = " << n_iter << ",  pos = (" << pos->X() << ", " << pos->Y() << ", " << pos->Z() << "),  mom = (" << mom->X() << ", " << mom->Y() << ", " << mom->Z() << ")" << std::endl;
+  }
   
   //re-adjust FMag bend plane here
   gfield->setOffset(0.);
@@ -262,6 +264,10 @@ double SQVertexing::calcZsclp(double p)
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
 {
   if(Verbosity() > 10) std::cout << "  SQVertexing::processOneDimuon(): " << std::endl;
+  if(Verbosity() > 20) {
+    track1->printGF();
+    track2->printGF();
+  }
   
   //Pre-calculated variables
   dimuon.proj_target_pos = track1->getTargetPos();
@@ -373,7 +379,6 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
 
     std::cout << "SQVertexing::InitGeom - creating new GenFit field map" << std::endl;
     gfield = new SQGenFit::GFField(phfield);
-
     genfit::FieldManager::getInstance()->init(gfield);
   }
   else

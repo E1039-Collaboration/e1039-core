@@ -238,6 +238,7 @@ public:
 
     ///Debugging output
     void print(std::ostream& os = std::cout) const;
+    void printGF(std::ostream& os = std::cout) const;
 
 private:
     ///Total Chisq

@@ -590,6 +590,46 @@ void SRecTrack::print(std::ostream& os) const
   os << "Chi square at vertex: " << fChisqVertex << std::endl;
 }
 
+void SRecTrack::printGF(std::ostream& os) const
+{
+  os << "SRecTrack::PrintGF():\n"
+     << "  DetPlaneVecO";
+  for (unsigned int iv = 0; iv < fGFDetPlaneVec[0].size(); iv++) {
+    const TVector3* vec = &fGFDetPlaneVec[0][iv];
+    os << " " << iv << ":(" << vec->X() << " " << vec->Y() << " " << vec->Z() << ")" ;
+  }
+  os << "\n  DetPlaneVecU";
+  for (unsigned int iv = 0; iv < fGFDetPlaneVec[1].size(); iv++) {
+    const TVector3* vec = &fGFDetPlaneVec[1][iv];
+    os << " " << iv << ":(" << vec->X() << " " << vec->Y() << " " << vec->Z() << ")" ;
+  }
+  os << "\n  DetPlaneVecV";
+  for (unsigned int iv = 0; iv < fGFDetPlaneVec[2].size(); iv++) {
+    const TVector3* vec = &fGFDetPlaneVec[2][iv];
+    os << " " << iv << ":(" << vec->X() << " " << vec->Y() << " " << vec->Z() << ")" ;
+  }
+  os << "\n  AuxInfo";
+  for (unsigned int iv = 0; iv < fGFAuxInfo.size(); iv++) {
+    os << " [" << iv << "]";
+    for (int ir = 0; ir < fGFAuxInfo[iv].GetNrows(); ir++) os << " " << fGFAuxInfo[iv](ir);
+  }
+  os << "\n  StateVec";
+  for (unsigned int iv = 0; iv < fGFStateVec.size(); iv++) {
+    os << " [" << iv << "]";
+    for (int ir = 0; ir < fGFStateVec[iv].GetNrows(); ir++) os << " " << fGFStateVec[iv](ir);
+  }
+  os << "\n  Cov";
+  for (unsigned int iv = 0; iv < fGFCov.size(); iv++) {
+    os << " [" << iv << "]";
+    for (int ir = 0; ir < fGFCov[iv].GetNrows(); ir++) {
+      os << " (";
+      for (int ic = 0; ic < fGFCov[iv].GetNcols(); ic++) os << " " << fGFCov[iv][ir][ic];
+      os << ")";
+    }
+  }
+  os << std::endl;
+}
+
 void SRecDimuon::calcVariables(int choice)
 {
     TLorentzVector pos, neg;
