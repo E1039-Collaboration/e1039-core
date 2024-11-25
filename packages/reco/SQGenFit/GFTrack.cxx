@@ -64,6 +64,7 @@ GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _vir
 GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
 {
   initGlobalVariables();
+
   _pdg = recTrack.getCharge() > 0 ? -13 : 13;
   _trkrep = new genfit::RKTrackRep(_pdg);
     

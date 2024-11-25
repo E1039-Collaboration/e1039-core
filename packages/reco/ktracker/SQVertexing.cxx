@@ -380,7 +380,6 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
     std::cout << "SQVertexing::InitGeom - creating new GenFit field map" << std::endl;
     gfield = new SQGenFit::GFField(phfield);
     genfit::FieldManager::getInstance()->init(gfield);
-    genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
   }
   else
   {
@@ -397,6 +396,8 @@ int SQVertexing::InitGeom(PHCompositeNode* topNode)
     std::cout << "SQVertexing::InitGeom - create geom from " << geom_file_name << std::endl;
 
     int ret = PHGeomUtility::ImportGeomFile(topNode, geom_file_name);
+    genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
+
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   }
   else
