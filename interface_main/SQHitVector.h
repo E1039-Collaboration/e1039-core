@@ -42,25 +42,25 @@ public:
   virtual void identify(std::ostream& os = std::cout) const {
     os << "SQHitVector base class" << std::endl;
   }
-  virtual void Reset() {}
-  virtual int  isValid() const {return 0;}
-  virtual SQHitVector* Clone() const {return NULL;}
+  virtual void Reset() = 0;
+  virtual int  isValid() const = 0;
+  virtual SQHitVector* Clone() const = 0;
 
-  virtual bool   empty()                   const {return true;}
-  virtual size_t  size()                   const {return 0;}
-  virtual void   clear()                         {}
+  virtual bool   empty() const = 0;
+  virtual size_t  size() const = 0;
+  virtual void   clear() = 0;
 
-  virtual const SQHit* at(const size_t idkey) const {return nullptr;}
-  virtual       SQHit* at(const size_t idkey) {return NULL;}
-  virtual       void   push_back(const SQHit *hit) {}
-  virtual       size_t erase(const size_t idkey) {return 0;}
-  virtual       Iter   erase(Iter pos) {return HitVector().end();}
+  virtual const SQHit* at(const size_t idkey) const = 0;
+  virtual       SQHit* at(const size_t idkey) = 0;
+  virtual       void   push_back(const SQHit *hit) = 0;
+  virtual       size_t erase(const size_t idkey) = 0;
+  virtual       Iter   erase(Iter pos) = 0;
 
-  virtual ConstIter begin()                   const {return HitVector().end();}
-  virtual ConstIter   end()                   const {return HitVector().end();}
+  virtual ConstIter begin() const = 0;
+  virtual ConstIter   end() const = 0;
 
-  virtual Iter begin()                   {return HitVector().end();}
-  virtual Iter   end()                   {return HitVector().end();}
+  virtual Iter begin() = 0;
+  virtual Iter   end() = 0;
 
 protected:
   SQHitVector() {}

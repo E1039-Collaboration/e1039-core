@@ -15,6 +15,7 @@ using namespace std;
 
 CalibDriftDist::CalibDriftDist(const std::string& name)
   : SubsysReco(name)
+  , m_delete_out_time_hit(false)
   , m_manual_map_selection(false)
   , m_fn_xt("")
   , m_vec_hit(0)
@@ -93,27 +94,51 @@ int CalibDriftDist::InitRun(PHCompositeNode* topNode)
 
 int CalibDriftDist::process_event(PHCompositeNode* topNode)
 {
+  map<int, int> list_n_hit_in;
+  map<int, int> list_n_hit_out;
+    
   GeomSvc* geom = GeomSvc::instance();
-  for (SQHitVector::Iter it = m_vec_hit->begin(); it != m_vec_hit->end(); it++) {
+  for (SQHitVector::Iter it = m_vec_hit->begin(); it != m_vec_hit->end();) {
     SQHit* hit = *it;
     int det = hit->get_detector_id();
-    if (!geom->isChamber(det) && !geom->isPropTube(det)) continue;
+    if (!geom->isChamber(det) && !geom->isPropTube(det)) {
+      it++;
+      continue;
+    }
 
     CalibParamXT::Set* xt = m_cal_xt->GetParam(det);
     if (! det) {
       cerr << "  WARNING:  Cannot find the in-time parameter for det=" << det << " in CalibDriftDist.\n";
+      it++;
       continue;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
-    float   tdc_time = hit->get_tdc_time();
-    float drift_dist = xt->t2x.Eval(tdc_time);
-    if (drift_dist < 0) drift_dist = 0;
-    hit->set_drift_distance(drift_dist);
-    hit->set_in_time(xt->T1 <= tdc_time && tdc_time <= xt->T0);
-    /// No field for resolution in SQHit now.
+    float tdc_time = hit->get_tdc_time();
+    bool is_in_time = (xt->T1 <= tdc_time && tdc_time <= xt->T0);
+    if (m_delete_out_time_hit && ! is_in_time) {
+      it = m_vec_hit->erase(it);
+    } else {
+      float drift_dist = xt->t2x.Eval(tdc_time);
+      if (drift_dist < 0) drift_dist = 0;
+      hit->set_drift_distance(drift_dist);
+      hit->set_in_time(is_in_time);
+      /// No field for resolution in SQHit now.
 
-    int ele = hit->get_element_id();
-    hit->set_pos(geom->getMeasurement(det, ele));
+      int ele = hit->get_element_id();
+      hit->set_pos(geom->getMeasurement(det, ele));
+      it++;
+    }
+    if (Verbosity() > 1 && m_delete_out_time_hit) {
+      list_n_hit_in[det]++;
+      if (is_in_time) list_n_hit_out[det]++;
+    }
+  }
+  if (Verbosity() > 1 && m_delete_out_time_hit) {
+    cout << "CalibDriftDist: ";
+    for (auto it = list_n_hit_in.begin(); it != list_n_hit_in.end(); it++) {
+      cout << " " << it->first << ":" << it->second << "->" << list_n_hit_out[it->first];
+    }
+    cout << endl;
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }

@@ -10,6 +10,7 @@ class CalibParamXT;
  * Only when necessary, you can manually give a parameter set via `ReadParamFromFile()`.
  */
 class CalibDriftDist: public SubsysReco {
+  bool m_delete_out_time_hit;
   bool m_manual_map_selection;
   std::string m_fn_xt;
   SQHitVector* m_vec_hit;
@@ -32,6 +33,7 @@ class CalibDriftDist: public SubsysReco {
   /// Set the plane resolutions in cm.
   void SetResolution(const double reso_d0, const double reso_d1, const double reso_d2, const double reso_d3p, const double reso_d3m);
 
+  void DeleteOutTimeHit() { m_delete_out_time_hit = true; }
   void ReadParamFromFile(const char* fn_xt_curve);
   CalibParamXT* GetParamXT() { return m_cal_xt; }
 };
