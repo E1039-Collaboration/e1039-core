@@ -1,6 +1,7 @@
 #ifndef _SQVERTEXING_H
 #define _SQVERTEXING_H
 
+#include <TRandom2.h>
 #include <fun4all/SubsysReco.h>
 
 #include "GFField.h"
@@ -50,6 +51,8 @@ private:
   bool enableSingleRetracking;
 
   int charge1, charge2;
+
+  TRandom2 rndm;
 
   std::string geom_file_name;
   SQGenFit::GFField* gfield;
