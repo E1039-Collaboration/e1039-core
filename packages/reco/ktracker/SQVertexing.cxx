@@ -10,6 +10,7 @@
 #include <phool/PHRandomSeed.h>
 #include <phool/getClass.h>
 #include <phool/recoConsts.h>
+#include <interface_main/SQEvent.h>
 #include <interface_main/SQTrack_v1.h>
 #include <interface_main/SQDimuon_v1.h>
 #include <interface_main/SQTrackVector_v1.h>
@@ -94,6 +95,10 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
 
   ret = InitGeom(topNode);
   if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+
+  //Initialize random seed
+  recoConsts* rc = recoConsts::instance();
+  rndm.SetSeed(rc->get_IntFlag("RUNNUMBER"));
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -310,12 +315,21 @@ bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDim
   swimTrackToVertex(gtrk2, Z_DUMP, &pos, &mom);
   dimuon.p_neg_dump.SetVectM(mom, M_MU);
   
-  //Flip the sign of Px of 'positive' muon if processing like-sign muons
+  //Randomly flip the sign of Px of one of the muons if processing like-sign muons
   if(charge1 == charge2)
   {
-    dimuon.p_pos.SetPx(-dimuon.p_pos.Px());
-    dimuon.p_pos_target.SetPx(-dimuon.p_pos_target.Px());
-    dimuon.p_pos_dump.SetPx(-dimuon.p_pos_dump.Px());
+    if(rndm.Rndm() < 0.5)
+    {
+      dimuon.p_pos.SetPx(-dimuon.p_pos.Px());
+      dimuon.p_pos_target.SetPx(-dimuon.p_pos_target.Px());
+      dimuon.p_pos_dump.SetPx(-dimuon.p_pos_dump.Px());
+    }
+    else
+    {
+      dimuon.p_neg.SetPx(-dimuon.p_neg.Px());
+      dimuon.p_neg_target.SetPx(-dimuon.p_neg_target.Px());
+      dimuon.p_neg_dump.SetPx(-dimuon.p_neg_dump.Px());
+    }
   }
 
   return true;
