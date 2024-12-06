@@ -7,9 +7,18 @@ class CalibParamInTimeV1495;
 
 /// SubsysReco module to calibrate the in-time window of the hodoscope.
 /**
- * It does _not_ take care of the DP hodoscope at present.
+ * The calibration parameter (i.e. center and width of window) is taken from DB, based on run number.
+ * 
+ * @code
+ *   auto cal_hodo = new CalibHodoInTime();
+ *   //cal_hodo->SkipCalibration(); // Uncomment this when needed.
+ *   //cal_hodo->DeleteOutTimeHit(); // Uncomment this when needed.
+ *   se->registerSubsystem(cal_hodo);
+ * @endcode
  */
 class CalibHodoInTime: public SubsysReco {
+  bool m_skip_calib;
+  bool m_delete_out_time_hit;
   SQHitVector* m_vec_hit;
   SQHitVector* m_vec_trhit;
   CalibParamInTimeTaiwan* m_cal_taiwan;
@@ -22,6 +31,11 @@ class CalibHodoInTime: public SubsysReco {
   int InitRun(PHCompositeNode *topNode);
   int process_event(PHCompositeNode *topNode);
   int End(PHCompositeNode *topNode);
+
+  /// Have this module skip the calibration.  Useful when you only delete out-of-time hits.
+  void SkipCalibration() { m_skip_calib = true; }
+  /// Have this module delete out-of-time hits.
+  void DeleteOutTimeHit() { m_delete_out_time_hit = true; }
 };
 
 #endif // __CALIB_HODO_IN_TIME_H__
