@@ -34,7 +34,7 @@ SQSingleMuonGen::SQSingleMuonGen(const std::string& name):
   _mom_max(100.),
   _pt_max(4.),
   _charge_ratio(0.5),
-  _m_muon(0.1057),
+  _m_muon(0.105658),
   _m_pion(0.13957),
   _rndm(PHRandomSeed())
 {
@@ -57,7 +57,8 @@ int SQSingleMuonGen::InitRun(PHCompositeNode* topNode)
     dstNode->addNode(eveNode);
   }
 
-  _pt_dist    = new TF1("PtDistr", "1*(x^-2)", 0.00001, _pt_max);
+  //_pt_dist    = new TF1("PtDistr", "1*(x^-2)", 0.00001, _pt_max);
+  _pt_dist    = new TF1("PtDistr", "TMath::Landau(x, 0.416742, 0.174227)", 0., _pt_max);
   _pz_dist[0] = new TF1("PzDistr1", "0.161*(x^-2.396)", _mom_min, _mom_max);
   _pz_dist[1] = new TF1("PzDistr2", "0.527*(x^-1.996)", _mom_min, _mom_max);
   _pz_dist[2] = new TF1("PzDistr3", "0.489*(x^-2.200)", _mom_min, _mom_max);
@@ -106,8 +107,7 @@ int SQSingleMuonGen::process_event(PHCompositeNode* topNode)
   particle->set_pid(pdgcode);
   particle->set_name(pdgname);
 
-  double m  = 0.105658;
-  double e  = TMath::Sqrt(_truth->muMom.Mag2() + m*m);
+  double e  = TMath::Sqrt(_truth->muMom.Mag2() + _m_muon*_m_muon);
   particle->set_px(_truth->muMom.X());
   particle->set_py(_truth->muMom.Y());
   particle->set_pz(_truth->muMom.Z());
