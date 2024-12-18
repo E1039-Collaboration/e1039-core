@@ -28,7 +28,7 @@ public:
   const void set_target_only(bool en = true)   { _target_only = en; }
   const void enable_geom_cut(bool en = true)   { _enable_geom_cut = en; }
   const void set_mother_decay_length(double l) { _ctau = l; }
-  const void set_charge_ratio(double v)        { _charge_ratio = v; }
+  const void set_charge_ratio(double v)        { _charge_ratio = v/(v+1.); }
   const void set_pt_max(double v)              { _pt_max = v; }
   const void set_mom_range(double min, double max)  { _mom_min = min; _mom_max = max; }
   const void enable_real_mom_dist(bool en = true)   { _enable_real_mom_dist = en; }
