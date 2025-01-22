@@ -151,6 +151,14 @@ public:
  * rc->set_CharFlag("GeomPlane", "2022111601");
  * GeomSvc* geom = GeomSvc::instance();
  * @endcode
+ *
+ * You might change some plane parameters, which might require `initWireLUT()`;
+ * @code
+ * GeomSvc* geom = GeomSvc::instance();
+ * geom->getPlanePtr(55)->cellWidth = 1.015;
+ * geom->getPlanePtr(55)->spacing   = 1.015;
+ * geom->initWireLUT();
+ * @endcode
  */
 class GeomSvc
 {

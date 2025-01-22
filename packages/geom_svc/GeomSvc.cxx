@@ -541,6 +541,10 @@ void GeomSvc::initWireLUT() {
   typedef std::unordered_map<int, TVectorD>::value_type epType;
   for(int i = 1; i <= nChamberPlanes; ++i)
   {
+      map_wirePosition[i].clear();
+      map_endPoint1   [i].clear();
+      map_endPoint2   [i].clear();
+      planes          [i].elementPos.clear();
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
@@ -557,6 +561,10 @@ void GeomSvc::initWireLUT() {
   // 2. for hodoscopes and prop. tubes
   for(int i = nChamberPlanes + 1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes; ++i)
   {
+      map_wirePosition[i].clear();
+      map_endPoint1   [i].clear();
+      map_endPoint2   [i].clear();
+      planes          [i].elementPos.clear();
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
           double pos;
@@ -1097,7 +1105,7 @@ void GeomSvc::printWirePosition()
 {
   for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
   {
-    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) continue;
     int detectorID = (*iter).second;
     std::cout << " ====================== " << (*iter).first << " ==================== " << std::endl;
     for(int i = 1; i <= planes[detectorID].nElements; ++i)
@@ -1118,7 +1126,7 @@ void GeomSvc::printAlignPar()
   std::cout << "detectorID         DetectorName            offset_pos             offset_z             offset_phi" << std::endl;
   for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
   {
-    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) continue;
     std::cout << iter->second << "     " << iter->first << "    " << planes[(*iter).second].deltaW << "     " << planes[(*iter).second].deltaZ << "      " << planes[(*iter).second].rotZ << std::endl;
   }
 }
@@ -1128,7 +1136,7 @@ void GeomSvc::printTable()
   std::cout << "detectorID detectorName planeType    Spacing     Xoffset     overlap     width       height       nElement       angleFromVertical     z0     x0     y0     deltaW" << std::endl;
   for(std::map<std::string, int>::iterator iter = map_detectorID.begin(); iter != map_detectorID.end(); ++iter)
   {
-    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes) continue;
+    if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) continue;
     std::cout << planes[iter->second] << std::endl;
   }
 }
