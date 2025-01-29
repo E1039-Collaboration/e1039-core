@@ -29,7 +29,9 @@ Fun4AllRUSOutputManager::Fun4AllRUSOutputManager(const std::string &myname)
     m_evt(0),
     m_sp_map(0),
     sq_run(0),
-   m_compression_level(5),
+    m_compression_level(5),
+    m_basket_size(64000),
+    m_auto_flush(2500),
     m_hit_vec(0)
 {
  ;
@@ -73,6 +75,9 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 	m_tree->Branch("elementID", &elementID);
 	m_tree->Branch("tdcTime", &tdcTime);
 	m_tree->Branch("driftDistance", &driftDistance);
+
+	m_tree->SetAutoFlush(m_auto_flush);
+	m_tree->SetBasketSize("*", m_basket_size);
 
 	m_evt = findNode::getClass<SQEvent>(startNode, "SQEvent");
 	m_hit_vec = findNode::getClass<SQHitVector>(startNode, "SQHitVector");
