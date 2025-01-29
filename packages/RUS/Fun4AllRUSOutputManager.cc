@@ -114,14 +114,11 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
 if (m_hit_vec) {
     for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
         SQHit* hit = m_hit_vec->at(ihit);
-	//if (hit->is_in_time() ==0) continue;
-	//cout << "is_in_time(): "<< hit->is_in_time() << endl;
         hitID.push_back(hit->get_hit_id());
         detectorID.push_back(hit->get_detector_id());
         elementID.push_back(hit->get_element_id());
         tdcTime.push_back(hit->get_tdc_time());
         driftDistance.push_back(hit->get_drift_distance());
-	//hitsInTime.push_back(hit->is_in_time());
     }
 }
 	m_tree->Fill();
@@ -129,12 +126,12 @@ if (m_hit_vec) {
 }
 
 void Fun4AllRUSOutputManager::CloseFile() {
-    if (!m_file) return;
-    std::cout << "Fun4AllRUSOutputManager::CloseFile(): Closing file: " << m_file_name << std::endl;
-    m_file->Write();
-    m_file->Close();
-    delete m_file;
-    m_file = nullptr;
+	if (!m_file) return;
+	std::cout << "Fun4AllRUSOutputManager::CloseFile(): Closing file: " << m_file_name << std::endl;
+	m_file->Write();
+	m_file->Close();
+	delete m_file;
+	m_file = nullptr;
 }
 
 void Fun4AllRUSOutputManager::ResetBranches() {
@@ -143,5 +140,4 @@ void Fun4AllRUSOutputManager::ResetBranches() {
 	elementID.clear();
 	tdcTime.clear();
 	driftDistance.clear();
-	//hitsInTime.clear();
 }
