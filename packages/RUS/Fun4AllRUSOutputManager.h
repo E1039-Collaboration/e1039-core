@@ -45,9 +45,9 @@ private:
     SQHitVector* m_hit_vec;
     SQRun* sq_run;  
 
-    int m_basket_size = 64000;
-    int m_auto_flush = 2500;
-    int m_compression_level = 5;
+    int m_basket_size;
+    int m_auto_flush;
+    int m_compression_level;
 
     int runID;
     int spillID;
