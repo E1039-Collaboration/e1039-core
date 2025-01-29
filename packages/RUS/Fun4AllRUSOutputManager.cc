@@ -93,7 +93,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
 	runID = m_evt->get_run_id();
 	spillID = m_evt->get_spill_id();
 	eventID = m_evt->get_event_id();
-	turnID =  m_evt->get_qie_rf_id ();
+	turnID =  m_evt->get_qie_turn_id();
 	rfID = m_evt->get_qie_rf_id ();
 
 	fpgaTrigger[0] = m_evt->get_trigger(SQEvent::MATRIX1);
