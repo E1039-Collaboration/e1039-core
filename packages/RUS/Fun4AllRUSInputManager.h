@@ -52,23 +52,25 @@ protected:
 
     TFile* _fin;
     TTree* _tin;
-int runID;
-int spillID;
-int eventID;
-int rfID;
-int rfIntensity[33] = {0};
-int fpgaTrigger[5] = {0};
-int nimTrigger[5] = {0};
+    int runID;
+    int spillID;
+    int eventID;
+    int turnID;
+    int rfID;
+    int rfIntensity[33] = {0};
+    int fpgaTrigger[5] = {0};
+    int nimTrigger[5] = {0};
 
-std::vector<int>* detectorID = nullptr;
-std::vector<int>* elementID = nullptr;
-std::vector<double>* driftDistance = nullptr;
-std::vector<double>* tdcTime = nullptr;
+    std::vector<int>* hitID = nullptr;
+    std::vector<int>* detectorID = nullptr;
+    std::vector<int>* elementID = nullptr;
+    std::vector<double>* driftDistance = nullptr;
+    std::vector<double>* tdcTime = nullptr;
 
-   SQRun*       run_header;
-   SQSpillMap*  spill_map;
-   SQEvent*     event_header;
-   SQHitVector* hit_vec;
+    SQRun*       run_header;
+    SQSpillMap*  spill_map;
+    SQEvent*     event_header;
+    SQHitVector* hit_vec;
 };
 
 #endif /* __Fun4AllRUSInputManager_H_ */

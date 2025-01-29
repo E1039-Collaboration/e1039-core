@@ -89,7 +89,6 @@ Fun4AllRUSInputManager::~Fun4AllRUSInputManager()
 
 void Fun4AllRUSInputManager::VectToE1039() {
 	// Example: Initialize default triggers
-	cout << "run number"<< runID << endl;
 	event_header->set_run_id(runID);
 	SQSpill* spill = spill_map->get(spillID);
 	if(!spill) {
@@ -104,7 +103,7 @@ void Fun4AllRUSInputManager::VectToE1039() {
 	event_header->set_event_id(eventID);
 	event_header->set_data_quality(0);
 	for(int i = -16; i <= 16; ++i) {event_header->set_qie_rf_intensity(i, rfIntensity[i+16]);} // need to be added
-	
+
 	if (event_header) {
 		// Apply the FPGA triggers to the event header
 		event_header->set_trigger(SQEvent::MATRIX1, fpgaTrigger[0]);
@@ -119,9 +118,11 @@ void Fun4AllRUSInputManager::VectToE1039() {
 		event_header->set_trigger(SQEvent::NIM4, nimTrigger[3]);
 		event_header->set_trigger(SQEvent::NIM5, nimTrigger[4]);
 	}
+	event_header->set_qie_turn_id(turnID);
+	event_header->set_qie_rf_id(rfID);
 	for (size_t i = 0; i < elementID->size(); ++i) {
 		SQHit* hit = new SQHit_v1();
-		hit->set_hit_id(i);
+		hit->set_hit_id(hitID->at(i));
 		hit->set_detector_id(detectorID->at(i));
 		hit->set_element_id(elementID->at(i));
 		hit->set_tdc_time(tdcTime->at(i));
@@ -131,47 +132,50 @@ void Fun4AllRUSInputManager::VectToE1039() {
 }
 
 int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
-    if (isopen) {
-        std::cout << "Closing currently open file "
-                  << filename
-                  << " and opening " << filenam << std::endl;
-        fileclose();
-    }   
-    filename = filenam;
+	if (isopen) {
+		std::cout << "Closing currently open file "
+			<< filename
+			<< " and opening " << filenam << std::endl;
+		fileclose();
+	}   
+	filename = filenam;
 
 
-    if (verbosity > 0) {
-        std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
-    }   
+	if (verbosity > 0) {
+		std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
+	}   
 
-    events_thisfile = 0;
+	events_thisfile = 0;
 
-    _fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
-    if (!_fin || _fin->IsZombie()) {
-        std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
-    }
+	_fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
+	if (!_fin || _fin->IsZombie()) {
+		std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
+	}
 
-    _tin = (TTree*) _fin->Get(_tree_name.c_str());
-    if (!_tin) {
-        std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
-        return -1; 
-    }
-_tin->SetBranchAddress("eventID", &eventID);    
-_tin->SetBranchAddress("runID", &runID);    
-_tin->SetBranchAddress("spillID", &spillID);    
-_tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
-_tin->SetBranchAddress("nimTrigger", nimTrigger);
-_tin->SetBranchAddress("rfIntensity", rfIntensity);
+	_tin = (TTree*) _fin->Get(_tree_name.c_str());
+	if (!_tin) {
+		std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
+		return -1; 
+	}
+	_tin->SetBranchAddress("eventID", &eventID);    
+	_tin->SetBranchAddress("runID", &runID);    
+	_tin->SetBranchAddress("spillID", &spillID);    
+	_tin->SetBranchAddress("rfID", &rfID);    
+	_tin->SetBranchAddress("turnID", &turnID);    
+	_tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
+	_tin->SetBranchAddress("nimTrigger", nimTrigger);
+	_tin->SetBranchAddress("rfIntensity", rfIntensity);
 
-_tin->SetBranchAddress("detectorID", &detectorID);    
-_tin->SetBranchAddress("elementID", &elementID);    
-_tin->SetBranchAddress("driftDistance", &driftDistance);    
-_tin->SetBranchAddress("tdcTime", &tdcTime);    
+	_tin->SetBranchAddress("hitID", &hitID);    
+	_tin->SetBranchAddress("detectorID", &detectorID);    
+	_tin->SetBranchAddress("elementID", &elementID);    
+	_tin->SetBranchAddress("driftDistance", &driftDistance);    
+	_tin->SetBranchAddress("tdcTime", &tdcTime);    
 
-    segment = 0;
-    isopen = 1;
-    AddToFileOpened(filenam); // Add file to the list of opened files
-    return 0;
+	segment = 0;
+	isopen = 1;
+	AddToFileOpened(filenam); // Add file to the list of opened files
+	return 0;
 }
 
 int Fun4AllRUSInputManager::run(const int nevents) {
@@ -212,7 +216,6 @@ int Fun4AllRUSInputManager::run(const int nevents) {
    syncobject->EventCounter    (events_thisfile);
    syncobject->SegmentNumber   (spillID);
    syncobject->EventNumber     (eventID);
-   std::cout << "deugg 1: " <<std::endl;
       VectToE1039();
    std::cout << "deugg 2: " <<std::endl;
     if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK) {

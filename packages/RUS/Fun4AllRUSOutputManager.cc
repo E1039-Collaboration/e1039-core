@@ -29,6 +29,7 @@ Fun4AllRUSOutputManager::Fun4AllRUSOutputManager(const std::string &myname)
     m_evt(0),
     m_sp_map(0),
     sq_run(0),
+   m_compression_level(5),
     m_hit_vec(0)
 {
  ;
@@ -42,7 +43,7 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 	std::cout << "Fun4AllRUSOutputManager::OpenFile(): Attempting to open file: " << m_file_name << " with tree: " << m_tree_name << std::endl;
 	m_file = new TFile(m_file_name.c_str(), "RECREATE");
 	m_file->SetCompressionAlgorithm(ROOT::kLZMA);
-	m_file->SetCompressionLevel(5);
+	m_file->SetCompressionLevel(m_compression_level);
 
 	if (!m_file || m_file->IsZombie()) {
 		std::cerr << "Error: Could not create file " << m_file_name << std::endl;
@@ -63,11 +64,10 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 	m_tree->Branch("spillID", &spillID, "spillID/I");
 	m_tree->Branch("eventID", &eventID, "eventID/I");
 	m_tree->Branch("rfID", &rfID, "rfID/I");
-
+	m_tree->Branch("turnID", &rfID, "turnID/I");
 	m_tree->Branch("rfIntensity", rfIntensity, "rfIntensity[33]/I");
 	m_tree->Branch("fpgaTrigger", fpgaTrigger, "fpgaTrigger[5]/I");
 	m_tree->Branch("nimTrigger", nimTrigger, "nimTrigger[5]/I");
-
 	m_tree->Branch("hitID", &hitID);
 	m_tree->Branch("detectorID", &detectorID);
 	m_tree->Branch("elementID", &elementID);
@@ -93,6 +93,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
 	runID = m_evt->get_run_id();
 	spillID = m_evt->get_spill_id();
 	eventID = m_evt->get_event_id();
+	turnID =  m_evt->get_qie_rf_id ();
 	rfID = m_evt->get_qie_rf_id ();
 
 	fpgaTrigger[0] = m_evt->get_trigger(SQEvent::MATRIX1);
@@ -107,7 +108,6 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
 	nimTrigger[3] = m_evt->get_trigger(SQEvent::NIM4);
 	nimTrigger[4] = m_evt->get_trigger(SQEvent::NIM5);
 	for (int i = -16; i <= 16; ++i) {
-    // cout << "intensity index: i" << i+16 << endl;
     	rfIntensity[i+ 16] = m_evt->get_qie_rf_intensity(i);
 }
 

@@ -45,23 +45,24 @@ private:
     SQHitVector* m_hit_vec;
     SQRun* sq_run;  
 
-int m_basket_size;
-int m_auto_flush;
-int m_compression_level;
+    int m_basket_size;
+    int m_auto_flush;
+    int m_compression_level = 5;
 
-int runID;
-int spillID;
-int eventID;
-int rfID;
-int rfIntensity[33];
-int fpgaTrigger[5] = {0};
-int nimTrigger[5] = {0};
+    int runID;
+    int spillID;
+    int eventID;
+    int turnID;
+    int rfID;
+    int rfIntensity[33];
+    int fpgaTrigger[5] = {0};
+    int nimTrigger[5] = {0};
 
-std::vector<int> hitID;
-std::vector<int> detectorID;
-std::vector<int> elementID;
-std::vector<double> tdcTime;
-std::vector<double> driftDistance;
+    std::vector<int> hitID;
+    std::vector<int> detectorID;
+    std::vector<int> elementID;
+    std::vector<double> tdcTime;
+    std::vector<double> driftDistance;
 };
 
 #endif 
