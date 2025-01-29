@@ -57,6 +57,7 @@ if [ $mode = 'single' ] || [ $mode = 'increment' ]; then
     declare -a packages=( $package )
 else # 'all' or 'resume'
   declare -a packages=(
+    packages/RUS
     packages/global_consts
     framework/phool
     packages/db_svc
