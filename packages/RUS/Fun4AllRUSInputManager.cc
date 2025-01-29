@@ -88,14 +88,12 @@ Fun4AllRUSInputManager::~Fun4AllRUSInputManager()
  }
 
 void Fun4AllRUSInputManager::VectToE1039() {
-	// Example: Initialize default triggers
 	event_header->set_run_id(runID);
 	SQSpill* spill = spill_map->get(spillID);
 	if(!spill) {
 		spill = new SQSpill_v2();
 		spill->set_spill_id(spillID);
 		spill->set_run_id(runID);
-
 		spill_map->insert(spill);
 		run_header->set_n_spill(spill_map->size());
 	}
@@ -103,21 +101,18 @@ void Fun4AllRUSInputManager::VectToE1039() {
 	event_header->set_event_id(eventID);
 	event_header->set_data_quality(0);
 	for(int i = -16; i <= 16; ++i) {event_header->set_qie_rf_intensity(i, rfIntensity[i+16]);} // need to be added
-
-	if (event_header) {
-		// Apply the FPGA triggers to the event header
-		event_header->set_trigger(SQEvent::MATRIX1, fpgaTrigger[0]);
-		event_header->set_trigger(SQEvent::MATRIX2, fpgaTrigger[1]);
-		event_header->set_trigger(SQEvent::MATRIX3, fpgaTrigger[2]);
-		event_header->set_trigger(SQEvent::MATRIX4, fpgaTrigger[3]);
-		event_header->set_trigger(SQEvent::MATRIX5, fpgaTrigger[4]);
-		// Apply the NIM triggers to the event header
-		event_header->set_trigger(SQEvent::NIM1, nimTrigger[0]);
-		event_header->set_trigger(SQEvent::NIM2, nimTrigger[1]);
-		event_header->set_trigger(SQEvent::NIM3, nimTrigger[2]);
-		event_header->set_trigger(SQEvent::NIM4, nimTrigger[3]);
-		event_header->set_trigger(SQEvent::NIM5, nimTrigger[4]);
-	}
+	// Apply the FPGA triggers to the event header
+	event_header->set_trigger(SQEvent::MATRIX1, fpgaTrigger[0]);
+	event_header->set_trigger(SQEvent::MATRIX2, fpgaTrigger[1]);
+	event_header->set_trigger(SQEvent::MATRIX3, fpgaTrigger[2]);
+	event_header->set_trigger(SQEvent::MATRIX4, fpgaTrigger[3]);
+	event_header->set_trigger(SQEvent::MATRIX5, fpgaTrigger[4]);
+	// Apply the NIM triggers to the event header
+	event_header->set_trigger(SQEvent::NIM1, nimTrigger[0]);
+	event_header->set_trigger(SQEvent::NIM2, nimTrigger[1]);
+	event_header->set_trigger(SQEvent::NIM3, nimTrigger[2]);
+	event_header->set_trigger(SQEvent::NIM4, nimTrigger[3]);
+	event_header->set_trigger(SQEvent::NIM5, nimTrigger[4]);
 	event_header->set_qie_turn_id(turnID);
 	event_header->set_qie_rf_id(rfID);
 	for (size_t i = 0; i < elementID->size(); ++i) {
