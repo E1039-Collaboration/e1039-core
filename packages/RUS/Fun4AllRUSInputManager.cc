@@ -211,8 +211,7 @@ int Fun4AllRUSInputManager::run(const int nevents) {
    syncobject->EventCounter    (events_thisfile);
    syncobject->SegmentNumber   (spillID);
    syncobject->EventNumber     (eventID);
-      VectToE1039();
-   std::cout << "deugg 2: " <<std::endl;
+   VectToE1039();
     if (RejectEvent() != Fun4AllReturnCodes::EVENT_OK) {
         ResetEvent();
         goto readagain;
