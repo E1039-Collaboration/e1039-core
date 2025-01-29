@@ -91,6 +91,7 @@ else # 'all' or 'resume'
     packages/reco/ktracker
     packages/embedding
     packages/rs_Reader
+    packages/RUS
     simulation/g4dst
     _macro_
 	)
