@@ -78,9 +78,9 @@ void PHG4EMCalDetector::Construct(G4LogicalVolume* logicWorld)
   }
 
   // Overal envelop volume for the entire detector
-  double xLength_enve = m_tower_size_x*m_ntowers_x*cm;
-  double yLength_enve = m_tower_size_y*m_ntowers_y*cm;
-  double zLength_enve = m_tower_size_z*cm;
+  double xLength_enve = m_tower_size_x*m_ntowers_x;
+  double yLength_enve = m_tower_size_y*m_ntowers_y;
+  double zLength_enve = m_tower_size_z;
   G4VSolid* emcal_enve_solid = new G4Box(name+"_enve_solid", xLength_enve/2., yLength_enve/2., zLength_enve/2.);
 
   G4Material* mat_Air = G4Material::GetMaterial("G4_AIR");
