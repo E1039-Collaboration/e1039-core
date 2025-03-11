@@ -266,6 +266,7 @@ void SQDigitizer::digitizeEMCal(const std::string& detName)
       digiHit.set_tdc_time(0.);
       digiHit.set_drift_distance(0.);
       digiHit.set_pos(0.);
+      digiHit.set_edep(0.);
 
       digiHit.set_truth_x(g4hit.get_x(0));
       digiHit.set_truth_y(g4hit.get_y(0));
