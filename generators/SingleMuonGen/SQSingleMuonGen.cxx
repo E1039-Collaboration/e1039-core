@@ -11,6 +11,7 @@
 #include <phool/PHCompositeNode.h>
 #include <phool/PHIODataNode.h>
 #include <phool/PHRandomSeed.h>
+#include <phool/recoConsts.h>
 
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4ParticleDefinition.hh>
@@ -37,6 +38,8 @@ SQSingleMuonGen::SQSingleMuonGen(const std::string& name):
   _m_muon(0.105658),
   _m_pion(0.13957),
   _pt_dist(nullptr),
+  _vtx_x0(0.),
+  _vtx_y0(0.),
   _rndm(PHRandomSeed())
 {
   for(int i = 0; i < 6; ++i) _pz_dist[i] = nullptr;
@@ -66,6 +69,10 @@ int SQSingleMuonGen::InitRun(PHCompositeNode* topNode)
   _pz_dist[3] = new TF1("PzDistr4", "0.302*(x^-1.900)", _mom_min, _mom_max);
   _pz_dist[4] = new TF1("PzDistr5", "0.174*(x^-1.750)", _mom_min, _mom_max);
   _pz_dist[5] = new TF1("PzDistr6", "0.909*(x^-1.850)", _mom_min > 8. ? _mom_min : 8., _mom_max);
+
+  recoConsts* rc = recoConsts::instance();
+  _vtx_x0 = rc->get_DoubleFlag("X_BEAM");
+  _vtx_y0 = rc->get_DoubleFlag("Y_BEAM");
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -204,10 +211,7 @@ bool SQSingleMuonGen::geometryCut()
 
 bool SQSingleMuonGen::generatePrimaryVtx()
 {
-  double x = 0.;
-  double y = 0.;
   double z = -300.;
-
-  _truth->motherVtx.SetXYZ(x, y, z);
+  _truth->motherVtx.SetXYZ(_vtx_x0, _vtx_y0, z);
   return true;
 }
