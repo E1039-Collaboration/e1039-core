@@ -24,6 +24,8 @@ namespace
   //static flag to indicate the initialized has been done
   static bool inited = false;
 
+  static int MAX_ERROR;
+
   static double Z_TARGET;
   static double Z_DUMP;
   static double Z_UPSTREAM;
@@ -49,6 +51,8 @@ namespace
       Y_BEAM    = rc->get_DoubleFlag("Y_BEAM");
       SIGX_BEAM = rc->get_DoubleFlag("SIGX_BEAM");
       SIGY_BEAM = rc->get_DoubleFlag("SIGY_BEAM");
+
+      MAX_ERROR = 5;
     }
   }
 };
@@ -56,12 +60,12 @@ namespace
 namespace SQGenFit
 {
 
-GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+GFTrack::GFTrack(): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0), _errorNo(0)
 {
   initGlobalVariables();
 }
 
-GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0), _errorNo(0)
 {
   initGlobalVariables();
 
@@ -100,7 +104,7 @@ GFTrack::GFTrack(SRecTrack& recTrack):  _track(nullptr), _trkrep(nullptr), _prop
   }
 }
 
-GFTrack::GFTrack(Tracklet& tracklet): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0)
+GFTrack::GFTrack(Tracklet& tracklet): _track(nullptr), _trkrep(nullptr), _propState(nullptr), _virtMeas(nullptr), _trkcand(nullptr), _pdg(0), _errorNo(0)
 {
   initGlobalVariables();
   setTracklet(tracklet, 590., false);
@@ -109,6 +113,11 @@ GFTrack::GFTrack(Tracklet& tracklet): _track(nullptr), _trkrep(nullptr), _propSt
 GFTrack::~GFTrack()
 {
   if(_track != nullptr) delete _track;
+}
+
+void GFTrack::setMaxErrorCount(unsigned int m)
+{
+  MAX_ERROR = m;
 }
 
 void GFTrack::setVerbosity(unsigned int v)
@@ -323,13 +332,22 @@ double GFTrack::swimToVertex(double z, TVector3* pos, TVector3* mom, TMatrixDSym
   }
   catch(genfit::Exception& e)
   {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << z << ": " << e.what() << std::endl;
-    return -1.;
+    if(_errorNo < MAX_ERROR) std::cerr << "SQGenFit::GFTrack::swimToVertex: hypo test failed vertex @Z=" << z << ": " << e.what() << std::endl;
+    chi2 = -1.;
   }
   catch(double len)
   {
-    std::cerr << __FILE__ << " " << __LINE__ << ": hypo test failed vertex @Z=" << z << ": " << len << std::endl;
-    return -1.;
+    if(_errorNo < MAX_ERROR) std::cerr << "SQGenFit::GFTrack::swimToVertex: hypo test failed vertex @Z=" << z << ": " << len << std::endl;
+    chi2 = -2.;
+  }
+
+  if(chi2 < 0.)
+  {
+    ++_errorNo;
+    if(_errorNo == MAX_ERROR)
+    {
+      std::cerr << "SQGenFit::GFTrack::swimToVertex: ... too many extraplolation errors, future errors from this track will be suppressed... " << std::endl;
+    }
   }
 
   return chi2;
