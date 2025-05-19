@@ -90,7 +90,7 @@ class Fun4AllRUSOutputManager : public Fun4AllOutputManager {
         std::vector<double> tdcTime;
         std::vector<double> driftDistance;
 
-        std::vector<int> hit_trackID, gCharge, trackID, processID;
+        std::vector<int> hitTrackID, gCharge, gTrackID, gprocessID;
         std::vector<double> gvx, gvy, gvz, gpx, gpy, gpz;
         std::vector<double> gx_st1, gy_st1, gz_st1, gpx_st1, gpy_st1, gpz_st1;
         std::vector<double> gx_st3, gy_st3, gz_st3, gpx_st3, gpy_st3, gpz_st3;

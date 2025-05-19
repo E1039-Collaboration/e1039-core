@@ -80,7 +80,7 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
         m_tree->Branch("nimTrigger", nimTrigger, "nimTrigger[5]/I");
     }
     m_tree->Branch("hitID", &hitID);
-    m_tree->Branch("hit_trackID", &hit_trackID);
+    m_tree->Branch("hitTrackID", &hitTrackID);
     m_tree->Branch("detectorID", &detectorID);
     m_tree->Branch("elementID", &elementID);
     m_tree->Branch("tdcTime", &tdcTime);
@@ -88,9 +88,9 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 
 
     if (true_mode) {
-        m_tree->Branch("processID", &processID); //Hit level
+        m_tree->Branch("gprocessID", &gprocessID); //Hit level
         m_tree->Branch("gCharge", &gCharge);
-        m_tree->Branch("trackID", &trackID);
+        m_tree->Branch("gTrackID", &gTrackID);
         m_tree->Branch("gvx", &gvx);
         m_tree->Branch("gvy", &gvy);
         m_tree->Branch("gvz", &gvz);
@@ -161,7 +161,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
         ResetHitBranches();
         for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
             SQHit* hit = m_hit_vec->at(ihit);
-            hit_trackID.push_back(hit->get_track_id());
+            hitTrackID.push_back(hit->get_track_id());
             hitID.push_back(hit->get_hit_id());
             detectorID.push_back(hit->get_detector_id());
             elementID.push_back(hit->get_element_id());
@@ -176,7 +176,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             SQTrack* trk = m_vec_trk->at(ii);
 
             gCharge.push_back(trk->get_charge());
-            trackID.push_back(trk->get_track_id());
+            gTrackID.push_back(trk->get_track_id());
             gvx.push_back(trk->get_pos_vtx().X());
             gvy.push_back(trk->get_pos_vtx().Y());
             gvz.push_back(trk->get_pos_vtx().Z());
@@ -215,9 +215,9 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
                     //cout << "encodedValue: "<< encodedValue<< endl;
                     //cout << "DecodeSourceFlag: "<< DecodeSourceFlag(encodedValue) << endl;
                     //cout << "DecodeProcessID: "<< DecodeProcessID(encodedValue) << endl;
-                    processID.push_back(encodedValue);
+                    gprocessID.push_back(encodedValue);
                     hitID.push_back(hit->get_hit_id());
-                    hit_trackID.push_back(hit->get_track_id());
+                    hitTrackID.push_back(hit->get_track_id());
                     detectorID.push_back(hit->get_detector_id());
                     elementID.push_back(hit->get_element_id());
                     tdcTime.push_back(hit->get_tdc_time());
@@ -241,7 +241,7 @@ void Fun4AllRUSOutputManager::CloseFile() {
 
 void Fun4AllRUSOutputManager::ResetHitBranches() {
     hitID.clear();
-    hit_trackID.clear();
+    hitTrackID.clear();
     detectorID.clear();
     elementID.clear();
     tdcTime.clear();
@@ -250,14 +250,14 @@ void Fun4AllRUSOutputManager::ResetHitBranches() {
 
 void Fun4AllRUSOutputManager::ResetTrueTrackBranches() {
     gCharge.clear();
-    trackID.clear();
+    gTrackID.clear();
     gvx.clear(); gvy.clear(); gvz.clear();
     gpx.clear(); gpy.clear(); gpz.clear();
     gx_st1.clear(); gy_st1.clear(); gz_st1.clear();
     gpx_st1.clear(); gpy_st1.clear(); gpz_st1.clear();
     gx_st3.clear(); gy_st3.clear(); gz_st3.clear();
     gpx_st3.clear(); gpy_st3.clear(); gpz_st3.clear();
-    processID.clear();
+    gprocessID.clear();
 }
 
 
