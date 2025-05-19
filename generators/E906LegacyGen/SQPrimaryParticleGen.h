@@ -44,6 +44,12 @@ class SQPrimaryVertexGen;
  * The node stores the integrated luminosity etc.
  * You can divide the weighted event count by the integrated luminosity to obtain the cross section (per bin).
  * You can then multiply this cross section by an expected integrated luminosity (of spill, week, year, etc.) to obtain the expected count.
+ * 
+ * The generated process is accessible in analysis via SQMCEvent::get_process_id().
+ * The convention of IDs (or codes) is specific to this class, as defined as `ProcessCode_t`;
+ * @code
+ * if (mcevt->get_process_id() == SQPrimaryParticleGen::DrellYan) {...}
+ * @endcode
  */
 class SQPrimaryParticleGen: public PHG4ParticleGeneratorBase
 {
@@ -55,7 +61,7 @@ public:
     PsiPrime = -3,
     Pythia   = -4,
     Custom   = -5
-  } ProcessCode_t; ///< Negative, not to overlap the codes used in Pythia8.
+  } ProcessCode_t; ///< Negative, not to overlap with the codes used in Pythia8.
   
     SQPrimaryParticleGen(const std::string& name = "PrimaryGen");
     virtual ~SQPrimaryParticleGen();

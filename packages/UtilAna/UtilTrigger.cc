@@ -85,6 +85,19 @@ int ExtractRoadID(const SQHitVector* vec)
 }
 
 /// Find all fired roads enabled in `rs`, by taking all hit combinations from `vec`.
+/**
+ * @code
+ * SQHitVector* vec = ...;
+ * const TrigRoadset* rs = ...;
+ * const bool in_time = true;
+ * std::vector<int> fired_roads_PT;
+ * std::vector<int> fired_roads_PB;
+ * std::vector<int> fired_roads_NT;
+ * std::vector<int> fired_roads_NB;
+ * UtilTrigger::FindFiredRoads(vec, rs, in_time, fired_roads_PT, fired_roads_PB, fired_roads_NT, fired_roads_NB);
+ * if (fired_roads_PT.size() > 0) { ... }
+ * @endcode
+ */
 void FindFiredRoads(const SQHitVector* vec, const TrigRoadset* rs, const bool in_time, std::vector<int>* pos_top, std::vector<int>* pos_bot, std::vector<int>* neg_top, std::vector<int>* neg_bot)
 {
   pos_top->clear();
