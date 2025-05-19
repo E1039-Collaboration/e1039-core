@@ -106,7 +106,6 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
 int SQVertexing::process_event(PHCompositeNode* topNode)
 {
   if(legacyContainer_out) recEvent->clearDimuons();
-  std::cout << __FILE__ << "  " << __LINE__ << "                    New Event  " << std::endl;
 
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
