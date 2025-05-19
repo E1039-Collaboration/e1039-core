@@ -88,7 +88,7 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 
 
     if (true_mode) {
-        m_tree->Branch("gprocessID", &gprocessID); //Hit level
+        m_tree->Branch("gProcessID", &gProcessID); //Hit level
         m_tree->Branch("gCharge", &gCharge);
         m_tree->Branch("gTrackID", &gTrackID);
         m_tree->Branch("gvx", &gvx);
@@ -215,7 +215,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
                     //cout << "encodedValue: "<< encodedValue<< endl;
                     //cout << "DecodeSourceFlag: "<< DecodeSourceFlag(encodedValue) << endl;
                     //cout << "DecodeProcessID: "<< DecodeProcessID(encodedValue) << endl;
-                    gprocessID.push_back(encodedValue);
+                    gProcessID.push_back(encodedValue);
                     hitID.push_back(hit->get_hit_id());
                     hitTrackID.push_back(hit->get_track_id());
                     detectorID.push_back(hit->get_detector_id());
@@ -257,7 +257,7 @@ void Fun4AllRUSOutputManager::ResetTrueTrackBranches() {
     gpx_st1.clear(); gpy_st1.clear(); gpz_st1.clear();
     gx_st3.clear(); gy_st3.clear(); gz_st3.clear();
     gpx_st3.clear(); gpy_st3.clear(); gpz_st3.clear();
-    gprocessID.clear();
+    gProcessID.clear();
 }
 
 
