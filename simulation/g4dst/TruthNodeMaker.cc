@@ -6,7 +6,7 @@
 #include <g4main/PHG4Hit.h>
 #include <g4main/PHG4Particle.h>
 #include <g4main/PHG4VtxPoint.h>
-#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQEvent_v2.h>
 #include <interface_main/SQMCEvent_v1.h>
 #include <interface_main/SQTrack_v1.h>
 #include <interface_main/SQDimuon_v1.h>
@@ -334,7 +334,7 @@ int TruthNodeMaker::MakeNodes(PHCompositeNode* topNode)
 
   m_evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (! m_evt) {
-    m_evt = new SQEvent_v1();
+    m_evt = new SQEvent_v2();
     node_dst->addNode(new PHIODataNode<PHObject>(m_evt, "SQEvent", "PHObject"));
   }
 

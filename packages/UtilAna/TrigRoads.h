@@ -21,6 +21,9 @@ class TrigRoads {
   unsigned int GetNumRoads() const { return m_roads.size(); }
   TrigRoad* GetRoad(const int idx);
   TrigRoad* FindRoad(const int road_id);
+  int FindRoadIndex(const int road_id) const;
+  const TrigRoad* GetRoad(const int idx) const;
+  const TrigRoad* FindRoad(const int road_id) const;
 
   int Charge() const { return m_pol; }
   int TopBot() const { return m_top_bot; }

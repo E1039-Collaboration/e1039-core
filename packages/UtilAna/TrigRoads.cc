@@ -27,7 +27,27 @@ TrigRoad* TrigRoads::FindRoad(const int road_id)
   if (it != m_idx_map.end()) return &m_roads[it->second];
   return 0;
 }
+  
+int TrigRoads::FindRoadIndex(const int road_id) const
+{
+  auto it = m_idx_map.find(road_id);
+  if (it != m_idx_map.end()) return it->second;
+  return -1;
+}
 
+const TrigRoad* TrigRoads::GetRoad(const int idx) const
+{
+  if (idx < 0 || idx > (int)m_roads.size()) return 0;
+  return &m_roads[idx];
+}
+
+const TrigRoad* TrigRoads::FindRoad(const int road_id) const
+{
+  auto it = m_idx_map.find(road_id);
+  if (it != m_idx_map.end()) return &m_roads[it->second];
+  return 0;
+}
+  
 int TrigRoads::LoadConfig(const std::string file_name)
 {
   //cout << "TrigRoads::LoadConfig(" << file_name << ")\n";

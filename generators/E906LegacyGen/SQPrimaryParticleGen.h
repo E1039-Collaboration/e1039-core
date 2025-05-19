@@ -48,6 +48,15 @@ class SQPrimaryVertexGen;
 class SQPrimaryParticleGen: public PHG4ParticleGeneratorBase
 {
 public:
+  typedef enum {
+    Undef    =  0,
+    DrellYan = -1,
+    JPsi     = -2,
+    PsiPrime = -3,
+    Pythia   = -4,
+    Custom   = -5
+  } ProcessCode_t; ///< Negative, not to overlap the codes used in Pythia8.
+  
     SQPrimaryParticleGen(const std::string& name = "PrimaryGen");
     virtual ~SQPrimaryParticleGen();
 
@@ -74,11 +83,11 @@ public:
 
     //swith for the generators; Abi
     //@
-    void enablePythia(){_PythiaGen = true;}
-    void enableCustomDimuon(){_CustomDimuon = true;}
-    void enableDrellYanGen(){_DrellYanGen = true;}
-    void enableJPsiGen(){_JPsiGen = true;}
-    void enablePsipGen(){_PsipGen = true;}
+    void enablePythia      () { _proc_code = Pythia  ;}
+    void enableCustomDimuon() { _proc_code = Custom  ;}
+    void enableDrellYanGen () { _proc_code = DrellYan;}
+    void enableJPsiGen     () { _proc_code = JPsi    ;}
+    void enablePsipGen     () { _proc_code = PsiPrime;}
 
     void set_pdfset(const std::string name) { _pdfset = name; }
 
@@ -109,11 +118,7 @@ public:
     double CrossSectionPsip(const double xF);
 
  private:
-    bool _PythiaGen;
-    bool _CustomDimuon;
-    bool _DrellYanGen;
-    bool _JPsiGen;
-    bool _PsipGen;
+    ProcessCode_t _proc_code;
 
     SQPrimaryVertexGen* _vertexGen;
     PHG4InEvent *ineve;
