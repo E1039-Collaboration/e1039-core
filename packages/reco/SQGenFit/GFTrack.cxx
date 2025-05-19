@@ -421,18 +421,19 @@ SRecTrack GFTrack::getSRecTrack()
     strack.insertChisq((*iter)->getTrackPoint()->getKalmanFitterInfo()->getSmoothedChi2());
   }
 
-  //Swim to various places and save info
-  strack.swimToVertex(nullptr, nullptr, false);
+  // Following code moved to SQVertexing
+  // //Swim to various places and save info
+  // strack.swimToVertex(nullptr, nullptr, false);
 
-  //Hypothesis test should be implemented here
-  //test Z_UPSTREAM
-  strack.setChisqUpstream(swimToVertex(Z_UPSTREAM));
+  // //Hypothesis test should be implemented here
+  // //test Z_UPSTREAM
+  // strack.setChisqUpstream(swimToVertex(Z_UPSTREAM));
 
-  //test Z_TARGET
-  strack.setChisqTarget(swimToVertex(Z_TARGET));
+  // //test Z_TARGET
+  // strack.setChisqTarget(swimToVertex(Z_TARGET));
 
-  //test Z_DUMP
-  strack.setChisqDump(swimToVertex(Z_DUMP));
+  // //test Z_DUMP
+  // strack.setChisqDump(swimToVertex(Z_DUMP));
 
   /*
   //Find POCA to beamline -- it seems to be funky and mostly found some place way upstream or downstream
@@ -454,11 +455,11 @@ SRecTrack GFTrack::getSRecTrack()
   }
   */
 
-  //test Z_VERTEX
-  TVector3 pos, mom;
-  strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z(), &pos, &mom));
-  strack.setVertexPos(pos);
-  strack.setVertexMom(mom);
+  // //test Z_VERTEX
+  // TVector3 pos, mom;
+  // strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z(), &pos, &mom));
+  // strack.setVertexPos(pos);
+  // strack.setVertexMom(mom);
 
   strack.setKalmanStatus(1);
   return strack;

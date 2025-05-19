@@ -106,6 +106,7 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
 int SQVertexing::process_event(PHCompositeNode* topNode)
 {
   if(legacyContainer_out) recEvent->clearDimuons();
+  std::cout << __FILE__ << "  " << __LINE__ << "                    New Event  " << std::endl;
 
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
@@ -116,22 +117,12 @@ int SQVertexing::process_event(PHCompositeNode* topNode)
     SRecTrack* recTrack = legacyContainer_in ? &(recEvent->getTrack(i)) : dynamic_cast<SRecTrack*>(recTrackVec->at(i));
     if(!recTrack->isKalmanFitted()) continue;
 
-    if(enableSingleRetracking)
-    {
-      TVector3 pos, mom;
-      double chi2 = refitTrkToVtx(recTrack, Z_TARGET, &pos, &mom);
-      if(chi2 > 0)
-      {
-        recTrack->setChisqTarget(chi2);
-        recTrack->setTargetPos(pos);
-        recTrack->setTargetMom(mom);
-      }
-    }
+    processOneMuon(recTrack);
 
     if(recTrack->getCharge() == charge1) trackIDs1.push_back(i);
     if(recTrack->getCharge() == charge2) trackIDs2.push_back(i);
-   
   }
+  
   if(trackIDs1.empty() || trackIDs2.empty()) return Fun4AllReturnCodes::EVENT_OK;
   if(Verbosity() > 10) std::cout << "  N of trackIDs1 & trackIDs1 = " << trackIDs1.size() << " & " << trackIDs2.size() << std::endl;
   
@@ -264,6 +255,47 @@ double SQVertexing::calcZsclp(double p)
   else if(p > 120.) p = 120.;
   
   return 301.84 - 1.27137*p + 0.0218294*p*p - 0.000170711*p*p*p + 4.94683e-07*p*p*p*p - 271.;
+}
+
+bool SQVertexing::processOneMuon(SRecTrack* track)
+{
+  SQGenFit::GFTrack gtrk(*track);
+  
+  //Swim to various places and save info
+  track->swimToVertex(nullptr, nullptr, false);
+
+  //Hypothesis test should be implemented here
+  //test Z_UPSTREAM
+  track->setChisqUpstream(swimTrackToVertex(gtrk, Z_UPSTREAM));
+
+  //test Z_TARGET
+  if(enableSingleRetracking)
+    track->setChisqTarget(refitTrkToVtx(gtrk, Z_TARGET));
+  else
+    track->setChisqTarget(swimTrackToVertex(gtrk, Z_TARGET));
+  // if(track->getChisqTarget() > 0.)
+  // {
+  //   track->setTargetPos(pos);
+  //   track->setTargetMom(mom);
+  // }
+
+  //test Z_DUMP
+  track->setChisqDump(swimTrackToVertex(gtrk, Z_DUMP));
+  // if(track->getChisqDump() > 0.)
+  // {
+  //   track->setDumpPos(pos);
+  //   track->setDumpMom(mom);
+  // }
+
+  //test Z_VERTEX
+  TVector3 pos, mom;
+  if(enableSingleRetracking)
+    track->setChisqVertex(refitTrkToVtx(gtrk, track->getVertexPos().Z(), &pos, &mom));
+  else
+    track->setChisqVertex(swimTrackToVertex(gtrk, track->getVertexPos().Z(), &pos, &mom));
+  track->setVertexFast(mom, pos);
+
+  return true;
 }
 
 bool SQVertexing::processOneDimuon(SRecTrack* track1, SRecTrack* track2, SRecDimuon& dimuon)
