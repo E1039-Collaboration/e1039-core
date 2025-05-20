@@ -44,7 +44,8 @@ KalmanFilter::KalmanFilter(bool limitedStep)
 
 bool KalmanFilter::initExtrapolator(const PHField *field,  const TGeoManager *geom)
 {
-	_extrapolator.init(field, geom);
+  _extrapolator.init(field, geom);
+  return true;
 }
 
 bool KalmanFilter::fit_node(Node& _node)

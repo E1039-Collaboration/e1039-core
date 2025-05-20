@@ -431,7 +431,7 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
   }
   catch(const std::exception& e)
   {
-    std::cout << "SQVertexing::InitGeom - Caught an exception " << std::endl;
+    std::cout << "SQVertexing::InitField - Caught an exception " << std::endl;
     gfield = nullptr;
   }
   
@@ -442,13 +442,13 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
     std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
     PHField* phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
 
-    std::cout << "SQVertexing::InitGeom - creating new GenFit field map" << std::endl;
+    std::cout << "SQVertexing::InitField - creating new GenFit field map" << std::endl;
     gfield = new SQGenFit::GFField(phfield);
     genfit::FieldManager::getInstance()->init(gfield);
   }
   else
   {
-    std::cout << "SQVertexing::InitGeom - reading existing GenFit field map" << std::endl;
+    std::cout << "SQVertexing::InitField - reading existing GenFit field map" << std::endl;
   }
 
   return Fun4AllReturnCodes::EVENT_OK;

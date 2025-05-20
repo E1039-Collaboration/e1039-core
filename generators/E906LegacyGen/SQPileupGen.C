@@ -26,7 +26,7 @@
 #include <g4main/PHG4TruthInfoContainer.h>
 #include <Geant4/G4ParticleTable.hh>
 #include <interface_main/SQMCEvent_v1.h>
-#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQEvent_v2.h>
 
 #include "SQPileupGen.h"
 #include <E906LegacyVtxGen/SQPrimaryVertexGen.h>
@@ -87,7 +87,7 @@ int SQPileupGen::InitRun(PHCompositeNode* topNode)
     PHNodeIterator iter(topNode);
     PHCompositeNode* dstNode = dynamic_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
 
-    _evt = new SQEvent_v1();
+    _evt = new SQEvent_v2();
     dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
   }
 

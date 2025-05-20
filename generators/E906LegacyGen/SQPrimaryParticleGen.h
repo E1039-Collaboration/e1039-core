@@ -44,10 +44,25 @@ class SQPrimaryVertexGen;
  * The node stores the integrated luminosity etc.
  * You can divide the weighted event count by the integrated luminosity to obtain the cross section (per bin).
  * You can then multiply this cross section by an expected integrated luminosity (of spill, week, year, etc.) to obtain the expected count.
+ * 
+ * The generated process is accessible in analysis via SQMCEvent::get_process_id().
+ * The convention of IDs (or codes) is specific to this class, as defined as `ProcessCode_t`;
+ * @code
+ * if (mcevt->get_process_id() == SQPrimaryParticleGen::DrellYan) {...}
+ * @endcode
  */
 class SQPrimaryParticleGen: public PHG4ParticleGeneratorBase
 {
 public:
+  typedef enum {
+    Undef    =  0,
+    DrellYan = -1,
+    JPsi     = -2,
+    PsiPrime = -3,
+    Pythia   = -4,
+    Custom   = -5
+  } ProcessCode_t; ///< Negative, not to overlap with the codes used in Pythia8.
+  
     SQPrimaryParticleGen(const std::string& name = "PrimaryGen");
     virtual ~SQPrimaryParticleGen();
 
@@ -74,11 +89,11 @@ public:
 
     //swith for the generators; Abi
     //@
-    void enablePythia(){_PythiaGen = true;}
-    void enableCustomDimuon(){_CustomDimuon = true;}
-    void enableDrellYanGen(){_DrellYanGen = true;}
-    void enableJPsiGen(){_JPsiGen = true;}
-    void enablePsipGen(){_PsipGen = true;}
+    void enablePythia      () { _proc_code = Pythia  ;}
+    void enableCustomDimuon() { _proc_code = Custom  ;}
+    void enableDrellYanGen () { _proc_code = DrellYan;}
+    void enableJPsiGen     () { _proc_code = JPsi    ;}
+    void enablePsipGen     () { _proc_code = PsiPrime;}
 
     void set_pdfset(const std::string name) { _pdfset = name; }
 
@@ -109,11 +124,7 @@ public:
     double CrossSectionPsip(const double xF);
 
  private:
-    bool _PythiaGen;
-    bool _CustomDimuon;
-    bool _DrellYanGen;
-    bool _JPsiGen;
-    bool _PsipGen;
+    ProcessCode_t _proc_code;
 
     SQPrimaryVertexGen* _vertexGen;
     PHG4InEvent *ineve;

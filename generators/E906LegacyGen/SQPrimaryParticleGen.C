@@ -31,7 +31,7 @@ from Kun to E1039 experiment in Fun4All framework
 #include <gsl/gsl_randist.h>
 #include <Geant4/G4ParticleTable.hh>
 #include <Geant4/G4PhysicalConstants.hh>
-#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQEvent_v2.h>
 #include <interface_main/SQMCEvent_v1.h>
 #include <interface_main/SQDimuon_v1.h>
 #include <interface_main/SQDimuonVector_v1.h>
@@ -69,11 +69,7 @@ using namespace std;
 
 SQPrimaryParticleGen::SQPrimaryParticleGen(const std::string& name):
   PHG4ParticleGeneratorBase(name),
-  _PythiaGen(false),
-  _CustomDimuon(false),
-  _DrellYanGen(false),
-  _JPsiGen(false),
-  _PsipGen(false),
+  _proc_code(Undef),
   _vertexGen(0),
   ineve(NULL),
   _configFile("phpythia8.cfg"),
@@ -110,30 +106,28 @@ int SQPrimaryParticleGen::Init(PHCompositeNode* topNode)
   _vertexGen = new SQPrimaryVertexGen();
   _pdf = LHAPDF::mkPDF(_pdfset, 0);
 
-  if(_PythiaGen){
-  if (!_configFile.empty()) read_config();
-  unsigned int seed = PHRandomSeed();
-  if (seed > 900000000)
+  if (_proc_code == Pythia) {
+    if (!_configFile.empty()) read_config();
+    unsigned int seed = PHRandomSeed();
+    if (seed > 900000000)
     {
       seed = seed % 900000000;
     }
-
-  if ((seed > 0) && (seed <= 900000000))
+    
+    if ((seed > 0) && (seed <= 900000000))
     {
       ppGen.readString("Random:setSeed = on");
       ppGen.readString(str(boost::format("Random:seed = %1%") % seed));
-
+      
       pnGen.readString("Random:setSeed = on");
       pnGen.readString(str(boost::format("Random:seed = %1%") % seed));
-      
     }
-
-  ppGen.readString("Beams:idB = 2212");
-  pnGen.readString("Beams:idB = 2112");
-
-  ppGen.init();
-  pnGen.init();
- 
+    
+    ppGen.readString("Beams:idB = 2212");
+    pnGen.readString("Beams:idB = 2112");
+    
+    ppGen.init();
+    pnGen.init();
   }
   
   return Fun4AllReturnCodes::EVENT_OK;
@@ -156,7 +150,7 @@ int SQPrimaryParticleGen::InitRun(PHCompositeNode* topNode)
   }
   _evt = findNode::getClass<SQEvent>(topNode, "SQEvent");
   if (! _evt) {
-    _evt = new SQEvent_v1();
+    _evt = new SQEvent_v2();
     dstNode->addNode(new PHIODataNode<PHObject>(_evt, "SQEvent", "PHObject"));
   }
   _mcevt = findNode::getClass<SQMCEvent>(topNode, "SQMCEvent");
@@ -199,20 +193,20 @@ int SQPrimaryParticleGen::End(PHCompositeNode* topNode)
   rc->set_DoubleFlag("E906GEN_massMin"    , massMin);
   rc->set_DoubleFlag("E906GEN_massMax"    , massMax);
 
-  if (_PythiaGen) {
+  if (_proc_code == Pythia) {
     rc->set_CharFlag("E906GEN_CHANNEL", "Pythia");
     rc->set_CharFlag("E906GEN_PYTHIA8_CONFIG", _configFile);
-  } else if (_CustomDimuon) {
+  } else if (_proc_code == Custom) {
     rc->set_CharFlag("E906GEN_CHANNEL", "Custom");
-  } else if (_DrellYanGen) {
+  } else if (_proc_code == DrellYan) {
     rc->set_CharFlag  ("E906GEN_CHANNEL", "DrellYan");
     rc->set_DoubleFlag("E906GEN_pT0DY"  , _pT0DY  );
     rc->set_DoubleFlag("E906GEN_pTpowDY", _pTpowDY);
-  } else if (_JPsiGen) {
+  } else if (_proc_code == JPsi) {
     rc->set_CharFlag("E906GEN_CHANNEL", "Jpsi");
     rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
     rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
-  } else if (_PsipGen) {
+  } else if (_proc_code == PsiPrime) {
     rc->set_CharFlag("E906GEN_CHANNEL", "Psip");
     rc->set_DoubleFlag("E906GEN_pT0JPsi"  , _pT0JPsi  );
     rc->set_DoubleFlag("E906GEN_pTpowJPsi", _pTpowJPsi);
@@ -230,10 +224,12 @@ int SQPrimaryParticleGen::process_event(PHCompositeNode* topNode)
   Double_t luminosity = _vertexGen->getLuminosity();
 
   int ret = 1; // Error status by default
-  if (_DrellYanGen) ret = generateDrellYan(vtx, pARatio, luminosity);
-  if (_PythiaGen  ) ret = generatePythia(vtx, pARatio);
-  if (_JPsiGen    ) ret = generateJPsi(vtx, pARatio, luminosity);
-  if (_PsipGen    ) ret = generatePsip(vtx, pARatio, luminosity);
+  switch (_proc_code) {
+  case DrellYan : ret = generateDrellYan(vtx, pARatio, luminosity);  break;
+  case Pythia   : ret = generatePythia  (vtx, pARatio            );  break;
+  case JPsi     : ret = generateJPsi    (vtx, pARatio, luminosity);  break;
+  case PsiPrime : ret = generatePsip    (vtx, pARatio, luminosity);  break;
+  }
   if (ret != 0) return Fun4AllReturnCodes::ABORTEVENT;
 
   _n_gen_acc_evt++;
@@ -473,7 +469,7 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
     {
       pT = pTmax*sqrt(gRandom->Uniform(0,1));
     }
-    else if(_DrellYanGen) // PRD43, 2815 (1991)
+    else if (_proc_code == DrellYan) // PRD43, 2815 (1991)
     {
       while(pT > pTmax) pT = _pT0DY*TMath::Sqrt(1./TMath::Power(gRandom->Uniform(0,1), _pTpowDY) - 1.);
     }
@@ -506,7 +502,7 @@ bool SQPrimaryParticleGen::generateDimuon(double mass, double xF)
         double dim_costh, dim_phi;
         UtilDimuon::Lab2CollinsSoper(_dim_gen, dim_costh, dim_phi);
         if(dim_costh < cosThetaMin || dim_costh >cosThetaMax) continue;
-        if(_DrellYanGen  &&  gRandom->Uniform(0,2) > 1. + pow(dim_costh, 2)) continue;
+        if(_proc_code == DrellYan  &&  gRandom->Uniform(0,2) > 1. + pow(dim_costh, 2)) continue;
         return true; // A proper dimuon is generated.
     }
     cout << PHWHERE << "No proper dimuon was generated.  Is your kinematic range reasonable?" << endl;
@@ -554,6 +550,7 @@ void SQPrimaryParticleGen::InsertEventInfo(const double xsec, const double weigh
 {
   static int dim_id = 0;
 
+  _mcevt->set_process_id   (_proc_code);
   _mcevt->set_cross_section(xsec);
   _mcevt->set_weight       (weight);
 
