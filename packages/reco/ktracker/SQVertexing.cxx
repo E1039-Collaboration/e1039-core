@@ -294,6 +294,26 @@ bool SQVertexing::processOneMuon(SRecTrack* track)
     track->setChisqVertex(swimTrackToVertex(gtrk, track->getVertexPos().Z(), &pos, &mom));
   track->setVertexFast(mom, pos);
 
+  /*
+  //Find POCA to beamline -- it seems to be funky and mostly found some place way upstream or downstream
+  // most likely because the cross product of the track direction and beam line direction is way too small 
+  // z axis to provide reasonable calculation of the POCA location. It's disabled for now.
+  TVector3 ep1(0., 0., -499.);
+  TVector3 ep2(0., 0., 0.);
+  try
+  {
+    extrapolateToLine(ep1, ep2);
+    TVectorD beamR(1); beamR(0) = 0.;
+    TMatrixDSym beamC(1); beamC(0, 0) = 1000.;
+    strack.setChisqVertex(updatePropState(beamR, beamC));
+  }
+  catch(genfit::Exception& e)
+  {
+    std::cerr << "Hypothesis test failed at beamline: " << e.what() << std::endl;
+    print(0);
+  }
+  */
+
   return true;
 }
 

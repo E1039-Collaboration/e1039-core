@@ -439,46 +439,6 @@ SRecTrack GFTrack::getSRecTrack()
     strack.insertChisq((*iter)->getTrackPoint()->getKalmanFitterInfo()->getSmoothedChi2());
   }
 
-  // Following code moved to SQVertexing
-  // //Swim to various places and save info
-  // strack.swimToVertex(nullptr, nullptr, false);
-
-  // //Hypothesis test should be implemented here
-  // //test Z_UPSTREAM
-  // strack.setChisqUpstream(swimToVertex(Z_UPSTREAM));
-
-  // //test Z_TARGET
-  // strack.setChisqTarget(swimToVertex(Z_TARGET));
-
-  // //test Z_DUMP
-  // strack.setChisqDump(swimToVertex(Z_DUMP));
-
-  /*
-  //Find POCA to beamline -- it seems to be funky and mostly found some place way upstream or downstream
-  // most likely because the cross product of the track direction and beam line direction is way too small 
-  // z axis to provide reasonable calculation of the POCA location. It's disabled for now.
-  TVector3 ep1(0., 0., -499.);
-  TVector3 ep2(0., 0., 0.);
-  try
-  {
-    extrapolateToLine(ep1, ep2);
-    TVectorD beamR(1); beamR(0) = 0.;
-    TMatrixDSym beamC(1); beamC(0, 0) = 1000.;
-    strack.setChisqVertex(updatePropState(beamR, beamC));
-  }
-  catch(genfit::Exception& e)
-  {
-    std::cerr << "Hypothesis test failed at beamline: " << e.what() << std::endl;
-    print(0);
-  }
-  */
-
-  // //test Z_VERTEX
-  // TVector3 pos, mom;
-  // strack.setChisqVertex(swimToVertex(strack.getVertexPos().Z(), &pos, &mom));
-  // strack.setVertexPos(pos);
-  // strack.setVertexMom(mom);
-
   strack.setKalmanStatus(1);
   return strack;
 }
