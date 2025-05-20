@@ -27,6 +27,7 @@ public:
   ~GFTrack();
 
   void setVerbosity(unsigned int v);
+  void setMaxErrorCount(unsigned int m);
   void setTracklet(Tracklet& tracklet, double z_reference = 590., bool wildseedcov = false);
   void addMeasurements(std::vector<GFMeasurement*>& measurements);
   void addMeasurement(GFMeasurement* measurement);
@@ -76,6 +77,9 @@ private:
   //Store the original track candidate information from track finding
   Tracklet* _trkcand;
   int _pdg;
+
+  //Local error count to suppress eccessive error messages
+  unsigned int _errorNo;
 
 };
 }

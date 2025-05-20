@@ -80,6 +80,10 @@ private:
   //! Distribution functions for p/pt distribution
   TF1* _pz_dist[6];
   TF1* _pt_dist;
+
+  //! Primary vertex location
+  double _vtx_x0;
+  double _vtx_y0;
 };
 
 #endif
