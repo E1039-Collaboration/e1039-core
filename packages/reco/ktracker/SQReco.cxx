@@ -40,12 +40,6 @@
 #include <exception>
 #include <boost/lexical_cast.hpp>
 
-#ifdef _DEBUG_ON
-#  define LogDebug(exp) std::cout << "DEBUG: " << __FUNCTION__ <<": "<< __LINE__ << ": " << exp << std::endl
-#else
-#  define LogDebug(exp)
-#endif
-
 SQReco::SQReco(const std::string& name):
   SubsysReco(name),
   _input_type(SQReco::E1039),
@@ -312,8 +306,10 @@ SRawEvent* SQReco::BuildSRawEvent()
 
 int SQReco::process_event(PHCompositeNode* topNode) 
 {
-  LogDebug("Entering SQReco::process_event: " << _event);
-
+  if(Verbosity() > 2) std::cout << "Entering SQReco::process_event: " << _event << std::endl;
+  if(_legacy_rec_container) _recEvent->clearTracks();
+  else                      _recTrackVec->clear();
+  
   ProcessEventPrep();
 
   int finderstatus = _fastfinder->setRawEvent(_rawEvent);
@@ -357,7 +353,7 @@ int SQReco::process_event(PHCompositeNode* topNode)
     if(is_eval_dst_enabled()) _tracklet_vector->push_back(&(*iter));
     ++nTracklets;
   }
-  LogDebug("Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks");
+  if(Verbosity() > 2) std::cout << "Leaving SQReco::process_event: " << _event << ", finder status " << finderstatus << ", " << nTracklets << " track candidates, " << nFittedTracks << " fitted tracks" << std::endl;
 
   //add additional eval information if applicable
   if(is_eval_enabled() || is_eval_dst_enabled())
@@ -407,13 +403,13 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
 
   if(kmtrk.getNodeList().empty()) 
   {
-    LogDebug("kmtrk nodelist empty");
+    if(Verbosity() > 2) std::cout << __FUNCTION__ << ": " << __LINE__ << ": kmtrk nodelist empty" << std::endl;
     return false;
   }
 
   if(_kfitter->processOneTrack(kmtrk) == 0)
   {
-    LogDebug("kFitter failed to converge");
+    if(Verbosity() > 2) std::cout << __FUNCTION__ << ": " << __LINE__ << ": kFitter failed to converge" << std::endl;
     return false;
   }
 
@@ -421,7 +417,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, KalmanFitter* fitter)
 
   if(!kmtrk.isValid()) 
   {
-    LogDebug("kmtrk quality cut failed");
+    if(Verbosity() > 2) std::cout << __FUNCTION__ << ": " << __LINE__ << ": kmtrk quality cut failed" << std::endl;
     return false;
   }
 
@@ -447,7 +443,7 @@ bool SQReco::fitTrackCand(Tracklet& tracklet, SQGenFit::GFFitter* fitter)
   int fitOK = _gfitter->processTrack(gftrk);
   if(fitOK != 0)
   {
-    LogDebug("gFitter failed to converge.");
+    if(Verbosity() > 2) std::cout << __FUNCTION__ << ": " << __LINE__ << ": gFitter failed to converge." << std::endl;
     return false;
   }
 
@@ -523,10 +519,16 @@ int SQReco::MakeNodes(PHCompositeNode* topNode)
   }
   else
   {
-    _recTrackVec = new SQTrackVector_v1();
-    PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject");
-    eventNode->addNode(recEventNode);
-    if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
+    _recTrackVec = findNode::getClass<SQTrackVector>(eventNode, "SQRecTrackVector"); // Could exist when the tracking is re-done.
+    if (!_recTrackVec) {
+      _recTrackVec = new SQTrackVector_v1();
+      eventNode->addNode(new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject"));
+      if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
+    }
+    //_recTrackVec = new SQTrackVector_v1();
+    //PHIODataNode<PHObject>* recEventNode = new PHIODataNode<PHObject>(_recTrackVec, "SQRecTrackVector", "PHObject");
+    //eventNode->addNode(recEventNode);
+    //if(Verbosity() >= Fun4AllBase::VERBOSITY_SOME) LogInfo("DST/SQRecTrackVector Added");
   }
 
   if(_enable_eval_dst)
@@ -550,35 +552,35 @@ int SQReco::GetNodes(PHCompositeNode* topNode)
     _run_header = findNode::getClass<SQRun>(topNode, "SQRun");
     if(!_run_header) 
     {
-      if(Verbosity() > 2) LogDebug("!_run_header");
+      if(Verbosity() > 2) std::cout << __FUNCTION__ << ": !_run_header" << std::endl;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
 
     _spill_map = findNode::getClass<SQSpillMap>(topNode, "SQSpillMap");
     if(!_spill_map) 
     {
-      if(Verbosity() > 2) LogDebug("!_spill_map");
+      if(Verbosity() > 2) std::cout << __FUNCTION__ << ": !_spill_map" << std::endl;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
 
     _event_header = findNode::getClass<SQEvent>(topNode, "SQEvent");
     if(!_event_header) 
     {
-      if(Verbosity() > 2) LogDebug("!_event_header");
+      if(Verbosity() > 2) std::cout << __FUNCTION__ << ": !_event_header" << std::endl;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
 
     _hit_vector = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
     if(!_hit_vector) 
     {
-      LogDebug("!_hit_vector");
+      std::cout << __FUNCTION__ << ": !_hit_vector" << std::endl;
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
     _triggerhit_vector = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
     if(!_triggerhit_vector) 
     {
-      if(Verbosity() > 2) LogDebug("!_triggerhit_vector");
+      if(Verbosity() > 2) std::cout << __FUNCTION__ << ": !_triggerhit_vector" << std::endl;
       //return Fun4AllReturnCodes::ABORTEVENT;
     }
   }
