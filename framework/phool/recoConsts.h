@@ -22,8 +22,8 @@ public:
   //! set the default value for all the constants needed - user is supposed to add a default value here to introduce new constants
   void set_defaults();
 
-  //! initialize the constants by the runNo - not implemented yet
-  void init(int runNo = 0, bool verbose = false);
+  //! initialize the constants by the runNo
+  void init(int runNo = 0, bool verbose = true);
 
   //! initialize the constants by pre-defined parameter set name - not implemented yet
   void init(const std::string& setname, bool verbose = false);

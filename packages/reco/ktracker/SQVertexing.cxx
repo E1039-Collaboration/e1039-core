@@ -106,6 +106,7 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
 int SQVertexing::process_event(PHCompositeNode* topNode)
 {
   if(legacyContainer_out) recEvent->clearDimuons();
+  else                    recDimuonVec->clear();
 
   std::vector<int> trackIDs1;
   std::vector<int> trackIDs2;
@@ -194,9 +195,15 @@ int SQVertexing::MakeNodes(PHCompositeNode* topNode)
       return Fun4AllReturnCodes::ABORTEVENT;
     }
 
-    recDimuonVec = new SQDimuonVector_v1();
     TString dimuonVecName = TString::Format("SQRecDimuonVector_%s%s", (charge1 == 1 ? "P" : "M"), (charge2 == 1 ? "P" : "M"));
-    dstNode->addNode(new PHIODataNode<PHObject>(recDimuonVec, dimuonVecName.Data(), "PHObject"));
+    recDimuonVec = findNode::getClass<SQDimuonVector>(dstNode, dimuonVecName.Data());
+    if (!recDimuonVec) {
+      recDimuonVec = new SQDimuonVector_v1();
+      dstNode->addNode(new PHIODataNode<PHObject>(recDimuonVec, dimuonVecName.Data(), "PHObject"));
+    }
+    //recDimuonVec = new SQDimuonVector_v1();
+    //TString dimuonVecName = TString::Format("SQRecDimuonVector_%s%s", (charge1 == 1 ? "P" : "M"), (charge2 == 1 ? "P" : "M"));
+    //dstNode->addNode(new PHIODataNode<PHObject>(recDimuonVec, dimuonVecName.Data(), "PHObject"));
   }
   return Fun4AllReturnCodes::EVENT_OK;
 }

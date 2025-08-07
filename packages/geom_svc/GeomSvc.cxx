@@ -956,73 +956,77 @@ void GeomSvc::loadAlignment(const std::string& alignmentFile_chamber, const std:
     }
     _align_chamber.close();
 
-    //load alignment numbers for hodos
-    fstream _align_hodo;
-    _align_hodo.open(alignmentFile_hodo.c_str(), ios::in);
-
-    if(_align_hodo)
-    {
+    if (! alignmentFile_hodo.empty()) {
+      //load alignment numbers for hodos
+      fstream _align_hodo;
+      _align_hodo.open(alignmentFile_hodo.c_str(), ios::in);
+      
+      if(_align_hodo)
+      {
         for(int i = nChamberPlanes+1; i <= nChamberPlanes+nHodoPlanes; i++)
         {
-            _align_hodo.getline(buf, 100);
-            istringstream stringBuf(buf);
-
-            stringBuf >> planes[i].deltaW;
-            planes[i].deltaX = planes[i].deltaW*planes[i].costheta;
-            planes[i].deltaY = planes[i].deltaW*planes[i].sintheta;
-            planes[i].update();
+          _align_hodo.getline(buf, 100);
+          istringstream stringBuf(buf);
+          
+          stringBuf >> planes[i].deltaW;
+          planes[i].deltaX = planes[i].deltaW*planes[i].costheta;
+          planes[i].deltaY = planes[i].deltaW*planes[i].sintheta;
+          planes[i].update();
         }
         cout << "GeomSvc: loaded hodoscope alignment parameters from " << alignmentFile_hodo << endl;
-    }
-    else
-    {
+      }
+      else
+      {
         cout << "GeomSvc: failed to load hodoscope alignment parameters from " << alignmentFile_hodo << endl;
+      }
+      _align_hodo.close();
     }
-    _align_hodo.close();
 
-    //load alignment numbers for prop. tubes
-    fstream _align_prop;
-    _align_prop.open(alignmentFile_prop.c_str(), ios::in);
-
-    if(_align_prop)
-    {
+    if (! alignmentFile_prop.empty()) {    
+      //load alignment numbers for prop. tubes
+      fstream _align_prop;
+      _align_prop.open(alignmentFile_prop.c_str(), ios::in);
+      
+      if(_align_prop)
+      {
         for(int i = nChamberPlanes+nHodoPlanes+1; i <= nChamberPlanes+nHodoPlanes+nPropPlanes; i += 2)
         {
-            planes[i].deltaW = 0.;
-            planes[i+1].deltaW = 0.;
-            for(int j = 0; j < 9; j++)
-            {
-                _align_prop.getline(buf, 100);
-                istringstream stringBuf(buf);
-
-                stringBuf >> planes[i].deltaW_module[j];
-                planes[i+1].deltaW_module[j] = planes[i].deltaW_module[j];
-
-                planes[i].deltaW += planes[i].deltaW_module[j];
-                planes[i+1].deltaW += planes[i+1].deltaW_module[j];
-            }
-
-            planes[i].deltaW /= 9.;
-            planes[i].deltaX = planes[i].deltaW*planes[i].costheta;
-            planes[i].deltaY = planes[i].deltaW*planes[i].sintheta;
-
-            planes[i+1].deltaW /= 9.;
-            planes[i+1].deltaX = planes[i+1].deltaW*planes[i+1].costheta;
-            planes[i+1].deltaY = planes[i+1].deltaW*planes[i+1].sintheta;
+          planes[i].deltaW = 0.;
+          planes[i+1].deltaW = 0.;
+          for(int j = 0; j < 9; j++)
+          {
+            _align_prop.getline(buf, 100);
+            istringstream stringBuf(buf);
+            
+            stringBuf >> planes[i].deltaW_module[j];
+            planes[i+1].deltaW_module[j] = planes[i].deltaW_module[j];
+            
+            planes[i].deltaW += planes[i].deltaW_module[j];
+            planes[i+1].deltaW += planes[i+1].deltaW_module[j];
+          }
+          
+          planes[i].deltaW /= 9.;
+          planes[i].deltaX = planes[i].deltaW*planes[i].costheta;
+          planes[i].deltaY = planes[i].deltaW*planes[i].sintheta;
+          
+          planes[i+1].deltaW /= 9.;
+          planes[i+1].deltaX = planes[i+1].deltaW*planes[i+1].costheta;
+          planes[i+1].deltaY = planes[i+1].deltaW*planes[i+1].sintheta;
         }
         cout << "GeomSvc: loaded prop. tube alignment parameters from " << alignmentFile_prop << endl;
-    }
-    else
-    {
+      }
+      else
+      {
         cout << "GeomSvc: failed to load prop. tube alignment parameters from " << alignmentFile_prop << endl;
+      }
     }
-
 }
 
 void GeomSvc::loadMilleAlignment(const std::string& alignmentFile_mille)
 {
     using namespace std;
-
+    if (alignmentFile_mille.empty()) return;
+    
     //load alignment numbers for chambers
     fstream _align_mille;
     _align_mille.open(alignmentFile_mille.c_str(), ios::in);
@@ -1061,7 +1065,8 @@ void GeomSvc::loadMilleAlignment(const std::string& alignmentFile_mille)
 void GeomSvc::loadCalibration(const std::string& calibrationFile)
 {
     using namespace std;
-
+    if (calibrationFile.empty()) return;
+    
     fstream _cali_file;
     _cali_file.open(calibrationFile.c_str(), ios::in);
 
