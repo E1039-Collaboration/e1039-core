@@ -64,6 +64,87 @@ void SetupTarget(
   target->set_int_param("use_g4steps", use_g4steps);
   target->SetActive(register_hits);
   g4Reco->registerSubsystem(target);
+
+  PHG4CylinderSubsystem* target_cup = new PHG4CylinderSubsystem("Target", 1);
+  target_cup->SuperDetector("Target");
+  target_cup->set_double_param("length", target_l);
+  target_cup->set_double_param("rot_x", 0.);
+  target_cup->set_double_param("rot_y", 0.);
+  target_cup->set_double_param("rot_z", 0.);
+  target_cup->set_double_param("place_x", 0.);
+  target_cup->set_double_param("place_y", 0.);
+  target_cup->set_double_param("place_z", target_coil_pos_z + target_z);
+  target_cup->set_double_param("radius", 1.);
+  target_cup->set_double_param("thickness", 0.15);
+  target_cup->set_string_param("material", "KelF");
+  target_cup->set_int_param("lengthviarapidity", 0);
+  target_cup->set_int_param("use_g4steps", use_g4steps);
+  target_cup->SetActive(register_hits);
+  g4Reco->registerSubsystem(target_cup);
+
+
+  PHG4CylinderSubsystem* NMRCoil_1 = new PHG4CylinderSubsystem("Target", 3);
+  NMRCoil_1->SuperDetector("Target");
+  NMRCoil_1->set_double_param("length",0.02 );
+  NMRCoil_1->set_double_param("rot_x", 0.);
+  NMRCoil_1->set_double_param("rot_y", 0.);
+  NMRCoil_1->set_double_param("rot_z", 0.);
+  NMRCoil_1->set_double_param("place_x", 0.);
+  NMRCoil_1->set_double_param("place_y", 0.);
+  NMRCoil_1->set_double_param("place_z", target_coil_pos_z + target_z);
+  NMRCoil_1->set_double_param("radius", 0.965);
+  NMRCoil_1->set_double_param("thickness", 0.02);
+  NMRCoil_1->set_string_param("material", "NMR_coil");          // material of target
+  NMRCoil_1->set_int_param("lengthviarapidity", 0);
+  NMRCoil_1->set_int_param("use_g4steps", use_g4steps);
+  NMRCoil_1->SetActive(register_hits);
+  g4Reco->registerSubsystem(NMRCoil_1);
+
+  PHG4CylinderSubsystem* NMRCoil_2 = new PHG4CylinderSubsystem("Target", 4);
+  NMRCoil_2->SuperDetector("Target");
+  NMRCoil_2->set_double_param("length",0.02 );
+  NMRCoil_2->set_double_param("rot_x", 0.);
+  NMRCoil_2->set_double_param("rot_y", 0.);
+  NMRCoil_2->set_double_param("rot_z", 0.);
+  NMRCoil_2->set_double_param("place_x", 0.);
+  NMRCoil_2->set_double_param("place_y", 0.);
+  NMRCoil_2->set_double_param("place_z", -303.8);
+  NMRCoil_2->set_double_param("radius", 0.965);
+  NMRCoil_2->set_double_param("thickness", 0.02);
+  NMRCoil_2->set_string_param("material", "NMR_coil");          // material of target
+  NMRCoil_2->set_int_param("lengthviarapidity", 0);
+  NMRCoil_2->set_int_param("use_g4steps", use_g4steps);
+  NMRCoil_2->SetActive(register_hits);
+  g4Reco->registerSubsystem(NMRCoil_2);
+
+  PHG4CylinderSubsystem* NMRCoil_3 = new PHG4CylinderSubsystem("Target", 5);
+  NMRCoil_3->SuperDetector("Target");
+  NMRCoil_3->set_double_param("length",0.02 );
+  NMRCoil_3->set_double_param("rot_x", 0.);
+  NMRCoil_3->set_double_param("rot_y", 0.);
+  NMRCoil_3->set_double_param("rot_z", 0.);
+  NMRCoil_3->set_double_param("place_x", 0.);
+  NMRCoil_3->set_double_param("place_y", 0.);
+  NMRCoil_3->set_double_param("place_z", -296.2);
+  NMRCoil_3->set_double_param("radius", 0.965);
+  NMRCoil_3->set_double_param("thickness", 0.02);
+  NMRCoil_3->set_string_param("material", "NMR_coil");          // material of target
+  NMRCoil_3->set_int_param("lengthviarapidity", 0);
+  NMRCoil_3->set_int_param("use_g4steps", use_g4steps);
+  NMRCoil_3->SetActive(register_hits);
+  g4Reco->registerSubsystem(NMRCoil_3);
+
+  PHG4SquareTubeSubsystem* target_ladder = new PHG4SquareTubeSubsystem("ladder1", 0);
+  target_ladder->set_string_param("hole_type", "circle");
+  target_ladder->set_double_param("place_x", 0);
+  target_ladder->set_double_param("place_y", 0);
+  target_ladder->set_double_param("place_z", -296.065); // We can put either downstream or upstream
+  target_ladder->set_double_param("size_x", 2.4);
+  target_ladder->set_double_param("size_y", 12);
+  target_ladder->set_double_param("size_z", 0.23);
+  target_ladder->set_double_param("inner_diameter", 2);
+  target_ladder->set_string_param("material", "G4_Al");
+  g4Reco->registerSubsystem(target_ladder);
   
   return;
 }
