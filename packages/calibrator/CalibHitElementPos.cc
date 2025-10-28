@@ -30,9 +30,14 @@ int CalibHitElementPos::Init(PHCompositeNode* topNode)
 
 int CalibHitElementPos::InitRun(PHCompositeNode* topNode)
 {
-  m_vec_hit   = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
-  m_vec_trhit = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
-  if (!m_vec_hit || !m_vec_trhit) return Fun4AllReturnCodes::ABORTEVENT;
+  if (m_cal_hit) {
+    m_vec_hit = findNode::getClass<SQHitVector>(topNode, "SQHitVector");
+    if (!m_vec_hit) return Fun4AllReturnCodes::ABORTEVENT;
+  }
+  if (m_cal_tr_hit) {
+    m_vec_trhit = findNode::getClass<SQHitVector>(topNode, "SQTriggerHitVector");
+    if (!m_vec_trhit) return Fun4AllReturnCodes::ABORTEVENT;
+  }
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

@@ -1,4 +1,5 @@
  #include "Fun4AllRUSInputManager.h"
+ #include <interface_main/SQMCHit_v1.h>
  #include <interface_main/SQHit_v1.h>
  #include <interface_main/SQTrack_v1.h>
  #include <interface_main/SQHitVector_v1.h>
@@ -33,6 +34,7 @@ Fun4AllRUSInputManager::Fun4AllRUSInputManager(const std::string& name, const st
    Fun4AllInputManager(name, ""),
    segment(-999),
    isopen(0),
+   is_mc(false),
    events_total(0),
    events_thisfile(0),
    topNodeName(topnodename),
@@ -41,41 +43,47 @@ Fun4AllRUSInputManager::Fun4AllRUSInputManager(const std::string& name, const st
    spill_map(nullptr),
    event_header(nullptr),
    hit_vec(nullptr),
+   trk_vec(nullptr),
    _fin(nullptr),
    _tin(nullptr)
 {
-   Fun4AllServer* se = Fun4AllServer::instance();
-   topNode = se->topNode(topNodeName.c_str());
-   PHNodeIterator iter(topNode);
+    Fun4AllServer* se = Fun4AllServer::instance();
+    topNode = se->topNode(topNodeName.c_str());
+    PHNodeIterator iter(topNode);
 
     PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
-  if (!runNode) {
-    runNode = new PHCompositeNode("RUN");
-    topNode->addNode(runNode);
-  }
+    if (!runNode) {
+        runNode = new PHCompositeNode("RUN");
+        topNode->addNode(runNode);
+    }
 
-  PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
-  if (!eventNode) {
-    eventNode = new PHCompositeNode("DST");
-    topNode->addNode(eventNode);
-  }
+    PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+    if (!eventNode) {
+        eventNode = new PHCompositeNode("DST");
+        topNode->addNode(eventNode);
+    }
 
-     run_header = new SQRun_v1();
-     PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(run_header, "SQRun", "PHObject");
-     runNode->addNode(runHeaderNode);
+    run_header = new SQRun_v1();
+    PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(run_header, "SQRun", "PHObject");
+    runNode->addNode(runHeaderNode);
 
-     spill_map = new SQSpillMap_v1();
-     PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(spill_map, "SQSpillMap", "PHObject");
-     runNode->addNode(spillNode);
+    spill_map = new SQSpillMap_v1();
+    PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(spill_map, "SQSpillMap", "PHObject");
+    runNode->addNode(spillNode);
 
-     event_header = new SQEvent_v1();
-     PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(event_header, "SQEvent", "PHObject");
-     eventNode->addNode(eventHeaderNode);
+    event_header = new SQEvent_v1();
+    PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(event_header, "SQEvent", "PHObject");
+    eventNode->addNode(eventHeaderNode);
 
-     hit_vec = new SQHitVector_v1();
-     PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(hit_vec, "SQHitVector", "PHObject");
-     eventNode->addNode(hitNode);
-   syncobject = new SyncObjectv2();
+    hit_vec = new SQHitVector_v1();
+    PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(hit_vec, "SQHitVector", "PHObject");
+    eventNode->addNode(hitNode);
+
+    trk_vec = new SQTrackVector_v1();
+    PHIODataNode<PHObject>* trknode = new PHIODataNode<PHObject>(trk_vec, "SQTruthTrackVector", "PHObject");
+    eventNode->addNode(trknode);
+
+    syncobject = new SyncObjectv2();
 }
 
 Fun4AllRUSInputManager::~Fun4AllRUSInputManager()
@@ -87,43 +95,98 @@ Fun4AllRUSInputManager::~Fun4AllRUSInputManager()
    delete syncobject;
  }
 
+
 void Fun4AllRUSInputManager::VectToE1039() {
-	event_header->set_run_id(runID);
-	SQSpill* spill = spill_map->get(spillID);
-	if(!spill) {
-		spill = new SQSpill_v2();
-		spill->set_spill_id(spillID);
-		spill->set_run_id(runID);
-		spill_map->insert(spill);
-		run_header->set_n_spill(spill_map->size());
-	}
-	event_header->set_spill_id(spillID);
-	event_header->set_event_id(eventID);
-	event_header->set_data_quality(0);
-	for(int i = -16; i <= 16; ++i) {event_header->set_qie_rf_intensity(i, rfIntensity[i+16]);} // need to be added
-	// Apply the FPGA triggers to the event header
-	event_header->set_trigger(SQEvent::MATRIX1, fpgaTrigger[0]);
-	event_header->set_trigger(SQEvent::MATRIX2, fpgaTrigger[1]);
-	event_header->set_trigger(SQEvent::MATRIX3, fpgaTrigger[2]);
-	event_header->set_trigger(SQEvent::MATRIX4, fpgaTrigger[3]);
-	event_header->set_trigger(SQEvent::MATRIX5, fpgaTrigger[4]);
-	// Apply the NIM triggers to the event header
-	event_header->set_trigger(SQEvent::NIM1, nimTrigger[0]);
-	event_header->set_trigger(SQEvent::NIM2, nimTrigger[1]);
-	event_header->set_trigger(SQEvent::NIM3, nimTrigger[2]);
-	event_header->set_trigger(SQEvent::NIM4, nimTrigger[3]);
-	event_header->set_trigger(SQEvent::NIM5, nimTrigger[4]);
-	event_header->set_qie_turn_id(turnID);
-	event_header->set_qie_rf_id(rfID);
-	for (size_t i = 0; i < elementID->size(); ++i) {
-		SQHit* hit = new SQHit_v1();
-		hit->set_hit_id(hitID->at(i));
-		hit->set_detector_id(detectorID->at(i));
-		hit->set_element_id(elementID->at(i));
-		hit->set_tdc_time(tdcTime->at(i));
-		hit->set_drift_distance(driftDistance->at(i));
-		hit_vec->push_back(hit);
-	}
+    event_header->set_run_id(runID);
+
+    SQSpill* spill = spill_map->get(spillID);
+    if (!spill) {
+        spill = new SQSpill_v2();
+        spill->set_spill_id(spillID);
+        spill->set_run_id(runID);
+        spill_map->insert(spill);
+        run_header->set_n_spill(spill_map->size());
+    }
+
+    event_header->set_spill_id(spillID);
+    event_header->set_event_id(eventID);
+    event_header->set_data_quality(0);
+
+    for (int i = -16; i <= 16; ++i) {
+        event_header->set_qie_rf_intensity(i, rfIntensity[i+16]); // need to be added
+    }
+
+    // Apply the FPGA triggers to the event header
+    event_header->set_trigger(SQEvent::MATRIX1, fpgaTrigger[0]);
+    event_header->set_trigger(SQEvent::MATRIX2, fpgaTrigger[1]);
+    event_header->set_trigger(SQEvent::MATRIX3, fpgaTrigger[2]);
+    event_header->set_trigger(SQEvent::MATRIX4, fpgaTrigger[3]);
+    event_header->set_trigger(SQEvent::MATRIX5, fpgaTrigger[4]);
+
+    // Apply the NIM triggers to the event header
+    event_header->set_trigger(SQEvent::NIM1, nimTrigger[0]);
+    event_header->set_trigger(SQEvent::NIM2, nimTrigger[1]);
+    event_header->set_trigger(SQEvent::NIM3, nimTrigger[2]);
+    event_header->set_trigger(SQEvent::NIM4, nimTrigger[3]);
+    event_header->set_trigger(SQEvent::NIM5, nimTrigger[4]);
+
+    event_header->set_qie_turn_id(turnID);
+    event_header->set_qie_rf_id(rfID);
+
+    // Hits
+    for (size_t i = 0; i < elementID->size(); ++i) {
+        SQHit* hit = nullptr;
+
+        if (is_mc) {  
+            hit = new SQMCHit_v1();
+            hit->set_track_id(hitTrackID->at(i));
+        } else {
+            hit = new SQHit_v1();
+        }
+
+        hit->set_hit_id(hitID->at(i));
+        hit->set_detector_id(detectorID->at(i));
+        hit->set_element_id(elementID->at(i));
+        hit->set_tdc_time(tdcTime->at(i));
+        hit->set_drift_distance(driftDistance->at(i));
+
+        hit_vec->push_back(hit);
+    }
+
+
+    // MC true Tracks
+    if (is_mc){
+        const double MUON_MASS = 0.105658; // GeV
+        for (size_t i = 0; i < gTrackID->size(); ++i) {
+            SQTrack* trk = new SQTrack_v1();
+
+            trk->set_charge(gCharge->at(i));
+            trk->set_track_id(gTrackID->at(i));
+            trk->set_pos_vtx(TVector3(gvx->at(i), gvy->at(i), gvz->at(i)));
+
+            {
+                TLorentzVector p4;
+                p4.SetXYZM(gpx->at(i), gpy->at(i), gpz->at(i), MUON_MASS);
+                trk->set_mom_vtx(p4);
+            }
+
+            trk->set_pos_st1(TVector3(gx_st1->at(i), gy_st1->at(i), gz_st1->at(i)));
+            {
+                TLorentzVector p4;
+                p4.SetXYZM(gpx_st1->at(i), gpy_st1->at(i), gpz_st1->at(i), MUON_MASS);
+                trk->set_mom_st1(p4);
+            }
+
+            trk->set_pos_st3(TVector3(gx_st3->at(i), gy_st3->at(i), gz_st3->at(i)));
+            {
+                TLorentzVector p4;
+                p4.SetXYZM(gpx_st3->at(i), gpy_st3->at(i), gpz_st3->at(i), MUON_MASS);
+                trk->set_mom_st3(p4);
+            }
+
+            trk_vec->push_back(trk);
+        }
+    }
 }
 
 int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
@@ -162,10 +225,35 @@ int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
 	_tin->SetBranchAddress("rfIntensity", rfIntensity);
 
 	_tin->SetBranchAddress("hitID", &hitID);    
+	_tin->SetBranchAddress("hitTrackID", &hitTrackID);    
 	_tin->SetBranchAddress("detectorID", &detectorID);    
 	_tin->SetBranchAddress("elementID", &elementID);    
 	_tin->SetBranchAddress("driftDistance", &driftDistance);    
 	_tin->SetBranchAddress("tdcTime", &tdcTime);    
+
+	_tin->SetBranchAddress("gCharge", &gCharge);
+	_tin->SetBranchAddress("gTrackID", &gTrackID);
+	_tin->SetBranchAddress("gvx", &gvx);
+	_tin->SetBranchAddress("gvy", &gvy);
+	_tin->SetBranchAddress("gvz", &gvz);
+	_tin->SetBranchAddress("gpx", &gpx);
+	_tin->SetBranchAddress("gpy", &gpy);
+	_tin->SetBranchAddress("gpz", &gpz);
+
+	_tin->SetBranchAddress("gx_st1", &gx_st1);
+	_tin->SetBranchAddress("gy_st1", &gy_st1);
+	_tin->SetBranchAddress("gz_st1", &gz_st1);
+	_tin->SetBranchAddress("gpx_st1", &gpx_st1);
+	_tin->SetBranchAddress("gpy_st1", &gpy_st1);
+	_tin->SetBranchAddress("gpz_st1", &gpz_st1);
+
+	_tin->SetBranchAddress("gx_st3", &gx_st3);
+	_tin->SetBranchAddress("gy_st3", &gy_st3);
+	_tin->SetBranchAddress("gz_st3", &gz_st3);
+	_tin->SetBranchAddress("gpx_st3", &gpx_st3);
+	_tin->SetBranchAddress("gpy_st3", &gpy_st3);
+	_tin->SetBranchAddress("gpz_st3", &gpz_st3);
+
 
 	segment = 0;
 	isopen = 1;

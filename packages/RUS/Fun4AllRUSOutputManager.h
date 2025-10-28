@@ -20,15 +20,8 @@ class Fun4AllRUSOutputManager : public Fun4AllOutputManager {
         Fun4AllRUSOutputManager(const std::string &myname = "UNIVERSALOUT");
         virtual ~Fun4AllRUSOutputManager();
 
-        int process_id;
-        int source_flag;
-        bool true_mode;
-        bool exp_mode;
-        bool sqevent_flag;
-
         void SetTreeName(const std::string& name) { m_tree_name = name; }
         void SetFileName(const std::string& name) { m_file_name = name; }
-        virtual int Write(PHCompositeNode* startNode);
         void ResetHitBranches();
         void ResetTrueTrackBranches();
         void SetBasketSize(int size) { m_basket_size = size; }
@@ -36,31 +29,23 @@ class Fun4AllRUSOutputManager : public Fun4AllOutputManager {
         void SetCompressionLevel(int level) { m_compression_level = level; }
         unsigned int EncodeProcess(int processID, int sourceFlag);
         void SetProcessId(int proc_id) { process_id = proc_id; }
-        void DisableSQEvent(bool enable) { sqevent_flag = enable; }
+        void SetMCTrueMode(bool enable) { mc_truth_mode = enable; }
+        void EnableEventInfo(bool enable) { write_sq_event_info = enable; }
 
-        void SetMCTrueTrackMode(bool enable) {
-            true_mode = enable;
-            if (enable) {
-                exp_mode = false;
-            }
-        }
-
-        void SetExpMode(bool enable) {
-            exp_mode = enable;
-            if (enable) {
-                true_mode = false;
-            }
-        }
+        virtual int Write(PHCompositeNode* startNode);
 
     protected:
         int OpenFile(PHCompositeNode* startNode);
         void CloseFile();
 
     private:
+		int process_id;
+    	int source_flag;
+    	bool mc_truth_mode;
+    	bool write_sq_event_info;
         std::string m_tree_name;
         std::string m_file_name;
         std::string m_dir_base;
-        bool m_dimuon_mode;
 
         TFile* m_file;
         TTree* m_tree;
