@@ -87,7 +87,6 @@ protected:
     SQSpillMap*  spill_map;
     SQEvent*     event_header;
     SQHitVector* hit_vec;
-    SQHitVector* hit_vec_mc;
     SQTrackVector* trk_vec;
 };
 

@@ -83,10 +83,6 @@ Fun4AllRUSInputManager::Fun4AllRUSInputManager(const std::string& name, const st
     PHIODataNode<PHObject>* trknode = new PHIODataNode<PHObject>(trk_vec, "SQTruthTrackVector", "PHObject");
     eventNode->addNode(trknode);
 
-    SQHitVector* hit_vec_mc = new SQHitVector_v1();
-    PHIODataNode<PHObject>* mcHitNode = new PHIODataNode<PHObject>(hit_vec_mc, "SQMCHitVector", "PHObject");
-    eventNode->addNode(mcHitNode);
-
     syncobject = new SyncObjectv2();
 }
 

@@ -23,12 +23,14 @@ using namespace std;
 
 Fun4AllRUSOutputManager::Fun4AllRUSOutputManager(const std::string &myname)
     : Fun4AllOutputManager(myname),
-    m_file(0),
-    m_tree(0),
+    process_id(14),
+    source_flag(1),
     mc_truth_mode(false),
     write_sq_event_info(true),
     m_tree_name("tree"),
     m_file_name("output.root"),
+    m_file(0),
+    m_tree(0),
     m_evt(0),
     m_vec_trk(0),
     m_sp_map(0),
@@ -36,9 +38,12 @@ Fun4AllRUSOutputManager::Fun4AllRUSOutputManager(const std::string &myname)
     m_compression_level(5),
     m_basket_size(64000),
     m_auto_flush(2500),
-    process_id(14),
-    source_flag(1),
-    m_hit_vec(0)
+    m_hit_vec(0),
+    runID(0),
+    spillID(0),
+    eventID(0),
+    turnID(0),
+    rfID(0)
 {
     ;
 }
@@ -149,7 +154,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             rfIntensity[i+ 16] = m_evt->get_qie_rf_intensity(i);
         }
     }
-    if (mc_truth_mode==false) {
+    if (!mc_truth_mode) {
         ResetHitBranches();
         for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
             SQHit* hit = m_hit_vec->at(ihit);
@@ -161,7 +166,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             driftDistance.push_back(hit->get_drift_distance());
         }
     }
-    if(mc_truth_mode == true){
+    if(mc_truth_mode){
         ResetTrueTrackBranches();
         ResetHitBranches();
         for (unsigned int ii = 0; ii < m_vec_trk->size(); ii++) {
