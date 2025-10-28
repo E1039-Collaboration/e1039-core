@@ -13,6 +13,7 @@ class TTree;
 class SQRun;
 class SQSpillMap;
 class SQEvent;
+class SQTrackVector;
 class SQHitVector;
 
 class Fun4AllRUSInputManager : public Fun4AllInputManager {
@@ -36,7 +37,11 @@ public:
 
     const std::string& get_tree_name() const { return _tree_name; }
     void set_tree_name(const std::string& treeName) { _tree_name = treeName; }
+    void set_mc(bool val) { is_mc = val; }
+    bool get_mc() const { return is_mc; }
 protected:
+
+    bool is_mc;
     int OpenNextFile();
     void VectToE1039();
     int segment;
@@ -62,15 +67,28 @@ protected:
     int nimTrigger[5] = {0};
 
     std::vector<int>* hitID = nullptr;
+    std::vector<int>* hitTrackID = nullptr;
     std::vector<int>* detectorID = nullptr;
     std::vector<int>* elementID = nullptr;
     std::vector<double>* driftDistance = nullptr;
     std::vector<double>* tdcTime = nullptr;
 
+
+	std::vector<int> *gCharge = nullptr, *gTrackID = nullptr;
+	std::vector<double>
+  	*gvx = nullptr, *gvy = nullptr, *gvz = nullptr,
+ 	*gpx = nullptr, *gpy = nullptr, *gpz = nullptr,
+  	*gx_st1 = nullptr, *gy_st1 = nullptr, *gz_st1 = nullptr,
+  	*gpx_st1 = nullptr, *gpy_st1 = nullptr, *gpz_st1 = nullptr,
+  	*gx_st3 = nullptr, *gy_st3 = nullptr, *gz_st3 = nullptr,
+  	*gpx_st3 = nullptr, *gpy_st3 = nullptr, *gpz_st3 = nullptr;
+
     SQRun*       run_header;
     SQSpillMap*  spill_map;
     SQEvent*     event_header;
     SQHitVector* hit_vec;
+    SQHitVector* hit_vec_mc;
+    SQTrackVector* trk_vec;
 };
 
 #endif /* __Fun4AllRUSInputManager_H_ */

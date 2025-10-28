@@ -25,8 +25,8 @@ Fun4AllRUSOutputManager::Fun4AllRUSOutputManager(const std::string &myname)
     : Fun4AllOutputManager(myname),
     m_file(0),
     m_tree(0),
-    true_mode(true),
-    exp_mode(false),
+    mc_truth_mode(false),
+    write_sq_event_info(true),
     m_tree_name("tree"),
     m_file_name("output.root"),
     m_evt(0),
@@ -71,7 +71,7 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
     m_tree->Branch("runID", &runID, "runID/I");
     m_tree->Branch("eventID", &eventID, "eventID/I");
 
-    if (sqevent_flag){
+    if (write_sq_event_info){
         m_tree->Branch("spillID", &spillID, "spillID/I");
         m_tree->Branch("rfID", &rfID, "rfID/I");
         m_tree->Branch("turnID", &turnID, "turnID/I");
@@ -86,8 +86,7 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
     m_tree->Branch("tdcTime", &tdcTime);
     m_tree->Branch("driftDistance", &driftDistance);
 
-
-    if (true_mode) {
+    if (mc_truth_mode) {
         m_tree->Branch("gProcessID", &gProcessID); //Hit level
         m_tree->Branch("gCharge", &gCharge);
         m_tree->Branch("gTrackID", &gTrackID);
@@ -116,17 +115,10 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
 
     m_evt = findNode::getClass<SQEvent>(startNode, "SQEvent");
     m_hit_vec = findNode::getClass<SQHitVector>(startNode, "SQHitVector");
+    if (mc_truth_mode) m_vec_trk = findNode::getClass<SQTrackVector>(startNode, "SQTruthTrackVector");
 
-    if (true_mode) {
-        m_vec_trk = findNode::getClass<SQTrackVector>(startNode, "SQTruthTrackVector");
-        if (!m_vec_trk) {
-            return Fun4AllReturnCodes::ABORTEVENT;
-        }
-    }
-
-    if (!m_evt || !m_hit_vec) {
+    if (!m_evt || !m_hit_vec || (mc_truth_mode && !m_vec_trk))
         return Fun4AllReturnCodes::ABORTEVENT;
-    }
 
     return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -135,7 +127,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
         OpenFile(startNode);
     }
 
-    if (sqevent_flag){
+    if (write_sq_event_info){
         runID = m_evt->get_run_id();
         spillID = m_evt->get_spill_id();
         eventID = m_evt->get_event_id();
@@ -157,7 +149,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             rfIntensity[i+ 16] = m_evt->get_qie_rf_intensity(i);
         }
     }
-    if (m_hit_vec && exp_mode==true) {
+    if (mc_truth_mode==false) {
         ResetHitBranches();
         for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
             SQHit* hit = m_hit_vec->at(ihit);
@@ -169,7 +161,7 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             driftDistance.push_back(hit->get_drift_distance());
         }
     }
-    if(true_mode == true){
+    if(mc_truth_mode == true){
         ResetTrueTrackBranches();
         ResetHitBranches();
         for (unsigned int ii = 0; ii < m_vec_trk->size(); ii++) {
@@ -190,7 +182,6 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             gpx_st1.push_back(trk->get_mom_st1().Px());
             gpy_st1.push_back(trk->get_mom_st1().Py());
             gpz_st1.push_back(trk->get_mom_st1().Pz());
-
             gx_st3.push_back(trk->get_pos_st3().X());
             gy_st3.push_back(trk->get_pos_st3().Y());
             gz_st3.push_back(trk->get_pos_st3().Z());
@@ -198,31 +189,25 @@ int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
             gpy_st3.push_back(trk->get_mom_st3().Py());
             gpz_st3.push_back(trk->get_mom_st3().Pz());
 
-            //This assignment will later need to be done using a DST node, for example, a Geant4 geometry data node to set the limits.
             double z = trk->get_pos_vtx().Z();
             if (z <= -296. && z >= -304.) source_flag = 1; // target
             else if (z >= 0. && z < 500) source_flag = 2;   // dump
             else if (z > -296. && z < 0.) source_flag = 3;  // gap
             else if (z < -304) source_flag = 0;              // upstream
 
-            if (m_hit_vec) {
-                for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
-                    SQHit* hit = m_hit_vec->at(ihit);
-                    if(hit->get_track_id() != trk->get_track_id()) continue;
-                    int process_id_ = (trk->get_charge() > 0) ? process_id : process_id + 10;
-                    unsigned int encodedValue = EncodeProcess(process_id_, source_flag);
-                    //cout << "charge: "<< trk->get_charge() <<endl;
-                    //cout << "encodedValue: "<< encodedValue<< endl;
-                    //cout << "DecodeSourceFlag: "<< DecodeSourceFlag(encodedValue) << endl;
-                    //cout << "DecodeProcessID: "<< DecodeProcessID(encodedValue) << endl;
-                    gProcessID.push_back(encodedValue);
-                    hitID.push_back(hit->get_hit_id());
-                    hitTrackID.push_back(hit->get_track_id());
-                    detectorID.push_back(hit->get_detector_id());
-                    elementID.push_back(hit->get_element_id());
-                    tdcTime.push_back(hit->get_tdc_time());
-                    driftDistance.push_back(hit->get_drift_distance());
-                }   
+            for (int ihit = 0; ihit < m_hit_vec->size(); ++ihit) {
+                SQHit* hit = m_hit_vec->at(ihit);
+
+                if(hit->get_track_id() != trk->get_track_id()) continue;
+                int process_id_ = (trk->get_charge() > 0) ? process_id : process_id + 10;
+                unsigned int encodedValue = EncodeProcess(process_id_, source_flag);
+                gProcessID.push_back(encodedValue);
+                hitID.push_back(hit->get_hit_id());
+                hitTrackID.push_back(hit->get_track_id());
+                detectorID.push_back(hit->get_detector_id());
+                elementID.push_back(hit->get_element_id());
+                tdcTime.push_back(hit->get_tdc_time());
+                driftDistance.push_back(hit->get_drift_distance());
             }
         }
     }
