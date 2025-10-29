@@ -190,75 +190,75 @@ void Fun4AllRUSInputManager::VectToE1039() {
 }
 
 int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
-	if (isopen) {
-		std::cout << "Closing currently open file "
-			<< filename
-			<< " and opening " << filenam << std::endl;
-		fileclose();
-	}   
-	filename = filenam;
+    if (isopen) {
+        std::cout << "Closing currently open file "
+            << filename
+            << " and opening " << filenam << std::endl;
+        fileclose();
+    }   
+    filename = filenam;
 
 
-	if (verbosity > 0) {
-		std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
-	}   
+    if (verbosity > 0) {
+        std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
+    }   
 
-	events_thisfile = 0;
+    events_thisfile = 0;
 
-	_fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
-	if (!_fin || _fin->IsZombie()) {
-		std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
-	}
+    _fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
+    if (!_fin || _fin->IsZombie()) {
+        std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
+    }
 
-	_tin = (TTree*) _fin->Get(_tree_name.c_str());
-	if (!_tin) {
-		std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
-		return -1; 
-	}
-	_tin->SetBranchAddress("eventID", &eventID);    
-	_tin->SetBranchAddress("runID", &runID);    
-	_tin->SetBranchAddress("spillID", &spillID);    
-	_tin->SetBranchAddress("rfID", &rfID);    
-	_tin->SetBranchAddress("turnID", &turnID);    
-	_tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
-	_tin->SetBranchAddress("nimTrigger", nimTrigger);
-	_tin->SetBranchAddress("rfIntensity", rfIntensity);
+    _tin = (TTree*) _fin->Get(_tree_name.c_str());
+    if (!_tin) {
+        std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
+        return -1; 
+    }
+    _tin->SetBranchAddress("eventID", &eventID);    
+    _tin->SetBranchAddress("runID", &runID);    
+    _tin->SetBranchAddress("spillID", &spillID);    
+    _tin->SetBranchAddress("rfID", &rfID);    
+    _tin->SetBranchAddress("turnID", &turnID);    
+    _tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
+    _tin->SetBranchAddress("nimTrigger", nimTrigger);
+    _tin->SetBranchAddress("rfIntensity", rfIntensity);
+    _tin->SetBranchAddress("hitID", &hitID);    
+    _tin->SetBranchAddress("hitTrackID", &hitTrackID);    
+    _tin->SetBranchAddress("detectorID", &detectorID);    
+    _tin->SetBranchAddress("elementID", &elementID);    
+    _tin->SetBranchAddress("driftDistance", &driftDistance);    
+    _tin->SetBranchAddress("tdcTime", &tdcTime);    
 
-	_tin->SetBranchAddress("hitID", &hitID);    
-	_tin->SetBranchAddress("hitTrackID", &hitTrackID);    
-	_tin->SetBranchAddress("detectorID", &detectorID);    
-	_tin->SetBranchAddress("elementID", &elementID);    
-	_tin->SetBranchAddress("driftDistance", &driftDistance);    
-	_tin->SetBranchAddress("tdcTime", &tdcTime);    
+    if (is_mc) {
+        _tin->SetBranchAddress("gCharge", &gCharge);
+        _tin->SetBranchAddress("gTrackID", &gTrackID);
+        _tin->SetBranchAddress("gvx", &gvx);
+        _tin->SetBranchAddress("gvy", &gvy);
+        _tin->SetBranchAddress("gvz", &gvz);
+        _tin->SetBranchAddress("gpx", &gpx);
+        _tin->SetBranchAddress("gpy", &gpy);
+        _tin->SetBranchAddress("gpz", &gpz);
 
-	_tin->SetBranchAddress("gCharge", &gCharge);
-	_tin->SetBranchAddress("gTrackID", &gTrackID);
-	_tin->SetBranchAddress("gvx", &gvx);
-	_tin->SetBranchAddress("gvy", &gvy);
-	_tin->SetBranchAddress("gvz", &gvz);
-	_tin->SetBranchAddress("gpx", &gpx);
-	_tin->SetBranchAddress("gpy", &gpy);
-	_tin->SetBranchAddress("gpz", &gpz);
+        _tin->SetBranchAddress("gx_st1", &gx_st1);
+        _tin->SetBranchAddress("gy_st1", &gy_st1);
+        _tin->SetBranchAddress("gz_st1", &gz_st1);
+        _tin->SetBranchAddress("gpx_st1", &gpx_st1);
+        _tin->SetBranchAddress("gpy_st1", &gpy_st1);
+        _tin->SetBranchAddress("gpz_st1", &gpz_st1);
 
-	_tin->SetBranchAddress("gx_st1", &gx_st1);
-	_tin->SetBranchAddress("gy_st1", &gy_st1);
-	_tin->SetBranchAddress("gz_st1", &gz_st1);
-	_tin->SetBranchAddress("gpx_st1", &gpx_st1);
-	_tin->SetBranchAddress("gpy_st1", &gpy_st1);
-	_tin->SetBranchAddress("gpz_st1", &gpz_st1);
+        _tin->SetBranchAddress("gx_st3", &gx_st3);
+        _tin->SetBranchAddress("gy_st3", &gy_st3);
+        _tin->SetBranchAddress("gz_st3", &gz_st3);
+        _tin->SetBranchAddress("gpx_st3", &gpx_st3);
+        _tin->SetBranchAddress("gpy_st3", &gpy_st3);
+        _tin->SetBranchAddress("gpz_st3", &gpz_st3);
+    }
 
-	_tin->SetBranchAddress("gx_st3", &gx_st3);
-	_tin->SetBranchAddress("gy_st3", &gy_st3);
-	_tin->SetBranchAddress("gz_st3", &gz_st3);
-	_tin->SetBranchAddress("gpx_st3", &gpx_st3);
-	_tin->SetBranchAddress("gpy_st3", &gpy_st3);
-	_tin->SetBranchAddress("gpz_st3", &gpz_st3);
-
-
-	segment = 0;
-	isopen = 1;
-	AddToFileOpened(filenam); // Add file to the list of opened files
-	return 0;
+    segment = 0;
+    isopen = 1;
+    AddToFileOpened(filenam); // Add file to the list of opened files
+    return 0;
 }
 
 int Fun4AllRUSInputManager::run(const int nevents) {
