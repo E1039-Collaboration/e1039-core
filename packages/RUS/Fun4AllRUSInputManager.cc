@@ -149,7 +149,6 @@ void Fun4AllRUSInputManager::VectToE1039() {
         hit->set_element_id(elementID->at(i));
         hit->set_tdc_time(tdcTime->at(i));
         hit->set_drift_distance(driftDistance->at(i));
-
         hit_vec->push_back(hit);
     }
 
@@ -230,7 +229,9 @@ int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
     _tin->SetBranchAddress("driftDistance", &driftDistance);    
     _tin->SetBranchAddress("tdcTime", &tdcTime);    
 
-    if (is_mc) {
+    if (_tin->GetBranch("gCharge") != nullptr) {
+		std::cout << "Detected MC true-track branches." << std::endl;
+        is_mc = true;
         _tin->SetBranchAddress("gCharge", &gCharge);
         _tin->SetBranchAddress("gTrackID", &gTrackID);
         _tin->SetBranchAddress("gvx", &gvx);
@@ -253,6 +254,9 @@ int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
         _tin->SetBranchAddress("gpx_st3", &gpx_st3);
         _tin->SetBranchAddress("gpy_st3", &gpy_st3);
         _tin->SetBranchAddress("gpz_st3", &gpz_st3);
+    }else {
+        is_mc = false;
+        std::cout << "No MC Track branches found. Running in RUS basic exp mode." << std::endl;
     }
 
     segment = 0;
