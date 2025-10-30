@@ -37,8 +37,7 @@ public:
 
     const std::string& get_tree_name() const { return _tree_name; }
     void set_tree_name(const std::string& treeName) { _tree_name = treeName; }
-    void set_mc(bool val) { is_mc = val; }
-    bool get_mc() const { return is_mc; }
+    void MakeNode();
 protected:
 
     bool is_mc;

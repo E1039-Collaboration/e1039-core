@@ -1,88 +1,53 @@
- #include "Fun4AllRUSInputManager.h"
- #include <interface_main/SQMCHit_v1.h>
- #include <interface_main/SQHit_v1.h>
- #include <interface_main/SQTrack_v1.h>
- #include <interface_main/SQHitVector_v1.h>
- #include <interface_main/SQTrackVector_v1.h>
- #include <interface_main/SQEvent_v1.h>
- #include <interface_main/SQRun_v1.h>
- #include <interface_main/SQSpill_v2.h>
- #include <interface_main/SQSpillMap_v1.h>
- #include <interface_main/SQStringMap.h>
- #include <interface_main/SQScaler_v1.h>
- #include <interface_main/SQSlowCont_v1.h>
- #include <fun4all/Fun4AllServer.h>
- #include <fun4all/Fun4AllSyncManager.h>
- #include <fun4all/Fun4AllReturnCodes.h>
- #include <fun4all/Fun4AllUtils.h>
- #include <fun4all/PHTFileServer.h>
- #include <ffaobjects/RunHeader.h>
- #include <ffaobjects/SyncObjectv2.h>
- #include <phool/getClass.h>
- #include <phool/PHCompositeNode.h>
- #include <phool/PHDataNode.h>
- #include <phool/recoConsts.h>
- #include <cstdlib>
- #include <memory>
- #include <TFile.h>
- #include <TTree.h>
+#include "Fun4AllRUSInputManager.h"
+#include <interface_main/SQMCHit_v1.h>
+#include <interface_main/SQHit_v1.h>
+#include <interface_main/SQTrack_v1.h>
+#include <interface_main/SQHitVector_v1.h>
+#include <interface_main/SQTrackVector_v1.h>
+#include <interface_main/SQEvent_v1.h>
+#include <interface_main/SQRun_v1.h>
+#include <interface_main/SQSpill_v2.h>
+#include <interface_main/SQSpillMap_v1.h>
+#include <interface_main/SQStringMap.h>
+#include <interface_main/SQScaler_v1.h>
+#include <interface_main/SQSlowCont_v1.h>
+#include <fun4all/Fun4AllServer.h>
+#include <fun4all/Fun4AllSyncManager.h>
+#include <fun4all/Fun4AllReturnCodes.h>
+#include <fun4all/Fun4AllUtils.h>
+#include <fun4all/PHTFileServer.h>
+#include <ffaobjects/RunHeader.h>
+#include <ffaobjects/SyncObjectv2.h>
+#include <phool/getClass.h>
+#include <phool/PHCompositeNode.h>
+#include <phool/PHDataNode.h>
+#include <phool/recoConsts.h>
+#include <cstdlib>
+#include <memory>
+#include <TFile.h>
+#include <TTree.h>
 
 using namespace std;
 
-//Constructor
-Fun4AllRUSInputManager::Fun4AllRUSInputManager(const std::string& name, const std::string& topnodename):
-   Fun4AllInputManager(name, ""),
-   segment(-999),
-   isopen(0),
-   is_mc(false),
-   events_total(0),
-   events_thisfile(0),
-   topNodeName(topnodename),
-   _tree_name("save"),
-   run_header(nullptr),
-   spill_map(nullptr),
-   event_header(nullptr),
-   hit_vec(nullptr),
-   trk_vec(nullptr),
-   _fin(nullptr),
-   _tin(nullptr)
+Fun4AllRUSInputManager::Fun4AllRUSInputManager(const std::string& name, const std::string& topnodename)
+  : Fun4AllInputManager(name, ""),
+    segment(-999),
+    isopen(0),
+    is_mc(false),
+    events_total(0),
+    events_thisfile(0),
+    topNodeName(topnodename),
+    _tree_name("save"),
+    run_header(nullptr),
+    spill_map(nullptr),
+    event_header(nullptr),
+    hit_vec(nullptr),
+    trk_vec(nullptr),
+    _fin(nullptr),
+    _tin(nullptr)
 {
     Fun4AllServer* se = Fun4AllServer::instance();
     topNode = se->topNode(topNodeName.c_str());
-    PHNodeIterator iter(topNode);
-
-    PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
-    if (!runNode) {
-        runNode = new PHCompositeNode("RUN");
-        topNode->addNode(runNode);
-    }
-
-    PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
-    if (!eventNode) {
-        eventNode = new PHCompositeNode("DST");
-        topNode->addNode(eventNode);
-    }
-
-    run_header = new SQRun_v1();
-    PHIODataNode<PHObject>* runHeaderNode = new PHIODataNode<PHObject>(run_header, "SQRun", "PHObject");
-    runNode->addNode(runHeaderNode);
-
-    spill_map = new SQSpillMap_v1();
-    PHIODataNode<PHObject>* spillNode = new PHIODataNode<PHObject>(spill_map, "SQSpillMap", "PHObject");
-    runNode->addNode(spillNode);
-
-    event_header = new SQEvent_v1();
-    PHIODataNode<PHObject>* eventHeaderNode = new PHIODataNode<PHObject>(event_header, "SQEvent", "PHObject");
-    eventNode->addNode(eventHeaderNode);
-
-    hit_vec = new SQHitVector_v1();
-    PHIODataNode<PHObject>* hitNode = new PHIODataNode<PHObject>(hit_vec, "SQHitVector", "PHObject");
-    eventNode->addNode(hitNode);
-
-    trk_vec = new SQTrackVector_v1();
-    PHIODataNode<PHObject>* trknode = new PHIODataNode<PHObject>(trk_vec, "SQTruthTrackVector", "PHObject");
-    eventNode->addNode(trknode);
-
     syncobject = new SyncObjectv2();
 }
 
@@ -149,7 +114,6 @@ void Fun4AllRUSInputManager::VectToE1039() {
         hit->set_element_id(elementID->at(i));
         hit->set_tdc_time(tdcTime->at(i));
         hit->set_drift_distance(driftDistance->at(i));
-
         hit_vec->push_back(hit);
     }
 
@@ -190,75 +154,82 @@ void Fun4AllRUSInputManager::VectToE1039() {
 }
 
 int Fun4AllRUSInputManager::fileopen(const std::string &filenam) {
-	if (isopen) {
-		std::cout << "Closing currently open file "
-			<< filename
-			<< " and opening " << filenam << std::endl;
-		fileclose();
-	}   
-	filename = filenam;
+    if (isopen) {
+        std::cout << "Closing currently open file "
+            << filename
+            << " and opening " << filenam << std::endl;
+        fileclose();
+    }   
+    filename = filenam;
 
 
-	if (verbosity > 0) {
-		std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
-	}   
+    if (verbosity > 0) {
+        std::cout << ThisName << ": opening file " << filename.c_str() << std::endl;
+    }   
 
-	events_thisfile = 0;
+    events_thisfile = 0;
 
-	_fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
-	if (!_fin || _fin->IsZombie()) {
-		std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
-	}
+    _fin = TFile::Open(filenam.c_str(), "READ"); // Open the file dynamically
+    if (!_fin || _fin->IsZombie()) {
+        std::cerr << "!!ERROR!! Failed to open file " << filenam << std::endl;
+    }
 
-	_tin = (TTree*) _fin->Get(_tree_name.c_str());
-	if (!_tin) {
-		std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
-		return -1; 
-	}
-	_tin->SetBranchAddress("eventID", &eventID);    
-	_tin->SetBranchAddress("runID", &runID);    
-	_tin->SetBranchAddress("spillID", &spillID);    
-	_tin->SetBranchAddress("rfID", &rfID);    
-	_tin->SetBranchAddress("turnID", &turnID);    
-	_tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
-	_tin->SetBranchAddress("nimTrigger", nimTrigger);
-	_tin->SetBranchAddress("rfIntensity", rfIntensity);
+    _tin = (TTree*) _fin->Get(_tree_name.c_str());
+    if (!_tin) {
+        std::cerr << "!!ERROR!! Tree " << _tree_name << " not found in file " << filenam << std::endl;
+        return -1; 
+    }
+    _tin->SetBranchAddress("eventID", &eventID);    
+    _tin->SetBranchAddress("runID", &runID);    
+    _tin->SetBranchAddress("spillID", &spillID);    
+    _tin->SetBranchAddress("rfID", &rfID);    
+    _tin->SetBranchAddress("turnID", &turnID);    
+    _tin->SetBranchAddress("fpgaTrigger", fpgaTrigger);
+    _tin->SetBranchAddress("nimTrigger", nimTrigger);
+    _tin->SetBranchAddress("rfIntensity", rfIntensity);
+    _tin->SetBranchAddress("hitID", &hitID);    
+    _tin->SetBranchAddress("hitTrackID", &hitTrackID);    
+    _tin->SetBranchAddress("detectorID", &detectorID);    
+    _tin->SetBranchAddress("elementID", &elementID);    
+    _tin->SetBranchAddress("driftDistance", &driftDistance);    
+    _tin->SetBranchAddress("tdcTime", &tdcTime);    
 
-	_tin->SetBranchAddress("hitID", &hitID);    
-	_tin->SetBranchAddress("hitTrackID", &hitTrackID);    
-	_tin->SetBranchAddress("detectorID", &detectorID);    
-	_tin->SetBranchAddress("elementID", &elementID);    
-	_tin->SetBranchAddress("driftDistance", &driftDistance);    
-	_tin->SetBranchAddress("tdcTime", &tdcTime);    
+    if (_tin->GetBranch("gCharge") != nullptr) {
+		std::cout << "Detected MC true-track branches." << std::endl;
+        is_mc = true;
+        _tin->SetBranchAddress("gCharge", &gCharge);
+        _tin->SetBranchAddress("gTrackID", &gTrackID);
+        _tin->SetBranchAddress("gvx", &gvx);
+        _tin->SetBranchAddress("gvy", &gvy);
+        _tin->SetBranchAddress("gvz", &gvz);
+        _tin->SetBranchAddress("gpx", &gpx);
+        _tin->SetBranchAddress("gpy", &gpy);
+        _tin->SetBranchAddress("gpz", &gpz);
 
-	_tin->SetBranchAddress("gCharge", &gCharge);
-	_tin->SetBranchAddress("gTrackID", &gTrackID);
-	_tin->SetBranchAddress("gvx", &gvx);
-	_tin->SetBranchAddress("gvy", &gvy);
-	_tin->SetBranchAddress("gvz", &gvz);
-	_tin->SetBranchAddress("gpx", &gpx);
-	_tin->SetBranchAddress("gpy", &gpy);
-	_tin->SetBranchAddress("gpz", &gpz);
+        _tin->SetBranchAddress("gx_st1", &gx_st1);
+        _tin->SetBranchAddress("gy_st1", &gy_st1);
+        _tin->SetBranchAddress("gz_st1", &gz_st1);
+        _tin->SetBranchAddress("gpx_st1", &gpx_st1);
+        _tin->SetBranchAddress("gpy_st1", &gpy_st1);
+        _tin->SetBranchAddress("gpz_st1", &gpz_st1);
 
-	_tin->SetBranchAddress("gx_st1", &gx_st1);
-	_tin->SetBranchAddress("gy_st1", &gy_st1);
-	_tin->SetBranchAddress("gz_st1", &gz_st1);
-	_tin->SetBranchAddress("gpx_st1", &gpx_st1);
-	_tin->SetBranchAddress("gpy_st1", &gpy_st1);
-	_tin->SetBranchAddress("gpz_st1", &gpz_st1);
+        _tin->SetBranchAddress("gx_st3", &gx_st3);
+        _tin->SetBranchAddress("gy_st3", &gy_st3);
+        _tin->SetBranchAddress("gz_st3", &gz_st3);
+        _tin->SetBranchAddress("gpx_st3", &gpx_st3);
+        _tin->SetBranchAddress("gpy_st3", &gpy_st3);
+        _tin->SetBranchAddress("gpz_st3", &gpz_st3);
+    }else {
+        is_mc = false;
+        std::cout << "No MC Track branches found. Running in RUS basic exp mode." << std::endl;
+    }
 
-	_tin->SetBranchAddress("gx_st3", &gx_st3);
-	_tin->SetBranchAddress("gy_st3", &gy_st3);
-	_tin->SetBranchAddress("gz_st3", &gz_st3);
-	_tin->SetBranchAddress("gpx_st3", &gpx_st3);
-	_tin->SetBranchAddress("gpy_st3", &gpy_st3);
-	_tin->SetBranchAddress("gpz_st3", &gpz_st3);
+    if (!run_header) MakeNode();
 
-
-	segment = 0;
-	isopen = 1;
-	AddToFileOpened(filenam); // Add file to the list of opened files
-	return 0;
+    segment = 0;
+    isopen = 1;
+    AddToFileOpened(filenam); // Add file to the list of opened files
+    return 0;
 }
 
 int Fun4AllRUSInputManager::run(const int nevents) {
@@ -466,3 +437,42 @@ int Fun4AllRUSInputManager::fileclose()
      }
    return Fun4AllReturnCodes::SYNC_OK;
  }
+
+void Fun4AllRUSInputManager::MakeNode()
+{
+    PHNodeIterator iter(topNode);
+
+    PHCompositeNode* runNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "RUN"));
+    if (!runNode) {
+        runNode = new PHCompositeNode("RUN");
+        topNode->addNode(runNode);
+    }
+
+    PHCompositeNode* eventNode = static_cast<PHCompositeNode*>(iter.findFirst("PHCompositeNode", "DST"));
+    if (!eventNode) {
+        eventNode = new PHCompositeNode("DST");
+        topNode->addNode(eventNode);
+    }
+
+    run_header = new SQRun_v1();
+    runNode->addNode(new PHIODataNode<PHObject>(run_header, "SQRun", "PHObject"));
+
+    spill_map = new SQSpillMap_v1();
+    runNode->addNode(new PHIODataNode<PHObject>(spill_map, "SQSpillMap", "PHObject"));
+
+    event_header = new SQEvent_v1();
+    eventNode->addNode(new PHIODataNode<PHObject>(event_header, "SQEvent", "PHObject"));
+
+    hit_vec = new SQHitVector_v1();
+    eventNode->addNode(new PHIODataNode<PHObject>(hit_vec, "SQHitVector", "PHObject"));
+
+    if (is_mc) {
+        trk_vec = new SQTrackVector_v1();
+        eventNode->addNode(new PHIODataNode<PHObject>(trk_vec, "SQTruthTrackVector", "PHObject"));
+    }
+
+    std::cout << "Fun4AllRUSInputManager::MakeNode(): Created "
+              << (is_mc ? "MC" : "Data")
+              << " node structure under DST and RUN." << std::endl;
+}
+

@@ -53,7 +53,9 @@ Fun4AllRUSOutputManager::~Fun4AllRUSOutputManager() {
 }
 
 int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
-    std::cout << "Fun4AllRUSOutputManager::OpenFile(): Attempting to open file: " << m_file_name << " with tree: " << m_tree_name << std::endl;
+    std::cout << "Fun4AllRUSOutputManager::OpenFile(): Attempting to open file: "
+              << m_file_name << " with tree: " << m_tree_name << std::endl;
+    // Create output ROOT file
     m_file = new TFile(m_file_name.c_str(), "RECREATE");
     m_file->SetCompressionAlgorithm(ROOT::kLZMA);
     m_file->SetCompressionLevel(m_compression_level);
@@ -61,22 +63,21 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
     if (!m_file || m_file->IsZombie()) {
         std::cerr << "Error: Could not create file " << m_file_name << std::endl;
         exit(1);
-    } else {
-        std::cout << "File " << m_file->GetName() << " opened successfully." << std::endl;
     }
+    std::cout << "File " << m_file->GetName() << " opened successfully." << std::endl;
 
     m_tree = new TTree(m_tree_name.c_str(), "Tree for storing events");
     if (!m_tree) {
         std::cerr << "Error: Could not create tree " << m_tree_name << std::endl;
         exit(1);
-    } else {
-        std::cout << "Tree " << m_tree->GetName() << " created successfully." << std::endl;
     }
+    std::cout << "Tree " << m_tree->GetName() << " created successfully." << std::endl;
 
+    // Basic event-level branches
     m_tree->Branch("runID", &runID, "runID/I");
     m_tree->Branch("eventID", &eventID, "eventID/I");
 
-    if (write_sq_event_info){
+    if (write_sq_event_info) {
         m_tree->Branch("spillID", &spillID, "spillID/I");
         m_tree->Branch("rfID", &rfID, "rfID/I");
         m_tree->Branch("turnID", &turnID, "turnID/I");
@@ -84,6 +85,8 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
         m_tree->Branch("fpgaTrigger", fpgaTrigger, "fpgaTrigger[5]/I");
         m_tree->Branch("nimTrigger", nimTrigger, "nimTrigger[5]/I");
     }
+
+    // Always-present hit-level branches
     m_tree->Branch("hitID", &hitID);
     m_tree->Branch("hitTrackID", &hitTrackID);
     m_tree->Branch("detectorID", &detectorID);
@@ -91,8 +94,17 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
     m_tree->Branch("tdcTime", &tdcTime);
     m_tree->Branch("driftDistance", &driftDistance);
 
-    if (mc_truth_mode) {
-        m_tree->Branch("gProcessID", &gProcessID); //Hit level
+    // Find nodes in the Fun4All
+    m_evt     = findNode::getClass<SQEvent>(startNode, "SQEvent");
+    m_hit_vec = findNode::getClass<SQHitVector>(startNode, "SQHitVector");
+    m_vec_trk = findNode::getClass<SQTrackVector>(startNode, "SQTruthTrackVector");
+
+    // Automatically enable MC truth mode if SQTruthTrackVector is found
+    if (m_vec_trk != nullptr) {
+        mc_truth_mode = true;
+        std::cout << "Detected SQTruthTrackVector node -enabling MC truth output." << std::endl;
+
+        m_tree->Branch("gProcessID", &gProcessID);  
         m_tree->Branch("gCharge", &gCharge);
         m_tree->Branch("gTrackID", &gTrackID);
         m_tree->Branch("gvx", &gvx);
@@ -101,32 +113,38 @@ int Fun4AllRUSOutputManager::OpenFile(PHCompositeNode* startNode) {
         m_tree->Branch("gpx", &gpx);
         m_tree->Branch("gpy", &gpy);
         m_tree->Branch("gpz", &gpz);
+
         m_tree->Branch("gx_st1", &gx_st1);
         m_tree->Branch("gy_st1", &gy_st1);
         m_tree->Branch("gz_st1", &gz_st1);
         m_tree->Branch("gpx_st1", &gpx_st1);
         m_tree->Branch("gpy_st1", &gpy_st1);
         m_tree->Branch("gpz_st1", &gpz_st1);
+
         m_tree->Branch("gx_st3", &gx_st3);
         m_tree->Branch("gy_st3", &gy_st3);
         m_tree->Branch("gz_st3", &gz_st3);
         m_tree->Branch("gpx_st3", &gpx_st3);
         m_tree->Branch("gpy_st3", &gpy_st3);
         m_tree->Branch("gpz_st3", &gpz_st3);
+    } else {
+        mc_truth_mode = false;
+        std::cout << "No SQTruthTrackVector node found -writing data-mode output only." << std::endl;
     }
 
+    // Finalize tree configuration
     m_tree->SetAutoFlush(m_auto_flush);
     m_tree->SetBasketSize("*", m_basket_size);
 
-    m_evt = findNode::getClass<SQEvent>(startNode, "SQEvent");
-    m_hit_vec = findNode::getClass<SQHitVector>(startNode, "SQHitVector");
-    if (mc_truth_mode) m_vec_trk = findNode::getClass<SQTrackVector>(startNode, "SQTruthTrackVector");
-
-    if (!m_evt || !m_hit_vec || (mc_truth_mode && !m_vec_trk))
+    // Sanity checks
+    if (!m_evt || !m_hit_vec) {
+        std::cerr << "Error: Missing SQEvent or SQHitVector nodes in the node tree." << std::endl;
         return Fun4AllReturnCodes::ABORTEVENT;
+    }
 
     return Fun4AllReturnCodes::EVENT_OK;
 }
+
 int Fun4AllRUSOutputManager::Write(PHCompositeNode* startNode) {
     if (!m_file || !m_tree) {
         OpenFile(startNode);

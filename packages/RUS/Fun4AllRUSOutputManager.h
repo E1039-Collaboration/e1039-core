@@ -29,7 +29,6 @@ class Fun4AllRUSOutputManager : public Fun4AllOutputManager {
         void SetCompressionLevel(int level) { m_compression_level = level; }
         unsigned int EncodeProcess(int processID, int sourceFlag);
         void SetProcessId(int proc_id) { process_id = proc_id; }
-        void SetMCTrueMode(bool enable) { mc_truth_mode = enable; }
         void EnableEventInfo(bool enable) { write_sq_event_info = enable; }
 
         virtual int Write(PHCompositeNode* startNode);
