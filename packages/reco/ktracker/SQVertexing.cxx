@@ -90,13 +90,13 @@ int SQVertexing::InitRun(PHCompositeNode* topNode)
     
     ret = MakeNodes(topNode);
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-    
-    ret = InitField(topNode);
-    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-    
-    ret = InitGeom(topNode);
-    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   }
+    
+  ret = InitField(topNode);
+  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+  
+  ret = InitGeom(topNode);
+  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   
   //Initialize random seed
   recoConsts* rc = recoConsts::instance();
