@@ -21,7 +21,7 @@
 
 #include "SRecEvent.h"
 #include "GFTrack.h"
-
+#include <TGeoManager.h>
 #include <iostream>
 #include <vector>
 
@@ -84,18 +84,20 @@ int SQVertexing::Init(PHCompositeNode* topNode)
 
 int SQVertexing::InitRun(PHCompositeNode* topNode)
 {
-  int ret = GetNodes(topNode);
-  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-
-  ret = MakeNodes(topNode);
-  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-
-  ret = InitField(topNode);
-  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-
-  ret = InitGeom(topNode);
-  if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
-
+  if (topNode) {
+    int ret = GetNodes(topNode);
+    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+    
+    ret = MakeNodes(topNode);
+    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+    
+    ret = InitField(topNode);
+    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+    
+    ret = InitGeom(topNode);
+    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+  }
+  
   //Initialize random seed
   recoConsts* rc = recoConsts::instance();
   rndm.SetSeed(rc->get_IntFlag("RUNNUMBER"));
@@ -447,7 +449,9 @@ int SQVertexing::InitField(PHCompositeNode* topNode)
     recoConsts* rc = recoConsts::instance();
 
     std::unique_ptr<PHFieldConfig> default_field_cfg(new PHFieldConfig_v3(rc->get_CharFlag("fMagFile"), rc->get_CharFlag("kMagFile"), rc->get_DoubleFlag("FMAGSTR"), rc->get_DoubleFlag("KMAGSTR"), 5.));
-    PHField* phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
+    PHField* phfield;
+    if (topNode) phfield = PHFieldUtility::GetFieldMapNode(default_field_cfg.get(), topNode, 0);
+    else         phfield = PHFieldUtility::BuildFieldMap(default_field_cfg.get(), 0);
 
     std::cout << "SQVertexing::InitField - creating new GenFit field map" << std::endl;
     gfield = new SQGenFit::GFField(phfield);
@@ -466,11 +470,14 @@ int SQVertexing::InitGeom(PHCompositeNode* topNode)
   if(geom_file_name != "")
   {
     std::cout << "SQVertexing::InitGeom - create geom from " << geom_file_name << std::endl;
-
-    int ret = PHGeomUtility::ImportGeomFile(topNode, geom_file_name);
+    if (topNode) {
+      int ret = PHGeomUtility::ImportGeomFile(topNode, geom_file_name);
+      if (ret != Fun4AllReturnCodes::EVENT_OK) return ret;
+    } else {
+      TGeoManager* geom = TGeoManager::Import(geom_file_name.c_str());
+      if (!geom) return Fun4AllReturnCodes::ABORTEVENT;
+    }
     genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
-
-    if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
   }
   else
   {

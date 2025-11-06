@@ -43,13 +43,13 @@ public:
   virtual       SQSpill* insert(const SQSpill *hit) {return NULL;} ///< Insert the given SQSpill object.
   virtual       size_t   erase(unsigned int idkey) {return 0;} ///< Erase the SQSpill entry having spill ID = 'idkey'.
 
-  virtual ConstIter begin()                   const {return SpillMap().end();} ///< Return the const begin iterator.
-  virtual ConstIter  find(unsigned int idkey) const {return SpillMap().end();} ///< Return the const iterator of the SQSpill entry having spill ID = 'idkey'.
-  virtual ConstIter   end()                   const {return SpillMap().end();} ///< Return the const end iterator.
+  virtual ConstIter begin()                   const = 0; ///< Return the const begin iterator.
+  virtual ConstIter  find(unsigned int idkey) const = 0; ///< Return the const iterator of the SQSpill entry having spill ID = 'idkey'.
+  virtual ConstIter   end()                   const = 0; ///< Return the const end iterator.
 
-  virtual Iter begin()                   {return SpillMap().end();} ///< Return the begin iterator.
-  virtual Iter  find(unsigned int idkey) {return SpillMap().end();} ///< Return the iterator of the SQSpill entry having spill ID = 'idkey'.
-  virtual Iter   end()                   {return SpillMap().end();} ///< Return the end iterator.
+  virtual Iter begin()                   = 0; ///< Return the begin iterator.
+  virtual Iter  find(unsigned int idkey) = 0; ///< Return the iterator of the SQSpill entry having spill ID = 'idkey'.
+  virtual Iter   end()                   = 0; ///< Return the end iterator.
 
 protected:
   SQSpillMap() {}

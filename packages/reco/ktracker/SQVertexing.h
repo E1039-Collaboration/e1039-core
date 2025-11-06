@@ -16,14 +16,19 @@ class SRecEvent;
 class SRecTrack;
 class SRecDimuon;
 
+/// SubsysReco module to carry out the vertexing (i.e. forming dimuons).
+/**
+ * This class can be used outside the Fun4All macro, 
+ * where some member functions are called with topNode = 0 in such use.
+ */
 class SQVertexing: public SubsysReco
 {
 public:
   SQVertexing(const std::string& name = "SQVertexing", int sign1 = 1, int sign2 = -1);
   ~SQVertexing();
 
-  int Init(PHCompositeNode* topNode);
-  int InitRun(PHCompositeNode* topNode);
+  int Init(PHCompositeNode* topNode=0);
+  int InitRun(PHCompositeNode* topNode=0);
   int process_event(PHCompositeNode* topNode);
   int End(PHCompositeNode* topNode);
 
@@ -35,8 +40,8 @@ public:
   void set_geom_file_name(const std::string& geomFileName) { geom_file_name = geomFileName; }
 
 private:
-  int InitField(PHCompositeNode* topNode);
-  int InitGeom(PHCompositeNode*  topNode);
+  int InitField(PHCompositeNode* topNode=0);
+  int InitGeom(PHCompositeNode*  topNode=0);
   int MakeNodes(PHCompositeNode* topNode);
   int GetNodes(PHCompositeNode*  topNode);
 

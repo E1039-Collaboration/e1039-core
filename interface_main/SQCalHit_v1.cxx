@@ -15,8 +15,8 @@ ClassImp(SQCalHit_v1);
 
 SQCalHit_v1::SQCalHit_v1(): 
   _hit_id(std::numeric_limits<int>::max()),
-  _detector_id(std::numeric_limits<int>::max()),
-	_element_id(std::numeric_limits<int>::max())
+  _detector_id(std::numeric_limits<short>::max()),
+  _element_id(std::numeric_limits<short>::max())
 {
   _cells.clear();
 }

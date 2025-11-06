@@ -36,13 +36,13 @@ public:
   virtual       PHObject* insert(const std::string key, const PHObject *item) {return NULL;}
   virtual       size_t   erase(std::string key) {return 0;}
 
-  virtual ConstIter begin()                const {return ObjectMap().end();}
-  virtual ConstIter  find(std::string key) const {return ObjectMap().end();}
-  virtual ConstIter   end()                const {return ObjectMap().end();}
+  virtual ConstIter begin()                const = 0;
+  virtual ConstIter  find(std::string key) const = 0;
+  virtual ConstIter   end()                const = 0;
 
-  virtual Iter begin()                {return ObjectMap().end();}
-  virtual Iter  find(std::string key) {return ObjectMap().end();}
-  virtual Iter   end()                {return ObjectMap().end();}
+  virtual Iter begin()                = 0;
+  virtual Iter  find(std::string key) = 0;
+  virtual Iter   end()                = 0;
 
 protected:
   SQStringMap() {}
