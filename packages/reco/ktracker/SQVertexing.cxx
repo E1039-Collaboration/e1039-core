@@ -84,8 +84,9 @@ int SQVertexing::Init(PHCompositeNode* topNode)
 
 int SQVertexing::InitRun(PHCompositeNode* topNode)
 {
+  int ret;
   if (topNode) {
-    int ret = GetNodes(topNode);
+    ret = GetNodes(topNode);
     if(ret != Fun4AllReturnCodes::EVENT_OK) return ret;
     
     ret = MakeNodes(topNode);

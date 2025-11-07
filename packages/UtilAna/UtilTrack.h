@@ -5,6 +5,8 @@ class SQTrack;
 class SQTrackVector;
 class SQHitVector;
 class SRecTrack;
+class TVector3;
+class TLorentzVector;
 
 namespace UtilTrack {
   extern int verbosity;
@@ -16,6 +18,7 @@ namespace UtilTrack {
   SQHitVector* FindHodoHitsOfTrack(const SQHitVector* vec_in, const int id_trk);
 
   std::vector<int> FindMatchedRoads(SRecTrack* trk, const double margin=0);
+  std::vector<int> FindMatchedRoads(const TVector3 pos1, const TLorentzVector mom1, const TVector3 pos3, const TLorentzVector mom3, const double margin=0);
 }
 
 #endif /* _UTIL_TRACK__H_ */

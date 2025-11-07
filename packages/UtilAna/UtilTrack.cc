@@ -85,7 +85,7 @@ SQHitVector* UtilTrack::FindHodoHitsOfTrack(const SQHitVector* vec_in, const int
   return FindDetectorHitsOfTrack(vec_in, id_trk, "H");
 }
 
-/// Find all roads that match to the given track.
+/// Find all roads that match to the given track within the hodo paddle width plus the given margin.
 /**
  * The closest paddle to the given track at each hodoscope X plane (H1T/B, H2T/B, H3T/B and H4T/B) is selected based on the expected track x-position.
  * The two adjacent paddles are also selected if they are within "width/2 + margin".
@@ -98,11 +98,17 @@ SQHitVector* UtilTrack::FindHodoHitsOfTrack(const SQHitVector* vec_in, const int
  */
 std::vector<int> UtilTrack::FindMatchedRoads(SRecTrack* trk, const double margin)
 {
+  return FindMatchedRoads(trk->get_pos_st1(), trk->get_mom_st1(), trk->get_pos_st3(), trk->get_mom_st3(), margin);
+}
+
+/// Find all roads that match to the given track within the hodo paddle width plus the given margin.
+std::vector<int> UtilTrack::FindMatchedRoads(const TVector3 pos1, const TLorentzVector mom1, const TVector3 pos3, const TLorentzVector mom3, const double margin)  
+{
   GeomSvc* geom = GeomSvc::instance();
-  double y_st1 = trk->get_pos_st1().Y();
-  double y_st3 = trk->get_pos_st3().Y();
+  double y_st1 = pos1.Y();
+  double y_st3 = pos3.Y();
   int top_bot = y_st3>0 ? +1 : -1;
-  if (verbosity > 0) cout << "UtilTrack::FindMatchedRoads(): charge=" << trk->getCharge() << " y_st1=" << y_st1 << " y_st3=" << y_st3 << endl;
+  if (verbosity > 0) cout << "UtilTrack::FindMatchedRoads(): y_st1=" << y_st1 << " y_st3=" << y_st3 << " top_bot=" << top_bot << endl;
   
   vector<int> list_ele_id[5]; // 0=unused, 1=st1, 2=st2,,,
   for (int st = 1; st <= 4; st++) {
@@ -118,8 +124,12 @@ std::vector<int> UtilTrack::FindMatchedRoads(SRecTrack* trk, const double margin
     if (verbosity > 2) cout << "  st" << st << ":";
     if (verbosity > 3) cout << " x_det=" << x_det << " n_ele=" << n_ele << " space=" << space << " width=" << width;
 
-    double x_trk, y_trk;
-    trk->getExpPositionFast(z_det, x_trk, y_trk);
+    const TVector3*       pos = (st == 1 ? &pos1 : &pos3);
+    const TLorentzVector* mom = (st == 1 ? &mom1 : &mom3);
+    double x_trk = pos->X() + (z_det - pos->Z()) * mom->X() / mom->Z();
+    double y_trk = pos->Y() + (z_det - pos->Z()) * mom->Y() / mom->Z();
+    //double x_trk, y_trk;
+    //trk->getExpPositionFast(z_det, x_trk, y_trk);
     int ele_cent = (int)((n_ele+1)/2.0 + (x_trk-x_det)/space + 0.5);
     if (verbosity > 2) cout << " x_trk=" << x_trk << " y_trk=" << y_trk;
 
