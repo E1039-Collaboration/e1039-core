@@ -36,13 +36,13 @@ public:
   virtual       PHObject* insert(const unsigned int idkey, const PHObject *item) {return NULL;}
   virtual       size_t   erase(unsigned int idkey) {return 0;}
 
-  virtual ConstIter begin()                   const {return ObjectMap().end();}
-  virtual ConstIter  find(unsigned int idkey) const {return ObjectMap().end();}
-  virtual ConstIter   end()                   const {return ObjectMap().end();}
+  virtual ConstIter begin()                   const = 0;
+  virtual ConstIter  find(unsigned int idkey) const = 0;
+  virtual ConstIter   end()                   const = 0;
 
-  virtual Iter begin()                   {return ObjectMap().end();}
-  virtual Iter  find(unsigned int idkey) {return ObjectMap().end();}
-  virtual Iter   end()                   {return ObjectMap().end();}
+  virtual Iter begin()                   = 0;
+  virtual Iter  find(unsigned int idkey) = 0;
+  virtual Iter   end()                   = 0;
 
 protected:
   SQIntMap() {}

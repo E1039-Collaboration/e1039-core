@@ -64,8 +64,6 @@ else # 'all' or 'resume'
     framework/ffaobjects
     framework/fun4all
     interface_main
-    packages/UtilAna
-    online/decoder_maindaq
     packages/Half
     packages/vararray
     database/pdbcal/base
@@ -79,8 +77,6 @@ else # 'all' or 'resume'
     simulation/g4main
     simulation/g4detectors
     simulation/g4eval
-    generators/E906LegacyGen
-    generators/SingleMuonGen
     packages/calibrator
     packages/evt_filter
     packages/dptrigger
@@ -89,6 +85,10 @@ else # 'all' or 'resume'
     packages/reco/SQGenFit
     packages/reco/kfitter
     packages/reco/ktracker
+    packages/UtilAna
+    online/decoder_maindaq
+    generators/E906LegacyGen
+    generators/SingleMuonGen
     packages/embedding
     packages/rs_Reader
     packages/RUS

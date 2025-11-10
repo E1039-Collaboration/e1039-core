@@ -31,7 +31,6 @@ target_link_libraries(SQPrimaryVtxGen -L./
   -lgslcblas
   -lphool
   -lphgeom 
-  -lUtilAna
   -lboost_iostreams
 )
 

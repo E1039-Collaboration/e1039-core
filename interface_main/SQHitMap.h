@@ -47,13 +47,13 @@ public:
   virtual       SQHit* insert(const SQHit *hit) {return NULL;}
   virtual       size_t   erase(unsigned int idkey) {return 0;}
 
-  virtual ConstIter begin()                   const {return HitMap().end();}
-  virtual ConstIter  find(unsigned int idkey) const {return HitMap().end();}
-  virtual ConstIter   end()                   const {return HitMap().end();}
+  virtual ConstIter begin()                   const = 0;
+  virtual ConstIter  find(unsigned int idkey) const = 0;
+  virtual ConstIter   end()                   const = 0;
 
-  virtual Iter begin()                   {return HitMap().end();}
-  virtual Iter  find(unsigned int idkey) {return HitMap().end();}
-  virtual Iter   end()                   {return HitMap().end();}
+  virtual Iter begin()                   = 0;
+  virtual Iter  find(unsigned int idkey) = 0;
+  virtual Iter   end()                   = 0;
 
 protected:
   SQHitMap() {}
