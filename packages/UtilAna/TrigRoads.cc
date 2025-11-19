@@ -47,6 +47,32 @@ const TrigRoad* TrigRoads::FindRoad(const int road_id) const
   if (it != m_idx_map.end()) return &m_roads[it->second];
   return 0;
 }
+
+/// Find all roads included in the given list of road IDs.
+/**
+ * The return value is a list (vector) of `const TrigRoad*` pointers.
+ */
+std::vector<const TrigRoad*> TrigRoads::FindRoads(const std::vector<int> list_road_id) const
+{
+  vector<const TrigRoad*> list_road_ret;
+  for (auto it = list_road_id.begin(); it != list_road_id.end(); it++) {
+    const TrigRoad* rd = FindRoad(*it);
+    if (rd) list_road_ret.push_back(rd);
+  }
+  return list_road_ret;
+}
+
+/// Find all roads included in the given list of road IDs.
+/**
+ * The return value is a list (vector) of road IDs.
+ */
+std::vector<int> TrigRoads::FindRoadIDs(const std::vector<int> list_road_id) const
+{
+  vector<const TrigRoad*> list_road = FindRoads(list_road_id);
+  vector<int> list_ret;
+  for (auto it = list_road.begin(); it != list_road.end(); it++) list_ret.push_back((*it)->road_id);
+  return list_ret;
+}
   
 int TrigRoads::LoadConfig(const std::string file_name)
 {

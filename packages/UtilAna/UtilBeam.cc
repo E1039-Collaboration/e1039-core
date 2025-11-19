@@ -1,3 +1,4 @@
+#include <TH1.h>
 #include "UtilBeam.h"
 using namespace std;
 
@@ -56,4 +57,15 @@ void UtilBeam::ListOfRfValues(int& n_value, double*& list_values)
   }
   n_value = idx;
   list_values = list;
+}
+
+/// Normalize a histogram of RF intensity (like RF+00) with bin width.
+void UtilBeam::NormRFHist(TH1* h1)
+{
+  if (h1->GetSumw2N() == 0) h1->Sumw2();
+  for (int ib = 1; ib <= h1->GetNbinsX(); ib++) {
+    double width = h1->GetBinWidth(ib);
+    h1->SetBinContent(ib, h1->GetBinContent(ib) / width);
+    h1->SetBinError  (ib, h1->GetBinError  (ib) / width);
+  }
 }
