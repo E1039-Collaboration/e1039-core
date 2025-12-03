@@ -7,6 +7,8 @@
 
 ClassImp(TriggerRoad)
 
+int TriggerRoad::verbosity = 0;
+
 TriggerRoad::TriggerRoad()
 {
     targetWeight = 0.;
@@ -61,11 +63,21 @@ TriggerRoad::TriggerRoad(Tracklet& tracklet) : detectorIDs(4), elementIDs(4)
     }
 
     tb = tb > 0 ? 0 : 1;
+    if (verbosity > 1) std::cout << "TriggerRoad::TriggerRoad(): tb=" << tb << std::endl;
     for(int i = 0; i < 4; ++i)
     {
         detectorIDs[i] = hodoIDs[tb][i];
-        elementIDs[i] = p_geomSvc->getExpElementID(hodoIDs[tb][i], tracklet.getExpPositionX(p_geomSvc->getPlanePosition(hodoIDs[tb][i])));
-        //std::cout << i << " " << detectorIDs[i] << " " << elementIDs[i] << std::endl;
+        double w_trk = tracklet.getExpPositionW(hodoIDs[tb][i]);
+        elementIDs[i] = p_geomSvc->getExpElementID(hodoIDs[tb][i], w_trk);
+        //elementIDs[i] = p_geomSvc->getExpElementID(hodoIDs[tb][i], tracklet.getExpPositionX(p_geomSvc->getPlanePosition(hodoIDs[tb][i])));
+        if (verbosity > 1) {
+          double z = p_geomSvc->getPlanePosition(hodoIDs[tb][i]);
+          double x = tracklet.getExpPositionX(z);
+          double y = tracklet.getExpPositionY(z);
+          std::cout << "  st" << (i+1) << ": det=" << detectorIDs[i] << " z=" << z << " x,y,w_trk=" << x << "," << y << "," << w_trk << " ele=" << elementIDs[i];
+          if (verbosity > 2) std::cout << " w_ele=" << p_geomSvc->getPlanePtr(hodoIDs[tb][i])->elementPos.at(elementIDs[i]-1);
+          std::cout << std::endl;
+        }
     }
 }
 

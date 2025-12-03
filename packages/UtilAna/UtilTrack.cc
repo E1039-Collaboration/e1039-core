@@ -115,32 +115,37 @@ std::vector<int> UtilTrack::FindMatchedRoads(const TVector3 pos1, const TLorentz
     string det_name = (string)"H" + (char)('0'+st) + (top_bot>0 ? 'T' : 'B');
     int det_id = geom->getDetectorID(det_name);
     Plane* det = geom->getPlanePtr(det_id);
-    double x_det = det->xc + det->deltaX;
-    //double y_det = det->yc + det->deltaY;
-    double z_det = det->zc + det->deltaZ;
+    double x_det = det->xc;
+    double y_det = det->yc;
+    double z_det = det->zc;
+    double sinth = det->sintheta;
+    double costh = det->costheta;
     int    n_ele = det->nElements;
     double space = det->spacing;
     double width = det->cellWidth;
     if (verbosity > 2) cout << "  st" << st << ":";
-    if (verbosity > 3) cout << " x_det=" << x_det << " n_ele=" << n_ele << " space=" << space << " width=" << width;
+    if (verbosity > 3) cout << " x,y,z_det=" << x_det << "," << y_det << "," << z_det << " sin,cos=" << sinth << "," << costh << " n_ele=" << n_ele << " space=" << space << " width=" << width;
 
     const TVector3*       pos = (st == 1 ? &pos1 : &pos3);
     const TLorentzVector* mom = (st == 1 ? &mom1 : &mom3);
     double x_trk = pos->X() + (z_det - pos->Z()) * mom->X() / mom->Z();
     double y_trk = pos->Y() + (z_det - pos->Z()) * mom->Y() / mom->Z();
-    //double x_trk, y_trk;
-    //trk->getExpPositionFast(z_det, x_trk, y_trk);
-    int ele_cent = (int)((n_ele+1)/2.0 + (x_trk-x_det)/space + 0.5);
-    if (verbosity > 2) cout << " x_trk=" << x_trk << " y_trk=" << y_trk;
+    
+    // d_trk = Signed distance of the track position from the plane center axis.
+    //   Center axis: y = y_det-(x-x_det)*costh/sinth ->  costh*x + sinth*y - sinth*y_det - costh*x_det = 0
+    //   Note: theta > 0 for the 2nd quadrant (x<0, y>0).
+    double d_trk = costh*x_trk + sinth*y_trk - sinth*y_det - costh*x_det; // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    int ele_cent = (int)((n_ele+1)/2.0 + d_trk/space + 0.5);
+    if (verbosity > 2) cout << " x,y,d_trk=" << x_trk << "," << y_trk << "," << d_trk;
 
     /// Check three elements, assuming the margin is much smaller than the half width.
     for (int i_ele = ele_cent - 1; i_ele <= ele_cent + 1; i_ele++) {
       if (i_ele <= 0 || i_ele > n_ele) continue;
-      double x_ele = x_det + space * (i_ele - (n_ele+1)/2.0);
-      if (verbosity > 2) cout << " [ele=" << i_ele << " x=" << x_ele;
-      if (verbosity > 3) cout << " edge=" << (width/2-fabs(x_trk-x_ele));
+      double d_ele = space * (i_ele - (n_ele+1)/2.0);
+      if (verbosity > 2) cout << "  [ele=" << i_ele << " d=" << d_ele;
+      if (verbosity > 3) cout << " edge=" << (width/2-fabs(d_trk-d_ele));
       if (verbosity > 2) cout << "]";
-      if (fabs(x_trk - x_ele) < width/2 + margin) list_ele_id[st].push_back(i_ele);
+      if (fabs(d_trk - d_ele) < width/2 + margin) list_ele_id[st].push_back(i_ele);
     }
     if (verbosity > 2) cout << endl;
   }
