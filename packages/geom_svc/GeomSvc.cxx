@@ -533,7 +533,6 @@ void GeomSvc::initPlaneDbSvc() {
   }
 }
 
-
 void GeomSvc::initWireLUT() {
 
   ///Initialize the position look up table for all wires, hodos, and tubes
@@ -547,7 +546,7 @@ void GeomSvc::initWireLUT() {
       planes          [i].elementPos.clear();
       for(int j = 1; j <= planes[i].nElements; ++j)
       {
-          double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].deltaW;
+          double pos = (j - (planes[i].nElements+1.)/2.)*planes[i].spacing + planes[i].xoffset + planes[i].xc*planes[i].costheta + planes[i].yc*planes[i].sintheta + planes[i].deltaW;
           map_wirePosition[i].insert(posType(j, pos));
 
           map_endPoint1[i].insert(epType(j, planes[i].getEndPoint(j, -1)));
@@ -570,17 +569,17 @@ void GeomSvc::initWireLUT() {
           double pos;
           if(i <= nChamberPlanes+nHodoPlanes)
           {
-              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
+              pos = planes[i].xc*planes[i].costheta + planes[i].yc*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }
           else if(i <= nChamberPlanes+nHodoPlanes+nPropPlanes)
           {
               int moduleID = 8 - int((j - 1)/8);        //Need to re-define moduleID for run2, note it's reversed compared to elementID
-              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
+              pos = planes[i].xc*planes[i].costheta + planes[i].yc*planes[i].sintheta + planes[i].xoffset + (j - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW_module[moduleID];
           }
           else
           {
               int elementID = ((i-55) & 2) > 0 ? planes[i].nElements + 1 - j : j;
-              pos = planes[i].x0*planes[i].costheta + planes[i].y0*planes[i].sintheta + planes[i].xoffset + (elementID - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
+              pos = planes[i].xc*planes[i].costheta + planes[i].yc*planes[i].sintheta + planes[i].xoffset + (elementID - (planes[i].nElements+1)/2.)*planes[i].spacing + planes[i].deltaW;
           }
           map_wirePosition[i].insert(posType(j, pos));
           map_endPoint1[i].insert(epType(j, planes[i].getEndPoint(j, -1)));
@@ -685,7 +684,10 @@ int GeomSvc::getExpElementID(int detectorID, double pos_exp)
     if(pos_exp > pos_max) return planes[detectorID].nElements+1;
     if(pos_exp < pos_min) return 0;
 
-    int index = std::lower_bound(planes[detectorID].elementPos.begin(), planes[detectorID].elementPos.end(), pos_exp) - planes[detectorID].elementPos.begin();
+    auto iter = std::lower_bound(planes[detectorID].elementPos.begin(), planes[detectorID].elementPos.end(), pos_exp);
+    int index;
+    if (iter != planes[detectorID].elementPos.end()) index = iter - planes[detectorID].elementPos.begin();
+    else index = planes[detectorID].nElements - 1; // pos_exp > pos_last_element.  pos_exp is inside the last element since "pos_exp <= pos_max" was assured above
     int elementID = index + 1 + (planes[detectorID].elementPos[index] - pos_exp > 0.5*planes[detectorID].spacing ? -1 : 0);
 
     if(detectorID > nChamberPlanes+nHodoPlanes+nPropPlanes)
@@ -1143,5 +1145,22 @@ void GeomSvc::printTable()
   {
     if(iter->second>nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) continue;
     std::cout << planes[iter->second] << std::endl;
+  }
+}
+
+void GeomSvc::printElementPos()
+{
+  std::cout << "GeomSvc::printElementPos():\n";
+  for(auto it = map_detectorID.begin(); it != map_detectorID.end(); ++it) {
+    std::string det_name = it->first;
+    int         det_id   = it->second;
+    if(det_id > nChamberPlanes+nHodoPlanes+nPropPlanes+nDarkPhotonPlanes) continue;
+    std::cout << "Detector " << det_id << ":" << det_name;
+    int n_ele = planes[det_id].nElements;
+    for (int i_ele = 0; i_ele < n_ele; i_ele++) {
+      if (i_ele % 10 == 0) std::cout << "\n  " << std::setw(3) << (i_ele+1) << ": ";
+      std::cout << " " << planes[det_id].elementPos.at(i_ele);
+    }
+    std::cout << "\n";
   }
 }

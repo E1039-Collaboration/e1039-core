@@ -87,6 +87,8 @@ public:
     friend std::ostream& operator << (std::ostream& os, const TriggerRoad& road);
 
 public:
+    static int verbosity;
+  
     //Unique road ID
     int roadID;
 

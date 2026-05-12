@@ -3,14 +3,19 @@
 #pragma link off all function;
 #pragma link off all global;
 
-#pragma link C++ class UtilOnline-!;
-#pragma link C++ class UtilSQHit-!;
-#pragma link C++ class UtilTrack-!;
-#pragma link C++ class UtilDimuon-!;
-#pragma link C++ class UtilBeam-!;
+#pragma link C++ namespace UtilBeam;
+#pragma link C++ namespace UtilDimuon;
+#pragma link C++ namespace UtilHist;
+#pragma link C++ namespace UtilHodo;
+#pragma link C++ class     UtilOnline-!;
+#pragma link C++ namespace UtilSQHit;
+#pragma link C++ namespace UtilTrack;
+#pragma link C++ namespace UtilTrigger;
 
-#pragma link C++ class UtilTrigger::TrigRoad-!;
-#pragma link C++ class UtilTrigger::TrigRoads-!;
-#pragma link C++ class UtilTrigger::TrigRoadset-!;
+// As of 2025-11-19:
+// The functions in the namespaces above cannot be completed in CINT
+// just after the library is loaded (i.e. `R__LOAD_LIBRARY(UtilAna)`).
+// They become available in the CINT completion once the member functions
+// of UtilOnline are completed (i.e. `UtilOnline::[Tab][Tab]`).
 
 #endif

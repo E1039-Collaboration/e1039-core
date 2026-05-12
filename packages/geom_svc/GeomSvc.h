@@ -347,6 +347,7 @@ public:
     void printAlignPar();
     void printTable();
     void printWirePosition();
+    void printElementPos();
 
     static void UseDbSvc(const bool val) { use_dbsvc = val; }
     static bool UseDbSvc()        { return use_dbsvc; }

@@ -24,6 +24,8 @@ class TrigRoads {
   int FindRoadIndex(const int road_id) const;
   const TrigRoad* GetRoad(const int idx) const;
   const TrigRoad* FindRoad(const int road_id) const;
+  std::vector<const TrigRoad*> FindRoads(const std::vector<int> list_road_id) const;
+  std::vector<int> FindRoadIDs(const std::vector<int> list_road_id) const;
 
   int Charge() const { return m_pol; }
   int TopBot() const { return m_top_bot; }
