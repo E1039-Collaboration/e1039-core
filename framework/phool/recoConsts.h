@@ -25,8 +25,8 @@ public:
   //! initialize the constants by the runNo
   void init(int runNo = 0, bool verbose = true);
 
-  //! initialize the constants by pre-defined parameter set name - not implemented yet
-  void init(const std::string& setname, bool verbose = false);
+  //! initialize the constants by pre-defined parameter set name
+  void init(const std::string& setname, bool verbose = true);
 
   //! initialize by reading a file
   void initfile(const std::string& filename, bool verbose = false);
