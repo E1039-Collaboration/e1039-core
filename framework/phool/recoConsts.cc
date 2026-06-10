@@ -215,8 +215,8 @@ void recoConsts::init(int runNo, bool verbose)
 
 void recoConsts::init(const std::string& setname, bool verbose)
 {
-  if(setname == "cosmic")
-  {
+  if (verbose) std::cout << "recoConsts::init(): setname = " << setname << std::endl;
+  if (setname == "cosmic") {
     set_BoolFlag("KMAG_ON", false);
     set_BoolFlag("COSMIC_MODE", true);
 
@@ -224,9 +224,12 @@ void recoConsts::init(const std::string& setname, bool verbose)
     set_DoubleFlag("TY_MAX", 1.);
     set_DoubleFlag("X0_MAX", 1000.);
     set_DoubleFlag("Y0_MAX", 1000.);
+  } else if (setname == "Y2024" || setname == "Run1") {
+    init(5433, verbose);
+  } else {
+    std::cout << "  !!ERROR!!  Invalid setname.  Abort." << std::endl;
+    exit(1);
   }
-
-  if(verbose) Print();
 }
 
 void recoConsts::initfile(const std::string& filename, bool verbose)
