@@ -89,6 +89,7 @@ else # 'all' or 'resume'
     online/decoder_maindaq
     generators/E906LegacyGen
     generators/SingleMuonGen
+    generators/JpsiGen
     packages/embedding
     packages/rs_Reader
     packages/RUS
