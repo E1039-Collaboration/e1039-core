@@ -54,6 +54,7 @@ namespace DPGEN
   const double sqrts = p_cms.M();
 }
 
+
 JpsiNRQCDGen::JpsiNRQCDGen(const std::string& name)
   : PHG4ParticleGeneratorBase(name)
   , _dir_data("$E1039_RESOURCE/generator/Jpsi_NRQCD")
@@ -67,8 +68,8 @@ JpsiNRQCDGen::JpsiNRQCDGen(const std::string& name)
   , _vec_dim(0)
   , _integral_node(0)
   , _dim_gen(0)
-  , _pT0JPsi  (3.0)
-  , _pTpowJPsi(1./(6. - 1.))
+  , _pT0  (3.0)
+  , _pTpow(1./(6. - 1.))
   , _n_gen_acc_evt(0)
   , _n_proc_evt(0)
   , _weight_sum(0)
@@ -192,8 +193,8 @@ int JpsiNRQCDGen::End(PHCompositeNode* topNode)
   rc->set_IntFlag   ("JPSINRQCDGEN_EVENT_COUNT", _n_proc_evt);
   rc->set_DoubleFlag("JPSINRQCDGEN_xfMin"      , xfMin);
   rc->set_DoubleFlag("JPSINRQCDGEN_xfMax"      , xfMax);
-  rc->set_DoubleFlag("JPSINRQCDGEN_pT0JPsi"    , _pT0JPsi  );
-  rc->set_DoubleFlag("JPSINRQCDGEN_pTpowJPsi"  , _pTpowJPsi);
+  rc->set_DoubleFlag("JPSINRQCDGEN_pT0"        , _pT0  );
+  rc->set_DoubleFlag("JPSINRQCDGEN_pTpow"      , _pTpow);
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -230,15 +231,13 @@ int JpsiNRQCDGen::generateJPsi(const TVector3& vtx, const double pARatio, double
   InsertMuonPair(vtx);
   double xsec = _gr_xsec_total.Eval(xF);
   //const double BR = 0.0594; // Branching ratio of J/psi -> mumu.  Seen above Fig. 4 of PRD52_1307.
-  
   double weight = xsec * luminosity * (xfMax - xfMin);
   InsertEventInfo(xsec, weight, vtx);
   return 0;
 }
 
-/// Main function to generate dimuon
 /**
- * Reference: G. Moerno et.al. Phys. Rev D43:2815-2836, 1991
+ * Reference: G. Moreno et.al. Phys. Rev D43:2815-2836, 1991
  * The formula of pTmaxSq is discussed in DocDB 9292.
  */
 bool JpsiNRQCDGen::generateDimuon(double mass, double xF)
@@ -253,13 +252,12 @@ bool JpsiNRQCDGen::generateDimuon(double mass, double xF)
   
   double pTmax = sqrt(pTmaxSq);
   double pT = 10.;
-  
   if (pTmax < 0.3) {
     pT = pTmax*sqrt(gRandom->Uniform(0,1));
   } else {
-    while(pT > pTmax) pT = _pT0JPsi*TMath::Sqrt(1./TMath::Power(gRandom->Uniform(0,1), _pTpowJPsi) - 1.);
+    while(pT > pTmax) pT = _pT0*TMath::Sqrt(1./TMath::Power(gRandom->Uniform(0,1), _pTpow) - 1.);
   }
-  
+
   double phi = gRandom->Uniform(0,1)*DPGEN::twopi;
   double px = pT*TMath::Cos(phi);
   double py = pT*TMath::Sin(phi);
@@ -277,13 +275,13 @@ bool JpsiNRQCDGen::generateDimuon(double mass, double xF)
     phaseGen.Generate();
     _dim_gen->set_mom_pos(*(phaseGen.GetDecay(0)));
     _dim_gen->set_mom_neg(*(phaseGen.GetDecay(1)));
-    double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
-    UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
-    if(dim_x1 < x1Min || dim_x1 > x1Max) continue;
-    if(dim_x2 < x2Min || dim_x2 > x2Max) continue;
-    double dim_costh, dim_phi;
-    UtilDimuon::Lab2CollinsSoper(_dim_gen, dim_costh, dim_phi);
-    if(dim_costh < cosThetaMin || dim_costh >cosThetaMax) continue;
+    //double dim_mass, dim_pT, dim_x1, dim_x2, dim_xF;
+    //UtilDimuon::CalcVar(_dim_gen, dim_mass, dim_pT, dim_x1, dim_x2, dim_xF);
+    //if(dim_x1 < x1Min || dim_x1 > x1Max) continue;
+    //if(dim_x2 < x2Min || dim_x2 > x2Max) continue;
+    //double dim_costh, dim_phi;
+    //UtilDimuon::Lab2CollinsSoper(_dim_gen, dim_costh, dim_phi);
+    //if(dim_costh < cosThetaMin || dim_costh >cosThetaMax) continue;
     return true; // A proper dimuon is generated.
   }
   cout << PHWHERE << "No proper dimuon was generated.  Is your kinematic range reasonable?" << endl;
