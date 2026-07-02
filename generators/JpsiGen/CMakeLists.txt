@@ -29,37 +29,8 @@ execute_process(COMMAND root-config --libs   OUTPUT_VARIABLE ROOT_LINK    OUTPUT
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CFLAGS} ")
 
-# Geant4
-#find_program(G4CONF "geant4-config")
-#if(G4CONF)
-#  message("-- Detecting Geant4:  found at ${G4CONF}")
-#else()
-#  message(FATAL_ERROR "-- Detecting Geant4:  not found")
-#endif()
-##find_package(Geant4 REQUIRED gdml vis_all)
-#execute_process(COMMAND geant4-config --prefix OUTPUT_VARIABLE GEANT4_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
-#execute_process(COMMAND geant4-config --cflags OUTPUT_VARIABLE GEANT4_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-#execute_process(COMMAND geant4-config --libs   OUTPUT_VARIABLE GEANT4_LINK   OUTPUT_STRIP_TRAILING_WHITESPACE)
-#
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${GEANT4_PREFIX}/include/ ")
-
 add_library(JpsiGen SHARED  ${sources} JpsiGen_Dict.cc)
 target_link_libraries(JpsiGen fun4all interface_main UtilAna SQPrimaryVtxGen)
-#target_link_libraries(SQPrimaryGen -L./
-#  -lgsl
-#  -lgslcblas
-#  -lphool
-#  -lSubsysReco
-#  -lfun4all
-#  -lUtilAna
-#  -lboost_iostreams
-#  -lphhepmc
-#  -lHepMC
-#  -lphg4hit
-#  -lg4testbench
-#  -lpythia8
-#  -lSQPrimaryVtxGen
-#)
 
 install(TARGETS JpsiGen  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 install(FILES ${dist_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}/)
