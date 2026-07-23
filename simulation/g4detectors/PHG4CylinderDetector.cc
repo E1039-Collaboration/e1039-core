@@ -108,6 +108,82 @@ void PHG4CylinderDetector::Construct(G4LogicalVolume *logicWorld)
 		TrackerMaterial = Coil;
 
 		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
+	} else if (params->get_string_param("material").find("KelF")
+			!= std::string::npos) {
+		G4double z;
+		G4double a;
+		G4String symbol;
+		G4String name;
+		G4double density;
+		G4int ncomponents;
+		G4int natoms;
+
+		G4Element *elC  = new G4Element(name="Carbon", symbol="C" ,  z=6., a = 12.0107 *g/mole);
+                G4Element *elF  = new G4Element(name="Fluorine", symbol="F" ,  z=9., a = 18.9984 *g/mole);
+                G4Element *elCl  = new G4Element(name="Chlorine", symbol="Cl" ,  z=17., a = 35.453 *g/mole);
+
+		
+                G4Material* sC2ClF3 = new G4Material(name = "G4_sC2ClF3", density = 2.12 * g/cm3, ncomponents = 3);
+		sC2ClF3->AddElement(elC, natoms = 2);
+		sC2ClF3->AddElement(elCl, natoms = 1);
+                sC2ClF3->AddElement(elF, natoms = 3);
+		G4Material* KelF = new G4Material(name = "KelF", density = 2.05 * g/cm3, ncomponents = 1);
+		KelF->AddMaterial(sC2ClF3, 95 * perCent);
+		
+
+		TrackerMaterial = KelF;
+
+		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
+         } else if (params->get_string_param("material").find("Target_ladder")
+			!= std::string::npos) {
+		G4double z;
+		G4double a;
+		G4String symbol;
+		G4String name;
+		G4double density;
+		G4int ncomponents;
+		G4int natoms;
+
+		G4Element *elAl  = new G4Element(name="Aluminium", symbol="Al" ,  z=13., a = 26.98 *g/mole);
+		
+                G4Material* sAl = new G4Material(name = "G4_sAl", density = 2.7 * g/cm3, ncomponents = 1);
+		sAl->AddElement(elAl, natoms = 1);
+
+		G4Material* Target_ladder = new G4Material(name = "Target_ladder", density = 2.7 * g/cm3, ncomponents = 1);
+		Target_ladder->AddMaterial(sAl, 100 * perCent);
+		
+
+		TrackerMaterial = Target_ladder;
+
+		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
+          } else if (params->get_string_param("material").find("NMR_coil")
+			!= std::string::npos) {
+		G4double z;
+		G4double a;
+		G4String symbol;
+		G4String name;
+		G4double density;
+		G4int ncomponents;
+		G4int natoms;
+
+		
+		G4Element *elCu  = new G4Element(name="Copper", symbol="Cu", z=29., a = 63.546 *g/mole );
+		G4Element *elNi = new G4Element(name="Nickel", symbol="Ni", z=28., a = 58.693 *g/mole );
+		
+		G4Material* sCu = new G4Material(name = "G4_sCu", density = 8.96 * g/cm3, ncomponents = 1);
+		sCu->AddElement(elCu, natoms = 1);
+
+		G4Material* sNi = new G4Material(name = "G4_sNi", density = 8.908 * g/cm3, ncomponents = 1);
+		sNi->AddElement(elNi, natoms = 1);
+
+		G4Material* NMR_coil = new G4Material(name = "NMR_coil", density = 8.94 * g/cm3, ncomponents = 2);
+		NMR_coil->AddMaterial(sCu, 70 * perCent);
+		NMR_coil->AddMaterial(sNi, 30 * perCent);
+		
+
+		TrackerMaterial = NMR_coil;
+
+		std::cout<< "DEBUG: " << TrackerMaterial << std::endl;
 	} else {
 		TrackerMaterial = G4Material::GetMaterial(
 				params->get_string_param("material"));
